@@ -22,11 +22,18 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public interface MetadataRequest
+public class WorkspaceRepository
+    implements ArtifactRepository
 {
 
-    Metadata getMetadata();
+    public String getType()
+    {
+        return TYPE_WORKSPACE;
+    }
 
-    String getChecksumPolicy();
+    public String getId()
+    {
+        return getType();
+    }
 
 }

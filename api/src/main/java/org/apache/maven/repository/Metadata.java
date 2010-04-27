@@ -33,9 +33,30 @@ public interface Metadata
 
     String getVersion();
 
-    // e.g. "maven-metadata.xml" or "archetype-catalog.xml", i.e the simple file name used by classical URL-based repos
+    // e.g. "maven-metadata.xml", "archetype-catalog.xml" or "nexus-maven-repository-index.properties", i.e the simple file name used by classical URL-based repos
     String getKind();
 
     File getFile();
 
+/*
+
+<metadata>
+  <versioning>
+    <snapshot>
+      <timestamp>20100419.164221</timestamp>
+      <buildNumber>46</buildNumber>
+    </snapshot>
+    <snapshotVersions>
+      <snapshotVersion>
+        <classifier>win</classifier>
+        <format>${timeStamp}-${buildNo}</format>
+        <timeStamp>20100419.164221</timeStamp>
+        <buildNo>46</buildNo>
+      </snapshotVersion>
+    </snapshotVersions>
+    <lastUpdated>20100419164659</lastUpdated>
+  </versioning>
+</metadata>
+
+ */
 }

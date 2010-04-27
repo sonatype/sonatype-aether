@@ -35,9 +35,9 @@ public class MetadataTransferException
         this.metadata = metadata;
     }
 
-    public MetadataTransferException( Metadata metadata, String message, Throwable cause )
+    public MetadataTransferException( Metadata metadata, Throwable cause )
     {
-        super( message, cause );
+        super( "Could not transfer metadata " + metadata + ( cause != null ? ": " + getMessage( cause ) : "" ), cause );
 
         this.metadata = metadata;
     }

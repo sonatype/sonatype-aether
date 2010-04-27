@@ -19,8 +19,6 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -133,7 +131,7 @@ public class DefaultMirrorSelector
                     break;
                 }
                 // check for external:*
-                else if ( EXTERNAL_WILDCARD.equals( repo ) && isExternalRepo( repository.getUrl() ) )
+                else if ( EXTERNAL_WILDCARD.equals( repo ) && isExternalRepo( repository ) )
                 {
                     result = true;
                     // don't stop processing in case a future segment explicitly excludes this repo
@@ -151,23 +149,15 @@ public class DefaultMirrorSelector
     /**
      * Checks the URL to see if this repository refers to an external repository.
      * 
-     * @param url The repository url to check, must not be {@code null}.
+     * @param repository The repository to check, must not be {@code null}.
      * @return {@code true} if external, {@code false} otherwise.
      */
-    static boolean isExternalRepo( String url )
+    static boolean isExternalRepo( RemoteRepository repository )
     {
-        try
-        {
-            URL u = new URL( url );
-            boolean local =
-                "localhost".equals( u.getHost() ) || "127.0.0.1".equals( u.getHost() )
-                    || "file".equalsIgnoreCase( u.getProtocol() );
-            return !local;
-        }
-        catch ( MalformedURLException e )
-        {
-            return false;
-        }
+        boolean local =
+            "localhost".equals( repository.getHost() ) || "127.0.0.1".equals( repository.getHost() )
+                || "file".equalsIgnoreCase( repository.getProtocol() );
+        return !local;
     }
 
     /**

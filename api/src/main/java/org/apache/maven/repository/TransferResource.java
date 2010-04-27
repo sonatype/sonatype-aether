@@ -40,7 +40,7 @@ public interface TransferResource
      * 
      * @return The path of the resource, never {@code null}.
      */
-    String getName();
+    String getResourceName();
 
     /**
      * The size of the resource in bytes.

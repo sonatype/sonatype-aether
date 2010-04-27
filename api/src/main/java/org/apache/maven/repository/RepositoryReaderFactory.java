@@ -22,11 +22,11 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public interface MetadataRequest
+public interface RepositoryReaderFactory
+    extends PluggableComponent
 {
 
-    Metadata getMetadata();
-
-    String getChecksumPolicy();
+    RepositoryReader newInstance( RemoteRepository repository, RepositoryContext context )
+        throws NoRepositoryReaderException;
 
 }

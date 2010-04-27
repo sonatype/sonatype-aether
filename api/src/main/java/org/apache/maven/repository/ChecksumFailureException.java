@@ -22,11 +22,43 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public interface MetadataRequest
+public class ChecksumFailureException
+    extends RepositoryException
 {
 
-    Metadata getMetadata();
+    private final String expected;
 
-    String getChecksumPolicy();
+    private final String actual;
+
+    public ChecksumFailureException( String expected, String actual )
+    {
+        super( "Checksum validation failed, expected " + expected + " but is " + actual );
+
+        this.expected = expected;
+        this.actual = actual;
+    }
+
+    public ChecksumFailureException( String message )
+    {
+        super( message );
+        expected = actual = "";
+    }
+
+    public ChecksumFailureException( Throwable cause )
+    {
+        super( "Checksum validation failed, could not read expected checksum" + ( cause != null ? ": " : "" )
+            + getMessage( cause ) );
+        expected = actual = "";
+    }
+
+    public String getExpected()
+    {
+        return expected;
+    }
+
+    public String getActual()
+    {
+        return actual;
+    }
 
 }

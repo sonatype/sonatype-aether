@@ -36,7 +36,7 @@ public class ArtifactMultiTransferException
 
     public ArtifactMultiTransferException( Collection<? extends ArtifactTransferException> exceptions )
     {
-        super( String.valueOf( exceptions ) );
+        super( String.valueOf( exceptions ), exceptions != null ? exceptions.iterator().next() : null );
 
         if ( exceptions != null )
         {

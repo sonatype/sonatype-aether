@@ -35,17 +35,24 @@ public interface RepositoryContext
 
     LocalRepository getLocalRepository();
 
-    WorkspaceReader getWorkspaceReader();
+    WorkspaceRepository getWorkspaceRepository();
 
     TransferListener getTransferListener();
 
     Properties getSystemProperties();
+
+    Properties getUserProperties();
+
+    // timeouts, thread pool size, user-agent, etc.
+    Properties getConfigProperties();
 
     MirrorSelector getMirrorSelector();
 
     ProxySelector getProxySelector();
 
     AuthenticationSelector getAuthenticationSelector();
+
+    RepositoryProviderRegistry getRepositoryProviderRegistry();
 
     // TODO: cache?
 

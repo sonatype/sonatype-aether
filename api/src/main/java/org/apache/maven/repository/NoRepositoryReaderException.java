@@ -39,12 +39,12 @@ public class NoRepositoryReaderException
     {
         if ( repository != null )
         {
-            return "Cannot read from repository '" + repository.getId() + "' (" + repository.getUrl() + ") of type '"
-                + repository.getType() + "'";
+            return "No adapter available to read from repository '" + repository.getId() + "' (" + repository.getUrl()
+                + ") of type '" + repository.getType() + "'";
         }
         else
         {
-            return "Cannot read from repository";
+            return "No adapter available to read from repository";
         }
     }
 

@@ -1,5 +1,8 @@
 package org.apache.maven.repository;
 
+import java.util.Collection;
+import java.util.List;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -68,6 +71,7 @@ public interface RepositorySystem
      */
     void deployArtifacts( DeployRequest request );
 
-    LocalRepositoryManager getLocalRepositoryManager( LocalRepository localRepository, RepositoryContext context );
+    List<RemoteRepository> getEffectiveRepositories( Collection<? extends RemoteRepository> repositories,
+                                                     RepositoryContext context );
 
 }

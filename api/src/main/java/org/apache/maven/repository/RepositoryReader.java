@@ -19,16 +19,18 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.Collection;
+
 /**
  * @author Benjamin Bentmann
  */
 public interface RepositoryReader
 {
 
-    void getArtifacts( ArtifactRequest request )
+    void getArtifacts( Collection<? extends ArtifactRequest> requests )
         throws ArtifactMultiTransferException;
 
-    void getMetadata( MetadataRequest request )
+    void getMetadata( Collection<? extends MetadataRequest> requests )
         throws MetadataMultiTransferException;
 
     void close();

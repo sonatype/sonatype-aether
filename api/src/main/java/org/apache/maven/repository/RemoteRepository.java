@@ -1,5 +1,8 @@
 package org.apache.maven.repository;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -32,9 +35,17 @@ public class RemoteRepository
 
     private String url;
 
+    private String protocol;
+
+    private String host;
+
     private RepositoryPolicy releasePolicy;
 
     private RepositoryPolicy snapshotPolicy;
+
+    private Proxy proxy;
+
+    private Authentication authentication;
 
     public RemoteRepository()
     {
@@ -67,7 +78,7 @@ public class RemoteRepository
 
     public RemoteRepository setId( String id )
     {
-        this.id = id;
+        this.id = ( id != null ) ? id : "";
 
         return this;
     }
@@ -79,7 +90,7 @@ public class RemoteRepository
 
     public RemoteRepository setType( String type )
     {
-        this.type = type;
+        this.type = ( type != null ) ? type : "";
 
         return this;
     }
@@ -91,9 +102,31 @@ public class RemoteRepository
 
     public RemoteRepository setUrl( String url )
     {
-        this.url = url;
+        this.url = ( url != null ) ? url : "";
+
+        Matcher m = Pattern.compile( "([^:/]+(:[^:/]+)*):(//([^@/]*@)?([^/:]+))?.*" ).matcher( this.url );
+
+        if ( m.matches() )
+        {
+            this.protocol = m.group( 1 );
+            this.host = ( m.group( 5 ) != null ) ? m.group( 5 ) : "";
+        }
+        else
+        {
+            this.host = this.protocol = "";
+        }
 
         return this;
+    }
+
+    public String getProtocol()
+    {
+        return protocol;
+    }
+
+    public String getHost()
+    {
+        return host;
     }
 
     public RepositoryPolicy getPolicy( boolean snapshot )
@@ -116,6 +149,30 @@ public class RemoteRepository
         {
             releasePolicy = policy;
         }
+
+        return this;
+    }
+
+    public Proxy getProxy()
+    {
+        return proxy;
+    }
+
+    public RemoteRepository setProxy( Proxy proxy )
+    {
+        this.proxy = proxy;
+
+        return this;
+    }
+
+    public Authentication getAuthentication()
+    {
+        return authentication;
+    }
+
+    public RemoteRepository setAuthentication( Authentication authentication )
+    {
+        this.authentication = authentication;
 
         return this;
     }

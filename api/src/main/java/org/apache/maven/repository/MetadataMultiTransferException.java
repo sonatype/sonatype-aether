@@ -36,7 +36,7 @@ public class MetadataMultiTransferException
 
     public MetadataMultiTransferException( Collection<? extends MetadataTransferException> exceptions )
     {
-        super( String.valueOf( exceptions ) );
+        super( String.valueOf( exceptions ), exceptions != null ? exceptions.iterator().next() : null );
 
         if ( exceptions != null )
         {

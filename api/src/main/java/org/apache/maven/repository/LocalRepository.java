@@ -24,10 +24,30 @@ import java.io.File;
 /**
  * @author Benjamin Bentmann
  */
-public interface LocalRepository
-    extends ArtifactRepository
+public class LocalRepository
+    implements ArtifactRepository
 {
 
-    File getBasedir();
+    private final File basedir;
+
+    public LocalRepository( File basedir )
+    {
+        this.basedir = basedir;
+    }
+
+    public String getType()
+    {
+        return TYPE_LOCAL;
+    }
+
+    public String getId()
+    {
+        return getType();
+    }
+
+    public File getBasedir()
+    {
+        return basedir;
+    }
 
 }

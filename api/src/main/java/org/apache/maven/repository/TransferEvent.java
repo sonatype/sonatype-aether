@@ -27,7 +27,7 @@ public interface TransferEvent
 
     enum EventType
     {
-        TransferInitiated, TransferRestarted, TransferStarted, TransferProgressed, TransferCompleted, TransferAborted,
+        INITIATED, STARTED, PROGRESSED, CORRUPTED, SUCCEEDED, FAILED
     }
 
     enum RequestType
@@ -48,5 +48,7 @@ public interface TransferEvent
     int getDataOffset();
 
     int getDataLength();
+
+    Exception getException();
 
 }

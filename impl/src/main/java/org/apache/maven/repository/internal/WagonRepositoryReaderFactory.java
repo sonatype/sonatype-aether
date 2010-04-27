@@ -23,14 +23,31 @@ import org.apache.maven.repository.NoRepositoryReaderException;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositoryContext;
 import org.apache.maven.repository.RepositoryReader;
+import org.apache.maven.repository.RepositoryReaderFactory;
+import org.codehaus.plexus.PlexusContainer;
 
 /**
  * @author Benjamin Bentmann
+ * @plexus.component role="org.apache.maven.repository.internal.RepositoryReaderFactory" role-hint="default"
  */
-public interface RepositoryReaderFactory
+public class WagonRepositoryReaderFactory
+    implements RepositoryReaderFactory
 {
 
-    RepositoryReader newInstance( RemoteRepository repository, RepositoryContext context )
-        throws NoRepositoryReaderException;
+    /**
+     * @plexus.requirement
+     */
+    private PlexusContainer container;
+
+    public int getPriority()
+    {
+        return 0;
+    }
+
+    public RepositoryReader newInstance( RemoteRepository repository, RepositoryContext context )
+        throws NoRepositoryReaderException
+    {
+        return new WagonRepositoryReader( container, repository, context );
+    }
 
 }

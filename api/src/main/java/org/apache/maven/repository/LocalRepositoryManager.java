@@ -27,12 +27,12 @@ import java.io.File;
 public interface LocalRepositoryManager
 {
 
-    File getPathForLocalArtifact( Artifact artifact );
+    File getPathForLocalArtifact( LocalRepository local, Artifact artifact );
 
-    File getPathForLocalMetadata( Metadata metadata );
+    File getPathForLocalMetadata( LocalRepository local, Metadata metadata );
 
-    File getPathForRemoteArtifact( Artifact artifact, RemoteRepository repository );
+    File getPathForRemoteArtifact( LocalRepository local, Artifact artifact, RemoteRepository repository );
 
-    File getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository );
+    File getPathForRemoteMetadata( LocalRepository local, Metadata metadata, RemoteRepository repository );
 
 }

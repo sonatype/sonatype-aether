@@ -19,16 +19,14 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.Collection;
-
 /**
  * @author Benjamin Bentmann
  */
 public interface ArtifactRequest
 {
 
-    Collection<? extends Artifact> getArtifacts();
+    Artifact getArtifact();
 
-    TransferListener getTransferListener();
+    String getChecksumPolicy();
 
 }

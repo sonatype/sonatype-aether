@@ -19,14 +19,18 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.List;
+
 /**
  * @author Benjamin Bentmann
  */
-public interface MetadataRequest
+public interface RepositoryProviderRegistry
 {
 
-    Metadata getMetadata();
+    LocalRepositoryManager getLocalRepositoryManager();
 
-    String getChecksumPolicy();
+    WorkspaceReader getWorkspaceReader();
+
+    List<? extends RepositoryReaderFactory> getReaderFactories();
 
 }

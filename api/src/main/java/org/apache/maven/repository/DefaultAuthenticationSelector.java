@@ -1,4 +1,4 @@
-package org.apache.maven.repository.internal;
+package org.apache.maven.repository;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,29 +19,28 @@ package org.apache.maven.repository.internal;
  * under the License.
  */
 
-import org.apache.maven.repository.NoRepositoryReaderException;
-import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
-import org.apache.maven.repository.RepositoryReader;
-import org.codehaus.plexus.PlexusContainer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Benjamin Bentmann
- * @plexus.component role="org.apache.maven.repository.internal.RepositoryReaderFactory" role-hint="default"
  */
-public class DefaultRepositoryReaderFactory
-    implements RepositoryReaderFactory
+public class DefaultAuthenticationSelector
+    implements AuthenticationSelector
 {
 
-    /**
-     * @plexus.requirement
-     */
-    private PlexusContainer container;
+    private final Map<String, Authentication> repos = new HashMap<String, Authentication>();
 
-    public RepositoryReader newInstance( RemoteRepository repository, RepositoryContext context )
-        throws NoRepositoryReaderException
+    public DefaultAuthenticationSelector add( String id, Authentication auth )
     {
-        return new DefaultRepositoryReader( container, repository, context );
+        repos.put( id, auth );
+
+        return this;
+    }
+
+    public Authentication getAuthentication( RemoteRepository repository )
+    {
+        return repos.get( repository.getId() );
     }
 
 }

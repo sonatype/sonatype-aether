@@ -19,8 +19,6 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,20 +44,9 @@ public class DefaultProxySelector
 
     public Proxy getProxy( RemoteRepository repository )
     {
-        // FIXME: This won't work with the invalid URLs out there...
-        URL url;
-        try
-        {
-            url = new URL( repository.getUrl() );
-        }
-        catch ( MalformedURLException e )
-        {
-            return null;
-        }
-
         Map<String, ProxyDef> candidates = new HashMap<String, ProxyDef>();
 
-        String host = url.getHost();
+        String host = repository.getHost();
         for ( ProxyDef proxy : proxies )
         {
             if ( !isNonProxyHosts( host, proxy.nonProxyHosts ) )
@@ -72,7 +59,7 @@ public class DefaultProxySelector
             }
         }
 
-        String protocol = url.getProtocol().toLowerCase( Locale.ENGLISH );
+        String protocol = repository.getProtocol().toLowerCase( Locale.ENGLISH );
 
         ProxyDef proxy = candidates.get( protocol );
         if ( proxy == null && "https".equals( protocol ) )

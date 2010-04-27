@@ -28,19 +28,17 @@ public interface TransferListener
     void transferInitiated( TransferEvent transferEvent )
         throws TransferCancelledException;
 
-    void transferRestarted( TransferEvent transferEvent )
-        throws TransferCancelledException;
-
     void transferStarted( TransferEvent transferEvent )
         throws TransferCancelledException;
 
     void transferProgressed( TransferEvent transferEvent )
         throws TransferCancelledException;
 
-    void transferCompleted( TransferEvent transferEvent )
+    void transferCorrupted( TransferEvent transferEvent )
         throws TransferCancelledException;
 
-    void transferAborted( TransferEvent transferEvent )
-        throws TransferCancelledException;
+    void transferSucceeded( TransferEvent transferEvent );
+
+    void transferFailed( TransferEvent transferEvent );
 
 }

@@ -19,12 +19,15 @@ package org.apache.maven.repository.internal;
  * under the License.
  */
 
-import java.util.Map;
+import java.util.Collection;
+import java.util.List;
 
+import org.apache.maven.repository.ArtifactRequest;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositoryContext;
 import org.apache.maven.repository.RepositoryReader;
 import org.apache.maven.repository.NoRepositoryReaderException;
+import org.apache.maven.repository.RepositoryReaderFactory;
 
 /**
  * @author Benjamin Bentmann
@@ -33,22 +36,34 @@ import org.apache.maven.repository.NoRepositoryReaderException;
 public class DefaultRepositorySystem
 {
 
-    /**
-     * @plexus.requirement role="org.apache.maven.repository.internal.RepositoryReaderFactory"
-     */
-    private Map<String, RepositoryReaderFactory> readerFactories;
+    private void getArtifacts( Collection<? extends ArtifactRequest> requests, List<? extends RemoteRepository> repos,
+                               RemoteRepository context )
+    {
+        for ( RemoteRepository repo : repos )
+        {
 
-    private RepositoryReader getRepositoryReader( RemoteRepository remoteRepository, RepositoryContext context )
+        }
+    }
+
+    private RepositoryReader getRepositoryReader( RemoteRepository repository, RepositoryContext context )
         throws NoRepositoryReaderException
     {
-        RepositoryReaderFactory factory = readerFactories.get( remoteRepository.getType() );
+        List<? extends RepositoryReaderFactory> factories =
+            context.getRepositoryProviderRegistry().getReaderFactories();
 
-        if ( factory == null )
+        for ( RepositoryReaderFactory factory : factories )
         {
-            throw new NoRepositoryReaderException( remoteRepository );
+            try
+            {
+                return factory.newInstance( repository, context );
+            }
+            catch ( NoRepositoryReaderException e )
+            {
+                // continue and try next factory
+            }
         }
 
-        return factory.newInstance( remoteRepository, context );
+        throw new NoRepositoryReaderException( repository );
     }
 
 }

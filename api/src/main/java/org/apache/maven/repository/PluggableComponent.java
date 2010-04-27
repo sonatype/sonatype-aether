@@ -1,5 +1,7 @@
 package org.apache.maven.repository;
 
+import java.util.Comparator;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,11 +24,19 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public interface MetadataRequest
+public interface PluggableComponent
 {
 
-    Metadata getMetadata();
+    int getPriority();
 
-    String getChecksumPolicy();
+    static final Comparator<PluggableComponent> COMPARATOR = new Comparator<PluggableComponent>()
+    {
+
+        public int compare( PluggableComponent o1, PluggableComponent o2 )
+        {
+            return o2.getPriority() - o1.getPriority();
+        }
+
+    };
 
 }

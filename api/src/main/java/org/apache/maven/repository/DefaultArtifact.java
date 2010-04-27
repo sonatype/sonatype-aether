@@ -69,6 +69,11 @@ public class DefaultArtifact
         return type;
     }
 
+    public String getBaseVersion()
+    {
+        return version;
+    }
+
     public String getVersion()
     {
         return version;
@@ -77,6 +82,12 @@ public class DefaultArtifact
     public File getFile()
     {
         return file;
+    }
+
+    public String getProperty( String key, String defaultValue )
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
