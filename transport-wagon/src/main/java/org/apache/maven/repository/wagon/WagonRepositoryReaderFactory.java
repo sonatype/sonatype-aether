@@ -1,4 +1,4 @@
-package org.apache.maven.repository.internal;
+package org.apache.maven.repository.wagon;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -44,7 +44,7 @@ public class WagonRepositoryReaderFactory
         return 0;
     }
 
-    public RepositoryReader newInstance( RemoteRepository repository, RepositoryContext context )
+    public RepositoryReader newInstance( RepositoryContext context, RemoteRepository repository )
         throws NoRepositoryReaderException
     {
         return new WagonRepositoryReader( container, repository, context );

@@ -19,18 +19,50 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Benjamin Bentmann
  */
-public interface ResolveRequest
+public class ResolveRequest
 {
 
-    List<? extends Artifact> getArtifacts();
+    private final List<Artifact> artifacts = new ArrayList<Artifact>();
 
-    List<? extends RemoteRepository> getRemoteRepositories( Artifact artifact );
+    private Map<Artifact, List<? extends RemoteRepository>> repos =
+        new IdentityHashMap<Artifact, List<? extends RemoteRepository>>();
 
-    RepositoryContext getContext();
+    private RepositoryContext context;
+
+    public List<? extends Artifact> getArtifacts()
+    {
+        return artifacts;
+    }
+
+    public List<? extends RemoteRepository> getRemoteRepositories( Artifact artifact )
+    {
+        return repos.get( artifact );
+    }
+
+    public ResolveRequest add( Artifact artifact, List<? extends RemoteRepository> repositories )
+    {
+        artifacts.add( artifact );
+        repos.put( artifact, repositories );
+        return this;
+    }
+
+    public RepositoryContext getContext()
+    {
+        return context;
+    }
+
+    public ResolveRequest setContext( RepositoryContext context )
+    {
+        this.context = context;
+        return this;
+    }
 
 }

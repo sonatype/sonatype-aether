@@ -22,11 +22,21 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public interface MetadataRequest
+public class VersionResolutionException
+    extends RepositoryException
 {
 
-    Metadata getMetadata();
+    private final Artifact artifact;
 
-    String getChecksumPolicy();
+    public VersionResolutionException( Artifact artifact )
+    {
+        super( "Failed to resolve version for " + artifact );
+        this.artifact = artifact;
+    }
+
+    public Artifact getArtifact()
+    {
+        return artifact;
+    }
 
 }

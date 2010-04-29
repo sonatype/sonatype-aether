@@ -28,7 +28,7 @@ public class WorkspaceRepository
 
     public String getType()
     {
-        return TYPE_WORKSPACE;
+        return "workspace";
     }
 
     public String getId()

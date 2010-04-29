@@ -22,11 +22,17 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public interface ArtifactRequest
+public interface UpdateCheckManager
 {
 
-    Artifact getArtifact();
+    String getEffectiveUpdatePolicy( RepositoryContext context, String policy1, String policy2 );
 
-    String getChecksumPolicy();
+    void checkArtifact( UpdateCheck<Artifact, ArtifactTransferException> check );
+
+    void touchArtifact( UpdateCheck<Artifact, ArtifactTransferException> check );
+
+    void checkMetadata( UpdateCheck<Metadata, MetadataTransferException> check );
+
+    void touchMetadata( UpdateCheck<Metadata, MetadataTransferException> check );
 
 }

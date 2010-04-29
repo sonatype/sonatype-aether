@@ -31,4 +31,9 @@ public class ArtifactNotFoundException
         super( artifact, "Could not find artifact " + artifact );
     }
 
+    public ArtifactNotFoundException( Artifact artifact, String message )
+    {
+        super( artifact, message );
+    }
+
 }

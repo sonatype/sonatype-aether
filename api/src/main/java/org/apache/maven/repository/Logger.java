@@ -19,18 +19,18 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.List;
-
 /**
  * @author Benjamin Bentmann
  */
-public interface RepositoryProviderRegistry
+public interface Logger
 {
 
-    LocalRepositoryManager getLocalRepositoryManager();
+    // REVIEW: This primarily supports tracing, for anything else a repository listener might be more desirable?
 
-    WorkspaceReader getWorkspaceReader();
+    boolean isDebugEnabled();
 
-    List<? extends RepositoryReaderFactory> getReaderFactories();
+    void debug( String msg );
+
+    void debug( String msg, Throwable error );
 
 }

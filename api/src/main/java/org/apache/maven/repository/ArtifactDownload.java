@@ -19,50 +19,75 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.List;
+import java.io.File;
 
 /**
  * @author Benjamin Bentmann
  */
-public class VersionRequest
+public class ArtifactDownload
 {
 
     private Artifact artifact;
 
-    private List<? extends RemoteRepository> repositories;
+    private File file;
 
-    private RepositoryContext context;
+    private String checksumPolicy;
+
+    private ArtifactTransferException exception;
+
+    public ArtifactDownload()
+    {
+        // enables default constructor
+    }
+
+    public ArtifactDownload( Artifact artifact, File file, String checksumPolicy )
+    {
+        setArtifact( artifact );
+        setFile( file );
+        setChecksumPolicy( checksumPolicy );
+    }
 
     public Artifact getArtifact()
     {
         return artifact;
     }
 
-    public VersionRequest setArtifact( Artifact artifact )
+    public ArtifactDownload setArtifact( Artifact artifact )
     {
         this.artifact = artifact;
         return this;
     }
 
-    public List<? extends RemoteRepository> getRemoteRepositories()
+    public File getFile()
     {
-        return repositories;
+        return file;
     }
 
-    public VersionRequest setRemoteRepositories( List<? extends RemoteRepository> repositories )
+    public ArtifactDownload setFile( File file )
     {
-        this.repositories = repositories;
+        this.file = file;
         return this;
     }
 
-    public RepositoryContext getContext()
+    public String getChecksumPolicy()
     {
-        return context;
+        return checksumPolicy;
     }
 
-    public VersionRequest setContext( RepositoryContext context )
+    public ArtifactDownload setChecksumPolicy( String checksumPolicy )
     {
-        this.context = context;
+        this.checksumPolicy = checksumPolicy;
+        return this;
+    }
+
+    public ArtifactTransferException getException()
+    {
+        return exception;
+    }
+
+    public ArtifactDownload setException( ArtifactTransferException exception )
+    {
+        this.exception = exception;
         return this;
     }
 

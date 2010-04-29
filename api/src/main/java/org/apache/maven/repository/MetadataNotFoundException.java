@@ -31,4 +31,9 @@ public class MetadataNotFoundException
         super( metadata, "Could not find metadata " + metadata );
     }
 
+    public MetadataNotFoundException( Metadata metadata, String message )
+    {
+        super( metadata, message );
+    }
+
 }

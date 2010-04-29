@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.internal;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,13 +20,11 @@ package org.apache.maven.repository;
  */
 
 /**
+ * 
  * @author Benjamin Bentmann
  */
-public interface RepositoryReaderFactory
-    extends PluggableComponent
+public interface PomProcessor
 {
 
-    RepositoryReader newInstance( RepositoryContext context, RemoteRepository repository )
-        throws NoRepositoryReaderException;
-
+    
 }

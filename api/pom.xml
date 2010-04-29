@@ -13,5 +13,5 @@
 
   <artifactId>sonatype-repository-api</artifactId>
 
-  <name>Repository API</name>
+  <name>Repository System :: API</name>
 </project>

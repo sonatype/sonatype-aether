@@ -24,19 +24,74 @@ import java.io.File;
 /**
  * @author Benjamin Bentmann
  */
-public interface Metadata
+public class Metadata
 {
 
-    String getGroupId();
-
-    String getArtifactId();
-
-    String getVersion();
-
+    private String groupId;
+    
+    private String artifactId;
+    
+    private String version;
+    
     // e.g. "maven-metadata.xml", "archetype-catalog.xml" or "nexus-maven-repository-index.properties", i.e the simple file name used by classical URL-based repos
-    String getKind();
+    private String type;
+    
+    private File file;
 
-    File getFile();
+    public String getGroupId()
+    {
+        return groupId;
+    }
+
+    public Metadata setGroupId( String groupId )
+    {
+        this.groupId = groupId;
+        return this;
+    }
+
+    public String getArtifactId()
+    {
+        return artifactId;
+    }
+
+    public Metadata setArtifactId( String artifactId )
+    {
+        this.artifactId = artifactId;
+        return this;
+    }
+
+    public String getVersion()
+    {
+        return version;
+    }
+
+    public Metadata setVersion( String version )
+    {
+        this.version = version;
+        return this;
+    }
+
+    public String getType()
+    {
+        return type;
+    }
+
+    public Metadata setType( String type )
+    {
+        this.type = type;
+        return this;
+    }
+
+    public File getFile()
+    {
+        return file;
+    }
+
+    public Metadata setFile( File file )
+    {
+        this.file = file;
+        return this;
+    }
 
 /*
 

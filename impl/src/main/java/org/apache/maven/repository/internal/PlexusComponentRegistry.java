@@ -25,17 +25,23 @@ import java.util.List;
 
 import org.apache.maven.repository.LocalRepositoryManager;
 import org.apache.maven.repository.PluggableComponent;
-import org.apache.maven.repository.RepositoryProviderRegistry;
+import org.apache.maven.repository.ComponentRegistry;
 import org.apache.maven.repository.RepositoryReaderFactory;
+import org.apache.maven.repository.UpdateCheckManager;
 import org.apache.maven.repository.WorkspaceReader;
 
 /**
  * @author Benjamin Bentmann
- * @plexus.component role="org.apache.maven.repository.RepositoryProviderRegistry" role-hint="default"
+ * @plexus.component role="org.apache.maven.repository.ComponentRegistry" role-hint="default"
  */
-public class PlexusRepositoryProviderRegistry
-    implements RepositoryProviderRegistry
+public class PlexusComponentRegistry
+    implements ComponentRegistry
 {
+
+    /**
+     * @plexus.requirement role="org.apache.maven.repository.UpdateCheckManager"
+     */
+    private UpdateCheckManager updateCheckManager;
 
     /**
      * @plexus.requirement role="org.apache.maven.repository.LocalRepositoryManager"
@@ -51,6 +57,11 @@ public class PlexusRepositoryProviderRegistry
      * @plexus.requirement role="org.apache.maven.repository.RepositoryReaderFactory"
      */
     private List<RepositoryReaderFactory> readerFactories;
+
+    public UpdateCheckManager getUpdateCheckManager()
+    {
+        return updateCheckManager;
+    }
 
     public LocalRepositoryManager getLocalRepositoryManager()
     {

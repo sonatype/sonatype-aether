@@ -1,4 +1,4 @@
-package org.apache.maven.repository.internal;
+package org.apache.maven.repository.wagon;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -69,7 +69,7 @@ class Maven2Layout
             }
         }
 
-        path.append( metadata.getKind() );
+        path.append( metadata.getType() );
 
         return path.toString();
     }

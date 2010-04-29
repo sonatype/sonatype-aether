@@ -25,10 +25,6 @@ package org.apache.maven.repository;
 public interface ArtifactRepository
 {
 
-    static final String TYPE_LOCAL = "local";
-
-    static final String TYPE_WORKSPACE = "workspace";
-
     String getType();
 
     String getId();

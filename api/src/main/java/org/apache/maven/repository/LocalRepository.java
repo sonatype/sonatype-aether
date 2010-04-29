@@ -37,12 +37,12 @@ public class LocalRepository
 
     public String getType()
     {
-        return TYPE_LOCAL;
+        return "default";
     }
 
     public String getId()
     {
-        return getType();
+        return "local";
     }
 
     public File getBasedir()

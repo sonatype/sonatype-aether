@@ -27,11 +27,9 @@ import java.util.Collection;
 public interface RepositoryReader
 {
 
-    void getArtifacts( Collection<? extends ArtifactRequest> requests )
-        throws ArtifactMultiTransferException;
+    void getArtifacts( Collection<? extends ArtifactDownload> requests );
 
-    void getMetadata( Collection<? extends MetadataRequest> requests )
-        throws MetadataMultiTransferException;
+    void getMetadata( Collection<? extends MetadataDownload> requests );
 
     void close();
 

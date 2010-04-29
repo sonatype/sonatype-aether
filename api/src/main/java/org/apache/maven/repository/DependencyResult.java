@@ -38,4 +38,9 @@ public interface DependencyResult
 
     List<? extends RemoteRepository> getRepositories();
 
+    /*
+     * REVIEW: I think it would be really handy if we also provided some more infos like licenses to avoid the need to
+     * reparse the POM to get those additional bits.
+     */
+
 }

@@ -13,7 +13,7 @@
 
   <artifactId>sonatype-repository-impl</artifactId>
 
-  <name>Repository Implementation</name>
+  <name>Repository System :: Implementation</name>
 
   <dependencies>
     <dependency>
@@ -22,14 +22,9 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven.wagon</groupId>
-      <artifactId>wagon-provider-api</artifactId>
-      <version>1.0-beta-6</version>
-    </dependency>
-    <dependency>
       <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-container-default</artifactId>
-      <version>1.5.4</version>
+      <artifactId>plexus-utils</artifactId>
+      <version>2.0.5</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -37,4 +32,34 @@
       <version>3.0-beta-1</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.modello</groupId>
+        <artifactId>modello-maven-plugin</artifactId>
+        <version>1.3</version>
+        <configuration>
+          <useJava5>true</useJava5>
+        </configuration>
+        <executions>
+          <execution>
+            <id>metadata</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>java</goal>
+              <goal>xpp3-reader</goal>
+              <goal>xpp3-writer</goal>
+            </goals>
+            <configuration>
+              <version>1.0.0</version>
+              <models>
+                <model>src/main/mdo/metadata.mdo</model>
+              </models>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

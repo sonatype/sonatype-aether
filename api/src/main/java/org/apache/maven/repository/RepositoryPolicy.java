@@ -81,7 +81,7 @@ public class RepositoryPolicy
 
     public RepositoryPolicy setUpdatePolicy( String updatePolicy )
     {
-        this.updatePolicy = ( updatePolicy != null && updatePolicy.length() > 0 ) ? updatePolicy : UPDATE_POLICY_DAILY;
+        this.updatePolicy = ( updatePolicy != null ) ? updatePolicy : "";
 
         return this;
     }
@@ -93,8 +93,7 @@ public class RepositoryPolicy
 
     public RepositoryPolicy setChecksumPolicy( String checksumPolicy )
     {
-        this.checksumPolicy =
-            ( checksumPolicy != null && checksumPolicy.length() > 0 ) ? checksumPolicy : CHECKSUM_POLICY_WARN;
+        this.checksumPolicy = ( checksumPolicy != null ) ? checksumPolicy : "";
 
         return this;
     }

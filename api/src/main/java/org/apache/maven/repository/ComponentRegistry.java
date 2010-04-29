@@ -19,14 +19,20 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.List;
+
 /**
  * @author Benjamin Bentmann
  */
-public interface RepositoryReaderFactory
-    extends PluggableComponent
+public interface ComponentRegistry
 {
 
-    RepositoryReader newInstance( RepositoryContext context, RemoteRepository repository )
-        throws NoRepositoryReaderException;
+    UpdateCheckManager getUpdateCheckManager();
+
+    LocalRepositoryManager getLocalRepositoryManager();
+
+    WorkspaceReader getWorkspaceReader();
+
+    List<? extends RepositoryReaderFactory> getReaderFactories();
 
 }

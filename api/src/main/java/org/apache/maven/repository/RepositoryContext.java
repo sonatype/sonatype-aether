@@ -29,6 +29,10 @@ public interface RepositoryContext
 
     boolean isOffline();
 
+    boolean isTransferErrorCachingEnabled();
+
+    boolean isNotFoundCachingEnabled();
+
     String getChecksumPolicy();
 
     String getUpdatePolicy();
@@ -38,6 +42,8 @@ public interface RepositoryContext
     WorkspaceRepository getWorkspaceRepository();
 
     TransferListener getTransferListener();
+
+    Logger getLogger();
 
     Properties getSystemProperties();
 
@@ -52,10 +58,8 @@ public interface RepositoryContext
 
     AuthenticationSelector getAuthenticationSelector();
 
-    RepositoryProviderRegistry getRepositoryProviderRegistry();
+    ComponentRegistry getComponentRegistry();
 
     // TODO: cache?
-
-    // TODO: retry/error policy, i.e. handling of cached not-found/transfer errors 
 
 }

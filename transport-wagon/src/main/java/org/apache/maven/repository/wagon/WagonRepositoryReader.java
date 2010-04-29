@@ -1,4 +1,4 @@
-package org.apache.maven.repository.internal;
+package org.apache.maven.repository.wagon;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -34,18 +34,16 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.maven.repository.Artifact;
-import org.apache.maven.repository.ArtifactMultiTransferException;
 import org.apache.maven.repository.ArtifactNotFoundException;
-import org.apache.maven.repository.ArtifactRequest;
+import org.apache.maven.repository.ArtifactDownload;
 import org.apache.maven.repository.ArtifactTransferException;
 import org.apache.maven.repository.Authentication;
 import org.apache.maven.repository.AuthenticationSelector;
 import org.apache.maven.repository.ChecksumFailureException;
 import org.apache.maven.repository.DefaultTransferEvent;
 import org.apache.maven.repository.Metadata;
-import org.apache.maven.repository.MetadataMultiTransferException;
 import org.apache.maven.repository.MetadataNotFoundException;
-import org.apache.maven.repository.MetadataRequest;
+import org.apache.maven.repository.MetadataDownload;
 import org.apache.maven.repository.MetadataTransferException;
 import org.apache.maven.repository.NoRepositoryReaderException;
 import org.apache.maven.repository.Proxy;
@@ -56,6 +54,7 @@ import org.apache.maven.repository.RepositoryPolicy;
 import org.apache.maven.repository.RepositoryReader;
 import org.apache.maven.repository.TransferEvent;
 import org.apache.maven.repository.TransferListener;
+import org.apache.maven.repository.internal.ChecksumUtils;
 import org.apache.maven.wagon.ResourceDoesNotExistException;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.WagonException;
@@ -158,8 +157,6 @@ class WagonRepositoryReader
     {
         wagon.setTimeout( 10 * 1000 );
         wagon.connect( wagonRepo, wagonAuth, wagonProxy );
-
-        // TODO: setup transfer listener, checksum observer
     }
 
     private void disconnectWagon( Wagon wagon )
@@ -228,105 +225,97 @@ class WagonRepositoryReader
         return proxy;
     }
 
-    public void getArtifacts( Collection<? extends ArtifactRequest> requests )
-        throws ArtifactMultiTransferException
+    public void getArtifacts( Collection<? extends ArtifactDownload> downloads )
     {
         if ( closed )
         {
             throw new IllegalStateException( "reader closed" );
         }
 
-        CountDownLatch latch = new CountDownLatch( requests.size() );
-        Collection<GetTask<Artifact>> tasks = new ArrayList<GetTask<Artifact>>();
-        for ( ArtifactRequest request : requests )
+        CountDownLatch latch = new CountDownLatch( downloads.size() );
+        Collection<GetTask<ArtifactDownload>> tasks = new ArrayList<GetTask<ArtifactDownload>>();
+        for ( ArtifactDownload download : downloads )
         {
-            Artifact artifact = request.getArtifact();
+            Artifact artifact = download.getArtifact();
             String resource = layout.getPath( artifact );
-            GetTask<Artifact> task =
-                new GetTask<Artifact>( resource, artifact.getFile(), request.getChecksumPolicy(), latch, artifact );
+            GetTask<ArtifactDownload> task =
+                new GetTask<ArtifactDownload>( resource, download.getFile(), download.getChecksumPolicy(), latch,
+                                               download );
             tasks.add( task );
             executor.execute( task );
         }
 
-        Collection<ArtifactTransferException> exceptions = new ArrayList<ArtifactTransferException>();
         try
         {
             latch.await();
 
-            for ( GetTask<Artifact> task : tasks )
+            for ( GetTask<ArtifactDownload> task : tasks )
             {
+                ArtifactDownload download = task.getDownload();
                 Exception e = task.getException();
                 if ( e instanceof ResourceDoesNotExistException )
                 {
-                    exceptions.add( new ArtifactNotFoundException( task.getItem() ) );
+                    download.setException( new ArtifactNotFoundException( download.getArtifact() ) );
                 }
                 else if ( e != null )
                 {
-                    exceptions.add( new ArtifactTransferException( task.getItem(), e ) );
+                    download.setException( new ArtifactTransferException( download.getArtifact(), e ) );
                 }
             }
         }
         catch ( InterruptedException e )
         {
-            for ( ArtifactRequest request : requests )
+            for ( ArtifactDownload download : downloads )
             {
-                exceptions.add( new ArtifactTransferException( request.getArtifact(), e ) );
+                download.setException( new ArtifactTransferException( download.getArtifact(), e ) );
             }
-        }
-        if ( !exceptions.isEmpty() )
-        {
-            throw new ArtifactMultiTransferException( exceptions );
         }
     }
 
-    public void getMetadata( Collection<? extends MetadataRequest> requests )
-        throws MetadataMultiTransferException
+    public void getMetadata( Collection<? extends MetadataDownload> downloads )
     {
         if ( closed )
         {
             throw new IllegalStateException( "reader closed" );
         }
 
-        CountDownLatch latch = new CountDownLatch( requests.size() );
-        Collection<GetTask<Metadata>> tasks = new ArrayList<GetTask<Metadata>>();
-        for ( MetadataRequest request : requests )
+        CountDownLatch latch = new CountDownLatch( downloads.size() );
+        Collection<GetTask<MetadataDownload>> tasks = new ArrayList<GetTask<MetadataDownload>>();
+        for ( MetadataDownload download : downloads )
         {
-            Metadata metadata = request.getMetadata();
+            Metadata metadata = download.getMetadata();
             String resource = layout.getPath( metadata );
-            GetTask<Metadata> task =
-                new GetTask<Metadata>( resource, metadata.getFile(), request.getChecksumPolicy(), latch, metadata );
+            GetTask<MetadataDownload> task =
+                new GetTask<MetadataDownload>( resource, download.getFile(), download.getChecksumPolicy(), latch,
+                                               download );
             tasks.add( task );
             executor.execute( task );
         }
 
-        Collection<MetadataTransferException> exceptions = new ArrayList<MetadataTransferException>();
         try
         {
             latch.await();
 
-            for ( GetTask<Metadata> task : tasks )
+            for ( GetTask<MetadataDownload> task : tasks )
             {
+                MetadataDownload download = task.getDownload();
                 Exception e = task.getException();
                 if ( e instanceof ResourceDoesNotExistException )
                 {
-                    exceptions.add( new MetadataNotFoundException( task.getItem() ) );
+                    download.setException( new MetadataNotFoundException( download.getMetadata() ) );
                 }
                 else if ( e != null )
                 {
-                    exceptions.add( new MetadataTransferException( task.getItem(), e ) );
+                    download.setException( new MetadataTransferException( download.getMetadata(), e ) );
                 }
             }
         }
         catch ( InterruptedException e )
         {
-            for ( MetadataRequest request : requests )
+            for ( MetadataDownload download : downloads )
             {
-                exceptions.add( new MetadataTransferException( request.getMetadata(), e ) );
+                download.setException( new MetadataTransferException( download.getMetadata(), e ) );
             }
-        }
-        if ( !exceptions.isEmpty() )
-        {
-            throw new MetadataMultiTransferException( exceptions );
         }
     }
 
@@ -350,7 +339,7 @@ class WagonRepositoryReader
         implements Runnable
     {
 
-        private final T item;
+        private final T download;
 
         private final String path;
 
@@ -362,18 +351,18 @@ class WagonRepositoryReader
 
         private volatile Exception exception;
 
-        public GetTask( String path, File file, String checksumPolicy, CountDownLatch latch, T item )
+        public GetTask( String path, File file, String checksumPolicy, CountDownLatch latch, T download )
         {
             this.path = path;
             this.file = file;
             this.checksumPolicy = checksumPolicy;
             this.latch = latch;
-            this.item = item;
+            this.download = download;
         }
 
-        public T getItem()
+        public T getDownload()
         {
-            return item;
+            return download;
         }
 
         public Exception getException()
@@ -400,7 +389,7 @@ class WagonRepositoryReader
                     listener.transferInitiated( event );
                 }
 
-                File tmp = new File( file.getPath() + ".tmp" );
+                File tmp = new File( file.getPath() + ".tmp" + System.currentTimeMillis() );
 
                 Wagon wagon = wagons.poll();
                 if ( wagon == null )
@@ -510,7 +499,7 @@ class WagonRepositoryReader
         private boolean verifyChecksum( Wagon wagon, String actual, String ext )
             throws ChecksumFailureException
         {
-            File tmp = new File( file.getPath() + ext + ".tmp" );
+            File tmp = new File( file.getPath() + ext + ".tmp" + System.currentTimeMillis() );
 
             try
             {

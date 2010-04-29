@@ -22,11 +22,44 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public interface VersionResult
+public class VersionResult
 {
 
-    String getVersion();
+    private String version;
 
-    ArtifactRepository getRepository();
+    private ArtifactRepository repository;
+
+    public VersionResult()
+    {
+        // enables default constructor
+    }
+
+    public VersionResult( String version, ArtifactRepository repository )
+    {
+        setVersion( version );
+        setRepository( repository );
+    }
+
+    public String getVersion()
+    {
+        return version;
+    }
+
+    public VersionResult setVersion( String version )
+    {
+        this.version = version;
+        return this;
+    }
+
+    public ArtifactRepository getRepository()
+    {
+        return repository;
+    }
+
+    public VersionResult setRepository( ArtifactRepository repository )
+    {
+        this.repository = repository;
+        return this;
+    }
 
 }
