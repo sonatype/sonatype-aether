@@ -19,40 +19,69 @@ package org.apache.maven.repository.internal;
  * under the License.
  */
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.util.Date;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.maven.repository.Artifact;
-import org.apache.maven.repository.ArtifactNotFoundException;
+import org.apache.maven.repository.LocalArtifactQuery;
 import org.apache.maven.repository.Logger;
-import org.apache.maven.repository.MetadataNotFoundException;
 import org.apache.maven.repository.RemoteRepository;
 
 /**
+ * A local repository manager that builds upon the classical Maven 2.0 local repository structure but additionally keeps
+ * track of from what repositories a cached artifact was resolved. Resolution of locally cached artifacts will be
+ * rejected in case the current resolution request does not match the known source repositories of an artifact, thereby
+ * emulating physically separated artifact caches per remote repository.
+ * 
  * @author Benjamin Bentmann
  */
 public class TrackingLocalRepositoryManager
     extends SimpleLocalRepositoryManager
 {
 
-    public TrackingLocalRepositoryManager( File basedir )
+    private static final String LOCAL_REPO_ID = "local";
+
+    private TrackingFileManager trackingFileManager;
+
+    public TrackingLocalRepositoryManager( File basedir, Logger logger )
     {
         super( basedir );
+        trackingFileManager = new TrackingFileManager( logger );
+    }
+
+    @Override
+    public void find( LocalArtifactQuery query )
+    {
+        String path = getPathForLocalArtifact( query.getArtifact() );
+        File file = new File( getBasedir(), path );
+        if ( file.isFile() )
+        {
+            query.setFile( file );
+            Properties props = readRepos( file );
+            if ( props.getProperty( getKey( file, LOCAL_REPO_ID ) ) != null )
+            {
+                query.setAvailable( true );
+            }
+            else
+            {
+                for ( RemoteRepository repository : query.getRepositories() )
+                {
+                    if ( props.getProperty( getKey( file, repository.getId() ) ) != null )
+                    {
+                        query.setAvailable( true );
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     @Override
     public void addLocalArtifact( Artifact artifact )
     {
-        addArtifact( artifact, "local" );
+        addArtifact( artifact, LOCAL_REPO_ID );
     }
 
     @Override
@@ -70,146 +99,28 @@ public class TrackingLocalRepositoryManager
 
     private Properties readRepos( File artifactFile )
     {
-        File dir = artifactFile.getParentFile();
-        File trackingFile = new File( dir, "_maven.repositories" );
+        File trackingFile = getTrackingFile( artifactFile );
 
-        Properties props = new Properties();
-
-        if ( trackingFile.isFile() )
-        {
-
-            synchronized ( trackingFile.getAbsolutePath().intern() )
-            {
-                FileInputStream stream = null;
-                FileLock lock = null;
-                FileChannel channel = null;
-                try
-                {
-
-                    stream = new FileInputStream( trackingFile );
-                    channel = stream.getChannel();
-                    lock = channel.lock( 0, channel.size(), true );
-
-                    // logger.debug( "Reading resolution-state from: " + touchFile );
-                    props.load( stream );
-                }
-                catch ( IOException e )
-                {
-                    // logger.debug( "Failed to read resolution tracking file " + touchFile, e );
-                }
-                finally
-                {
-                    release( lock, trackingFile, null );
-                    close( channel, trackingFile, null );
-                }
-            }
-        }
-
-        return props;
+        return trackingFileManager.read( trackingFile );
     }
 
     private void addRepo( File artifactFile, String repository )
     {
-        File dir = artifactFile.getParentFile();
-        File trackingFile = new File( dir, "_maven.repositories" );
+        Map<String, String> updates = Collections.singletonMap( getKey( artifactFile, repository ), "" );
 
-        if ( !dir.exists() )
-        {
-            dir.mkdirs();
-        }
+        File trackingFile = getTrackingFile( artifactFile );
 
-        synchronized ( trackingFile.getAbsolutePath().intern() )
-        {
-            RandomAccessFile raf = null;
-            FileChannel channel = null;
-            FileLock lock = null;
-            try
-            {
-                Properties props = new Properties();
-
-                raf = new RandomAccessFile( trackingFile, "rw" );
-                channel = raf.getChannel();
-                lock = channel.lock( 0, channel.size(), false );
-
-                if ( trackingFile.canRead() )
-                {
-                    // logger.debug( "Reading resolution-state from: " + trackingFile );
-                    ByteBuffer buffer = ByteBuffer.allocate( (int) channel.size() );
-
-                    channel.read( buffer );
-                    buffer.flip();
-
-                    ByteArrayInputStream stream = new ByteArrayInputStream( buffer.array() );
-                    props.load( stream );
-                }
-
-                props.setProperty( artifactFile.getName() + '>' + repository, "" );
-
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-
-                // logger.debug( "Writing resolution-state to: " + touchFile );
-                props.store( stream, "Last modified on: " + new Date() );
-
-                byte[] data = stream.toByteArray();
-                ByteBuffer buffer = ByteBuffer.allocate( data.length );
-                buffer.put( data );
-                buffer.flip();
-
-                channel.position( 0 );
-                channel.write( buffer );
-            }
-            catch ( IOException e )
-            {
-                // logger.debug( "Failed to record lastUpdated information for resolution.\nFile: " +
-                // trackingFile.toString() + "; key: " + key, e );
-            }
-            finally
-            {
-                release( lock, trackingFile, null );
-                close( channel, trackingFile, null );
-                if ( raf != null )
-                {
-                    try
-                    {
-                        raf.close();
-                    }
-                    catch ( IOException e )
-                    {
-                        // log
-                    }
-                }
-            }
-        }
+        trackingFileManager.update( trackingFile, updates );
     }
 
-    private void release( FileLock lock, File touchFile, Logger logger )
+    private File getTrackingFile( File artifactFile )
     {
-        if ( lock != null )
-        {
-            try
-            {
-                lock.release();
-            }
-            catch ( IOException e )
-            {
-                logger.debug( "Error releasing exclusive lock for resolution tracking file: " + touchFile, e );
-            }
-        }
+        return new File( artifactFile.getParentFile(), "_maven.repositories" );
     }
 
-    private void close( FileChannel channel, File touchFile, Logger logger )
+    private String getKey( File file, String repository )
     {
-        if ( channel != null )
-        {
-            try
-            {
-                channel.close();
-            }
-            catch ( IOException e )
-            {
-                logger.debug( "Error closing file channel for resolution tracking file: " + touchFile, e );
-            }
-        }
+        return file.getName() + '>' + repository;
     }
 
 }

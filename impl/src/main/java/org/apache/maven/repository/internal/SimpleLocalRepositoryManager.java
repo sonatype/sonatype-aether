@@ -28,6 +28,8 @@ import org.apache.maven.repository.Metadata;
 import org.apache.maven.repository.RemoteRepository;
 
 /**
+ * A local repository manager that realizes the classical Maven 2.0 local repository.
+ * 
  * @author Benjamin Bentmann
  */
 public class SimpleLocalRepositoryManager

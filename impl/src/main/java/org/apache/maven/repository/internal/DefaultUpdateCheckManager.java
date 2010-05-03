@@ -19,17 +19,10 @@ package org.apache.maven.repository.internal;
  * under the License.
  */
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
 
@@ -324,42 +317,7 @@ public class DefaultUpdateCheckManager
 
     private Properties read( File touchFile, Logger logger )
     {
-        Properties props = new Properties();
-
-        if ( !touchFile.canRead() )
-        {
-            logger.debug( "Skipped unreadable resolution tracking file " + touchFile );
-            return props;
-        }
-
-        synchronized ( touchFile.getAbsolutePath().intern() )
-        {
-
-            FileInputStream stream = null;
-            FileLock lock = null;
-            FileChannel channel = null;
-            try
-            {
-
-                stream = new FileInputStream( touchFile );
-                channel = stream.getChannel();
-                lock = channel.lock( 0, channel.size(), true );
-
-                logger.debug( "Reading resolution-state from: " + touchFile );
-                props.load( stream );
-            }
-            catch ( IOException e )
-            {
-                logger.debug( "Failed to read resolution tracking file " + touchFile, e );
-            }
-            finally
-            {
-                release( lock, touchFile, logger );
-                close( channel, touchFile, logger );
-            }
-        }
-
-        return props;
+        return new TrackingFileManager( logger ).read( touchFile );
     }
 
     public void touchArtifact( RepositoryContext context, UpdateCheck<Artifact, ArtifactTransferException> check )
@@ -393,107 +351,25 @@ public class DefaultUpdateCheckManager
 
     private void write( File touchFile, String key, Exception error, Logger logger )
     {
-        synchronized ( touchFile.getAbsolutePath().intern() )
+        Map<String, String> updates = new HashMap<String, String>();
+
+        updates.put( key + UPDATED_KEY_SUFFIX, Long.toString( System.currentTimeMillis() ) );
+
+        if ( error == null || error instanceof ArtifactNotFoundException || error instanceof MetadataNotFoundException )
         {
-            if ( !touchFile.getParentFile().exists() && !touchFile.getParentFile().mkdirs() )
-            {
-                logger.debug( "Failed to create directory: " + touchFile.getParent()
-                    + " for tracking artifact metadata resolution." );
-                return;
-            }
-
-            FileChannel channel = null;
-            FileLock lock = null;
-            try
-            {
-                Properties props = new Properties();
-
-                channel = new RandomAccessFile( touchFile, "rw" ).getChannel();
-                lock = channel.lock( 0, channel.size(), false );
-
-                if ( touchFile.canRead() )
-                {
-                    logger.debug( "Reading resolution-state from: " + touchFile );
-                    ByteBuffer buffer = ByteBuffer.allocate( (int) channel.size() );
-
-                    channel.read( buffer );
-                    buffer.flip();
-
-                    ByteArrayInputStream stream = new ByteArrayInputStream( buffer.array() );
-                    props.load( stream );
-                }
-
-                props.setProperty( key + UPDATED_KEY_SUFFIX, Long.toString( System.currentTimeMillis() ) );
-
-                if ( error == null || error instanceof ArtifactNotFoundException
-                    || error instanceof MetadataNotFoundException )
-                {
-                    props.remove( key + ERROR_KEY_SUFFIX );
-                }
-                else
-                {
-                    String msg = error.getMessage();
-                    if ( msg == null || msg.length() <= 0 )
-                    {
-                        msg = error.getClass().getSimpleName();
-                    }
-                    props.setProperty( key + ERROR_KEY_SUFFIX, msg );
-                }
-
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-
-                logger.debug( "Writing resolution-state to: " + touchFile );
-                props.store( stream, "Last modified on: " + new Date() );
-
-                byte[] data = stream.toByteArray();
-                ByteBuffer buffer = ByteBuffer.allocate( data.length );
-                buffer.put( data );
-                buffer.flip();
-
-                channel.position( 0 );
-                channel.write( buffer );
-            }
-            catch ( IOException e )
-            {
-                logger.debug( "Failed to record lastUpdated information for resolution.\nFile: " + touchFile.toString()
-                    + "; key: " + key, e );
-            }
-            finally
-            {
-                release( lock, touchFile, logger );
-                close( channel, touchFile, logger );
-            }
+            updates.put( key + ERROR_KEY_SUFFIX, null );
         }
-    }
-
-    private void release( FileLock lock, File touchFile, Logger logger )
-    {
-        if ( lock != null )
+        else
         {
-            try
+            String msg = error.getMessage();
+            if ( msg == null || msg.length() <= 0 )
             {
-                lock.release();
+                msg = error.getClass().getSimpleName();
             }
-            catch ( IOException e )
-            {
-                logger.debug( "Error releasing exclusive lock for resolution tracking file: " + touchFile, e );
-            }
+            updates.put( key + ERROR_KEY_SUFFIX, msg );
         }
-    }
 
-    private void close( FileChannel channel, File touchFile, Logger logger )
-    {
-        if ( channel != null )
-        {
-            try
-            {
-                channel.close();
-            }
-            catch ( IOException e )
-            {
-                logger.debug( "Error closing file channel for resolution tracking file: " + touchFile, e );
-            }
-        }
+        new TrackingFileManager( logger ).update( touchFile, updates );
     }
 
 }

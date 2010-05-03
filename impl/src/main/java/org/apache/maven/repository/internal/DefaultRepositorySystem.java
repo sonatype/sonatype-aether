@@ -439,6 +439,10 @@ public class DefaultRepositorySystem
             Iterator<ResolveTask> taskIt = tasks.iterator();
             for ( RemoteRepository repo : repos )
             {
+                if ( !repo.getPolicy( isSnapshot( artifact ) ).isEnabled() )
+                {
+                    continue;
+                }
                 ResolveTask task = null;
                 while ( taskIt.hasNext() )
                 {
