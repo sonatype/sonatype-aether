@@ -239,8 +239,8 @@ class WagonRepositoryReader
             Artifact artifact = download.getArtifact();
             String resource = layout.getPath( artifact );
             GetTask<ArtifactDownload> task =
-                new GetTask<ArtifactDownload>( resource, download.getFile(), download.getChecksumPolicy(), latch,
-                                               download );
+                new GetTask<ArtifactDownload>( resource, download.isExistenceCheck() ? null : download.getFile(),
+                                               download.getChecksumPolicy(), latch, download );
             tasks.add( task );
             executor.execute( task );
         }
@@ -382,14 +382,13 @@ class WagonRepositoryReader
             {
                 if ( listener != null )
                 {
-                    DefaultTransferEvent event = new DefaultTransferEvent();
-                    event.setResource( wagonListener.getResource() );
+                    DefaultTransferEvent event = wagonListener.newEvent();
                     event.setRequestType( TransferEvent.RequestType.GET );
                     event.setType( TransferEvent.EventType.INITIATED );
                     listener.transferInitiated( event );
                 }
 
-                File tmp = new File( file.getPath() + ".tmp" + System.currentTimeMillis() );
+                File tmp = ( file != null ) ? new File( file.getPath() + ".tmp" + System.currentTimeMillis() ) : null;
 
                 Wagon wagon = wagons.poll();
                 if ( wagon == null )
@@ -408,63 +407,72 @@ class WagonRepositoryReader
 
                 try
                 {
-                    for ( int trial = 1; trial >= 0; trial-- )
+                    if ( file == null )
                     {
-                        ChecksumObserver sha1 = new ChecksumObserver( "SHA-1" );
-                        ChecksumObserver md5 = new ChecksumObserver( "MD5" );
-                        try
+                        if ( !wagon.resourceExists( path ) )
                         {
-                            wagon.addTransferListener( wagonListener );
-                            wagon.addTransferListener( md5 );
-                            wagon.addTransferListener( sha1 );
-
-                            wagon.get( path, tmp );
-                        }
-                        finally
-                        {
-                            wagon.removeTransferListener( wagonListener );
-                            wagon.removeTransferListener( md5 );
-                            wagon.removeTransferListener( sha1 );
-                        }
-
-                        if ( !RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy ) )
-                        {
-                            try
-                            {
-                                if ( !verifyChecksum( wagon, sha1.getActualChecksum(), ".sha1" )
-                                    && !verifyChecksum( wagon, md5.getActualChecksum(), ".md5" ) )
-                                {
-                                    trial = 0;
-                                    throw new ChecksumFailureException( "Checksum validation failed"
-                                        + ", no checksums available from the repository" );
-                                }
-                                break;
-                            }
-                            catch ( ChecksumFailureException e )
-                            {
-                                if ( trial <= 0 && RepositoryPolicy.CHECKSUM_POLICY_FAIL.equals( checksumPolicy ) )
-                                {
-                                    throw e;
-                                }
-                                if ( listener != null )
-                                {
-                                    DefaultTransferEvent event = new DefaultTransferEvent();
-                                    event.setResource( wagonListener.getResource() );
-                                    event.setRequestType( TransferEvent.RequestType.GET );
-                                    event.setType( TransferEvent.EventType.CORRUPTED );
-                                    event.setException( e );
-                                    listener.transferCorrupted( event );
-                                }
-                            }
+                            throw new ResourceDoesNotExistException( "Could not find " + path + " in "
+                                + wagonRepo.getUrl() );
                         }
                     }
+                    else
+                    {
+                        for ( int trial = 1; trial >= 0; trial-- )
+                        {
+                            ChecksumObserver sha1 = new ChecksumObserver( "SHA-1" );
+                            ChecksumObserver md5 = new ChecksumObserver( "MD5" );
+                            try
+                            {
+                                wagon.addTransferListener( wagonListener );
+                                wagon.addTransferListener( md5 );
+                                wagon.addTransferListener( sha1 );
 
-                    rename( tmp, file );
+                                wagon.get( path, tmp );
+                            }
+                            finally
+                            {
+                                wagon.removeTransferListener( wagonListener );
+                                wagon.removeTransferListener( md5 );
+                                wagon.removeTransferListener( sha1 );
+                            }
+
+                            if ( !RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy ) )
+                            {
+                                try
+                                {
+                                    if ( !verifyChecksum( wagon, sha1.getActualChecksum(), ".sha1" )
+                                        && !verifyChecksum( wagon, md5.getActualChecksum(), ".md5" ) )
+                                    {
+                                        trial = 0;
+                                        throw new ChecksumFailureException( "Checksum validation failed"
+                                            + ", no checksums available from the repository" );
+                                    }
+                                    break;
+                                }
+                                catch ( ChecksumFailureException e )
+                                {
+                                    if ( trial <= 0 && RepositoryPolicy.CHECKSUM_POLICY_FAIL.equals( checksumPolicy ) )
+                                    {
+                                        throw e;
+                                    }
+                                    if ( listener != null )
+                                    {
+                                        DefaultTransferEvent event = wagonListener.newEvent();
+                                        event.setRequestType( TransferEvent.RequestType.GET );
+                                        event.setType( TransferEvent.EventType.CORRUPTED );
+                                        event.setException( e );
+                                        listener.transferCorrupted( event );
+                                    }
+                                }
+                            }
+                        }
+
+                        rename( tmp, file );
+                    }
 
                     if ( listener != null )
                     {
-                        DefaultTransferEvent event = new DefaultTransferEvent();
-                        event.setResource( wagonListener.getResource() );
+                        DefaultTransferEvent event = wagonListener.newEvent();
                         event.setRequestType( TransferEvent.RequestType.GET );
                         event.setType( TransferEvent.EventType.SUCCEEDED );
                         listener.transferSucceeded( event );
@@ -472,7 +480,10 @@ class WagonRepositoryReader
                 }
                 finally
                 {
-                    tmp.delete();
+                    if ( tmp != null )
+                    {
+                        tmp.delete();
+                    }
                     wagons.add( wagon );
                 }
             }
@@ -482,8 +493,7 @@ class WagonRepositoryReader
 
                 if ( listener != null )
                 {
-                    DefaultTransferEvent event = new DefaultTransferEvent();
-                    event.setResource( wagonListener.getResource() );
+                    DefaultTransferEvent event = wagonListener.newEvent();
                     event.setRequestType( TransferEvent.RequestType.GET );
                     event.setType( TransferEvent.EventType.FAILED );
                     event.setException( e );
@@ -554,9 +564,9 @@ class WagonRepositoryReader
         private void rename( File from, File to )
             throws IOException
         {
-            if ( !from.renameTo( file ) )
+            if ( !from.renameTo( to ) )
             {
-                FileUtils.copyFile( from, file );
+                FileUtils.copyFile( from, to );
             }
         }
 

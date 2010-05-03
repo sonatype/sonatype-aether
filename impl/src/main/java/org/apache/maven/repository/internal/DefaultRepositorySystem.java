@@ -22,14 +22,21 @@ package org.apache.maven.repository.internal;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.maven.artifact.repository.metadata.Snapshot;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.repository.Artifact;
+import org.apache.maven.repository.ArtifactDownload;
 import org.apache.maven.repository.ArtifactRepository;
+import org.apache.maven.repository.ArtifactTransferException;
+import org.apache.maven.repository.LocalArtifactQuery;
 import org.apache.maven.repository.LocalRepositoryManager;
 import org.apache.maven.repository.Metadata;
 import org.apache.maven.repository.MetadataDownload;
@@ -37,6 +44,7 @@ import org.apache.maven.repository.MetadataNotFoundException;
 import org.apache.maven.repository.MetadataTransferException;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositoryException;
 import org.apache.maven.repository.RepositoryPolicy;
 import org.apache.maven.repository.RepositoryReader;
 import org.apache.maven.repository.NoRepositoryReaderException;
@@ -72,6 +80,13 @@ public class DefaultRepositorySystem
             path = lrm.getPathForLocalMetadata( metadata );
         }
         return new File( context.getLocalRepository().getBasedir(), path );
+    }
+
+    private RepositoryPolicy getPolicy( RepositoryContext context, RemoteRepository repository, Metadata.Nature nature )
+    {
+        boolean releases = !Metadata.Nature.SNAPSHOT.equals( nature );
+        boolean snapshots = !Metadata.Nature.RELEASE.equals( nature );
+        return getPolicy( context, repository, releases, snapshots );
     }
 
     private RepositoryPolicy getPolicy( RepositoryContext context, RemoteRepository repository, boolean releases,
@@ -139,40 +154,41 @@ public class DefaultRepositorySystem
         return version.endsWith( "SNAPSHOT" ) || version.matches( "^(.*)-([0-9]{8}.[0-9]{6})-([0-9]+)$" );
     }
 
-    public VersionResult resolveVersion( VersionRequest request )
+    public VersionResult resolveVersion( RepositoryContext context, VersionRequest request )
         throws VersionResolutionException
     {
         String version = request.getArtifact().getVersion();
-        WorkspaceReader workspace = request.getContext().getComponentRegistry().getWorkspaceReader();
 
         VersionResult result = new VersionResult();
 
         Metadata metadata;
-        boolean releases = false;
-        boolean snapshots = false;
 
-        if ( workspace != null && workspace.findVersions( request.getArtifact() ).contains( version ) )
-        {
-            metadata = null;
-            result.setRepository( request.getContext().getWorkspaceRepository() );
-        }
-        else if ( "RELEASE".equals( version ) || "LATEST".equals( version ) )
+        if ( "RELEASE".equals( version ) || "LATEST".equals( version ) )
         {
             metadata = new Metadata();
             metadata.setGroupId( request.getArtifact().getGroupId() );
             metadata.setArtifactId( request.getArtifact().getArtifactId() );
             metadata.setType( "maven-metadata.xml" );
-            releases = true;
-            snapshots = "LATEST".equals( version );
+            metadata.setNature( "LATEST".equals( version ) ? Metadata.Nature.RELEASE_OR_SNAPSHOT
+                            : Metadata.Nature.RELEASE );
         }
         else if ( version.endsWith( "SNAPSHOT" ) )
         {
-            metadata = new Metadata();
-            metadata.setGroupId( request.getArtifact().getGroupId() );
-            metadata.setArtifactId( request.getArtifact().getArtifactId() );
-            metadata.setVersion( version );
-            metadata.setType( "maven-metadata.xml" );
-            snapshots = true;
+            WorkspaceReader workspace = context.getComponentRegistry().getWorkspaceReader();
+            if ( workspace != null && workspace.findVersions( request.getArtifact() ).contains( version ) )
+            {
+                metadata = null;
+                result.setRepository( context.getWorkspaceRepository() );
+            }
+            else
+            {
+                metadata = new Metadata();
+                metadata.setGroupId( request.getArtifact().getGroupId() );
+                metadata.setArtifactId( request.getArtifact().getArtifactId() );
+                metadata.setVersion( version );
+                metadata.setType( "maven-metadata.xml" );
+                metadata.setNature( Metadata.Nature.SNAPSHOT );
+            }
         }
         else
         {
@@ -185,8 +201,6 @@ public class DefaultRepositorySystem
         }
         else
         {
-            RepositoryContext context = request.getContext();
-
             if ( !context.isOffline() )
             {
                 UpdateCheckManager ucm = context.getComponentRegistry().getUpdateCheckManager();
@@ -195,7 +209,7 @@ public class DefaultRepositorySystem
 
                 for ( RemoteRepository repository : request.getRemoteRepositories() )
                 {
-                    RepositoryPolicy policy = getPolicy( context, repository, releases, snapshots );
+                    RepositoryPolicy policy = getPolicy( context, repository, metadata.getNature() );
 
                     if ( !policy.isEnabled() )
                     {
@@ -209,13 +223,12 @@ public class DefaultRepositorySystem
 
                     UpdateCheck<Metadata, MetadataTransferException> check =
                         new UpdateCheck<Metadata, MetadataTransferException>();
-                    check.setContext( context );
                     check.setLocalLastUpdated( localLastUpdated );
                     check.setItem( metadata );
                     check.setFile( metadataFile );
                     check.setRepository( repository );
                     check.setPolicy( policy.getUpdatePolicy() );
-                    ucm.checkMetadata( check );
+                    ucm.checkMetadata( context, check );
 
                     if ( check.isRequired() )
                     {
@@ -235,7 +248,7 @@ public class DefaultRepositorySystem
                         {
                             download.setException( new MetadataTransferException( metadata, e ) );
                         }
-                        ucm.touchMetadata( check.setException( download.getException() ) );
+                        ucm.touchMetadata( context, check.setException( download.getException() ) );
                     }
                     else
                     {
@@ -258,7 +271,7 @@ public class DefaultRepositorySystem
 
             for ( RemoteRepository repository : request.getRemoteRepositories() )
             {
-                RepositoryPolicy policy = getPolicy( context, repository, releases, snapshots );
+                RepositoryPolicy policy = getPolicy( context, repository, metadata.getNature() );
 
                 if ( !policy.isEnabled() )
                 {
@@ -329,7 +342,7 @@ public class DefaultRepositorySystem
         }
         catch ( FileNotFoundException e )
         {
-            return null;
+            // tolerable
         }
         catch ( Exception e )
         {
@@ -368,8 +381,134 @@ public class DefaultRepositorySystem
         return true;
     }
 
-    public ResolveResult resolveArtifacts( ResolveRequest request )
+    public ResolveResult resolveArtifacts( RepositoryContext context, Collection<? extends ResolveRequest> requests )
+        throws RepositoryException
     {
+        LocalRepositoryManager lrm = context.getComponentRegistry().getLocalRepositoryManager();
+        WorkspaceReader workspace = context.getComponentRegistry().getWorkspaceReader();
+
+        List<ResolveTask> tasks = new ArrayList<ResolveTask>();
+
+        for ( ResolveRequest request : requests )
+        {
+            Artifact artifact = request.getArtifact();
+            List<? extends RemoteRepository> repos = request.getRemoteRepositories();
+
+            if ( artifact.getFile() != null )
+            {
+                continue;
+            }
+
+            VersionRequest versionRequest = new VersionRequest();
+            versionRequest.setArtifact( artifact );
+            versionRequest.setRemoteRepositories( repos );
+            VersionResult versionResult = resolveVersion( context, versionRequest );
+
+            artifact.setVersion( versionResult.getVersion() );
+
+            if ( versionResult.getRepository() != null )
+            {
+                if ( versionResult.getRepository() instanceof RemoteRepository )
+                {
+                    repos = Collections.singletonList( (RemoteRepository) versionResult.getRepository() );
+                }
+                else
+                {
+                    repos = Collections.emptyList();
+                }
+            }
+
+            if ( workspace != null )
+            {
+                File file = workspace.findArtifact( artifact );
+                if ( file != null )
+                {
+                    artifact.setFile( file );
+                    continue;
+                }
+            }
+
+            LocalArtifactQuery query = new LocalArtifactQuery( artifact, repos );
+            lrm.find( query );
+            if ( query.isAvailable() )
+            {
+                artifact.setFile( query.getFile() );
+                continue;
+            }
+
+            Iterator<ResolveTask> taskIt = tasks.iterator();
+            for ( RemoteRepository repo : repos )
+            {
+                ResolveTask task = null;
+                while ( taskIt.hasNext() )
+                {
+                    ResolveTask t = taskIt.next();
+                    if ( t.matches( repo ) )
+                    {
+                        task = t;
+                        break;
+                    }
+                }
+                if ( task == null )
+                {
+                    task = new ResolveTask( repo );
+                    tasks.add( task );
+                }
+                task.queries.add( query );
+            }
+        }
+
+        for ( ResolveTask task : tasks )
+        {
+            List<ArtifactDownload> downloads = new ArrayList<ArtifactDownload>();
+            for ( LocalArtifactQuery query : task.queries )
+            {
+                Artifact artifact = query.getArtifact();
+                ArtifactDownload download = new ArtifactDownload();
+                download.setArtifact( artifact );
+                if ( query.getFile() != null )
+                {
+                    download.setFile( query.getFile() );
+                    download.setExistenceCheck( true );
+                }
+                else
+                {
+                    File file = new File( lrm.getBasedir(), lrm.getPathForRemoteArtifact( artifact, task.repository ) );
+                    download.setFile( file );
+                }
+                download.setChecksumPolicy( task.repository.getPolicy( isSnapshot( artifact ) ).getChecksumPolicy() );
+                downloads.add( download );
+            }
+            try
+            {
+                RepositoryReader reader = getRepositoryReader( task.repository, context );
+                try
+                {
+                    reader.getArtifacts( downloads );
+                }
+                finally
+                {
+                    reader.close();
+                }
+            }
+            catch ( NoRepositoryReaderException e )
+            {
+                for ( ArtifactDownload download : downloads )
+                {
+                    download.setException( new ArtifactTransferException( download.getArtifact(), e ) );
+                }
+            }
+            for ( ArtifactDownload download : downloads )
+            {
+                if ( download.getException() == null )
+                {
+                    lrm.addRemoteArtifact( download.getArtifact(), task.repository );
+                }
+            }
+        }
+
+        // TODO: check that the resolved artifact files actually exist
+
         return null;
     }
 
@@ -391,6 +530,25 @@ public class DefaultRepositorySystem
         }
 
         throw new NoRepositoryReaderException( repository );
+    }
+
+    static class ResolveTask
+    {
+
+        final RemoteRepository repository;
+
+        final List<LocalArtifactQuery> queries = new ArrayList<LocalArtifactQuery>();
+
+        ResolveTask( RemoteRepository repository )
+        {
+            this.repository = repository;
+        }
+
+        boolean matches( RemoteRepository repo )
+        {
+            return repository.getUrl().equals( repo.getUrl() ) && repository.getId().equals( repo.getId() );
+        }
+
     }
 
 }

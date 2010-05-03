@@ -87,7 +87,7 @@ public class DefaultUpdateCheckManager
         }
     }
 
-    public void checkArtifact( UpdateCheck<Artifact, ArtifactTransferException> check )
+    public void checkArtifact( RepositoryContext context, UpdateCheck<Artifact, ArtifactTransferException> check )
     {
         if ( check.getLocalLastUpdated() != 0 && !isUpdatedRequired( check.getLocalLastUpdated(), check.getPolicy() ) )
         {
@@ -98,7 +98,7 @@ public class DefaultUpdateCheckManager
         Artifact artifact = check.getItem();
         RemoteRepository repository = check.getRepository();
 
-        Logger logger = check.getContext().getLogger();
+        Logger logger = context.getLogger();
 
         File touchFile = getTouchFile( artifact, check.getFile() );
         Properties props = read( touchFile, logger );
@@ -125,7 +125,7 @@ public class DefaultUpdateCheckManager
             String error = getError( props, key );
             if ( error == null )
             {
-                if ( check.getContext().isNotFoundCachingEnabled() )
+                if ( context.isNotFoundCachingEnabled() )
                 {
                     check.setRequired( false );
                     check.setException( new ArtifactNotFoundException( artifact, "Failure to find " + artifact + " in "
@@ -140,7 +140,7 @@ public class DefaultUpdateCheckManager
             }
             else
             {
-                if ( check.getContext().isTransferErrorCachingEnabled() )
+                if ( context.isTransferErrorCachingEnabled() )
                 {
                     check.setRequired( false );
                     check.setException( new ArtifactTransferException( artifact, "Failure to transfer " + artifact
@@ -156,7 +156,7 @@ public class DefaultUpdateCheckManager
         }
     }
 
-    public void checkMetadata( UpdateCheck<Metadata, MetadataTransferException> check )
+    public void checkMetadata( RepositoryContext context, UpdateCheck<Metadata, MetadataTransferException> check )
     {
         if ( check.getLocalLastUpdated() != 0 && !isUpdatedRequired( check.getLocalLastUpdated(), check.getPolicy() ) )
         {
@@ -167,7 +167,7 @@ public class DefaultUpdateCheckManager
         Metadata metadata = check.getItem();
         RemoteRepository repository = check.getRepository();
 
-        Logger logger = check.getContext().getLogger();
+        Logger logger = context.getLogger();
 
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
         Properties props = read( touchFile, logger );
@@ -193,7 +193,7 @@ public class DefaultUpdateCheckManager
             String error = getError( props, key );
             if ( error == null )
             {
-                if ( check.getContext().isNotFoundCachingEnabled() )
+                if ( context.isNotFoundCachingEnabled() )
                 {
                     check.setRequired( false );
                     check.setException( new MetadataNotFoundException( metadata, "Failure to find " + metadata + " in "
@@ -208,7 +208,7 @@ public class DefaultUpdateCheckManager
             }
             else
             {
-                if ( check.getContext().isTransferErrorCachingEnabled() )
+                if ( context.isTransferErrorCachingEnabled() )
                 {
                     check.setRequired( false );
                     check.setException( new MetadataTransferException( metadata, "Failure to transfer " + metadata
@@ -229,7 +229,7 @@ public class DefaultUpdateCheckManager
         String value = props.getProperty( key + UPDATED_KEY_SUFFIX, "" );
         try
         {
-            return Long.parseLong( value );
+            return ( value.length() > 0 ) ? Long.parseLong( value ) : 0;
         }
         catch ( NumberFormatException e )
         {
@@ -324,13 +324,13 @@ public class DefaultUpdateCheckManager
 
     private Properties read( File touchFile, Logger logger )
     {
+        Properties props = new Properties();
+
         if ( !touchFile.canRead() )
         {
             logger.debug( "Skipped unreadable resolution tracking file " + touchFile );
-            return null;
+            return props;
         }
-
-        Properties props = new Properties();
 
         synchronized ( touchFile.getAbsolutePath().intern() )
         {
@@ -362,9 +362,9 @@ public class DefaultUpdateCheckManager
         return props;
     }
 
-    public void touchArtifact( UpdateCheck<Artifact, ArtifactTransferException> check )
+    public void touchArtifact( RepositoryContext context, UpdateCheck<Artifact, ArtifactTransferException> check )
     {
-        Logger logger = check.getContext().getLogger();
+        Logger logger = context.getLogger();
 
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
 
@@ -380,9 +380,9 @@ public class DefaultUpdateCheckManager
         }
     }
 
-    public void touchMetadata( UpdateCheck<Metadata, MetadataTransferException> check )
+    public void touchMetadata( RepositoryContext context, UpdateCheck<Metadata, MetadataTransferException> check )
     {
-        Logger logger = check.getContext().getLogger();
+        Logger logger = context.getLogger();
 
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
 
@@ -423,7 +423,7 @@ public class DefaultUpdateCheckManager
                     props.load( stream );
                 }
 
-                props.setProperty( key, Long.toString( System.currentTimeMillis() ) );
+                props.setProperty( key + UPDATED_KEY_SUFFIX, Long.toString( System.currentTimeMillis() ) );
 
                 if ( error == null || error instanceof ArtifactNotFoundException
                     || error instanceof MetadataNotFoundException )

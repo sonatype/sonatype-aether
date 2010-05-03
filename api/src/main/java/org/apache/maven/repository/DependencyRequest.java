@@ -31,6 +31,4 @@ public interface DependencyRequest
 
     List<? extends RemoteRepository> getRemoteRepositories();
 
-    RepositoryContext getContext();
-
 }

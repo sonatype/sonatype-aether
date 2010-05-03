@@ -35,6 +35,8 @@ public interface Artifact
 
     String getVersion();
 
+    Artifact setVersion(String version);
+
     String getClassifier();
 
     // NOTE: This represents artifactHandler.extension!
@@ -42,8 +44,7 @@ public interface Artifact
 
     File getFile();
 
-    // REVIEW: Do we need setters? Unmodifiability would make caching easier, or will we end up with too
-    // many temp objects? The version likely needs to be modifiable/transformable...
+    Artifact setFile(File file);
 
     // holds characteristics of artifact which were previously controlled by artifact handler (e.g. includesDependencies, addedToClasspath)
     String getProperty(String key, String defaultValue);

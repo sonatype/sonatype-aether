@@ -1,8 +1,5 @@
 package org.apache.maven.repository;
 
-import java.util.Collection;
-import java.util.List;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,6 +19,9 @@ import java.util.List;
  * under the License.
  */
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * @author Benjamin Bentmann
  */
@@ -32,46 +32,49 @@ public interface RepositorySystem
      * Expands a version range to a list of matching versions, in ascending order. For example, resolves "[3.8,4.0)" to
      * ["3.8", "3.8.1", "3.8.2"].
      */
-    VersionRangeResult resolveVersionRange( VersionRangeRequest request );
+    VersionRangeResult resolveVersionRange( RepositoryContext context, VersionRangeRequest request );
 
     /**
      * Resolves a metaversion to a concrete version. For example, resolves "1.0-SNAPSHOT" to "1.0-20090208.132618-23" or
      * "RELEASE"/"LATEST" to "2.0".
      */
-    VersionResult resolveVersion( VersionRequest request );
+    VersionResult resolveVersion( RepositoryContext context, VersionRequest request );
 
     /**
      * Gets the direct dependencies of an artifact.
      */
-    DependencyResult getDependencies( DependencyRequest request );
+    DependencyResult getDependencies( RepositoryContext context, DependencyRequest request );
 
     /**
      * Collects the transitive dependencies of an artifact in form of a dirty dependency tree.
      */
-    CollectResult collectDependencies( CollectRequest request );
+    CollectResult collectDependencies( RepositoryContext context, CollectRequest request );
 
     /**
      * Performs conflict resolution or other transformations on the dependency tree/graph.
      */
-    TransformResult transformDependencies( TransformRequest request );
+    TransformResult transformDependencies( RepositoryContext context, TransformRequest request );
 
     /**
      * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary.
      */
-    ResolveResult resolveArtifacts( ResolveRequest request );
+    ResolveResult resolveArtifacts( RepositoryContext context, Collection<? extends ResolveRequest> requests );
+
+    // TODO:
+    // MetadataResult resolveMetadata( MetadataRequest request );
 
     /**
      * Installs a collection of artifacts to the local repository.
      */
-    void installArtifacts( InstallRequest request );
+    void installArtifacts( RepositoryContext context, InstallRequest request );
 
     /**
      * Uploads a collection of artifacts to a remote repository. This process automatically includes the installation of
      * the artifacts to the local repository.
      */
-    void deployArtifacts( DeployRequest request );
+    void deployArtifacts( RepositoryContext context, DeployRequest request );
 
-    List<RemoteRepository> getEffectiveRepositories( Collection<? extends RemoteRepository> repositories,
-                                                     RepositoryContext context );
+    List<RemoteRepository> getEffectiveRepositories( RepositoryContext context,
+                                                     Collection<? extends RemoteRepository> repositories );
 
 }

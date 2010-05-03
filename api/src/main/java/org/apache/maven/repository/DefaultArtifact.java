@@ -32,7 +32,9 @@ public class DefaultArtifact
 
     private final String artifactId;
 
-    private final String version;
+    private String version;
+
+    private String baseVersion;
 
     private final String classifier;
 
@@ -44,9 +46,10 @@ public class DefaultArtifact
     {
         this.groupId = groupId;
         this.artifactId = artifactId;
-        this.classifier = classifier;
+        this.classifier = ( classifier != null ) ? classifier : "";
         this.type = type;
         this.version = version;
+        this.baseVersion = version;
     }
 
     public String getGroupId()
@@ -71,7 +74,7 @@ public class DefaultArtifact
 
     public String getBaseVersion()
     {
-        return version;
+        return baseVersion;
     }
 
     public String getVersion()
@@ -88,6 +91,18 @@ public class DefaultArtifact
     {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public Artifact setFile( File file )
+    {
+        this.file = file;
+        return this;
+    }
+
+    public Artifact setVersion( String version )
+    {
+        this.version = version;
+        return this;
     }
 
 }

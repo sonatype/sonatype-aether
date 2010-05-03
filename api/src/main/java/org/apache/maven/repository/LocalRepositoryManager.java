@@ -19,18 +19,28 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.io.File;
+
 /**
  * @author Benjamin Bentmann
  */
 public interface LocalRepositoryManager
 {
 
-    String getPathForLocalArtifact( Artifact artifact );
+    File getBasedir();
 
-    String getPathForLocalMetadata( Metadata metadata );
+    String getPathForLocalArtifact( Artifact artifact );
 
     String getPathForRemoteArtifact( Artifact artifact, RemoteRepository repository );
 
+    String getPathForLocalMetadata( Metadata metadata );
+
     String getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository );
+
+    void find( LocalArtifactQuery query );
+
+    void addLocalArtifact( Artifact artifact );
+
+    void addRemoteArtifact( Artifact artifact, RemoteRepository repository );
 
 }

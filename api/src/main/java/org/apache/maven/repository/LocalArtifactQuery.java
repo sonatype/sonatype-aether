@@ -20,33 +20,32 @@ package org.apache.maven.repository;
  */
 
 import java.io.File;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Benjamin Bentmann
  */
-public class ArtifactDownload
+public class LocalArtifactQuery
 {
 
     private Artifact artifact;
 
+    private List<? extends RemoteRepository> repositories;
+
     private File file;
 
-    private boolean existenceCheck;
+    private boolean available;
 
-    private String checksumPolicy;
-
-    private ArtifactTransferException exception;
-
-    public ArtifactDownload()
+    public LocalArtifactQuery()
     {
         // enables default constructor
     }
 
-    public ArtifactDownload( Artifact artifact, File file, String checksumPolicy )
+    public LocalArtifactQuery( Artifact artifact, List<? extends RemoteRepository> repositories )
     {
         setArtifact( artifact );
-        setFile( file );
-        setChecksumPolicy( checksumPolicy );
+        setRepositories( repositories );
     }
 
     public Artifact getArtifact()
@@ -54,10 +53,21 @@ public class ArtifactDownload
         return artifact;
     }
 
-    public ArtifactDownload setArtifact( Artifact artifact )
+    public LocalArtifactQuery setArtifact( Artifact artifact )
     {
         this.artifact = artifact;
         return this;
+    }
+
+    public LocalArtifactQuery setRepositories( List<? extends RemoteRepository> repositories )
+    {
+        this.repositories = ( repositories != null ) ? repositories : Collections.<RemoteRepository> emptyList();
+        return this;
+    }
+
+    public List<? extends RemoteRepository> getRepositories()
+    {
+        return repositories;
     }
 
     public File getFile()
@@ -65,42 +75,20 @@ public class ArtifactDownload
         return file;
     }
 
-    public ArtifactDownload setFile( File file )
+    public LocalArtifactQuery setFile( File file )
     {
         this.file = file;
         return this;
     }
 
-    public boolean isExistenceCheck()
+    public boolean isAvailable()
     {
-        return existenceCheck;
+        return available;
     }
 
-    public ArtifactDownload setExistenceCheck( boolean existenceCheck )
+    public LocalArtifactQuery setAvailable( boolean available )
     {
-        this.existenceCheck = existenceCheck;
-        return this;
-    }
-
-    public String getChecksumPolicy()
-    {
-        return checksumPolicy;
-    }
-
-    public ArtifactDownload setChecksumPolicy( String checksumPolicy )
-    {
-        this.checksumPolicy = checksumPolicy;
-        return this;
-    }
-
-    public ArtifactTransferException getException()
-    {
-        return exception;
-    }
-
-    public ArtifactDownload setException( ArtifactTransferException exception )
-    {
-        this.exception = exception;
+        this.available = available;
         return this;
     }
 

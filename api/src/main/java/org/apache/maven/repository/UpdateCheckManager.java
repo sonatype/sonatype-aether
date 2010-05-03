@@ -27,12 +27,12 @@ public interface UpdateCheckManager
 
     String getEffectiveUpdatePolicy( RepositoryContext context, String policy1, String policy2 );
 
-    void checkArtifact( UpdateCheck<Artifact, ArtifactTransferException> check );
+    void checkArtifact( RepositoryContext context, UpdateCheck<Artifact, ArtifactTransferException> check );
 
-    void touchArtifact( UpdateCheck<Artifact, ArtifactTransferException> check );
+    void touchArtifact( RepositoryContext context, UpdateCheck<Artifact, ArtifactTransferException> check );
 
-    void checkMetadata( UpdateCheck<Metadata, MetadataTransferException> check );
+    void checkMetadata( RepositoryContext context, UpdateCheck<Metadata, MetadataTransferException> check );
 
-    void touchMetadata( UpdateCheck<Metadata, MetadataTransferException> check );
+    void touchMetadata( RepositoryContext context, UpdateCheck<Metadata, MetadataTransferException> check );
 
 }

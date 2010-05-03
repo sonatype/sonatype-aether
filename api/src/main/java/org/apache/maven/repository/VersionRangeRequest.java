@@ -31,6 +31,4 @@ public interface VersionRangeRequest
 
     List<? extends RemoteRepository> getRemoteRepositories();
 
-    RepositoryContext getContext();
-
 }

@@ -27,6 +27,11 @@ import java.io.File;
 public class Metadata
 {
 
+    public enum Nature
+    {
+        RELEASE, SNAPSHOT, RELEASE_OR_SNAPSHOT
+    }
+
     private String groupId;
     
     private String artifactId;
@@ -35,7 +40,9 @@ public class Metadata
     
     // e.g. "maven-metadata.xml", "archetype-catalog.xml" or "nexus-maven-repository-index.properties", i.e the simple file name used by classical URL-based repos
     private String type;
-    
+
+    private Nature nature = Nature.RELEASE;
+
     private File file;
 
     public String getGroupId()
@@ -82,6 +89,21 @@ public class Metadata
         return this;
     }
 
+    public Nature getNature()
+    {
+        return nature;
+    }
+
+    public Metadata setNature( Nature nature )
+    {
+        if ( nature == null )
+        {
+            throw new IllegalArgumentException( "metadata nature was not specified" );
+        }
+        this.nature = nature;
+        return this;
+    }
+
     public File getFile()
     {
         return file;
@@ -101,6 +123,7 @@ public class Metadata
       <timestamp>20100419.164221</timestamp>
       <buildNumber>46</buildNumber>
     </snapshot>
+    <!-- beware MODELLO-237 -->
     <snapshotVersions>
       <snapshotVersion>
         <classifier>win</classifier>
@@ -113,5 +136,5 @@ public class Metadata
   </versioning>
 </metadata>
 
- */
+*/
 }

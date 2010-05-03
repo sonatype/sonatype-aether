@@ -31,7 +31,16 @@ public class VersionRequest
 
     private List<? extends RemoteRepository> repositories;
 
-    private RepositoryContext context;
+    public VersionRequest()
+    {
+        // enables default constructor
+    }
+
+    public VersionRequest( Artifact artifact, List<? extends RemoteRepository> repositories )
+    {
+        setArtifact( artifact );
+        setRemoteRepositories( repositories );
+    }
 
     public Artifact getArtifact()
     {
@@ -52,17 +61,6 @@ public class VersionRequest
     public VersionRequest setRemoteRepositories( List<? extends RemoteRepository> repositories )
     {
         this.repositories = repositories;
-        return this;
-    }
-
-    public RepositoryContext getContext()
-    {
-        return context;
-    }
-
-    public VersionRequest setContext( RepositoryContext context )
-    {
-        this.context = context;
         return this;
     }
 

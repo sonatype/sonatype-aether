@@ -19,10 +19,8 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Benjamin Bentmann
@@ -30,38 +28,40 @@ import java.util.Map;
 public class ResolveRequest
 {
 
-    private final List<Artifact> artifacts = new ArrayList<Artifact>();
+    private Artifact artifact;
 
-    private Map<Artifact, List<? extends RemoteRepository>> repos =
-        new IdentityHashMap<Artifact, List<? extends RemoteRepository>>();
+    private List<? extends RemoteRepository> repositories;
 
-    private RepositoryContext context;
-
-    public List<? extends Artifact> getArtifacts()
+    public ResolveRequest()
     {
-        return artifacts;
+        // enables default constructor
     }
 
-    public List<? extends RemoteRepository> getRemoteRepositories( Artifact artifact )
+    public ResolveRequest( Artifact artifact, List<? extends RemoteRepository> repositories )
     {
-        return repos.get( artifact );
+        this.artifact = artifact;
+        this.repositories = repositories;
     }
 
-    public ResolveRequest add( Artifact artifact, List<? extends RemoteRepository> repositories )
+    public Artifact getArtifact()
     {
-        artifacts.add( artifact );
-        repos.put( artifact, repositories );
+        return artifact;
+    }
+
+    public ResolveRequest setArtifact( Artifact artifact )
+    {
+        this.artifact = artifact;
         return this;
     }
 
-    public RepositoryContext getContext()
+    public List<? extends RemoteRepository> getRemoteRepositories()
     {
-        return context;
+        return ( repositories != null ) ? repositories : Collections.<RemoteRepository> emptyList();
     }
 
-    public ResolveRequest setContext( RepositoryContext context )
+    public ResolveRequest setRemoteRepositories( List<? extends RemoteRepository> repositories )
     {
-        this.context = context;
+        this.repositories = repositories;
         return this;
     }
 

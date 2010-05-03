@@ -27,8 +27,6 @@ import java.io.File;
 public class UpdateCheck<T, E extends RepositoryException>
 {
 
-    private RepositoryContext context;
-
     private long localLastUpdated;
 
     private T item;
@@ -42,17 +40,6 @@ public class UpdateCheck<T, E extends RepositoryException>
     private boolean required;
 
     private E exception;
-
-    public RepositoryContext getContext()
-    {
-        return context;
-    }
-
-    public UpdateCheck<T, E> setContext( RepositoryContext context )
-    {
-        this.context = context;
-        return this;
-    }
 
     public long getLocalLastUpdated()
     {

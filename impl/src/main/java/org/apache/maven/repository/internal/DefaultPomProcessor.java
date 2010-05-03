@@ -41,10 +41,6 @@ public class DefaultPomProcessor
             pomArtifact = new DefaultSubArtifact( pomArtifact, "", "pom" );
         }
 
-        ResolveRequest resolveRequest = new ResolveRequest();
-        resolveRequest.setContext( request.getContext() );
-        resolveRequest.add( pomArtifact, request.getRemoteRepositories() );
-        system.resolveArtifacts( resolveRequest );
 
         return null;
     }

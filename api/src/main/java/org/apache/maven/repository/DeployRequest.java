@@ -32,6 +32,4 @@ public interface DeployRequest
 
     RemoteRepository getRemoteRepository();
 
-    RepositoryContext getContext();
-
 }

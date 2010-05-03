@@ -48,11 +48,6 @@ class WagonTransferListenerAdapter
         resource = new DefaultTransferResource( repositoryUrl, resourceName );
     }
 
-    public TransferResource getResource()
-    {
-        return this.resource;
-    }
-
     public void transferStarted( TransferEvent event )
     {
         transferredBytes = 0;
@@ -82,10 +77,16 @@ class WagonTransferListenerAdapter
 
     private DefaultTransferEvent wrap( TransferEvent event, EventType type )
     {
-        DefaultTransferEvent e = new DefaultTransferEvent();
-        e.setResource( resource );
+        DefaultTransferEvent e = newEvent();
         e.setRequestType( event.getRequestType() == TransferEvent.REQUEST_PUT ? RequestType.PUT : RequestType.GET );
         e.setType( type );
+        return e;
+    }
+
+    public DefaultTransferEvent newEvent()
+    {
+        DefaultTransferEvent e = new DefaultTransferEvent();
+        e.setResource( resource );
         e.setTransferredBytes( transferredBytes );
         return e;
     }

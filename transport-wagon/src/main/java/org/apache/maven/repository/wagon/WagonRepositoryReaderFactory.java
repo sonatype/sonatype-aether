@@ -25,18 +25,18 @@ import org.apache.maven.repository.RepositoryContext;
 import org.apache.maven.repository.RepositoryReader;
 import org.apache.maven.repository.RepositoryReaderFactory;
 import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 
 /**
  * @author Benjamin Bentmann
- * @plexus.component role="org.apache.maven.repository.internal.RepositoryReaderFactory" role-hint="default"
  */
+@Component( role = RepositoryReaderFactory.class, hint = "wagon" )
 public class WagonRepositoryReaderFactory
     implements RepositoryReaderFactory
 {
 
-    /**
-     * @plexus.requirement
-     */
+    @Requirement
     private PlexusContainer container;
 
     public int getPriority()

@@ -31,6 +31,4 @@ public interface InstallRequest
 
     List<? extends Artifact> getArtifacts();
 
-    LocalRepository getLocalRepository();
-
 }

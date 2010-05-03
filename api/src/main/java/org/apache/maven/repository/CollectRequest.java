@@ -41,8 +41,6 @@ public interface CollectRequest
 
     List<? extends RemoteRepository> getRemoteRepositories();
 
-    RepositoryContext getContext();
-
     DependencyTraverser getDependencyTraverser();
 
     DependencyManager getDependencyManager();
