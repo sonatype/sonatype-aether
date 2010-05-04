@@ -1,4 +1,6 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
+
+import java.util.Comparator;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,19 +24,19 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public class MetadataNotFoundException
-    extends MetadataTransferException
+public interface PluggableComponent
 {
 
-    public MetadataNotFoundException( Metadata metadata, RemoteRepository repository )
-    {
-        super( metadata, repository, "Could not find metadata " + metadata
-            + ( repository != null ? " in " + repository : "" ) );
-    }
+    int getPriority();
 
-    public MetadataNotFoundException( Metadata metadata, RemoteRepository repository, String message )
+    static final Comparator<PluggableComponent> COMPARATOR = new Comparator<PluggableComponent>()
     {
-        super( metadata, repository, message );
-    }
+
+        public int compare( PluggableComponent o1, PluggableComponent o2 )
+        {
+            return o2.getPriority() - o1.getPriority();
+        }
+
+    };
 
 }

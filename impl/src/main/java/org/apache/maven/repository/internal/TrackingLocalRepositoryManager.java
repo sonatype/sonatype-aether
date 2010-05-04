@@ -26,8 +26,8 @@ import java.util.Properties;
 
 import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.LocalArtifactQuery;
-import org.apache.maven.repository.Logger;
 import org.apache.maven.repository.RemoteRepository;
+import org.apache.maven.repository.spi.Logger;
 
 /**
  * A local repository manager that builds upon the classical Maven 2.0 local repository structure but additionally keeps
@@ -41,7 +41,7 @@ public class TrackingLocalRepositoryManager
     extends SimpleLocalRepositoryManager
 {
 
-    private static final String LOCAL_REPO_ID = "local";
+    private static final String LOCAL_REPO_ID = "";
 
     private TrackingFileManager trackingFileManager;
 

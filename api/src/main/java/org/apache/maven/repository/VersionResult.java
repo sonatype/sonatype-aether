@@ -1,5 +1,8 @@
 package org.apache.maven.repository;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -25,19 +28,48 @@ package org.apache.maven.repository;
 public class VersionResult
 {
 
+    private final VersionRequest request;
+
+    private final List<RepositoryException> exceptions;
+
     private String version;
 
     private ArtifactRepository repository;
 
-    public VersionResult()
+    public VersionResult( VersionRequest request )
     {
-        // enables default constructor
+        if ( request == null )
+        {
+            throw new IllegalArgumentException( "version request has not been specified" );
+        }
+        this.request = request;
+        this.exceptions = new ArrayList<RepositoryException>( 4 );
     }
 
-    public VersionResult( String version, ArtifactRepository repository )
+    public VersionResult( VersionRequest request, String version, ArtifactRepository repository )
     {
+        this( request );
         setVersion( version );
         setRepository( repository );
+    }
+
+    public VersionRequest getRequest()
+    {
+        return request;
+    }
+
+    public List<? extends RepositoryException> getExceptions()
+    {
+        return exceptions;
+    }
+
+    public VersionResult addException( RepositoryException exception )
+    {
+        if ( exception != null )
+        {
+            this.exceptions.add( exception );
+        }
+        return this;
     }
 
     public String getVersion()

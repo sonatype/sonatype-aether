@@ -32,7 +32,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.maven.repository.Logger;
+import org.apache.maven.repository.spi.Logger;
 
 /**
  * @author Benjamin Bentmann

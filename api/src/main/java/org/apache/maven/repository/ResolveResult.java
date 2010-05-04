@@ -19,16 +19,59 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Benjamin Bentmann
  */
-public interface ResolveResult
+public class ResolveResult
 {
 
-    List<? extends Artifact> getArtifacts();
+    private final ResolveRequest request;
 
-    // TODO: figure out how to best report missing/failed artifacts
+    private final List<RepositoryException> exceptions;
+
+    private ArtifactRepository repository;
+
+    public ResolveResult( ResolveRequest request )
+    {
+        if ( request == null )
+        {
+            throw new IllegalArgumentException( "resolution request has not been specified" );
+        }
+        this.request = request;
+        this.exceptions = new ArrayList<RepositoryException>( 4 );
+    }
+
+    public ResolveRequest getRequest()
+    {
+        return request;
+    }
+
+    public List<? extends RepositoryException> getExceptions()
+    {
+        return exceptions;
+    }
+
+    public ResolveResult addException( RepositoryException exception )
+    {
+        if ( exception != null )
+        {
+            this.exceptions.add( exception );
+        }
+        return this;
+    }
+
+    public ArtifactRepository getRepository()
+    {
+        return repository;
+    }
+
+    public ResolveResult setRepository( ArtifactRepository repository )
+    {
+        this.repository = repository;
+        return this;
+    }
 
 }

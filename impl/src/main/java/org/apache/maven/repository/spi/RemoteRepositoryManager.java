@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,26 +19,21 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import org.apache.maven.repository.NoRepositoryReaderException;
+import org.apache.maven.repository.RemoteRepository;
+import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositoryPolicy;
+
 /**
  * @author Benjamin Bentmann
  */
-public class NullLogger
-    implements Logger
+public interface RemoteRepositoryManager
 {
 
-    public static final Logger INSTANCE = new NullLogger();
+    RepositoryPolicy getPolicy( RepositoryContext context, RemoteRepository repository, boolean releases,
+                                boolean snapshots );
 
-    public boolean isDebugEnabled()
-    {
-        return false;
-    }
-
-    public void debug( String msg )
-    {
-    }
-
-    public void debug( String msg, Throwable error )
-    {
-    }
+    RepositoryReader getRepositoryReader( RepositoryContext context, RemoteRepository repository )
+        throws NoRepositoryReaderException;
 
 }

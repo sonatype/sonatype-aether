@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,20 +19,26 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.List;
-
 /**
  * @author Benjamin Bentmann
  */
-public interface ComponentRegistry
+public class NullLogger
+    implements Logger
 {
 
-    UpdateCheckManager getUpdateCheckManager();
+    public static final Logger INSTANCE = new NullLogger();
 
-    LocalRepositoryManager getLocalRepositoryManager();
+    public boolean isDebugEnabled()
+    {
+        return false;
+    }
 
-    WorkspaceReader getWorkspaceReader();
+    public void debug( String msg )
+    {
+    }
 
-    List<? extends RepositoryReaderFactory> getReaderFactories();
+    public void debug( String msg, Throwable error )
+    {
+    }
 
 }

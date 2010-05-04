@@ -51,10 +51,10 @@ import org.apache.maven.repository.ProxySelector;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositoryContext;
 import org.apache.maven.repository.RepositoryPolicy;
-import org.apache.maven.repository.RepositoryReader;
 import org.apache.maven.repository.TransferEvent;
 import org.apache.maven.repository.TransferListener;
 import org.apache.maven.repository.internal.ChecksumUtils;
+import org.apache.maven.repository.spi.RepositoryReader;
 import org.apache.maven.wagon.ResourceDoesNotExistException;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.WagonException;
@@ -72,6 +72,8 @@ import org.codehaus.plexus.util.FileUtils;
 class WagonRepositoryReader
     implements RepositoryReader
 {
+
+    private final RemoteRepository repository;
 
     private final PlexusContainer container;
 
@@ -97,6 +99,7 @@ class WagonRepositoryReader
         throws NoRepositoryReaderException
     {
         this.container = container;
+        this.repository = repository;
         this.listener = context.getTransferListener();
 
         wagonRepo = new Repository( repository.getId(), repository.getUrl() );
@@ -255,11 +258,11 @@ class WagonRepositoryReader
                 Exception e = task.getException();
                 if ( e instanceof ResourceDoesNotExistException )
                 {
-                    download.setException( new ArtifactNotFoundException( download.getArtifact() ) );
+                    download.setException( new ArtifactNotFoundException( download.getArtifact(), repository ) );
                 }
                 else if ( e != null )
                 {
-                    download.setException( new ArtifactTransferException( download.getArtifact(), e ) );
+                    download.setException( new ArtifactTransferException( download.getArtifact(), repository, e ) );
                 }
             }
         }
@@ -267,7 +270,7 @@ class WagonRepositoryReader
         {
             for ( ArtifactDownload download : downloads )
             {
-                download.setException( new ArtifactTransferException( download.getArtifact(), e ) );
+                download.setException( new ArtifactTransferException( download.getArtifact(), repository, e ) );
             }
         }
     }
@@ -302,11 +305,11 @@ class WagonRepositoryReader
                 Exception e = task.getException();
                 if ( e instanceof ResourceDoesNotExistException )
                 {
-                    download.setException( new MetadataNotFoundException( download.getMetadata() ) );
+                    download.setException( new MetadataNotFoundException( download.getMetadata(), repository ) );
                 }
                 else if ( e != null )
                 {
-                    download.setException( new MetadataTransferException( download.getMetadata(), e ) );
+                    download.setException( new MetadataTransferException( download.getMetadata(), repository, e ) );
                 }
             }
         }
@@ -314,7 +317,7 @@ class WagonRepositoryReader
         {
             for ( MetadataDownload download : downloads )
             {
-                download.setException( new MetadataTransferException( download.getMetadata(), e ) );
+                download.setException( new MetadataTransferException( download.getMetadata(), repository, e ) );
             }
         }
     }

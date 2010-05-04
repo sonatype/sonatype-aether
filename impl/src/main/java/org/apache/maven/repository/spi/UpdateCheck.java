@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,6 +20,9 @@ package org.apache.maven.repository;
  */
 
 import java.io.File;
+
+import org.apache.maven.repository.RemoteRepository;
+import org.apache.maven.repository.RepositoryException;
 
 /**
  * @author Benjamin Bentmann

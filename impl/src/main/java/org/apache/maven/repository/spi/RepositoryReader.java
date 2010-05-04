@@ -1,6 +1,4 @@
-package org.apache.maven.repository;
-
-import java.util.Comparator;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,22 +19,21 @@ import java.util.Comparator;
  * under the License.
  */
 
+import java.util.Collection;
+
+import org.apache.maven.repository.ArtifactDownload;
+import org.apache.maven.repository.MetadataDownload;
+
 /**
  * @author Benjamin Bentmann
  */
-public interface PluggableComponent
+public interface RepositoryReader
 {
 
-    int getPriority();
+    void getArtifacts( Collection<? extends ArtifactDownload> requests );
 
-    static final Comparator<PluggableComponent> COMPARATOR = new Comparator<PluggableComponent>()
-    {
+    void getMetadata( Collection<? extends MetadataDownload> requests );
 
-        public int compare( PluggableComponent o1, PluggableComponent o2 )
-        {
-            return o2.getPriority() - o1.getPriority();
-        }
-
-    };
+    void close();
 
 }

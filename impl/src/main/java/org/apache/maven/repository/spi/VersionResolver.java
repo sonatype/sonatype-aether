@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,22 +19,22 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.VersionRequest;
+import org.apache.maven.repository.VersionResolutionException;
+import org.apache.maven.repository.VersionResult;
+
 /**
  * @author Benjamin Bentmann
  */
-public class MetadataNotFoundException
-    extends MetadataTransferException
+public interface VersionResolver
 {
 
-    public MetadataNotFoundException( Metadata metadata, RemoteRepository repository )
-    {
-        super( metadata, repository, "Could not find metadata " + metadata
-            + ( repository != null ? " in " + repository : "" ) );
-    }
-
-    public MetadataNotFoundException( Metadata metadata, RemoteRepository repository, String message )
-    {
-        super( metadata, repository, message );
-    }
+    /**
+     * Resolves a metaversion to a concrete version. For example, resolves "1.0-SNAPSHOT" to "1.0-20090208.132618-23" or
+     * "RELEASE"/"LATEST" to "2.0".
+     */
+    VersionResult resolveVersion( RepositoryContext context, VersionRequest request )
+        throws VersionResolutionException;
 
 }

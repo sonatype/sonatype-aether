@@ -1,4 +1,8 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
+
+import org.apache.maven.repository.NoRepositoryReaderException;
+import org.apache.maven.repository.RemoteRepository;
+import org.apache.maven.repository.RepositoryContext;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,19 +26,11 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public class MetadataNotFoundException
-    extends MetadataTransferException
+public interface RepositoryReaderFactory
+    extends PluggableComponent
 {
 
-    public MetadataNotFoundException( Metadata metadata, RemoteRepository repository )
-    {
-        super( metadata, repository, "Could not find metadata " + metadata
-            + ( repository != null ? " in " + repository : "" ) );
-    }
-
-    public MetadataNotFoundException( Metadata metadata, RemoteRepository repository, String message )
-    {
-        super( metadata, repository, message );
-    }
+    RepositoryReader newInstance( RepositoryContext context, RemoteRepository repository )
+        throws NoRepositoryReaderException;
 
 }

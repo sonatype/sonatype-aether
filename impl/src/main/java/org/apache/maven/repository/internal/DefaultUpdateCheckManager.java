@@ -30,7 +30,6 @@ import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.ArtifactNotFoundException;
 import org.apache.maven.repository.ArtifactTransferException;
 import org.apache.maven.repository.Authentication;
-import org.apache.maven.repository.Logger;
 import org.apache.maven.repository.Metadata;
 import org.apache.maven.repository.MetadataNotFoundException;
 import org.apache.maven.repository.MetadataTransferException;
@@ -38,20 +37,33 @@ import org.apache.maven.repository.Proxy;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositoryContext;
 import org.apache.maven.repository.RepositoryPolicy;
-import org.apache.maven.repository.UpdateCheck;
-import org.apache.maven.repository.UpdateCheckManager;
+import org.apache.maven.repository.spi.Logger;
+import org.apache.maven.repository.spi.NullLogger;
+import org.apache.maven.repository.spi.UpdateCheck;
+import org.apache.maven.repository.spi.UpdateCheckManager;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 
 /**
  * @author Benjamin Bentmann
- * @plexus.component role="org.apache.maven.repository.UpdateCheckManager" role-hint="default"
  */
+@Component( role = UpdateCheckManager.class )
 public class DefaultUpdateCheckManager
     implements UpdateCheckManager
 {
 
+    @Requirement
+    private Logger logger = NullLogger.INSTANCE;
+
     private static final String UPDATED_KEY_SUFFIX = ".lastUpdated";
 
     private static final String ERROR_KEY_SUFFIX = ".error";
+
+    public DefaultUpdateCheckManager setLogger( Logger logger )
+    {
+        this.logger = ( logger != null ) ? logger : NullLogger.INSTANCE;
+        return this;
+    }
 
     public String getEffectiveUpdatePolicy( RepositoryContext context, String policy1, String policy2 )
     {
@@ -91,8 +103,6 @@ public class DefaultUpdateCheckManager
         Artifact artifact = check.getItem();
         RemoteRepository repository = check.getRepository();
 
-        Logger logger = context.getLogger();
-
         File touchFile = getTouchFile( artifact, check.getFile() );
         Properties props = read( touchFile, logger );
 
@@ -121,8 +131,8 @@ public class DefaultUpdateCheckManager
                 if ( context.isNotFoundCachingEnabled() )
                 {
                     check.setRequired( false );
-                    check.setException( new ArtifactNotFoundException( artifact, "Failure to find " + artifact + " in "
-                        + repository.getUrl() + " was cached in the local repository. "
+                    check.setException( new ArtifactNotFoundException( artifact, repository, "Failure to find "
+                        + artifact + " in " + repository.getUrl() + " was cached in the local repository. "
                         + "Resolution will not be reattempted until the update interval of " + repository.getId()
                         + " has elapsed or updates are forced." ) );
                 }
@@ -136,8 +146,8 @@ public class DefaultUpdateCheckManager
                 if ( context.isTransferErrorCachingEnabled() )
                 {
                     check.setRequired( false );
-                    check.setException( new ArtifactTransferException( artifact, "Failure to transfer " + artifact
-                        + " from " + repository.getUrl() + " was cached in the local repository. "
+                    check.setException( new ArtifactTransferException( artifact, repository, "Failure to transfer "
+                        + artifact + " from " + repository.getUrl() + " was cached in the local repository. "
                         + "Resolution will not be reattempted until the update interval of " + repository.getId()
                         + " has elapsed or updates are forced. Original error: " + error ) );
                 }
@@ -159,8 +169,6 @@ public class DefaultUpdateCheckManager
 
         Metadata metadata = check.getItem();
         RemoteRepository repository = check.getRepository();
-
-        Logger logger = context.getLogger();
 
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
         Properties props = read( touchFile, logger );
@@ -189,8 +197,8 @@ public class DefaultUpdateCheckManager
                 if ( context.isNotFoundCachingEnabled() )
                 {
                     check.setRequired( false );
-                    check.setException( new MetadataNotFoundException( metadata, "Failure to find " + metadata + " in "
-                        + repository.getUrl() + " was cached in the local repository. "
+                    check.setException( new MetadataNotFoundException( metadata, repository, "Failure to find "
+                        + metadata + " in " + repository.getUrl() + " was cached in the local repository. "
                         + "Resolution will not be reattempted until the update interval of " + repository.getId()
                         + " has elapsed or updates are forced." ) );
                 }
@@ -204,8 +212,8 @@ public class DefaultUpdateCheckManager
                 if ( context.isTransferErrorCachingEnabled() )
                 {
                     check.setRequired( false );
-                    check.setException( new MetadataTransferException( metadata, "Failure to transfer " + metadata
-                        + " from " + repository.getUrl() + " was cached in the local repository. "
+                    check.setException( new MetadataTransferException( metadata, repository, "Failure to transfer "
+                        + metadata + " from " + repository.getUrl() + " was cached in the local repository. "
                         + "Resolution will not be reattempted until the update interval of " + repository.getId()
                         + " has elapsed or updates are forced. Original error: " + error ) );
                 }
@@ -322,8 +330,6 @@ public class DefaultUpdateCheckManager
 
     public void touchArtifact( RepositoryContext context, UpdateCheck<Artifact, ArtifactTransferException> check )
     {
-        Logger logger = context.getLogger();
-
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
 
         if ( check.getFile().exists() )
@@ -340,8 +346,6 @@ public class DefaultUpdateCheckManager
 
     public void touchMetadata( RepositoryContext context, UpdateCheck<Metadata, MetadataTransferException> check )
     {
-        Logger logger = context.getLogger();
-
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
 
         String key = getRepoKey( check.getRepository() ) + '.' + check.getItem().getType();

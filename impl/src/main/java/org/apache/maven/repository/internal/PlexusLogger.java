@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.internal;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,14 +19,34 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import org.apache.maven.repository.spi.Logger;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
+
 /**
  * @author Benjamin Bentmann
  */
-public interface RepositoryReaderFactory
-    extends PluggableComponent
+@Component( role = Logger.class )
+public class PlexusLogger
+    implements Logger
 {
 
-    RepositoryReader newInstance( RepositoryContext context, RemoteRepository repository )
-        throws NoRepositoryReaderException;
+    @Requirement
+    private org.codehaus.plexus.logging.Logger logger;
+
+    public boolean isDebugEnabled()
+    {
+        return logger.isDebugEnabled();
+    }
+
+    public void debug( String msg )
+    {
+        logger.debug( msg );
+    }
+
+    public void debug( String msg, Throwable error )
+    {
+        logger.debug( msg, error );
+    }
 
 }

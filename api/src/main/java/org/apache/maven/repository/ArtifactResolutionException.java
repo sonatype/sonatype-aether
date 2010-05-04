@@ -19,42 +19,28 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Benjamin Bentmann
  */
-public class MetadataTransferException
+public class ArtifactResolutionException
     extends RepositoryException
 {
 
-    private final Metadata metadata;
+    private final List<? extends ResolveResult> results;
 
-    private final RemoteRepository repository;
-
-    public MetadataTransferException( Metadata metadata, RemoteRepository repository, String message )
+    public ArtifactResolutionException( List<? extends ResolveResult> results )
     {
-        super( message );
-
-        this.metadata = metadata;
-        this.repository = repository;
+        // TODO: create some error msg
+        super( "" );
+        this.results = ( results != null ) ? results : Collections.<ResolveResult> emptyList();
     }
 
-    public MetadataTransferException( Metadata metadata, RemoteRepository repository, Throwable cause )
+    public List<? extends ResolveResult> getResults()
     {
-        super( "Could not transfer metadata " + metadata + ( repository != null ? " from " + repository : "" )
-            + ( cause != null ? ": " + getMessage( cause ) : "" ), cause );
-
-        this.metadata = metadata;
-        this.repository = repository;
-    }
-
-    public Metadata getMetadata()
-    {
-        return metadata;
-    }
-
-    public RemoteRepository getRepository()
-    {
-        return repository;
+        return results;
     }
 
 }

@@ -38,7 +38,8 @@ public interface RepositorySystem
      * Resolves a metaversion to a concrete version. For example, resolves "1.0-SNAPSHOT" to "1.0-20090208.132618-23" or
      * "RELEASE"/"LATEST" to "2.0".
      */
-    VersionResult resolveVersion( RepositoryContext context, VersionRequest request );
+    VersionResult resolveVersion( RepositoryContext context, VersionRequest request )
+        throws VersionResolutionException;
 
     /**
      * Gets the direct dependencies of an artifact.
@@ -58,7 +59,8 @@ public interface RepositorySystem
     /**
      * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary.
      */
-    ResolveResult resolveArtifacts( RepositoryContext context, Collection<? extends ResolveRequest> requests );
+    List<ResolveResult> resolveArtifacts( RepositoryContext context, Collection<? extends ResolveRequest> requests )
+        throws ArtifactResolutionException;
 
     // TODO:
     // MetadataResult resolveMetadata( MetadataRequest request );

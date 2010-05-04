@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,17 +20,23 @@ package org.apache.maven.repository;
  */
 
 import java.util.Collection;
+import java.util.List;
+
+import org.apache.maven.repository.ArtifactResolutionException;
+import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.ResolveRequest;
+import org.apache.maven.repository.ResolveResult;
 
 /**
  * @author Benjamin Bentmann
  */
-public interface RepositoryReader
+public interface ArtifactResolver
 {
 
-    void getArtifacts( Collection<? extends ArtifactDownload> requests );
-
-    void getMetadata( Collection<? extends MetadataDownload> requests );
-
-    void close();
+    /**
+     * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary.
+     */
+    List<ResolveResult> resolveArtifacts( RepositoryContext context, Collection<? extends ResolveRequest> requests )
+        throws ArtifactResolutionException;
 
 }

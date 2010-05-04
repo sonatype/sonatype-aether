@@ -26,17 +26,17 @@ public class VersionResolutionException
     extends RepositoryException
 {
 
-    private final Artifact artifact;
+    private final VersionResult result;
 
-    public VersionResolutionException( Artifact artifact )
+    public VersionResolutionException( VersionResult result )
     {
-        super( "Failed to resolve version for " + artifact );
-        this.artifact = artifact;
+        super( "Failed to resolve version for " + result.getRequest().getArtifact() );
+        this.result = result;
     }
 
-    public Artifact getArtifact()
+    public VersionResult getResult()
     {
-        return artifact;
+        return result;
     }
 
 }

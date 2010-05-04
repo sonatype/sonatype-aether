@@ -1,4 +1,10 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
+
+import org.apache.maven.repository.Artifact;
+import org.apache.maven.repository.ArtifactTransferException;
+import org.apache.maven.repository.Metadata;
+import org.apache.maven.repository.MetadataTransferException;
+import org.apache.maven.repository.RepositoryContext;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one

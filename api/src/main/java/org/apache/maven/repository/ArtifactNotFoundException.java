@@ -26,14 +26,15 @@ public class ArtifactNotFoundException
     extends ArtifactTransferException
 {
 
-    public ArtifactNotFoundException( Artifact artifact )
+    public ArtifactNotFoundException( Artifact artifact, RemoteRepository repository )
     {
-        super( artifact, "Could not find artifact " + artifact );
+        super( artifact, repository, "Could not find artifact " + artifact
+            + ( repository != null ? " in " + repository : "" ) );
     }
 
-    public ArtifactNotFoundException( Artifact artifact, String message )
+    public ArtifactNotFoundException( Artifact artifact, RemoteRepository repository, String message )
     {
-        super( artifact, message );
+        super( artifact, repository, message );
     }
 
 }

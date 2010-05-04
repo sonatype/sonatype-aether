@@ -28,23 +28,33 @@ public class ArtifactTransferException
 
     private final Artifact artifact;
 
-    public ArtifactTransferException( Artifact artifact, String message )
+    private final RemoteRepository repository;
+
+    public ArtifactTransferException( Artifact artifact, RemoteRepository repository, String message )
     {
         super( message );
 
         this.artifact = artifact;
+        this.repository = repository;
     }
 
-    public ArtifactTransferException( Artifact artifact, Throwable cause )
+    public ArtifactTransferException( Artifact artifact, RemoteRepository repository, Throwable cause )
     {
-        super( "Could not transfer artifact " + artifact + ( cause != null ? ": " + getMessage( cause ) : "" ), cause );
+        super( "Could not transfer artifact " + artifact + ( repository != null ? " from " + repository : "" )
+            + ( cause != null ? ": " + getMessage( cause ) : "" ), cause );
 
         this.artifact = artifact;
+        this.repository = repository;
     }
 
     public Artifact getArtifact()
     {
         return artifact;
+    }
+
+    public RemoteRepository getRepository()
+    {
+        return repository;
     }
 
 }

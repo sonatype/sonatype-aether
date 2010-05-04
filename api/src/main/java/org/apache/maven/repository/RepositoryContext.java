@@ -39,11 +39,13 @@ public interface RepositoryContext
 
     LocalRepository getLocalRepository();
 
+    LocalRepositoryManager getLocalRepositoryManager();
+
     WorkspaceRepository getWorkspaceRepository();
 
-    TransferListener getTransferListener();
+    WorkspaceReader getWorkspaceReader();
 
-    Logger getLogger();
+    TransferListener getTransferListener();
 
     Properties getSystemProperties();
 
@@ -57,8 +59,6 @@ public interface RepositoryContext
     ProxySelector getProxySelector();
 
     AuthenticationSelector getAuthenticationSelector();
-
-    ComponentRegistry getComponentRegistry();
 
     // TODO: cache?
 
