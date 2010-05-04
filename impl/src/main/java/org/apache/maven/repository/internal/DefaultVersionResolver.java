@@ -120,7 +120,7 @@ public class DefaultVersionResolver
             if ( workspace != null && workspace.findVersions( request.getArtifact() ).contains( version ) )
             {
                 metadata = null;
-                result.setRepository( context.getWorkspaceRepository() );
+                result.setRepository( workspace.getRepository() );
             }
             else
             {
@@ -207,7 +207,7 @@ public class DefaultVersionResolver
             }
 
             Versioning versioning = readVersions( context, metadata, null );
-            ArtifactRepository repo = context.getLocalRepository();
+            ArtifactRepository repo = context.getLocalRepositoryManager().getRepository();
 
             for ( RemoteRepository repository : request.getRemoteRepositories() )
             {
@@ -279,7 +279,7 @@ public class DefaultVersionResolver
         {
             path = lrm.getPathForLocalMetadata( metadata );
         }
-        return new File( context.getLocalRepository().getBasedir(), path );
+        return new File( lrm.getRepository().getBasedir(), path );
     }
 
     private RepositoryPolicy getPolicy( RepositoryContext context, RemoteRepository repository, Metadata.Nature nature )

@@ -172,7 +172,7 @@ public class DefaultArtifactResolver
                 if ( file != null )
                 {
                     artifact.setFile( file );
-                    result.setRepository( context.getWorkspaceRepository() );
+                    result.setRepository( workspace.getRepository() );
                     continue;
                 }
             }
@@ -182,7 +182,7 @@ public class DefaultArtifactResolver
             if ( query.isAvailable() )
             {
                 artifact.setFile( query.getFile() );
-                result.setRepository( context.getLocalRepository() );
+                result.setRepository( lrm.getRepository() );
                 continue;
             }
 
@@ -232,8 +232,8 @@ public class DefaultArtifactResolver
                 }
                 else
                 {
-                    File file = new File( lrm.getBasedir(), lrm.getPathForRemoteArtifact( artifact, group.repository ) );
-                    download.setFile( file );
+                    String path = lrm.getPathForRemoteArtifact( artifact, group.repository );
+                    download.setFile( new File( lrm.getRepository().getBasedir(), path ) );
                 }
 
                 boolean snapshot = isSnapshot( artifact );

@@ -28,6 +28,8 @@ import java.util.List;
 public interface WorkspaceReader
 {
 
+    WorkspaceRepository getRepository();
+
     File findArtifact( Artifact artifact );
 
     List<String> findVersions( Artifact artifact );

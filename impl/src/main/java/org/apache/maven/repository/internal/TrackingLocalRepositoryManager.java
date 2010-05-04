@@ -47,7 +47,7 @@ public class TrackingLocalRepositoryManager
 
     public TrackingLocalRepositoryManager( File basedir, Logger logger )
     {
-        super( basedir );
+        super( basedir, "enhanced" );
         trackingFileManager = new TrackingFileManager( logger );
     }
 
@@ -55,7 +55,7 @@ public class TrackingLocalRepositoryManager
     public void find( LocalArtifactQuery query )
     {
         String path = getPathForLocalArtifact( query.getArtifact() );
-        File file = new File( getBasedir(), path );
+        File file = new File( getRepository().getBasedir(), path );
         if ( file.isFile() )
         {
             query.setFile( file );
@@ -93,7 +93,7 @@ public class TrackingLocalRepositoryManager
     private void addArtifact( Artifact artifact, String repository )
     {
         String path = getPathForLocalArtifact( artifact );
-        File file = new File( getBasedir(), path );
+        File file = new File( getRepository().getBasedir(), path );
         addRepo( file, repository );
     }
 

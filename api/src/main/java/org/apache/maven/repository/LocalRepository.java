@@ -30,14 +30,17 @@ public class LocalRepository
 
     private final File basedir;
 
-    public LocalRepository( File basedir )
+    private final String type;
+
+    public LocalRepository( File basedir, String type )
     {
         this.basedir = basedir;
+        this.type = type;
     }
 
     public String getType()
     {
-        return "default";
+        return type;
     }
 
     public String getId()

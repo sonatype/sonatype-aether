@@ -23,6 +23,7 @@ import java.io.File;
 
 import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.LocalArtifactQuery;
+import org.apache.maven.repository.LocalRepository;
 import org.apache.maven.repository.LocalRepositoryManager;
 import org.apache.maven.repository.Metadata;
 import org.apache.maven.repository.RemoteRepository;
@@ -36,20 +37,25 @@ public class SimpleLocalRepositoryManager
     implements LocalRepositoryManager
 {
 
-    private final File basedir;
+    private final LocalRepository repository;
 
     public SimpleLocalRepositoryManager( File basedir )
+    {
+        this( basedir, "default" );
+    }
+
+    SimpleLocalRepositoryManager( File basedir, String type )
     {
         if ( basedir == null )
         {
             throw new IllegalArgumentException( "base directory has not been specified" );
         }
-        this.basedir = basedir;
+        repository = new LocalRepository( basedir, type );
     }
 
-    public File getBasedir()
+    public LocalRepository getRepository()
     {
-        return basedir;
+        return repository;
     }
 
     public String getPathForLocalArtifact( Artifact artifact )
@@ -131,7 +137,7 @@ public class SimpleLocalRepositoryManager
     public void find( LocalArtifactQuery query )
     {
         String path = getPathForLocalArtifact( query.getArtifact() );
-        File file = new File( getBasedir(), path );
+        File file = new File( getRepository().getBasedir(), path );
         if ( file.isFile() )
         {
             query.setFile( file );

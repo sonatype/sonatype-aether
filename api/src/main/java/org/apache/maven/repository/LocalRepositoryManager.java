@@ -19,15 +19,13 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.io.File;
-
 /**
  * @author Benjamin Bentmann
  */
 public interface LocalRepositoryManager
 {
 
-    File getBasedir();
+    LocalRepository getRepository();
 
     String getPathForLocalArtifact( Artifact artifact );
 

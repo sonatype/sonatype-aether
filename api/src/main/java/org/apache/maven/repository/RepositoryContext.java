@@ -37,11 +37,7 @@ public interface RepositoryContext
 
     String getUpdatePolicy();
 
-    LocalRepository getLocalRepository();
-
     LocalRepositoryManager getLocalRepositoryManager();
-
-    WorkspaceRepository getWorkspaceRepository();
 
     WorkspaceReader getWorkspaceReader();
 
