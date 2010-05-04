@@ -110,6 +110,12 @@ public class DefaultArtifactResolver
         return this;
     }
 
+    public ResolveResult resolveArtifact( RepositoryContext context, ResolveRequest request )
+        throws ArtifactResolutionException
+    {
+        return resolveArtifacts( context, Collections.singleton( request ) ).get( 0 );
+    }
+
     public List<ResolveResult> resolveArtifacts( RepositoryContext context,
                                                  Collection<? extends ResolveRequest> requests )
         throws ArtifactResolutionException
@@ -127,7 +133,7 @@ public class DefaultArtifactResolver
             results.add( result );
 
             Artifact artifact = request.getArtifact();
-            List<? extends RemoteRepository> repos = request.getRemoteRepositories();
+            List<RemoteRepository> repos = request.getRemoteRepositories();
 
             if ( artifact.getFile() != null )
             {
@@ -183,6 +189,15 @@ public class DefaultArtifactResolver
             {
                 artifact.setFile( query.getFile() );
                 result.setRepository( lrm.getRepository() );
+                continue;
+            }
+
+            if ( context.isOffline() )
+            {
+                result.addException( new ArtifactNotFoundException( artifact, null,
+                                                                    "The repository system is offline but the artifact "
+                                                                        + artifact
+                                                                        + " is not available in the local repository." ) );
                 continue;
             }
 

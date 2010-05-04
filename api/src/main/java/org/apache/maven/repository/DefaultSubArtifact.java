@@ -33,6 +33,7 @@ public class DefaultSubArtifact
         super( mainArtifact.getGroupId(), mainArtifact.getArtifactId(), expand( subClassifier,
                                                                                 mainArtifact.getClassifier() ),
                expand( subType, mainArtifact.getType() ), mainArtifact.getVersion() );
+        setBaseVersion( mainArtifact.getBaseVersion() );
         this.mainArtifact = mainArtifact;
     }
 

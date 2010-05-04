@@ -22,11 +22,12 @@ package org.apache.maven.repository.internal;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.maven.repository.ArtifactDescriptorException;
 import org.apache.maven.repository.ArtifactResolutionException;
 import org.apache.maven.repository.CollectRequest;
 import org.apache.maven.repository.CollectResult;
-import org.apache.maven.repository.DependencyRequest;
-import org.apache.maven.repository.DependencyResult;
+import org.apache.maven.repository.ArtifactDescriptorRequest;
+import org.apache.maven.repository.ArtifactDescriptorResult;
 import org.apache.maven.repository.DeployRequest;
 import org.apache.maven.repository.InstallRequest;
 import org.apache.maven.repository.RemoteRepository;
@@ -41,6 +42,7 @@ import org.apache.maven.repository.VersionRangeResult;
 import org.apache.maven.repository.VersionRequest;
 import org.apache.maven.repository.VersionResolutionException;
 import org.apache.maven.repository.VersionResult;
+import org.apache.maven.repository.spi.ArtifactDescriptorReader;
 import org.apache.maven.repository.spi.ArtifactResolver;
 import org.apache.maven.repository.spi.VersionResolver;
 import org.codehaus.plexus.component.annotations.Component;
@@ -60,6 +62,9 @@ public class DefaultRepositorySystem
     @Requirement
     private ArtifactResolver artifactResolver;
 
+    @Requirement
+    private ArtifactDescriptorReader artifactDescriptorReader;
+
     public DefaultRepositorySystem setVersionResolver( VersionResolver versionResolver )
     {
         if ( versionResolver == null )
@@ -77,6 +82,16 @@ public class DefaultRepositorySystem
             throw new IllegalArgumentException( "artifact resolver has not been specified" );
         }
         this.artifactResolver = artifactResolver;
+        return this;
+    }
+
+    public DefaultRepositorySystem setArtifactDescriptorReader( ArtifactDescriptorReader artifactDescriptorReader )
+    {
+        if ( artifactDescriptorReader == null )
+        {
+            throw new IllegalArgumentException( "artifact descriptor reader has not been specified" );
+        }
+        this.artifactDescriptorReader = artifactDescriptorReader;
         return this;
     }
 
@@ -102,13 +117,13 @@ public class DefaultRepositorySystem
     public void deployArtifacts( RepositoryContext context, DeployRequest request )
     {
         // TODO Auto-generated method stub
-        
+
     }
 
-    public DependencyResult getDependencies( RepositoryContext context, DependencyRequest request )
+    public ArtifactDescriptorResult readArtifactDescriptor( RepositoryContext context, ArtifactDescriptorRequest request )
+        throws ArtifactDescriptorException
     {
-        // TODO Auto-generated method stub
-        return null;
+        return artifactDescriptorReader.readArtifactDescriptor( context, request );
     }
 
     public List<RemoteRepository> getEffectiveRepositories( RepositoryContext context,
@@ -121,7 +136,7 @@ public class DefaultRepositorySystem
     public void installArtifacts( RepositoryContext context, InstallRequest request )
     {
         // TODO Auto-generated method stub
-        
+
     }
 
     public VersionRangeResult resolveVersionRange( RepositoryContext context, VersionRangeRequest request )

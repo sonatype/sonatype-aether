@@ -22,15 +22,84 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public interface Exclusion
+public class Exclusion
 {
 
-    String getGroupId();
+    private String groupId = "";
 
-    String getArtifactId();
+    private String artifactId = "";
 
-    String getClassifier();
+    private String classifier = "";
 
-    String getType();
+    private String type = "*";
+
+    public Exclusion()
+    {
+        // enables default constructor
+    }
+
+    public Exclusion( String groupId, String artifactId )
+    {
+        this( groupId, artifactId, "*", "*" );
+    }
+
+    public Exclusion( String groupId, String artifactId, String classifier, String type )
+    {
+        setGroupId( groupId );
+        setArtifactId( artifactId );
+        setClassifier( classifier );
+        setType( type );
+    }
+
+    public String getGroupId()
+    {
+        return groupId;
+    }
+
+    public Exclusion setGroupId( String groupId )
+    {
+        this.groupId = ( groupId != null ) ? groupId : "";
+        return this;
+    }
+
+    public String getArtifactId()
+    {
+        return artifactId;
+    }
+
+    public Exclusion setArtifactId( String artifactId )
+    {
+        this.artifactId = ( artifactId != null ) ? artifactId : "";
+        return this;
+    }
+
+    public String getClassifier()
+    {
+        return classifier;
+    }
+
+    public Exclusion setClassifier( String classifier )
+    {
+        this.classifier = ( classifier != null ) ? classifier : "";
+        return this;
+    }
+
+    public String getType()
+    {
+        return type;
+    }
+
+    public Exclusion setType( String type )
+    {
+        this.type = ( type != null ) ? type : "";
+        return this;
+    }
+
+    @Override
+    public String toString()
+    {
+        return getGroupId() + ':' + getArtifactId() + ':' + getType()
+            + ( getClassifier().length() > 0 ? ':' + getClassifier() : "" );
+    }
 
 }

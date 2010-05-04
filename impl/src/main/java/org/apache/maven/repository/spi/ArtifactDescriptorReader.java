@@ -1,4 +1,4 @@
-package org.apache.maven.repository.internal;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,30 +19,18 @@ package org.apache.maven.repository.internal;
  * under the License.
  */
 
-import org.apache.maven.repository.Artifact;
-import org.apache.maven.repository.DefaultSubArtifact;
-import org.apache.maven.repository.DependencyRequest;
-import org.apache.maven.repository.DependencyResult;
-import org.apache.maven.repository.RepositorySystem;
-import org.apache.maven.repository.ResolveRequest;
+import org.apache.maven.repository.ArtifactDescriptorException;
+import org.apache.maven.repository.ArtifactDescriptorRequest;
+import org.apache.maven.repository.ArtifactDescriptorResult;
+import org.apache.maven.repository.RepositoryContext;
 
 /**
  * @author Benjamin Bentmann
  */
-public class DefaultPomProcessor
-    implements PomProcessor
+public interface ArtifactDescriptorReader
 {
 
-    public DependencyResult getDependencies( DependencyRequest request, RepositorySystem system )
-    {
-        Artifact pomArtifact = request.getArtifact();
-        if ( !"pom".equals( pomArtifact.getType() ) )
-        {
-            pomArtifact = new DefaultSubArtifact( pomArtifact, "", "pom" );
-        }
-
-
-        return null;
-    }
+    ArtifactDescriptorResult readArtifactDescriptor( RepositoryContext context, ArtifactDescriptorRequest request )
+        throws ArtifactDescriptorException;
 
 }

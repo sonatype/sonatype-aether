@@ -29,24 +29,33 @@ public interface Artifact
 
     String getGroupId();
 
+    Artifact setGroupId( String groupId );
+
     String getArtifactId();
+
+    Artifact setArtifactId( String artifactId );
 
     String getBaseVersion();
 
     String getVersion();
 
-    Artifact setVersion(String version);
+    Artifact setVersion( String version );
 
     String getClassifier();
+
+    Artifact setClassifier( String classifier );
 
     // NOTE: This represents artifactHandler.extension!
     String getType();
 
+    Artifact setType( String type );
+
     File getFile();
 
-    Artifact setFile(File file);
+    Artifact setFile( File file );
 
-    // holds characteristics of artifact which were previously controlled by artifact handler (e.g. includesDependencies, addedToClasspath)
-    String getProperty(String key, String defaultValue);
+    // holds characteristics of artifact which were previously controlled by artifact handler (e.g.
+    // includesDependencies, addedToClasspath)
+    String getProperty( String key, String defaultValue );
 
 }

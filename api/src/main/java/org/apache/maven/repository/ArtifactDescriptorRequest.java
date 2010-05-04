@@ -19,34 +19,31 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
  * @author Benjamin Bentmann
  */
-public class Dependency
+public class ArtifactDescriptorRequest
 {
 
     private Artifact artifact;
 
-    private String scope = "";
+    private List<RemoteRepository> repositories;
 
-    private boolean optional;
+    private boolean ignoreMissingDescriptor;
 
-    private List<Exclusion> exclusions = new ArrayList<Exclusion>( 4 );
+    private boolean ignoreInvalidDescriptor;
 
-    public Dependency()
+    public ArtifactDescriptorRequest()
     {
         // enables default constructor
     }
 
-    public Dependency( Artifact artifact, String scope, boolean optional )
+    public ArtifactDescriptorRequest( Artifact artifact, List<RemoteRepository> repositories )
     {
         setArtifact( artifact );
-        setScope( scope );
-        setOptional( optional );
+        setRemoteRepositories( repositories );
     }
 
     public Artifact getArtifact()
@@ -54,53 +51,43 @@ public class Dependency
         return artifact;
     }
 
-    public Dependency setArtifact( Artifact artifact )
+    public ArtifactDescriptorRequest setArtifact( Artifact artifact )
     {
         this.artifact = artifact;
         return this;
     }
 
-    public String getScope()
+    public List<RemoteRepository> getRemoteRepositories()
     {
-        return scope;
+        return repositories;
     }
 
-    public Dependency setScope( String scope )
+    public ArtifactDescriptorRequest setRemoteRepositories( List<RemoteRepository> repositories )
     {
-        this.scope = ( scope != null ) ? scope : "";
+        this.repositories = repositories;
         return this;
     }
 
-    public boolean isOptional()
+    public boolean isIgnoreMissingDescriptor()
     {
-        return optional;
+        return ignoreMissingDescriptor;
     }
 
-    public Dependency setOptional( boolean optional )
+    public ArtifactDescriptorRequest setIgnoreMissingDescriptor( boolean ignoreMissingDescriptor )
     {
-        this.optional = optional;
+        this.ignoreMissingDescriptor = ignoreMissingDescriptor;
         return this;
     }
 
-    public Collection<Exclusion> getExclusions()
+    public boolean isIgnoreInvalidDescriptor()
     {
-        return exclusions;
+        return ignoreInvalidDescriptor;
     }
 
-    public Dependency addExclusion( Exclusion exclusion )
+    public ArtifactDescriptorRequest setIgnoreInvalidDescriptor( boolean ignoreInvalidDescriptor )
     {
-        if ( exclusion == null )
-        {
-            throw new IllegalArgumentException( "no exclusion specified" );
-        }
-        this.exclusions.add( exclusion );
+        this.ignoreInvalidDescriptor = ignoreInvalidDescriptor;
         return this;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.valueOf( getArtifact() ) + " (scope=" + getScope() + ", optional=" + isOptional() + ")";
     }
 
 }

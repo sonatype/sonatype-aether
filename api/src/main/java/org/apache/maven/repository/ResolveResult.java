@@ -30,7 +30,7 @@ public class ResolveResult
 
     private final ResolveRequest request;
 
-    private final List<RepositoryException> exceptions;
+    private final List<Exception> exceptions;
 
     private ArtifactRepository repository;
 
@@ -41,7 +41,7 @@ public class ResolveResult
             throw new IllegalArgumentException( "resolution request has not been specified" );
         }
         this.request = request;
-        this.exceptions = new ArrayList<RepositoryException>( 4 );
+        this.exceptions = new ArrayList<Exception>( 4 );
     }
 
     public ResolveRequest getRequest()
@@ -49,12 +49,12 @@ public class ResolveResult
         return request;
     }
 
-    public List<? extends RepositoryException> getExceptions()
+    public List<? extends Exception> getExceptions()
     {
         return exceptions;
     }
 
-    public ResolveResult addException( RepositoryException exception )
+    public ResolveResult addException( Exception exception )
     {
         if ( exception != null )
         {

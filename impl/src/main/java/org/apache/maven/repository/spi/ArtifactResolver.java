@@ -34,6 +34,12 @@ public interface ArtifactResolver
 {
 
     /**
+     * Resolves the path for an artifact. The artifact will be downloaded if necessary.
+     */
+    ResolveResult resolveArtifact( RepositoryContext context, ResolveRequest request )
+        throws ArtifactResolutionException;
+
+    /**
      * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary.
      */
     List<ResolveResult> resolveArtifacts( RepositoryContext context, Collection<? extends ResolveRequest> requests )

@@ -22,24 +22,38 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public class WorkspaceRepository
-    implements ArtifactRepository
+public class ArtifactDescriptorException
+    extends RepositoryException
 {
 
-    public String getType()
+    private final ArtifactDescriptorResult result;
+
+    public ArtifactDescriptorException( ArtifactDescriptorResult result, String message )
     {
-        return "workspace";
+        super( message, getCause( result ) );
+        this.result = result;
     }
 
-    public String getId()
+    public ArtifactDescriptorException( ArtifactDescriptorResult result )
     {
-        return getType();
+        super( "Failed to read artifact descriptor"
+            + ( result != null ? " for " + result.getRequest().getArtifact() : "" ), getCause( result ) );
+        this.result = result;
     }
 
-    @Override
-    public String toString()
+    public ArtifactDescriptorResult getResult()
     {
-        return "(workspace)";
+        return result;
+    }
+
+    private static Throwable getCause( ArtifactDescriptorResult result )
+    {
+        Throwable cause = null;
+        if ( result != null && result.getExceptions().size() == 1 )
+        {
+            cause = result.getExceptions().get( 0 );
+        }
+        return cause;
     }
 
 }

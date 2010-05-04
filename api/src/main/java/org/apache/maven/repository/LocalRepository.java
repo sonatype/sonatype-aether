@@ -53,4 +53,10 @@ public class LocalRepository
         return basedir;
     }
 
+    @Override
+    public String toString()
+    {
+        return getBasedir().getAbsolutePath() + " (" + getType() + ")";
+    }
+
 }

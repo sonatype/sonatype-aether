@@ -30,14 +30,14 @@ public class ResolveRequest
 
     private Artifact artifact;
 
-    private List<? extends RemoteRepository> repositories;
+    private List<RemoteRepository> repositories;
 
     public ResolveRequest()
     {
         // enables default constructor
     }
 
-    public ResolveRequest( Artifact artifact, List<? extends RemoteRepository> repositories )
+    public ResolveRequest( Artifact artifact, List<RemoteRepository> repositories )
     {
         this.artifact = artifact;
         this.repositories = repositories;
@@ -54,12 +54,12 @@ public class ResolveRequest
         return this;
     }
 
-    public List<? extends RemoteRepository> getRemoteRepositories()
+    public List<RemoteRepository> getRemoteRepositories()
     {
         return ( repositories != null ) ? repositories : Collections.<RemoteRepository> emptyList();
     }
 
-    public ResolveRequest setRemoteRepositories( List<? extends RemoteRepository> repositories )
+    public ResolveRequest setRemoteRepositories( List<RemoteRepository> repositories )
     {
         this.repositories = repositories;
         return this;

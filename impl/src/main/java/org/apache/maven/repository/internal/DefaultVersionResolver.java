@@ -143,6 +143,7 @@ public class DefaultVersionResolver
         }
         else
         {
+            // TODO: Refactor out a metadata resolver analogous to the artifact resolver
             if ( !context.isOffline() )
             {
                 long localLastUpdated = getFile( context, metadata, null ).lastModified();

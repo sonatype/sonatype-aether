@@ -28,19 +28,24 @@ public class DefaultArtifact
     implements Artifact
 {
 
-    private final String groupId;
+    private String groupId;
 
-    private final String artifactId;
+    private String artifactId;
 
     private String version;
 
     private String baseVersion;
 
-    private final String classifier;
+    private String classifier;
 
-    private final String type;
+    private String type;
 
     private File file;
+
+    public DefaultArtifact()
+    {
+        // enables default constructor
+    }
 
     public DefaultArtifact( String groupId, String artifactId, String classifier, String type, String version )
     {
@@ -52,9 +57,27 @@ public class DefaultArtifact
         this.baseVersion = version;
     }
 
+    public DefaultArtifact( Artifact artifact )
+    {
+        this.groupId = artifact.getGroupId();
+        this.artifactId = artifact.getArtifactId();
+        this.classifier = artifact.getClassifier();
+        this.type = artifact.getType();
+        this.version = artifact.getVersion();
+        this.baseVersion = artifact.getBaseVersion();
+        this.file = artifact.getFile();
+        // TODO: copy properties
+    }
+
     public String getGroupId()
     {
         return groupId;
+    }
+
+    public Artifact setGroupId( String groupId )
+    {
+        this.groupId = groupId;
+        return this;
     }
 
     public String getArtifactId()
@@ -62,9 +85,21 @@ public class DefaultArtifact
         return artifactId;
     }
 
+    public Artifact setArtifactId( String artifactId )
+    {
+        this.artifactId = artifactId;
+        return this;
+    }
+
     public String getClassifier()
     {
         return classifier;
+    }
+
+    public Artifact setClassifier( String classifier )
+    {
+        this.classifier = ( classifier != null ) ? classifier : "";
+        return this;
     }
 
     public String getType()
@@ -72,9 +107,21 @@ public class DefaultArtifact
         return type;
     }
 
+    public Artifact setType( String type )
+    {
+        this.type = type;
+        return this;
+    }
+
     public String getBaseVersion()
     {
         return baseVersion;
+    }
+
+    public Artifact setBaseVersion( String baseVersion )
+    {
+        this.baseVersion = baseVersion;
+        return this;
     }
 
     public String getVersion()
@@ -103,6 +150,21 @@ public class DefaultArtifact
     {
         this.version = version;
         return this;
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder buffer = new StringBuilder( 128 );
+        buffer.append( getGroupId() );
+        buffer.append( ':' ).append( getArtifactId() );
+        buffer.append( ':' ).append( getType() );
+        if ( getClassifier().length() > 0 )
+        {
+            buffer.append( ':' ).append( getClassifier() );
+        }
+        buffer.append( ':' ).append( getVersion() );
+        return buffer.toString();
     }
 
 }

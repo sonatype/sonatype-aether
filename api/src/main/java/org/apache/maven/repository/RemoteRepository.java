@@ -177,4 +177,16 @@ public class RemoteRepository
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        StringBuilder buffer = new StringBuilder( 256 );
+        buffer.append( getId() );
+        buffer.append( " (" ).append( getUrl() );
+        buffer.append( ", releases=" ).append( getPolicy( false ).isEnabled() );
+        buffer.append( ", snapshots=" ).append( getPolicy( true ).isEnabled() );
+        buffer.append( ")" );
+        return buffer.toString();
+    }
+
 }

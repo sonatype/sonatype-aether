@@ -30,7 +30,7 @@ public class VersionResult
 
     private final VersionRequest request;
 
-    private final List<RepositoryException> exceptions;
+    private final List<Exception> exceptions;
 
     private String version;
 
@@ -43,7 +43,7 @@ public class VersionResult
             throw new IllegalArgumentException( "version request has not been specified" );
         }
         this.request = request;
-        this.exceptions = new ArrayList<RepositoryException>( 4 );
+        this.exceptions = new ArrayList<Exception>( 4 );
     }
 
     public VersionResult( VersionRequest request, String version, ArtifactRepository repository )
@@ -58,12 +58,12 @@ public class VersionResult
         return request;
     }
 
-    public List<? extends RepositoryException> getExceptions()
+    public List<? extends Exception> getExceptions()
     {
         return exceptions;
     }
 
-    public VersionResult addException( RepositoryException exception )
+    public VersionResult addException( Exception exception )
     {
         if ( exception != null )
         {

@@ -29,14 +29,14 @@ public class VersionRequest
 
     private Artifact artifact;
 
-    private List<? extends RemoteRepository> repositories;
+    private List<RemoteRepository> repositories;
 
     public VersionRequest()
     {
         // enables default constructor
     }
 
-    public VersionRequest( Artifact artifact, List<? extends RemoteRepository> repositories )
+    public VersionRequest( Artifact artifact, List<RemoteRepository> repositories )
     {
         setArtifact( artifact );
         setRemoteRepositories( repositories );
@@ -53,12 +53,12 @@ public class VersionRequest
         return this;
     }
 
-    public List<? extends RemoteRepository> getRemoteRepositories()
+    public List<RemoteRepository> getRemoteRepositories()
     {
         return repositories;
     }
 
-    public VersionRequest setRemoteRepositories( List<? extends RemoteRepository> repositories )
+    public VersionRequest setRemoteRepositories( List<RemoteRepository> repositories )
     {
         this.repositories = repositories;
         return this;

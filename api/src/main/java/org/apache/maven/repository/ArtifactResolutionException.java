@@ -33,14 +33,63 @@ public class ArtifactResolutionException
 
     public ArtifactResolutionException( List<? extends ResolveResult> results )
     {
-        // TODO: create some error msg
-        super( "" );
+        super( getMessage( results ), getCause( results ) );
         this.results = ( results != null ) ? results : Collections.<ResolveResult> emptyList();
     }
 
     public List<? extends ResolveResult> getResults()
     {
         return results;
+    }
+
+    private static String getMessage( List<? extends ResolveResult> results )
+    {
+        StringBuilder buffer = new StringBuilder( 256 );
+
+        buffer.append( "The following artifacts could not be resolved: " );
+
+        String sep = "";
+        for ( ResolveResult result : results )
+        {
+            Artifact artifact = result.getRequest().getArtifact();
+            if ( artifact.getFile() == null )
+            {
+                buffer.append( sep );
+                buffer.append( artifact );
+                sep = ", ";
+            }
+        }
+
+        return buffer.toString();
+    }
+
+    private static Throwable getCause( List<? extends ResolveResult> results )
+    {
+        Throwable cause = null;
+        if ( results.size() == 1 )
+        {
+
+            Throwable nf = null;
+            Throwable te = null;
+            for ( Throwable t : results.get( 0 ).getExceptions() )
+            {
+                if ( t instanceof ArtifactNotFoundException )
+                {
+                    if ( nf == null )
+                    {
+                        nf = t;
+                    }
+                }
+                else if ( te == null )
+                {
+                    te = t;
+                    break;
+                }
+
+            }
+            cause = ( te != null ) ? te : nf;
+        }
+        return cause;
     }
 
 }

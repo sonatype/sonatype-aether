@@ -42,9 +42,10 @@ public interface RepositorySystem
         throws VersionResolutionException;
 
     /**
-     * Gets the direct dependencies of an artifact.
+     * Gets information about an artifact like its direct dependencies.
      */
-    DependencyResult getDependencies( RepositoryContext context, DependencyRequest request );
+    ArtifactDescriptorResult readArtifactDescriptor( RepositoryContext context, ArtifactDescriptorRequest request )
+        throws ArtifactDescriptorException;
 
     /**
      * Collects the transitive dependencies of an artifact in form of a dirty dependency tree.
