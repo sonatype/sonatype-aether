@@ -19,49 +19,58 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Benjamin Bentmann
  */
-public class ResolveRequest
+public class ArtifactResult
 {
 
-    private Artifact artifact;
+    private final ArtifactRequest request;
 
-    private List<RemoteRepository> repositories;
+    private final List<Exception> exceptions;
 
-    public ResolveRequest()
+    private ArtifactRepository repository;
+
+    public ArtifactResult( ArtifactRequest request )
     {
-        // enables default constructor
+        if ( request == null )
+        {
+            throw new IllegalArgumentException( "resolution request has not been specified" );
+        }
+        this.request = request;
+        this.exceptions = new ArrayList<Exception>( 4 );
     }
 
-    public ResolveRequest( Artifact artifact, List<RemoteRepository> repositories )
+    public ArtifactRequest getRequest()
     {
-        this.artifact = artifact;
-        this.repositories = repositories;
+        return request;
     }
 
-    public Artifact getArtifact()
+    public List<? extends Exception> getExceptions()
     {
-        return artifact;
+        return exceptions;
     }
 
-    public ResolveRequest setArtifact( Artifact artifact )
+    public ArtifactResult addException( Exception exception )
     {
-        this.artifact = artifact;
+        if ( exception != null )
+        {
+            this.exceptions.add( exception );
+        }
         return this;
     }
 
-    public List<RemoteRepository> getRemoteRepositories()
+    public ArtifactRepository getRepository()
     {
-        return ( repositories != null ) ? repositories : Collections.<RemoteRepository> emptyList();
+        return repository;
     }
 
-    public ResolveRequest setRemoteRepositories( List<RemoteRepository> repositories )
+    public ArtifactResult setRepository( ArtifactRepository repository )
     {
-        this.repositories = repositories;
+        this.repository = repository;
         return this;
     }
 

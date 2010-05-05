@@ -46,8 +46,8 @@ import org.apache.maven.repository.Exclusion;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositoryContext;
 import org.apache.maven.repository.RepositoryPolicy;
-import org.apache.maven.repository.ResolveRequest;
-import org.apache.maven.repository.ResolveResult;
+import org.apache.maven.repository.ArtifactRequest;
+import org.apache.maven.repository.ArtifactResult;
 import org.apache.maven.repository.WorkspaceRepository;
 import org.apache.maven.repository.spi.ArtifactResolver;
 import org.apache.maven.repository.spi.Logger;
@@ -137,10 +137,10 @@ public class DefaultArtifactDescriptorReader
 
             Artifact pomArtifact = new DefaultSubArtifact( artifact, "", "pom" );
 
-            ResolveResult resolveResult;
+            ArtifactResult resolveResult;
             try
             {
-                ResolveRequest resolveRequest = new ResolveRequest( pomArtifact, request.getRemoteRepositories() );
+                ArtifactRequest resolveRequest = new ArtifactRequest( pomArtifact, request.getRemoteRepositories() );
                 resolveResult = artifactResolver.resolveArtifact( context, resolveRequest );
                 result.setRepository( resolveResult.getRepository() );
             }

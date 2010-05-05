@@ -19,59 +19,39 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author Benjamin Bentmann
  */
-public class ResolveResult
+public class MetadataResult
 {
 
-    private final ResolveRequest request;
+    private final MetadataRequest request;
 
-    private final List<Exception> exceptions;
+    private Exception exception;
 
-    private ArtifactRepository repository;
-
-    public ResolveResult( ResolveRequest request )
+    public MetadataResult( MetadataRequest request )
     {
         if ( request == null )
         {
-            throw new IllegalArgumentException( "resolution request has not been specified" );
+            throw new IllegalArgumentException( "metadata request has not been specified" );
         }
         this.request = request;
-        this.exceptions = new ArrayList<Exception>( 4 );
     }
 
-    public ResolveRequest getRequest()
+    public MetadataRequest getRequest()
     {
         return request;
     }
 
-    public List<? extends Exception> getExceptions()
+    public MetadataResult setException( Exception exception )
     {
-        return exceptions;
-    }
-
-    public ResolveResult addException( Exception exception )
-    {
-        if ( exception != null )
-        {
-            this.exceptions.add( exception );
-        }
+        this.exception = exception;
         return this;
     }
 
-    public ArtifactRepository getRepository()
+    public Exception getException()
     {
-        return repository;
-    }
-
-    public ResolveResult setRepository( ArtifactRepository repository )
-    {
-        this.repository = repository;
-        return this;
+        return exception;
     }
 
 }

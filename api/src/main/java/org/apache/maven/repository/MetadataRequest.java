@@ -19,48 +19,59 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.List;
-
 /**
  * @author Benjamin Bentmann
  */
-public class VersionRangeRequest
+public class MetadataRequest
 {
 
-    private Artifact artifact;
+    private Metadata metadata;
 
-    private List<RemoteRepository> repositories;
+    private RemoteRepository repository;
 
-    public VersionRangeRequest()
+    private boolean deleteLocalCopyIfMissing;
+
+    public MetadataRequest()
     {
         // enables default constructor
     }
 
-    public VersionRangeRequest( Artifact artifact, List<RemoteRepository> repositories )
+    public MetadataRequest( Metadata metadata, RemoteRepository repository )
     {
-        setArtifact( artifact );
-        setRemoteRepositories( repositories );
+        this.metadata = metadata;
+        this.repository = repository;
     }
 
-    public Artifact getArtifact()
+    public Metadata getMetadata()
     {
-        return artifact;
+        return metadata;
     }
 
-    public VersionRangeRequest setArtifact( Artifact artifact )
+    public MetadataRequest setMetadata( Metadata metadata )
     {
-        this.artifact = artifact;
+        this.metadata = metadata;
         return this;
     }
 
-    public List<RemoteRepository> getRemoteRepositories()
+    public RemoteRepository getRemoteRepository()
     {
-        return repositories;
+        return repository;
     }
 
-    public VersionRangeRequest setRemoteRepositories( List<RemoteRepository> repositories )
+    public MetadataRequest setRemoteRepository( RemoteRepository repository )
     {
-        this.repositories = repositories;
+        this.repository = repository;
+        return this;
+    }
+
+    public boolean isDeleteLocalCopyIfMissing()
+    {
+        return deleteLocalCopyIfMissing;
+    }
+
+    public MetadataRequest setDeleteLocalCopyIfMissing( boolean deleteLocalCopyIfMissing )
+    {
+        this.deleteLocalCopyIfMissing = deleteLocalCopyIfMissing;
         return this;
     }
 

@@ -194,18 +194,11 @@ public class DefaultUpdateCheckManager
             String error = getError( props, key );
             if ( error == null )
             {
-                if ( context.isNotFoundCachingEnabled() )
-                {
-                    check.setRequired( false );
-                    check.setException( new MetadataNotFoundException( metadata, repository, "Failure to find "
-                        + metadata + " in " + repository.getUrl() + " was cached in the local repository. "
-                        + "Resolution will not be reattempted until the update interval of " + repository.getId()
-                        + " has elapsed or updates are forced." ) );
-                }
-                else
-                {
-                    check.setRequired( true );
-                }
+                check.setRequired( false );
+                check.setException( new MetadataNotFoundException( metadata, repository, "Failure to find " + metadata
+                    + " in " + repository.getUrl() + " was cached in the local repository. "
+                    + "Resolution will not be reattempted until the update interval of " + repository.getId()
+                    + " has elapsed or updates are forced." ) );
             }
             else
             {

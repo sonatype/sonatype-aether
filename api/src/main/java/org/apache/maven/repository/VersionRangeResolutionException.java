@@ -22,19 +22,19 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public class VersionResolutionException
+public class VersionRangeResolutionException
     extends RepositoryException
 {
 
-    private final VersionResult result;
+    private final VersionRangeResult result;
 
-    public VersionResolutionException( VersionResult result )
+    public VersionRangeResolutionException( VersionRangeResult result )
     {
-        super( "Failed to resolve version" + ( result != null ? " for " + result.getRequest().getArtifact() : "" ) );
+        super( "Failed to resolve version range" + ( result != null ? " for " + result.getRequest().getArtifact() : "" ) );
         this.result = result;
     }
 
-    public VersionResult getResult()
+    public VersionRangeResult getResult()
     {
         return result;
     }

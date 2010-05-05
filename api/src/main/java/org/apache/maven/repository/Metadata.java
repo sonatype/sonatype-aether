@@ -32,18 +32,34 @@ public class Metadata
         RELEASE, SNAPSHOT, RELEASE_OR_SNAPSHOT
     }
 
-    private String groupId;
-    
-    private String artifactId;
-    
-    private String version;
-    
-    // e.g. "maven-metadata.xml", "archetype-catalog.xml" or "nexus-maven-repository-index.properties", i.e the simple file name used by classical URL-based repos
-    private String type;
+    private String groupId = "";
+
+    private String artifactId = "";
+
+    private String version = "";
+
+    // e.g. "maven-metadata.xml", "archetype-catalog.xml" or "nexus-maven-repository-index.properties", i.e the simple
+    // file name used by classical URL-based repos
+    private String type = "";
 
     private Nature nature = Nature.RELEASE;
 
     private File file;
+
+    public Metadata()
+    {
+        // enables default constructor
+    }
+
+    public Metadata( Metadata original )
+    {
+        setGroupId( original.getGroupId() );
+        setArtifactId( original.getArtifactId() );
+        setVersion( original.getVersion() );
+        setType( original.getType() );
+        setNature( original.getNature() );
+        setFile( original.getFile() );
+    }
 
     public String getGroupId()
     {
@@ -52,7 +68,7 @@ public class Metadata
 
     public Metadata setGroupId( String groupId )
     {
-        this.groupId = groupId;
+        this.groupId = ( groupId != null ) ? groupId : "";
         return this;
     }
 
@@ -63,7 +79,7 @@ public class Metadata
 
     public Metadata setArtifactId( String artifactId )
     {
-        this.artifactId = artifactId;
+        this.artifactId = ( artifactId != null ) ? artifactId : "";
         return this;
     }
 
@@ -74,7 +90,7 @@ public class Metadata
 
     public Metadata setVersion( String version )
     {
-        this.version = version;
+        this.version = ( version != null ) ? version : "";
         return this;
     }
 
@@ -85,7 +101,7 @@ public class Metadata
 
     public Metadata setType( String type )
     {
-        this.type = type;
+        this.type = ( type != null ) ? type : "";
         return this;
     }
 
@@ -115,26 +131,10 @@ public class Metadata
         return this;
     }
 
-/*
-
-<metadata>
-  <versioning>
-    <snapshot>
-      <timestamp>20100419.164221</timestamp>
-      <buildNumber>46</buildNumber>
-    </snapshot>
-    <!-- beware MODELLO-237 -->
-    <snapshotVersions>
-      <snapshotVersion>
-        <classifier>win</classifier>
-        <format>${timeStamp}-${buildNo}</format>
-        <timeStamp>20100419.164221</timeStamp>
-        <buildNo>46</buildNo>
-      </snapshotVersion>
-    </snapshotVersions>
-    <lastUpdated>20100419164659</lastUpdated>
-  </versioning>
-</metadata>
-
-*/
+    /*
+     * <metadata> <versioning> <snapshot> <timestamp>20100419.164221</timestamp> <buildNumber>46</buildNumber>
+     * </snapshot> <!-- beware MODELLO-237 --> <snapshotVersions> <snapshotVersion> <classifier>win</classifier>
+     * <format>${timeStamp}-${buildNo}</format> <timeStamp>20100419.164221</timeStamp> <buildNo>46</buildNo>
+     * </snapshotVersion> </snapshotVersions> <lastUpdated>20100419164659</lastUpdated> </versioning> </metadata>
+     */
 }

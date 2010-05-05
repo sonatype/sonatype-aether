@@ -19,27 +19,28 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Benjamin Bentmann
  */
-public class VersionRangeRequest
+public class ArtifactRequest
 {
 
     private Artifact artifact;
 
     private List<RemoteRepository> repositories;
 
-    public VersionRangeRequest()
+    public ArtifactRequest()
     {
         // enables default constructor
     }
 
-    public VersionRangeRequest( Artifact artifact, List<RemoteRepository> repositories )
+    public ArtifactRequest( Artifact artifact, List<RemoteRepository> repositories )
     {
-        setArtifact( artifact );
-        setRemoteRepositories( repositories );
+        this.artifact = artifact;
+        this.repositories = repositories;
     }
 
     public Artifact getArtifact()
@@ -47,7 +48,7 @@ public class VersionRangeRequest
         return artifact;
     }
 
-    public VersionRangeRequest setArtifact( Artifact artifact )
+    public ArtifactRequest setArtifact( Artifact artifact )
     {
         this.artifact = artifact;
         return this;
@@ -55,10 +56,10 @@ public class VersionRangeRequest
 
     public List<RemoteRepository> getRemoteRepositories()
     {
-        return repositories;
+        return ( repositories != null ) ? repositories : Collections.<RemoteRepository> emptyList();
     }
 
-    public VersionRangeRequest setRemoteRepositories( List<RemoteRepository> repositories )
+    public ArtifactRequest setRemoteRepositories( List<RemoteRepository> repositories )
     {
         this.repositories = repositories;
         return this;

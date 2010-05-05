@@ -24,8 +24,8 @@ import java.util.List;
 
 import org.apache.maven.repository.ArtifactResolutionException;
 import org.apache.maven.repository.RepositoryContext;
-import org.apache.maven.repository.ResolveRequest;
-import org.apache.maven.repository.ResolveResult;
+import org.apache.maven.repository.ArtifactRequest;
+import org.apache.maven.repository.ArtifactResult;
 
 /**
  * @author Benjamin Bentmann
@@ -36,13 +36,13 @@ public interface ArtifactResolver
     /**
      * Resolves the path for an artifact. The artifact will be downloaded if necessary.
      */
-    ResolveResult resolveArtifact( RepositoryContext context, ResolveRequest request )
+    ArtifactResult resolveArtifact( RepositoryContext context, ArtifactRequest request )
         throws ArtifactResolutionException;
 
     /**
      * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary.
      */
-    List<ResolveResult> resolveArtifacts( RepositoryContext context, Collection<? extends ResolveRequest> requests )
+    List<ArtifactResult> resolveArtifacts( RepositoryContext context, Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException;
 
 }

@@ -32,7 +32,7 @@ import org.apache.maven.repository.ArtifactResolutionException;
 import org.apache.maven.repository.DefaultArtifact;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositoryContext;
-import org.apache.maven.repository.ResolveRequest;
+import org.apache.maven.repository.ArtifactRequest;
 import org.apache.maven.repository.spi.ArtifactResolver;
 
 /**
@@ -81,7 +81,7 @@ class DefaultModelResolver
 
         try
         {
-            ResolveRequest request = new ResolveRequest( pomArtifact, repositories );
+            ArtifactRequest request = new ArtifactRequest( pomArtifact, repositories );
             resolver.resolveArtifact( context, request );
         }
         catch ( ArtifactResolutionException e )

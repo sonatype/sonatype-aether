@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.maven.repository.Artifact;
-import org.apache.maven.repository.ArtifactDownload;
 import org.apache.maven.repository.ArtifactNotFoundException;
 import org.apache.maven.repository.ArtifactResolutionException;
 import org.apache.maven.repository.ArtifactTransferException;
@@ -37,12 +36,13 @@ import org.apache.maven.repository.NoRepositoryReaderException;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositoryContext;
 import org.apache.maven.repository.RepositoryPolicy;
-import org.apache.maven.repository.ResolveRequest;
-import org.apache.maven.repository.ResolveResult;
+import org.apache.maven.repository.ArtifactRequest;
+import org.apache.maven.repository.ArtifactResult;
 import org.apache.maven.repository.VersionRequest;
 import org.apache.maven.repository.VersionResolutionException;
 import org.apache.maven.repository.VersionResult;
 import org.apache.maven.repository.WorkspaceReader;
+import org.apache.maven.repository.spi.ArtifactDownload;
 import org.apache.maven.repository.spi.ArtifactResolver;
 import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.NullLogger;
@@ -110,26 +110,26 @@ public class DefaultArtifactResolver
         return this;
     }
 
-    public ResolveResult resolveArtifact( RepositoryContext context, ResolveRequest request )
+    public ArtifactResult resolveArtifact( RepositoryContext context, ArtifactRequest request )
         throws ArtifactResolutionException
     {
         return resolveArtifacts( context, Collections.singleton( request ) ).get( 0 );
     }
 
-    public List<ResolveResult> resolveArtifacts( RepositoryContext context,
-                                                 Collection<? extends ResolveRequest> requests )
+    public List<ArtifactResult> resolveArtifacts( RepositoryContext context,
+                                                 Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException
     {
-        List<ResolveResult> results = new ArrayList<ResolveResult>( requests.size() );
+        List<ArtifactResult> results = new ArrayList<ArtifactResult>( requests.size() );
 
         LocalRepositoryManager lrm = context.getLocalRepositoryManager();
         WorkspaceReader workspace = context.getWorkspaceReader();
 
         List<ResolutionGroup> groups = new ArrayList<ResolutionGroup>();
 
-        for ( ResolveRequest request : requests )
+        for ( ArtifactRequest request : requests )
         {
-            ResolveResult result = new ResolveResult( request );
+            ArtifactResult result = new ArtifactResult( request );
             results.add( result );
 
             Artifact artifact = request.getArtifact();
@@ -323,7 +323,7 @@ public class DefaultArtifactResolver
             }
         }
 
-        for ( ResolveResult result : results )
+        for ( ArtifactResult result : results )
         {
             Artifact artifact = result.getRequest().getArtifact();
             if ( artifact.getFile() == null )
@@ -363,9 +363,9 @@ public class DefaultArtifactResolver
     static class ResolutionItem
     {
 
-        final ResolveRequest request;
+        final ArtifactRequest request;
 
-        final ResolveResult result;
+        final ArtifactResult result;
 
         final LocalArtifactQuery query;
 
@@ -373,7 +373,7 @@ public class DefaultArtifactResolver
 
         UpdateCheck<Artifact, ArtifactTransferException> updateCheck;
 
-        ResolutionItem( ResolveResult result, LocalArtifactQuery query )
+        ResolutionItem( ArtifactResult result, LocalArtifactQuery query )
         {
             this.result = result;
             this.request = result.getRequest();

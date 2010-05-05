@@ -19,16 +19,53 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Benjamin Bentmann
  */
-public interface VersionRangeResult
+public class VersionRangeResult
 {
 
-    List<String> getVersions();
+    private final VersionRangeRequest request;
 
-    ArtifactRepository getRepository( String version );
+    private List<String> versions;
+
+    private final Map<String, ArtifactRepository> repositories;
+
+    public VersionRangeResult( VersionRangeRequest request )
+    {
+        if ( request == null )
+        {
+            throw new IllegalArgumentException( "version range request has not been specified" );
+        }
+        this.request = request;
+        versions = new ArrayList<String>();
+        repositories = new HashMap<String, ArtifactRepository>();
+    }
+
+    public VersionRangeRequest getRequest()
+    {
+        return request;
+    }
+
+    public List<String> getVersions()
+    {
+        return versions;
+    }
+
+    public ArtifactRepository getRepository( String version )
+    {
+        return repositories.get( version );
+    }
+
+    public VersionRangeResult setRepository( String version, ArtifactRepository repository )
+    {
+        this.repositories.put( version, repository );
+        return this;
+    }
 
 }

@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,42 +21,43 @@ package org.apache.maven.repository;
 
 import java.io.File;
 
+import org.apache.maven.repository.Metadata;
+import org.apache.maven.repository.MetadataTransferException;
+
 /**
  * @author Benjamin Bentmann
  */
-public class ArtifactDownload
+public class MetadataDownload
 {
 
-    private Artifact artifact;
+    private Metadata metadata;
 
     private File file;
 
-    private boolean existenceCheck;
-
     private String checksumPolicy;
 
-    private ArtifactTransferException exception;
+    private MetadataTransferException exception;
 
-    public ArtifactDownload()
+    public MetadataDownload()
     {
         // enables default constructor
     }
 
-    public ArtifactDownload( Artifact artifact, File file, String checksumPolicy )
+    public MetadataDownload( Metadata metadata, File file, String checksumPolicy )
     {
-        setArtifact( artifact );
+        setMetadata( metadata );
         setFile( file );
         setChecksumPolicy( checksumPolicy );
     }
 
-    public Artifact getArtifact()
+    public Metadata getMetadata()
     {
-        return artifact;
+        return metadata;
     }
 
-    public ArtifactDownload setArtifact( Artifact artifact )
+    public MetadataDownload setMetadata( Metadata metadata )
     {
-        this.artifact = artifact;
+        this.metadata = metadata;
         return this;
     }
 
@@ -65,20 +66,9 @@ public class ArtifactDownload
         return file;
     }
 
-    public ArtifactDownload setFile( File file )
+    public MetadataDownload setFile( File file )
     {
         this.file = file;
-        return this;
-    }
-
-    public boolean isExistenceCheck()
-    {
-        return existenceCheck;
-    }
-
-    public ArtifactDownload setExistenceCheck( boolean existenceCheck )
-    {
-        this.existenceCheck = existenceCheck;
         return this;
     }
 
@@ -87,18 +77,18 @@ public class ArtifactDownload
         return checksumPolicy;
     }
 
-    public ArtifactDownload setChecksumPolicy( String checksumPolicy )
+    public MetadataDownload setChecksumPolicy( String checksumPolicy )
     {
         this.checksumPolicy = checksumPolicy;
         return this;
     }
 
-    public ArtifactTransferException getException()
+    public MetadataTransferException getException()
     {
         return exception;
     }
 
-    public ArtifactDownload setException( ArtifactTransferException exception )
+    public MetadataDownload setException( MetadataTransferException exception )
     {
         this.exception = exception;
         return this;

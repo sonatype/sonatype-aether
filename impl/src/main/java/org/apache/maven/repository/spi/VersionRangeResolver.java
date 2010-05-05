@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,24 +19,22 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.VersionRangeRequest;
+import org.apache.maven.repository.VersionRangeResolutionException;
+import org.apache.maven.repository.VersionRangeResult;
+
 /**
  * @author Benjamin Bentmann
  */
-public class VersionResolutionException
-    extends RepositoryException
+public interface VersionRangeResolver
 {
 
-    private final VersionResult result;
-
-    public VersionResolutionException( VersionResult result )
-    {
-        super( "Failed to resolve version" + ( result != null ? " for " + result.getRequest().getArtifact() : "" ) );
-        this.result = result;
-    }
-
-    public VersionResult getResult()
-    {
-        return result;
-    }
+    /**
+     * Expands a version range to a list of matching versions, in ascending order. For example, resolves "[3.8,4.0)" to
+     * ["3.8", "3.8.1", "3.8.2"].
+     */
+    VersionRangeResult resolveVersionRange( RepositoryContext context, VersionRangeRequest request )
+        throws VersionRangeResolutionException;
 
 }

@@ -29,27 +29,27 @@ public class ArtifactResolutionException
     extends RepositoryException
 {
 
-    private final List<? extends ResolveResult> results;
+    private final List<? extends ArtifactResult> results;
 
-    public ArtifactResolutionException( List<? extends ResolveResult> results )
+    public ArtifactResolutionException( List<? extends ArtifactResult> results )
     {
         super( getMessage( results ), getCause( results ) );
-        this.results = ( results != null ) ? results : Collections.<ResolveResult> emptyList();
+        this.results = ( results != null ) ? results : Collections.<ArtifactResult> emptyList();
     }
 
-    public List<? extends ResolveResult> getResults()
+    public List<? extends ArtifactResult> getResults()
     {
         return results;
     }
 
-    private static String getMessage( List<? extends ResolveResult> results )
+    private static String getMessage( List<? extends ArtifactResult> results )
     {
         StringBuilder buffer = new StringBuilder( 256 );
 
         buffer.append( "The following artifacts could not be resolved: " );
 
         String sep = "";
-        for ( ResolveResult result : results )
+        for ( ArtifactResult result : results )
         {
             Artifact artifact = result.getRequest().getArtifact();
             if ( artifact.getFile() == null )
@@ -63,7 +63,7 @@ public class ArtifactResolutionException
         return buffer.toString();
     }
 
-    private static Throwable getCause( List<? extends ResolveResult> results )
+    private static Throwable getCause( List<? extends ArtifactResult> results )
     {
         Throwable cause = null;
         if ( results.size() == 1 )

@@ -33,17 +33,19 @@ import org.apache.maven.repository.InstallRequest;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositoryContext;
 import org.apache.maven.repository.RepositorySystem;
-import org.apache.maven.repository.ResolveRequest;
-import org.apache.maven.repository.ResolveResult;
+import org.apache.maven.repository.ArtifactRequest;
+import org.apache.maven.repository.ArtifactResult;
 import org.apache.maven.repository.TransformRequest;
 import org.apache.maven.repository.TransformResult;
 import org.apache.maven.repository.VersionRangeRequest;
+import org.apache.maven.repository.VersionRangeResolutionException;
 import org.apache.maven.repository.VersionRangeResult;
 import org.apache.maven.repository.VersionRequest;
 import org.apache.maven.repository.VersionResolutionException;
 import org.apache.maven.repository.VersionResult;
 import org.apache.maven.repository.spi.ArtifactDescriptorReader;
 import org.apache.maven.repository.spi.ArtifactResolver;
+import org.apache.maven.repository.spi.VersionRangeResolver;
 import org.apache.maven.repository.spi.VersionResolver;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -60,6 +62,9 @@ public class DefaultRepositorySystem
     private VersionResolver versionResolver;
 
     @Requirement
+    private VersionRangeResolver versionRangeResolver;
+
+    @Requirement
     private ArtifactResolver artifactResolver;
 
     @Requirement
@@ -72,6 +77,16 @@ public class DefaultRepositorySystem
             throw new IllegalArgumentException( "version resolver has not been specified" );
         }
         this.versionResolver = versionResolver;
+        return this;
+    }
+
+    public DefaultRepositorySystem setVersionRangeResolver( VersionRangeResolver versionRangeResolver )
+    {
+        if ( versionRangeResolver == null )
+        {
+            throw new IllegalArgumentException( "version range resolver has not been specified" );
+        }
+        this.versionRangeResolver = versionRangeResolver;
         return this;
     }
 
@@ -101,8 +116,14 @@ public class DefaultRepositorySystem
         return versionResolver.resolveVersion( context, request );
     }
 
-    public List<ResolveResult> resolveArtifacts( RepositoryContext context,
-                                                 Collection<? extends ResolveRequest> requests )
+    public VersionRangeResult resolveVersionRange( RepositoryContext context, VersionRangeRequest request )
+        throws VersionRangeResolutionException
+    {
+        return versionRangeResolver.resolveVersionRange( context, request );
+    }
+
+    public List<ArtifactResult> resolveArtifacts( RepositoryContext context,
+                                                  Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException
     {
         return artifactResolver.resolveArtifacts( context, requests );
@@ -137,12 +158,6 @@ public class DefaultRepositorySystem
     {
         // TODO Auto-generated method stub
 
-    }
-
-    public VersionRangeResult resolveVersionRange( RepositoryContext context, VersionRangeRequest request )
-    {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     public TransformResult transformDependencies( RepositoryContext context, TransformRequest request )

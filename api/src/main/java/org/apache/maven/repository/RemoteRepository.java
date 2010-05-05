@@ -1,8 +1,5 @@
 package org.apache.maven.repository;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,12 +19,17 @@ import java.util.regex.Pattern;
  * under the License.
  */
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * @author Benjamin Bentmann
  */
 public class RemoteRepository
     implements ArtifactRepository
 {
+
+    // TODO: allow tracking of remote repositories mirrored by this one
 
     private String id;
 

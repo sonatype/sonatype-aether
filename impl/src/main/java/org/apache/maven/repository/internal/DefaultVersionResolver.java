@@ -22,31 +22,29 @@ package org.apache.maven.repository.internal;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.maven.artifact.repository.metadata.Snapshot;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
+import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.ArtifactRepository;
+import org.apache.maven.repository.DefaultArtifact;
 import org.apache.maven.repository.LocalRepositoryManager;
 import org.apache.maven.repository.Metadata;
-import org.apache.maven.repository.MetadataDownload;
-import org.apache.maven.repository.MetadataNotFoundException;
-import org.apache.maven.repository.MetadataTransferException;
-import org.apache.maven.repository.NoRepositoryReaderException;
+import org.apache.maven.repository.MetadataRequest;
+import org.apache.maven.repository.MetadataResult;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositoryContext;
-import org.apache.maven.repository.RepositoryPolicy;
 import org.apache.maven.repository.VersionRequest;
 import org.apache.maven.repository.VersionResolutionException;
 import org.apache.maven.repository.VersionResult;
 import org.apache.maven.repository.WorkspaceReader;
 import org.apache.maven.repository.spi.Logger;
+import org.apache.maven.repository.spi.MetadataResolver;
 import org.apache.maven.repository.spi.NullLogger;
-import org.apache.maven.repository.spi.RemoteRepositoryManager;
-import org.apache.maven.repository.spi.RepositoryReader;
-import org.apache.maven.repository.spi.UpdateCheck;
-import org.apache.maven.repository.spi.UpdateCheckManager;
 import org.apache.maven.repository.spi.VersionResolver;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -65,10 +63,7 @@ public class DefaultVersionResolver
     private Logger logger = NullLogger.INSTANCE;
 
     @Requirement
-    private UpdateCheckManager updateCheckManager;
-
-    @Requirement
-    private RemoteRepositoryManager remoteRepositoryManager;
+    private MetadataResolver metadataResolver;
 
     public DefaultVersionResolver setLogger( Logger logger )
     {
@@ -76,23 +71,13 @@ public class DefaultVersionResolver
         return this;
     }
 
-    public DefaultVersionResolver setUpdateCheckManager( UpdateCheckManager updateCheckManager )
+    public DefaultVersionResolver setMetadataResolver( MetadataResolver metadataResolver )
     {
-        if ( updateCheckManager == null )
+        if ( metadataResolver == null )
         {
-            throw new IllegalArgumentException( "update check manager has not been specified" );
+            throw new IllegalArgumentException( "metadata resolver has not been specified" );
         }
-        this.updateCheckManager = updateCheckManager;
-        return this;
-    }
-
-    public DefaultVersionResolver setRemoteRepositoryManager( RemoteRepositoryManager remoteRepositoryManager )
-    {
-        if ( remoteRepositoryManager == null )
-        {
-            throw new IllegalArgumentException( "remote repository manager has not been specified" );
-        }
-        this.remoteRepositoryManager = remoteRepositoryManager;
+        this.metadataResolver = metadataResolver;
         return this;
     }
 
@@ -143,86 +128,33 @@ public class DefaultVersionResolver
         }
         else
         {
-            // TODO: Refactor out a metadata resolver analogous to the artifact resolver
-            if ( !context.isOffline() )
-            {
-                long localLastUpdated = getFile( context, metadata, null ).lastModified();
-
-                for ( RemoteRepository repository : request.getRemoteRepositories() )
-                {
-                    RepositoryPolicy policy = getPolicy( context, repository, metadata.getNature() );
-
-                    if ( !policy.isEnabled() )
-                    {
-                        continue;
-                    }
-
-                    File metadataFile = getFile( context, metadata, repository );
-
-                    MetadataDownload download =
-                        new MetadataDownload( metadata, metadataFile, policy.getChecksumPolicy() );
-
-                    UpdateCheck<Metadata, MetadataTransferException> check =
-                        new UpdateCheck<Metadata, MetadataTransferException>();
-                    check.setLocalLastUpdated( localLastUpdated );
-                    check.setItem( metadata );
-                    check.setFile( metadataFile );
-                    check.setRepository( repository );
-                    check.setPolicy( policy.getUpdatePolicy() );
-                    updateCheckManager.checkMetadata( context, check );
-
-                    if ( check.isRequired() )
-                    {
-                        try
-                        {
-                            RepositoryReader reader = remoteRepositoryManager.getRepositoryReader( context, repository );
-                            try
-                            {
-                                reader.getMetadata( Arrays.asList( download ) );
-                            }
-                            finally
-                            {
-                                reader.close();
-                            }
-                        }
-                        catch ( NoRepositoryReaderException e )
-                        {
-                            download.setException( new MetadataTransferException( metadata, repository, e ) );
-                        }
-                        updateCheckManager.touchMetadata( context, check.setException( download.getException() ) );
-                    }
-                    else
-                    {
-                        download.setException( check.getException() );
-                    }
-
-                    if ( download.getException() != null )
-                    {
-                        result.addException( download.getException() );
-                        if ( download.getException() instanceof MetadataNotFoundException )
-                        {
-                            metadataFile.delete();
-                        }
-                    }
-                }
-            }
-
-            Versioning versioning = readVersions( context, metadata, null );
-            ArtifactRepository repo = context.getLocalRepositoryManager().getRepository();
-
+            List<MetadataRequest> metadataRequests =
+                new ArrayList<MetadataRequest>( request.getRemoteRepositories().size() );
             for ( RemoteRepository repository : request.getRemoteRepositories() )
             {
-                RepositoryPolicy policy = getPolicy( context, repository, metadata.getNature() );
+                MetadataRequest metadataRequest = new MetadataRequest( new Metadata( metadata ), repository );
+                metadataRequests.add( metadataRequest );
+            }
+            List<MetadataResult> metadataResults = metadataResolver.resolveMetadata( context, metadataRequests );
 
-                if ( !policy.isEnabled() )
-                {
-                    continue;
-                }
+            LocalRepositoryManager lrm = context.getLocalRepositoryManager();
+            File localMetadataFile =
+                new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalMetadata( metadata ) );
+            if ( localMetadataFile.isFile() )
+            {
+                metadata.setFile( localMetadataFile );
+            }
 
-                Versioning v = readVersions( context, metadata, repository );
+            Versioning versioning = readVersions( context, metadata, result );
+            ArtifactRepository repo = context.getLocalRepositoryManager().getRepository();
+
+            for ( MetadataResult metadataResult : metadataResults )
+            {
+                result.addException( metadataResult.getException() );
+                Versioning v = readVersions( context, metadataResult.getRequest().getMetadata(), result );
                 if ( mergeVersions( versioning, v ) )
                 {
-                    repo = repository;
+                    repo = metadataResult.getRequest().getRemoteRepository();
                 }
             }
 
@@ -236,6 +168,29 @@ public class DefaultVersionResolver
                 if ( StringUtils.isEmpty( versioning.getLatest() ) )
                 {
                     result.setVersion( versioning.getRelease() );
+                }
+
+                if ( result.getVersion() != null && result.getVersion().endsWith( "SNAPSHOT" ) )
+                {
+                    Artifact artifact = new DefaultArtifact( request.getArtifact() );
+                    artifact.setVersion( result.getVersion() );
+                    VersionRequest subRequest = new VersionRequest();
+                    subRequest.setArtifact( artifact );
+                    if ( repo instanceof RemoteRepository )
+                    {
+                        subRequest.setRemoteRepositories( Collections.singletonList( (RemoteRepository) repo ) );
+                    }
+                    else
+                    {
+                        subRequest.setRemoteRepositories( request.getRemoteRepositories() );
+                    }
+                    VersionResult subResult = resolveVersion( context, subRequest );
+                    result.setVersion( subResult.getVersion() );
+                    repo = subResult.getRepository();
+                    for ( Exception exception : subResult.getExceptions() )
+                    {
+                        result.addException( exception );
+                    }
                 }
             }
             else
@@ -268,40 +223,19 @@ public class DefaultVersionResolver
         return result;
     }
 
-    private File getFile( RepositoryContext context, Metadata metadata, RemoteRepository repository )
-    {
-        LocalRepositoryManager lrm = context.getLocalRepositoryManager();
-        String path;
-        if ( repository != null )
-        {
-            path = lrm.getPathForRemoteMetadata( metadata, repository );
-        }
-        else
-        {
-            path = lrm.getPathForLocalMetadata( metadata );
-        }
-        return new File( lrm.getRepository().getBasedir(), path );
-    }
-
-    private RepositoryPolicy getPolicy( RepositoryContext context, RemoteRepository repository, Metadata.Nature nature )
-    {
-        boolean releases = !Metadata.Nature.SNAPSHOT.equals( nature );
-        boolean snapshots = !Metadata.Nature.RELEASE.equals( nature );
-        return remoteRepositoryManager.getPolicy( context, repository, releases, snapshots );
-    }
-
-    private Versioning readVersions( RepositoryContext context, Metadata metadata, RemoteRepository repository )
+    private Versioning readVersions( RepositoryContext context, Metadata metadata, VersionResult result )
     {
         Versioning versioning = null;
-
-        File metadataFile = getFile( context, metadata, repository );
 
         FileInputStream fis = null;
         try
         {
-            fis = new FileInputStream( metadataFile );
-            org.apache.maven.artifact.repository.metadata.Metadata m = new MetadataXpp3Reader().read( fis );
-            versioning = m.getVersioning();
+            if ( metadata.getFile() != null )
+            {
+                fis = new FileInputStream( metadata.getFile() );
+                org.apache.maven.artifact.repository.metadata.Metadata m = new MetadataXpp3Reader().read( fis );
+                versioning = m.getVersioning();
+            }
         }
         catch ( FileNotFoundException e )
         {
@@ -309,7 +243,7 @@ public class DefaultVersionResolver
         }
         catch ( Exception e )
         {
-            // TODO: notify somebody
+            result.addException( e );
         }
         finally
         {
@@ -327,6 +261,8 @@ public class DefaultVersionResolver
         {
             return false;
         }
+
+        target.setLastUpdated( sourceTimestamp );
 
         if ( source.getRelease() != null )
         {

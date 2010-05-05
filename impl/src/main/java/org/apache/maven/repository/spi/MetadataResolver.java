@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,24 +19,22 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.Collection;
+import java.util.List;
+
+import org.apache.maven.repository.MetadataRequest;
+import org.apache.maven.repository.MetadataResult;
+import org.apache.maven.repository.RepositoryContext;
+
 /**
  * @author Benjamin Bentmann
  */
-public class VersionResolutionException
-    extends RepositoryException
+public interface MetadataResolver
 {
 
-    private final VersionResult result;
-
-    public VersionResolutionException( VersionResult result )
-    {
-        super( "Failed to resolve version" + ( result != null ? " for " + result.getRequest().getArtifact() : "" ) );
-        this.result = result;
-    }
-
-    public VersionResult getResult()
-    {
-        return result;
-    }
+    /**
+     * Resolves the paths for a collection of metadata. Metadata will be downloaded if necessary.
+     */
+    List<MetadataResult> resolveMetadata( RepositoryContext context, Collection<? extends MetadataRequest> requests );
 
 }

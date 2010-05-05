@@ -21,8 +21,6 @@ package org.apache.maven.repository.spi;
 
 import java.util.Collection;
 
-import org.apache.maven.repository.ArtifactDownload;
-import org.apache.maven.repository.MetadataDownload;
 
 /**
  * @author Benjamin Bentmann

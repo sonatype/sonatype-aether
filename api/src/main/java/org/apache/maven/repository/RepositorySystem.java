@@ -32,7 +32,8 @@ public interface RepositorySystem
      * Expands a version range to a list of matching versions, in ascending order. For example, resolves "[3.8,4.0)" to
      * ["3.8", "3.8.1", "3.8.2"].
      */
-    VersionRangeResult resolveVersionRange( RepositoryContext context, VersionRangeRequest request );
+    VersionRangeResult resolveVersionRange( RepositoryContext context, VersionRangeRequest request )
+        throws VersionRangeResolutionException;
 
     /**
      * Resolves a metaversion to a concrete version. For example, resolves "1.0-SNAPSHOT" to "1.0-20090208.132618-23" or
@@ -60,7 +61,7 @@ public interface RepositorySystem
     /**
      * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary.
      */
-    List<ResolveResult> resolveArtifacts( RepositoryContext context, Collection<? extends ResolveRequest> requests )
+    List<ArtifactResult> resolveArtifacts( RepositoryContext context, Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException;
 
     // TODO:
