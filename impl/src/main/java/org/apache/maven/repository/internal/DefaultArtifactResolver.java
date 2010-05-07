@@ -204,7 +204,7 @@ public class DefaultArtifactResolver
             Iterator<ResolutionGroup> groupIt = groups.iterator();
             for ( RemoteRepository repo : repos )
             {
-                if ( !repo.getPolicy( isSnapshot( artifact ) ).isEnabled() )
+                if ( !repo.getPolicy( artifact.isSnapshot() ).isEnabled() )
                 {
                     continue;
                 }
@@ -251,7 +251,7 @@ public class DefaultArtifactResolver
                     download.setFile( new File( lrm.getRepository().getBasedir(), path ) );
                 }
 
-                boolean snapshot = isSnapshot( artifact );
+                boolean snapshot = artifact.isSnapshot();
                 RepositoryPolicy policy =
                     remoteRepositoryManager.getPolicy( context, group.repository, !snapshot, snapshot );
 
@@ -333,12 +333,6 @@ public class DefaultArtifactResolver
         }
 
         return results;
-    }
-
-    private boolean isSnapshot( Artifact artifact )
-    {
-        String version = artifact.getVersion();
-        return version.endsWith( "SNAPSHOT" ) || version.matches( "^(.*)-([0-9]{8}.[0-9]{6})-([0-9]+)$" );
     }
 
     static class ResolutionGroup

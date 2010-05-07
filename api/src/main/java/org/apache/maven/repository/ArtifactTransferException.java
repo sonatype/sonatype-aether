@@ -41,7 +41,7 @@ public class ArtifactTransferException
     public ArtifactTransferException( Artifact artifact, RemoteRepository repository, Throwable cause )
     {
         super( "Could not transfer artifact " + artifact + ( repository != null ? " from " + repository : "" )
-            + ( cause != null ? ": " + getMessage( cause ) : "" ), cause );
+            + getMessage( ": ", cause ), cause );
 
         this.artifact = artifact;
         this.repository = repository;

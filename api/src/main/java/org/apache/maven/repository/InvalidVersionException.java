@@ -19,32 +19,31 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+
 /**
  * @author Benjamin Bentmann
  */
-public class DefaultSubArtifact
-    extends DefaultArtifact
+public class InvalidVersionException
+    extends RepositoryException
 {
 
-    private final Artifact mainArtifact;
+    private final String version;
 
-    public DefaultSubArtifact( Artifact mainArtifact, String subClassifier, String subType )
+    public InvalidVersionException( String version, String message )
     {
-        super( mainArtifact.getGroupId(), mainArtifact.getArtifactId(), expand( subClassifier,
-                                                                                mainArtifact.getClassifier() ),
-               expand( subType, mainArtifact.getType() ), mainArtifact.getVersion() );
-        setBaseVersion( mainArtifact.getBaseVersion() );
-        this.mainArtifact = mainArtifact;
+        super( message );
+        this.version = version;
     }
 
-    private static String expand( String pattern, String replacement )
+    public InvalidVersionException( String version, Throwable cause )
     {
-        return ( pattern != null ) ? pattern.replace( "*", replacement ) : pattern;
+        super( "Could not parse version " + version + getMessage( ": ", cause ), cause );
+        this.version = version;
     }
 
-    public Artifact getMainArtifact()
+    public String getVersion()
     {
-        return mainArtifact;
+        return version;
     }
 
 }

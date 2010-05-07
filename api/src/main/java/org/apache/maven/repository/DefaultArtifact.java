@@ -20,21 +20,27 @@ package org.apache.maven.repository;
  */
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Benjamin Bentmann
  */
 public class DefaultArtifact
-    implements Artifact
+    implements Artifact, Cloneable
 {
+
+    private static final String SNAPSHOT = "SNAPSHOT";
+
+    private static final Pattern SNAPSHOT_TIMESTAMP = Pattern.compile( "^(.*-)([0-9]{8}.[0-9]{6}-[0-9]+)$" );
 
     private String groupId;
 
     private String artifactId;
 
-    private String version;
-
     private String baseVersion;
+
+    private String version;
 
     private String classifier;
 
@@ -45,28 +51,26 @@ public class DefaultArtifact
     public DefaultArtifact()
     {
         // enables default constructor
+        groupId = artifactId = version = classifier = type = "";
     }
 
     public DefaultArtifact( String groupId, String artifactId, String classifier, String type, String version )
     {
-        this.groupId = groupId;
-        this.artifactId = artifactId;
-        this.classifier = ( classifier != null ) ? classifier : "";
-        this.type = type;
-        this.version = version;
-        this.baseVersion = version;
+        setGroupId( groupId );
+        setArtifactId( artifactId );
+        setClassifier( classifier );
+        setType( type );
+        setVersion( version );
     }
 
     public DefaultArtifact( Artifact artifact )
     {
-        this.groupId = artifact.getGroupId();
-        this.artifactId = artifact.getArtifactId();
-        this.classifier = artifact.getClassifier();
-        this.type = artifact.getType();
-        this.version = artifact.getVersion();
-        this.baseVersion = artifact.getBaseVersion();
-        this.file = artifact.getFile();
-        // TODO: copy properties
+        setGroupId( artifact.getGroupId() );
+        setArtifactId( artifact.getArtifactId() );
+        setClassifier( artifact.getClassifier() );
+        setType( artifact.getType() );
+        setVersion( artifact.getVersion() );
+        setFile( artifact.getFile() );
     }
 
     public String getGroupId()
@@ -74,9 +78,9 @@ public class DefaultArtifact
         return groupId;
     }
 
-    public Artifact setGroupId( String groupId )
+    public DefaultArtifact setGroupId( String groupId )
     {
-        this.groupId = groupId;
+        this.groupId = ( groupId != null ) ? groupId : "";
         return this;
     }
 
@@ -85,10 +89,52 @@ public class DefaultArtifact
         return artifactId;
     }
 
-    public Artifact setArtifactId( String artifactId )
+    public DefaultArtifact setArtifactId( String artifactId )
     {
-        this.artifactId = artifactId;
+        this.artifactId = ( artifactId != null ) ? artifactId : "";
         return this;
+    }
+
+    public String getBaseVersion()
+    {
+        if ( baseVersion == null )
+        {
+            String version = getVersion();
+            if ( version.startsWith( "[" ) || version.startsWith( "(" ) )
+            {
+                baseVersion = "";
+            }
+            else
+            {
+                Matcher m = SNAPSHOT_TIMESTAMP.matcher( version );
+                if ( m.matches() )
+                {
+                    this.baseVersion = m.group( 1 ) + SNAPSHOT;
+                }
+                else
+                {
+                    this.baseVersion = version;
+                }
+            }
+        }
+        return baseVersion;
+    }
+
+    public String getVersion()
+    {
+        return version;
+    }
+
+    public DefaultArtifact setVersion( String version )
+    {
+        this.version = ( version != null ) ? version : "";
+        return this;
+    }
+
+    public boolean isSnapshot()
+    {
+        String bv = getBaseVersion();
+        return bv != null && bv.endsWith( SNAPSHOT );
     }
 
     public String getClassifier()
@@ -96,7 +142,7 @@ public class DefaultArtifact
         return classifier;
     }
 
-    public Artifact setClassifier( String classifier )
+    public DefaultArtifact setClassifier( String classifier )
     {
         this.classifier = ( classifier != null ) ? classifier : "";
         return this;
@@ -107,26 +153,10 @@ public class DefaultArtifact
         return type;
     }
 
-    public Artifact setType( String type )
+    public DefaultArtifact setType( String type )
     {
-        this.type = type;
+        this.type = ( type != null ) ? type : "";
         return this;
-    }
-
-    public String getBaseVersion()
-    {
-        return baseVersion;
-    }
-
-    public Artifact setBaseVersion( String baseVersion )
-    {
-        this.baseVersion = baseVersion;
-        return this;
-    }
-
-    public String getVersion()
-    {
-        return version;
     }
 
     public File getFile()
@@ -134,22 +164,16 @@ public class DefaultArtifact
         return file;
     }
 
-    public String getProperty( String key, String defaultValue )
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public Artifact setFile( File file )
+    public DefaultArtifact setFile( File file )
     {
         this.file = file;
         return this;
     }
 
-    public Artifact setVersion( String version )
+    public String getProperty( String key, String defaultValue )
     {
-        this.version = version;
-        return this;
+        // TODO Auto-generated method stub
+        return defaultValue;
     }
 
     @Override
@@ -165,6 +189,21 @@ public class DefaultArtifact
         }
         buffer.append( ':' ).append( getVersion() );
         return buffer.toString();
+    }
+
+    @Override
+    public DefaultArtifact clone()
+    {
+        try
+        {
+            DefaultArtifact clone = (DefaultArtifact) super.clone();
+
+            return clone;
+        }
+        catch ( CloneNotSupportedException e )
+        {
+            throw new UnsupportedOperationException( e );
+        }
     }
 
 }

@@ -32,6 +32,8 @@ public class VersionRangeResult
 
     private final VersionRangeRequest request;
 
+    private final List<Exception> exceptions;
+
     private List<String> versions;
 
     private final Map<String, ArtifactRepository> repositories;
@@ -43,6 +45,7 @@ public class VersionRangeResult
             throw new IllegalArgumentException( "version range request has not been specified" );
         }
         this.request = request;
+        this.exceptions = new ArrayList<Exception>( 4 );
         versions = new ArrayList<String>();
         repositories = new HashMap<String, ArtifactRepository>();
     }
@@ -52,9 +55,35 @@ public class VersionRangeResult
         return request;
     }
 
+    public List<? extends Exception> getExceptions()
+    {
+        return exceptions;
+    }
+
+    public VersionRangeResult addException( Exception exception )
+    {
+        if ( exception != null )
+        {
+            this.exceptions.add( exception );
+        }
+        return this;
+    }
+
     public List<String> getVersions()
     {
         return versions;
+    }
+
+    public VersionRangeResult addVersion( String version )
+    {
+        versions.add( version );
+        return this;
+    }
+
+    public VersionRangeResult setVersions( List<String> versions )
+    {
+        this.versions = ( versions != null ) ? versions : new ArrayList<String>();
+        return this;
     }
 
     public ArtifactRepository getRepository( String version )
@@ -64,7 +93,10 @@ public class VersionRangeResult
 
     public VersionRangeResult setRepository( String version, ArtifactRepository repository )
     {
-        this.repositories.put( version, repository );
+        if ( repository != null )
+        {
+            this.repositories.put( version, repository );
+        }
         return this;
     }
 

@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.internal;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,39 +19,19 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.io.File;
+import org.apache.maven.repository.InvalidVersionException;
 
 /**
  * @author Benjamin Bentmann
  */
-public interface Artifact
+class MavenVersionScheme
+    implements VersionScheme
 {
 
-    String getGroupId();
-
-    String getArtifactId();
-
-    String getBaseVersion();
-
-    String getVersion();
-
-    Artifact setVersion( String version );
-
-    boolean isSnapshot();
-
-    String getClassifier();
-
-    // NOTE: This represents artifactHandler.extension! The higher-level classification done with artifactHandler.type should become a property
-    String getType();
-
-    File getFile();
-
-    Artifact setFile( File file );
-
-    // holds characteristics of artifact which were previously controlled by artifact handler (e.g.
-    // includesDependencies, addedToClasspath)
-    String getProperty( String key, String defaultValue );
-
-    Artifact clone();
+    public MavenVersion parseVersion( String version )
+        throws InvalidVersionException
+    {
+        return new MavenVersion( version );
+    }
 
 }

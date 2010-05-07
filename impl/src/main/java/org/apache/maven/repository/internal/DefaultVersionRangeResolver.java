@@ -19,9 +19,20 @@ package org.apache.maven.repository.internal;
  * under the License.
  */
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.maven.artifact.repository.metadata.Versioning;
+import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
+import org.apache.maven.repository.ArtifactRepository;
+import org.apache.maven.repository.InvalidVersionException;
+import org.apache.maven.repository.LocalRepositoryManager;
 import org.apache.maven.repository.Metadata;
 import org.apache.maven.repository.MetadataRequest;
 import org.apache.maven.repository.MetadataResult;
@@ -37,6 +48,7 @@ import org.apache.maven.repository.spi.NullLogger;
 import org.apache.maven.repository.spi.VersionRangeResolver;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.util.IOUtil;
 
 /**
  * @author Benjamin Bentmann
@@ -73,36 +85,172 @@ public class DefaultVersionRangeResolver
     {
         VersionRangeResult result = new VersionRangeResult( request );
 
-        List<String> versions = new ArrayList<String>();
+        String version = request.getArtifact().getVersion();
 
-        WorkspaceReader workspace = context.getWorkspaceReader();
-        if ( workspace != null )
+        VersionScheme versionScheme = new MavenVersionScheme();
+
+        List<VersionRange> ranges;
+        try
         {
-            versions.addAll( workspace.findVersions( request.getArtifact() ) );
-            for ( String version : versions )
+            ranges = VersionRange.parseRanges( version, versionScheme );
+        }
+        catch ( InvalidVersionException e )
+        {
+            result.addException( e );
+            throw new VersionRangeResolutionException( result );
+        }
+
+        if ( ranges.isEmpty() )
+        {
+            result.addVersion( version );
+        }
+        else
+        {
+            Map<String, ArtifactRepository> versionIndex =
+                getVersions( context, result, request, getNature( context, ranges ) );
+
+            List<Comparable<Object>> versions = new ArrayList<Comparable<Object>>();
+            for ( String v : versionIndex.keySet() )
             {
-                result.setRepository( version, workspace.getRepository() );
+                try
+                {
+                    Comparable<Object> ver = versionScheme.parseVersion( v );
+                    if ( contained( ranges, ver ) )
+                    {
+                        versions.add( ver );
+                        result.setRepository( v, versionIndex.get( v ) );
+                    }
+                }
+                catch ( InvalidVersionException e )
+                {
+                    result.addException( e );
+                }
+            }
+
+            Collections.sort( versions );
+            for ( Comparable<Object> ver : versions )
+            {
+                result.addVersion( ver.toString() );
             }
         }
+
+        return result;
+    }
+
+    private boolean contained( List<VersionRange> ranges, Comparable<Object> version )
+    {
+        for ( VersionRange range : ranges )
+        {
+            if ( range.containsVersion( version ) )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Map<String, ArtifactRepository> getVersions( RepositoryContext context, VersionRangeResult result,
+                                                         VersionRangeRequest request, Metadata.Nature nature )
+    {
+        Map<String, ArtifactRepository> versionIndex = new HashMap<String, ArtifactRepository>();
 
         Metadata metadata = new Metadata();
         metadata.setGroupId( request.getArtifact().getGroupId() );
         metadata.setArtifactId( request.getArtifact().getArtifactId() );
         metadata.setType( "maven-metadata.xml" );
-        // FIXME: calculate the correct nature
-        metadata.setNature( Metadata.Nature.RELEASE );
+        metadata.setNature( nature );
 
         List<MetadataRequest> metadataRequests =
             new ArrayList<MetadataRequest>( request.getRemoteRepositories().size() );
         for ( RemoteRepository repository : request.getRemoteRepositories() )
         {
             MetadataRequest metadataRequest = new MetadataRequest( new Metadata( metadata ), repository );
+            metadataRequest.setDeleteLocalCopyIfMissing( true );
             metadataRequests.add( metadataRequest );
         }
         List<MetadataResult> metadataResults = metadataResolver.resolveMetadata( context, metadataRequests );
 
-        // TODO Auto-generated method stub
-        return result;
+        WorkspaceReader workspace = context.getWorkspaceReader();
+        if ( workspace != null )
+        {
+            List<String> versions = workspace.findVersions( request.getArtifact() );
+            for ( String version : versions )
+            {
+                versionIndex.put( version, workspace.getRepository() );
+            }
+        }
+
+        LocalRepositoryManager lrm = context.getLocalRepositoryManager();
+        File localMetadataFile = new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalMetadata( metadata ) );
+        if ( localMetadataFile.isFile() )
+        {
+            metadata.setFile( localMetadataFile );
+            Versioning versioning = readVersions( context, metadata, result );
+            for ( String version : versioning.getVersions() )
+            {
+                if ( !versionIndex.containsKey( version ) )
+                {
+                    versionIndex.put( version, lrm.getRepository() );
+                }
+            }
+        }
+
+        for ( MetadataResult metadataResult : metadataResults )
+        {
+            result.addException( metadataResult.getException() );
+            Versioning versioning = readVersions( context, metadataResult.getRequest().getMetadata(), result );
+            for ( String version : versioning.getVersions() )
+            {
+                if ( !versionIndex.containsKey( version ) )
+                {
+                    versionIndex.put( version, metadataResult.getRequest().getRemoteRepository() );
+                }
+            }
+        }
+
+        return versionIndex;
+    }
+
+    private Metadata.Nature getNature( RepositoryContext context, List<VersionRange> ranges )
+    {
+        for ( VersionRange range : ranges )
+        {
+            if ( range.containsSnapshots() )
+            {
+                return Metadata.Nature.RELEASE_OR_SNAPSHOT;
+            }
+        }
+        return Metadata.Nature.RELEASE;
+    }
+
+    private Versioning readVersions( RepositoryContext context, Metadata metadata, VersionRangeResult result )
+    {
+        Versioning versioning = null;
+
+        FileInputStream fis = null;
+        try
+        {
+            if ( metadata.getFile() != null )
+            {
+                fis = new FileInputStream( metadata.getFile() );
+                org.apache.maven.artifact.repository.metadata.Metadata m = new MetadataXpp3Reader().read( fis );
+                versioning = m.getVersioning();
+            }
+        }
+        catch ( FileNotFoundException e )
+        {
+            // tolerable
+        }
+        catch ( Exception e )
+        {
+            result.addException( e );
+        }
+        finally
+        {
+            IOUtil.close( fis );
+        }
+
+        return ( versioning != null ) ? versioning : new Versioning();
     }
 
 }

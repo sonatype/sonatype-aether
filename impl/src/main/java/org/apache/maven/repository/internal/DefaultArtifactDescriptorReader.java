@@ -38,7 +38,7 @@ import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.ArtifactDescriptorException;
 import org.apache.maven.repository.ArtifactResolutionException;
 import org.apache.maven.repository.DefaultArtifact;
-import org.apache.maven.repository.DefaultSubArtifact;
+import org.apache.maven.repository.SubArtifact;
 import org.apache.maven.repository.ArtifactDescriptorRequest;
 import org.apache.maven.repository.ArtifactDescriptorResult;
 import org.apache.maven.repository.Dependency;
@@ -135,7 +135,7 @@ public class DefaultArtifactDescriptorReader
                 throw new ArtifactDescriptorException( result );
             }
 
-            Artifact pomArtifact = new DefaultSubArtifact( artifact, "", "pom" );
+            Artifact pomArtifact = new SubArtifact( artifact, "", "pom" );
 
             ArtifactResult resolveResult;
             try
@@ -197,19 +197,9 @@ public class DefaultArtifactDescriptorReader
 
             if ( relocation != null )
             {
-                artifact = new DefaultArtifact( artifact );
-                if ( relocation.getGroupId() != null )
-                {
-                    artifact.setGroupId( relocation.getGroupId() );
-                }
-                if ( relocation.getArtifactId() != null )
-                {
-                    artifact.setArtifactId( relocation.getArtifactId() );
-                }
-                if ( relocation.getVersion() != null )
-                {
-                    artifact.setVersion( relocation.getVersion() );
-                }
+                artifact =
+                    new RelocatedArtifact( artifact, relocation.getGroupId(), relocation.getArtifactId(),
+                                           relocation.getVersion() );
                 result.addRelocation( artifact );
             }
             else
@@ -232,7 +222,7 @@ public class DefaultArtifactDescriptorReader
 
     private Dependency convert( org.apache.maven.model.Dependency dependency )
     {
-        Artifact artifact = new DefaultArtifact();
+        DefaultArtifact artifact = new DefaultArtifact();
         artifact.setGroupId( dependency.getGroupId() );
         artifact.setArtifactId( dependency.getArtifactId() );
         artifact.setVersion( dependency.getVersion() );

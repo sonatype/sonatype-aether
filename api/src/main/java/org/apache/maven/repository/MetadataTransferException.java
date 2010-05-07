@@ -41,7 +41,7 @@ public class MetadataTransferException
     public MetadataTransferException( Metadata metadata, RemoteRepository repository, Throwable cause )
     {
         super( "Could not transfer metadata " + metadata + ( repository != null ? " from " + repository : "" )
-            + ( cause != null ? ": " + getMessage( cause ) : "" ), cause );
+            + getMessage( ": ", cause ), cause );
 
         this.metadata = metadata;
         this.repository = repository;

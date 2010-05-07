@@ -133,6 +133,7 @@ public class DefaultVersionResolver
             for ( RemoteRepository repository : request.getRemoteRepositories() )
             {
                 MetadataRequest metadataRequest = new MetadataRequest( new Metadata( metadata ), repository );
+                metadataRequest.setDeleteLocalCopyIfMissing( true );
                 metadataRequests.add( metadataRequest );
             }
             List<MetadataResult> metadataResults = metadataResolver.resolveMetadata( context, metadataRequests );

@@ -36,7 +36,7 @@ public abstract class RepositoryException
         super( message, cause );
     }
 
-    static String getMessage( Throwable cause )
+    public static String getMessage( String prefix, Throwable cause )
     {
         String msg = "";
         if ( cause != null )
@@ -46,6 +46,7 @@ public abstract class RepositoryException
             {
                 msg = cause.getClass().getSimpleName();
             }
+            msg = prefix + msg;
         }
         return msg;
     }
