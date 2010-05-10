@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,30 +19,18 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import org.apache.maven.repository.CollectRequest;
+import org.apache.maven.repository.CollectResult;
+import org.apache.maven.repository.DependencyCollectionException;
+import org.apache.maven.repository.RepositoryContext;
+
 /**
  * @author Benjamin Bentmann
  */
-public class VersionRangeResolutionException
-    extends RepositoryException
+public interface DependencyCollector
 {
 
-    private final VersionRangeResult result;
-
-    public VersionRangeResolutionException( VersionRangeResult result )
-    {
-        super( "Failed to resolve version range" + ( result != null ? " for " + result.getRequest().getArtifact() : "" ) );
-        this.result = result;
-    }
-
-    public VersionRangeResolutionException( VersionRangeResult result, String message )
-    {
-        super( message );
-        this.result = result;
-    }
-
-    public VersionRangeResult getResult()
-    {
-        return result;
-    }
+    CollectResult collectDependencies( RepositoryContext context, CollectRequest request )
+        throws DependencyCollectionException;
 
 }

@@ -133,7 +133,7 @@ public class DefaultArtifactResolver
             results.add( result );
 
             Artifact artifact = request.getArtifact();
-            List<RemoteRepository> repos = request.getRemoteRepositories();
+            List<RemoteRepository> repos = request.getRepositories();
 
             if ( artifact.getFile() != null )
             {
@@ -146,7 +146,7 @@ public class DefaultArtifactResolver
 
             VersionRequest versionRequest = new VersionRequest();
             versionRequest.setArtifact( artifact );
-            versionRequest.setRemoteRepositories( repos );
+            versionRequest.setRepositories( repos );
             VersionResult versionResult;
             try
             {
@@ -222,6 +222,7 @@ public class DefaultArtifactResolver
                 {
                     group = new ResolutionGroup( repo );
                     groups.add( group );
+                    groupIt = Collections.<ResolutionGroup> emptyList().iterator();
                 }
                 group.items.add( new ResolutionItem( result, query ) );
             }

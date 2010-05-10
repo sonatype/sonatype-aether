@@ -1,5 +1,8 @@
 package org.apache.maven.repository;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,9 +25,53 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public interface CollectResult
+public class CollectResult
 {
 
-    DependencyNode getRoot();
+    private final CollectRequest request;
+
+    private final List<Exception> exceptions;
+
+    private DependencyNode root;
+
+    public CollectResult( CollectRequest request )
+    {
+        if ( request == null )
+        {
+            throw new IllegalArgumentException( "dependency collection request has not been specified" );
+        }
+        this.request = request;
+        this.exceptions = new ArrayList<Exception>( 4 );
+    }
+
+    public CollectRequest getRequest()
+    {
+        return request;
+    }
+
+    public List<Exception> getExceptions()
+    {
+        return exceptions;
+    }
+
+    public CollectResult addException( Exception exception )
+    {
+        if ( exception != null )
+        {
+            this.exceptions.add( exception );
+        }
+        return this;
+    }
+
+    public DependencyNode getRoot()
+    {
+        return root;
+    }
+
+    public CollectResult setRoot( DependencyNode root )
+    {
+        this.root = root;
+        return this;
+    }
 
 }

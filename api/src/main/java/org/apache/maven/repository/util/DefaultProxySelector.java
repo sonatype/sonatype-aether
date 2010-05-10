@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
+
+import org.apache.maven.repository.Proxy;
+import org.apache.maven.repository.ProxySelector;
+import org.apache.maven.repository.RemoteRepository;
 
 /**
  * @author Benjamin Bentmann

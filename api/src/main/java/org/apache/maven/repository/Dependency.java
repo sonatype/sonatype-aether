@@ -49,6 +49,13 @@ public class Dependency
         setOptional( optional );
     }
 
+    public Dependency( Dependency original )
+    {
+        setArtifact( original.getArtifact() );
+        setScope( original.getScope() );
+        setOptional( original.isOptional() );
+    }
+
     public Artifact getArtifact()
     {
         return artifact;

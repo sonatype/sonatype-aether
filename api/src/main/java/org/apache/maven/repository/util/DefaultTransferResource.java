@@ -1,4 +1,6 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.util;
+
+import org.apache.maven.repository.TransferResource;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one

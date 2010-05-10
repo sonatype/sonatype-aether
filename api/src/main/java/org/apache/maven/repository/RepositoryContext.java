@@ -33,6 +33,10 @@ public interface RepositoryContext
 
     boolean isNotFoundCachingEnabled();
 
+    boolean isIgnoreMissingArtifactDescriptor();
+
+    boolean isIgnoreInvalidArtifactDescriptor();
+
     String getChecksumPolicy();
 
     String getUpdatePolicy();
@@ -55,6 +59,12 @@ public interface RepositoryContext
     ProxySelector getProxySelector();
 
     AuthenticationSelector getAuthenticationSelector();
+
+    DependencyTraverser getDependencyTraverser();
+
+    DependencyManager getDependencyManager();
+
+    DependencyFilter getDependencyFilter();
 
     // TODO: cache?
 

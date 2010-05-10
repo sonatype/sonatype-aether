@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,48 +19,25 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.List;
+import org.apache.maven.repository.DependencyNode;
+import org.apache.maven.repository.DependencyTraverser;
 
 /**
  * @author Benjamin Bentmann
  */
-public class ArtifactDescriptorRequest
+public class NoopDependencyTraverser
+    implements DependencyTraverser
 {
 
-    private Artifact artifact;
+    public static final DependencyTraverser INSTANCE = new NoopDependencyTraverser();
 
-    private List<RemoteRepository> repositories;
-
-    public ArtifactDescriptorRequest()
+    public boolean accept( DependencyNode node )
     {
-        // enables default constructor
+        return true;
     }
 
-    public ArtifactDescriptorRequest( Artifact artifact, List<RemoteRepository> repositories )
+    public DependencyTraverser deriveChildTraverser( DependencyNode childNode )
     {
-        setArtifact( artifact );
-        setRemoteRepositories( repositories );
-    }
-
-    public Artifact getArtifact()
-    {
-        return artifact;
-    }
-
-    public ArtifactDescriptorRequest setArtifact( Artifact artifact )
-    {
-        this.artifact = artifact;
-        return this;
-    }
-
-    public List<RemoteRepository> getRemoteRepositories()
-    {
-        return repositories;
-    }
-
-    public ArtifactDescriptorRequest setRemoteRepositories( List<RemoteRepository> repositories )
-    {
-        this.repositories = repositories;
         return this;
     }
 

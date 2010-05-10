@@ -22,7 +22,7 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public class Exclusion
+public class Inclusion
 {
 
     private String groupId = "";
@@ -33,12 +33,12 @@ public class Exclusion
 
     private String type = "";
 
-    public Exclusion()
+    public Inclusion()
     {
         // enables default constructor
     }
 
-    public Exclusion( String groupId, String artifactId, String classifier, String type )
+    public Inclusion( String groupId, String artifactId, String classifier, String type )
     {
         setGroupId( groupId );
         setArtifactId( artifactId );
@@ -51,7 +51,7 @@ public class Exclusion
         return groupId;
     }
 
-    public Exclusion setGroupId( String groupId )
+    public Inclusion setGroupId( String groupId )
     {
         this.groupId = ( groupId != null ) ? groupId : "";
         return this;
@@ -62,7 +62,7 @@ public class Exclusion
         return artifactId;
     }
 
-    public Exclusion setArtifactId( String artifactId )
+    public Inclusion setArtifactId( String artifactId )
     {
         this.artifactId = ( artifactId != null ) ? artifactId : "";
         return this;
@@ -73,7 +73,7 @@ public class Exclusion
         return classifier;
     }
 
-    public Exclusion setClassifier( String classifier )
+    public Inclusion setClassifier( String classifier )
     {
         this.classifier = ( classifier != null ) ? classifier : "";
         return this;
@@ -84,7 +84,7 @@ public class Exclusion
         return type;
     }
 
-    public Exclusion setType( String type )
+    public Inclusion setType( String type )
     {
         this.type = ( type != null ) ? type : "";
         return this;

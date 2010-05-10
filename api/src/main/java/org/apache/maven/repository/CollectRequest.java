@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * @author Benjamin Bentmann
  */
-public interface CollectRequest
+public class CollectRequest
 {
 
     // we have three types of collection regarding the request:
@@ -33,18 +33,67 @@ public interface CollectRequest
     // 3. children-only, e.g. the (managed) dependencies of a project, don't resolve root but only its transitive
     // closure
 
-    Dependency getRoot();
+    private Dependency root;
 
-    List<? extends Dependency> getDependencies();
+    private List<Dependency> dependencies;
 
-    List<? extends Dependency> getManagedDependencies();
+    private List<Dependency> managedDependencies;
 
-    List<? extends RemoteRepository> getRemoteRepositories();
+    private List<RemoteRepository> repositories;
 
-    DependencyTraverser getDependencyTraverser();
+    public CollectRequest()
+    {
+        // enables default constructor
+    }
 
-    DependencyManager getDependencyManager();
+    public CollectRequest( Dependency root, List<RemoteRepository> repositories )
+    {
+        setRoot( root );
+        setRepositories( repositories );
+    }
 
-    DependencyFilter getDependencyFilter();
+    public Dependency getRoot()
+    {
+        return root;
+    }
+
+    public CollectRequest setRoot( Dependency root )
+    {
+        this.root = root;
+        return this;
+    }
+
+    public List<Dependency> getDependencies()
+    {
+        return dependencies;
+    }
+
+    public CollectRequest setDependencies( List<Dependency> dependencies )
+    {
+        this.dependencies = dependencies;
+        return this;
+    }
+
+    public List<Dependency> getManagedDependencies()
+    {
+        return managedDependencies;
+    }
+
+    public CollectRequest setManagedDependencies( List<Dependency> managedDependencies )
+    {
+        this.managedDependencies = managedDependencies;
+        return this;
+    }
+
+    public List<RemoteRepository> getRepositories()
+    {
+        return repositories;
+    }
+
+    public CollectRequest setRepositories( List<RemoteRepository> repositories )
+    {
+        this.repositories = repositories;
+        return this;
+    }
 
 }

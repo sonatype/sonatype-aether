@@ -19,11 +19,11 @@ package org.apache.maven.repository.wagon;
  * under the License.
  */
 
-import org.apache.maven.repository.DefaultTransferEvent;
-import org.apache.maven.repository.DefaultTransferResource;
 import org.apache.maven.repository.TransferCancelledException;
 import org.apache.maven.repository.TransferEvent.EventType;
 import org.apache.maven.repository.TransferEvent.RequestType;
+import org.apache.maven.repository.util.DefaultTransferEvent;
+import org.apache.maven.repository.util.DefaultTransferResource;
 import org.apache.maven.repository.TransferListener;
 import org.apache.maven.repository.TransferResource;
 import org.apache.maven.wagon.events.TransferEvent;

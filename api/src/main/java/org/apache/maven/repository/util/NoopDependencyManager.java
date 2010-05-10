@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,47 +21,27 @@ package org.apache.maven.repository;
 
 import java.util.List;
 
+import org.apache.maven.repository.Dependency;
+import org.apache.maven.repository.DependencyManager;
+import org.apache.maven.repository.DependencyNode;
+
 /**
  * @author Benjamin Bentmann
  */
-public class ArtifactDescriptorRequest
+public class NoopDependencyManager
+    implements DependencyManager
 {
 
-    private Artifact artifact;
+    public static final DependencyManager INSTANCE = new NoopDependencyManager();
 
-    private List<RemoteRepository> repositories;
-
-    public ArtifactDescriptorRequest()
+    public DependencyManager deriveChildManager( DependencyNode childNode,
+                                                 List<? extends Dependency> managedDependencies )
     {
-        // enables default constructor
-    }
-
-    public ArtifactDescriptorRequest( Artifact artifact, List<RemoteRepository> repositories )
-    {
-        setArtifact( artifact );
-        setRemoteRepositories( repositories );
-    }
-
-    public Artifact getArtifact()
-    {
-        return artifact;
-    }
-
-    public ArtifactDescriptorRequest setArtifact( Artifact artifact )
-    {
-        this.artifact = artifact;
         return this;
     }
 
-    public List<RemoteRepository> getRemoteRepositories()
+    public void manageDependency( DependencyNode node, Dependency dependency )
     {
-        return repositories;
-    }
-
-    public ArtifactDescriptorRequest setRemoteRepositories( List<RemoteRepository> repositories )
-    {
-        this.repositories = repositories;
-        return this;
     }
 
 }

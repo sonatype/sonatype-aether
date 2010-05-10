@@ -127,7 +127,7 @@ public class DefaultArtifactDescriptorReader
         {
             if ( !visited.add( artifact.getGroupId() + ':' + artifact.getArtifactId() + ':' + artifact.getBaseVersion() ) )
             {
-                if ( request.isIgnoreInvalidDescriptor() )
+                if ( context.isIgnoreInvalidArtifactDescriptor() )
                 {
                     return null;
                 }
@@ -146,7 +146,7 @@ public class DefaultArtifactDescriptorReader
             }
             catch ( ArtifactResolutionException e )
             {
-                if ( request.isIgnoreMissingDescriptor() )
+                if ( context.isIgnoreMissingArtifactDescriptor() )
                 {
                     return null;
                 }
@@ -185,7 +185,7 @@ public class DefaultArtifactDescriptorReader
                         throw new ArtifactDescriptorException( result );
                     }
                 }
-                if ( request.isIgnoreInvalidDescriptor() )
+                if ( context.isIgnoreInvalidArtifactDescriptor() )
                 {
                     return null;
                 }
@@ -197,10 +197,11 @@ public class DefaultArtifactDescriptorReader
 
             if ( relocation != null )
             {
+                result.addRelocation( artifact );
                 artifact =
                     new RelocatedArtifact( artifact, relocation.getGroupId(), relocation.getArtifactId(),
                                            relocation.getVersion() );
-                result.addRelocation( artifact );
+                result.setArtifact( artifact );
             }
             else
             {
@@ -242,7 +243,7 @@ public class DefaultArtifactDescriptorReader
 
     private Exclusion convert( org.apache.maven.model.Exclusion exclusion )
     {
-        return new Exclusion( exclusion.getGroupId(), exclusion.getArtifactId() );
+        return new Exclusion( exclusion.getGroupId(), exclusion.getArtifactId(), "*", "*" );
     }
 
     private RemoteRepository convert( Repository repository )

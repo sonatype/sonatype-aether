@@ -54,12 +54,12 @@ public class ArtifactRequest
         return this;
     }
 
-    public List<RemoteRepository> getRemoteRepositories()
+    public List<RemoteRepository> getRepositories()
     {
         return ( repositories != null ) ? repositories : Collections.<RemoteRepository> emptyList();
     }
 
-    public ArtifactRequest setRemoteRepositories( List<RemoteRepository> repositories )
+    public ArtifactRequest setRepositories( List<RemoteRepository> repositories )
     {
         this.repositories = repositories;
         return this;

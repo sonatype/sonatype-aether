@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,6 +21,9 @@ package org.apache.maven.repository;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.maven.repository.MirrorSelector;
+import org.apache.maven.repository.RemoteRepository;
 
 /**
  * @author Benjamin Bentmann

@@ -51,7 +51,8 @@ public interface RepositorySystem
     /**
      * Collects the transitive dependencies of an artifact in form of a dirty dependency tree.
      */
-    CollectResult collectDependencies( RepositoryContext context, CollectRequest request );
+    CollectResult collectDependencies( RepositoryContext context, CollectRequest request )
+        throws DependencyCollectionException;
 
     /**
      * Performs conflict resolution or other transformations on the dependency tree/graph.

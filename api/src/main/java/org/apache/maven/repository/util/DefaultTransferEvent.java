@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -18,6 +18,9 @@ package org.apache.maven.repository;
  * specific language governing permissions and limitations
  * under the License.
  */
+
+import org.apache.maven.repository.TransferEvent;
+import org.apache.maven.repository.TransferResource;
 
 /**
  * @author Benjamin Bentmann

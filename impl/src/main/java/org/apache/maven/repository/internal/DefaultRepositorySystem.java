@@ -28,6 +28,7 @@ import org.apache.maven.repository.CollectRequest;
 import org.apache.maven.repository.CollectResult;
 import org.apache.maven.repository.ArtifactDescriptorRequest;
 import org.apache.maven.repository.ArtifactDescriptorResult;
+import org.apache.maven.repository.DependencyCollectionException;
 import org.apache.maven.repository.DeployRequest;
 import org.apache.maven.repository.InstallRequest;
 import org.apache.maven.repository.RemoteRepository;
@@ -45,6 +46,7 @@ import org.apache.maven.repository.VersionResolutionException;
 import org.apache.maven.repository.VersionResult;
 import org.apache.maven.repository.spi.ArtifactDescriptorReader;
 import org.apache.maven.repository.spi.ArtifactResolver;
+import org.apache.maven.repository.spi.DependencyCollector;
 import org.apache.maven.repository.spi.VersionRangeResolver;
 import org.apache.maven.repository.spi.VersionResolver;
 import org.codehaus.plexus.component.annotations.Component;
@@ -69,6 +71,9 @@ public class DefaultRepositorySystem
 
     @Requirement
     private ArtifactDescriptorReader artifactDescriptorReader;
+
+    @Requirement
+    private DependencyCollector dependencyCollector;
 
     public DefaultRepositorySystem setVersionResolver( VersionResolver versionResolver )
     {
@@ -130,9 +135,9 @@ public class DefaultRepositorySystem
     }
 
     public CollectResult collectDependencies( RepositoryContext context, CollectRequest request )
+        throws DependencyCollectionException
     {
-        // TODO Auto-generated method stub
-        return null;
+        return dependencyCollector.collectDependencies( context, request );
     }
 
     public void deployArtifacts( RepositoryContext context, DeployRequest request )

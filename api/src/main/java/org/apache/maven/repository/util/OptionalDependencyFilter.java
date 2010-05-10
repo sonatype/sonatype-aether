@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,48 +19,30 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.List;
+import org.apache.maven.repository.Dependency;
+import org.apache.maven.repository.DependencyFilter;
+import org.apache.maven.repository.DependencyNode;
 
 /**
  * @author Benjamin Bentmann
  */
-public class ArtifactDescriptorRequest
+public class OptionalDependencyFilter
+    implements DependencyFilter
 {
 
-    private Artifact artifact;
+    public static final DependencyFilter INSTANCE = new OptionalDependencyFilter();
 
-    private List<RemoteRepository> repositories;
-
-    public ArtifactDescriptorRequest()
+    public boolean accept( DependencyNode node, Dependency dependency )
     {
-        // enables default constructor
+        if ( node.getDependency() != null && dependency.isOptional() )
+        {
+            return false;
+        }
+        return true;
     }
 
-    public ArtifactDescriptorRequest( Artifact artifact, List<RemoteRepository> repositories )
+    public DependencyFilter deriveChildFilter( DependencyNode childNode )
     {
-        setArtifact( artifact );
-        setRemoteRepositories( repositories );
-    }
-
-    public Artifact getArtifact()
-    {
-        return artifact;
-    }
-
-    public ArtifactDescriptorRequest setArtifact( Artifact artifact )
-    {
-        this.artifact = artifact;
-        return this;
-    }
-
-    public List<RemoteRepository> getRemoteRepositories()
-    {
-        return repositories;
-    }
-
-    public ArtifactDescriptorRequest setRemoteRepositories( List<RemoteRepository> repositories )
-    {
-        this.repositories = repositories;
         return this;
     }
 

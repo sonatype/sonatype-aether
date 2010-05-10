@@ -19,28 +19,24 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author Benjamin Bentmann
  */
-public class DefaultAuthenticationSelector
-    implements AuthenticationSelector
+public class DependencyCollectionException
+    extends RepositoryException
 {
 
-    private final Map<String, Authentication> repos = new HashMap<String, Authentication>();
+    private final CollectResult result;
 
-    public DefaultAuthenticationSelector add( String id, Authentication auth )
+    public DependencyCollectionException( CollectResult result )
     {
-        repos.put( id, auth );
-
-        return this;
+        super( "Failed to collect dependencies" );
+        this.result = result;
     }
 
-    public Authentication getAuthentication( RemoteRepository repository )
+    public CollectResult getResult()
     {
-        return repos.get( repository.getId() );
+        return result;
     }
 
 }

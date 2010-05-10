@@ -19,20 +19,68 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Benjamin Bentmann
  */
-public interface DependencyNode
+public class DependencyNode
 {
 
-    Dependency getDependency();
+    private Dependency dependency;
 
-    DependencyNode getParent();
+    private DependencyNode parent;
 
-    List<DependencyNode> getChildren();
+    private List<DependencyNode> children = new ArrayList<DependencyNode>();
 
-    int getDepth();
+    private int depth;
+
+    public DependencyNode( Dependency dependency, DependencyNode parent )
+    {
+        this.dependency = dependency;
+        this.parent = parent;
+        this.depth = ( parent != null ) ? parent.getDepth() + 1 : 0;
+    }
+
+    public Dependency getDependency()
+    {
+        return dependency;
+    }
+
+    public DependencyNode getParent()
+    {
+        return parent;
+    }
+
+    public List<DependencyNode> getChildren()
+    {
+        return children;
+    }
+
+    public DependencyNode addChild( Dependency dependency )
+    {
+        DependencyNode child = new DependencyNode( dependency, this );
+        children.add( child );
+        return child;
+    }
+
+    public int getDepth()
+    {
+        return depth;
+    }
+
+    @Override
+    public String toString()
+    {
+        if ( getChildren().isEmpty() )
+        {
+            return String.valueOf( getDependency() );
+        }
+        else
+        {
+            return String.valueOf( getDependency() ) + " -> " + getChildren();
+        }
+    }
 
 }

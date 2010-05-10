@@ -39,7 +39,7 @@ public class VersionRangeRequest
     public VersionRangeRequest( Artifact artifact, List<RemoteRepository> repositories )
     {
         setArtifact( artifact );
-        setRemoteRepositories( repositories );
+        setRepositories( repositories );
     }
 
     public Artifact getArtifact()
@@ -53,12 +53,12 @@ public class VersionRangeRequest
         return this;
     }
 
-    public List<RemoteRepository> getRemoteRepositories()
+    public List<RemoteRepository> getRepositories()
     {
         return repositories;
     }
 
-    public VersionRangeRequest setRemoteRepositories( List<RemoteRepository> repositories )
+    public VersionRangeRequest setRepositories( List<RemoteRepository> repositories )
     {
         this.repositories = repositories;
         return this;

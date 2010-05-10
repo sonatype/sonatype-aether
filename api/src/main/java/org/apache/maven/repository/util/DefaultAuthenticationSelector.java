@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,49 +19,32 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.maven.repository.Authentication;
+import org.apache.maven.repository.AuthenticationSelector;
+import org.apache.maven.repository.RemoteRepository;
 
 /**
  * @author Benjamin Bentmann
  */
-public class ArtifactDescriptorRequest
+public class DefaultAuthenticationSelector
+    implements AuthenticationSelector
 {
 
-    private Artifact artifact;
+    private final Map<String, Authentication> repos = new HashMap<String, Authentication>();
 
-    private List<RemoteRepository> repositories;
-
-    public ArtifactDescriptorRequest()
+    public DefaultAuthenticationSelector add( String id, Authentication auth )
     {
-        // enables default constructor
-    }
+        repos.put( id, auth );
 
-    public ArtifactDescriptorRequest( Artifact artifact, List<RemoteRepository> repositories )
-    {
-        setArtifact( artifact );
-        setRemoteRepositories( repositories );
-    }
-
-    public Artifact getArtifact()
-    {
-        return artifact;
-    }
-
-    public ArtifactDescriptorRequest setArtifact( Artifact artifact )
-    {
-        this.artifact = artifact;
         return this;
     }
 
-    public List<RemoteRepository> getRemoteRepositories()
+    public Authentication getAuthentication( RemoteRepository repository )
     {
-        return repositories;
-    }
-
-    public ArtifactDescriptorRequest setRemoteRepositories( List<RemoteRepository> repositories )
-    {
-        this.repositories = repositories;
-        return this;
+        return repos.get( repository.getId() );
     }
 
 }

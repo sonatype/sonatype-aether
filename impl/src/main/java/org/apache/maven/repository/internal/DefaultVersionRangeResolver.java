@@ -161,8 +161,8 @@ public class DefaultVersionRangeResolver
         metadata.setNature( nature );
 
         List<MetadataRequest> metadataRequests =
-            new ArrayList<MetadataRequest>( request.getRemoteRepositories().size() );
-        for ( RemoteRepository repository : request.getRemoteRepositories() )
+            new ArrayList<MetadataRequest>( request.getRepositories().size() );
+        for ( RemoteRepository repository : request.getRepositories() )
         {
             MetadataRequest metadataRequest = new MetadataRequest( new Metadata( metadata ), repository );
             metadataRequest.setDeleteLocalCopyIfMissing( true );

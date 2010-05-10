@@ -39,7 +39,7 @@ public class VersionRequest
     public VersionRequest( Artifact artifact, List<RemoteRepository> repositories )
     {
         setArtifact( artifact );
-        setRemoteRepositories( repositories );
+        setRepositories( repositories );
     }
 
     public Artifact getArtifact()
@@ -53,12 +53,12 @@ public class VersionRequest
         return this;
     }
 
-    public List<RemoteRepository> getRemoteRepositories()
+    public List<RemoteRepository> getRepositories()
     {
         return repositories;
     }
 
-    public VersionRequest setRemoteRepositories( List<RemoteRepository> repositories )
+    public VersionRequest setRepositories( List<RemoteRepository> repositories )
     {
         this.repositories = repositories;
         return this;

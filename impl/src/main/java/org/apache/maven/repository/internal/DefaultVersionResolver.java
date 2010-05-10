@@ -129,8 +129,8 @@ public class DefaultVersionResolver
         else
         {
             List<MetadataRequest> metadataRequests =
-                new ArrayList<MetadataRequest>( request.getRemoteRepositories().size() );
-            for ( RemoteRepository repository : request.getRemoteRepositories() )
+                new ArrayList<MetadataRequest>( request.getRepositories().size() );
+            for ( RemoteRepository repository : request.getRepositories() )
             {
                 MetadataRequest metadataRequest = new MetadataRequest( new Metadata( metadata ), repository );
                 metadataRequest.setDeleteLocalCopyIfMissing( true );
@@ -179,11 +179,11 @@ public class DefaultVersionResolver
                     subRequest.setArtifact( artifact );
                     if ( repo instanceof RemoteRepository )
                     {
-                        subRequest.setRemoteRepositories( Collections.singletonList( (RemoteRepository) repo ) );
+                        subRequest.setRepositories( Collections.singletonList( (RemoteRepository) repo ) );
                     }
                     else
                     {
-                        subRequest.setRemoteRepositories( request.getRemoteRepositories() );
+                        subRequest.setRepositories( request.getRepositories() );
                     }
                     VersionResult subResult = resolveVersion( context, subRequest );
                     result.setVersion( subResult.getVersion() );

@@ -34,6 +34,8 @@ public class ArtifactDescriptorResult
 
     private final List<Artifact> relocations;
 
+    private Artifact artifact;
+
     private ArtifactRepository repository;
 
     private List<Dependency> dependencies;
@@ -49,6 +51,7 @@ public class ArtifactDescriptorResult
             throw new IllegalArgumentException( "version request has not been specified" );
         }
         this.request = request;
+        this.artifact = request.getArtifact();
         this.exceptions = new ArrayList<Exception>( 2 );
         this.relocations = new ArrayList<Artifact>( 2 );
         this.dependencies = new ArrayList<Dependency>();
@@ -61,7 +64,7 @@ public class ArtifactDescriptorResult
         return request;
     }
 
-    public List<? extends Exception> getExceptions()
+    public List<Exception> getExceptions()
     {
         return exceptions;
     }
@@ -84,8 +87,19 @@ public class ArtifactDescriptorResult
     {
         if ( artifact != null )
         {
-            relocations.add( 0, artifact );
+            relocations.add( artifact );
         }
+        return this;
+    }
+
+    public Artifact getArtifact()
+    {
+        return artifact;
+    }
+
+    public ArtifactDescriptorResult setArtifact( Artifact artifact )
+    {
+        this.artifact = artifact;
         return this;
     }
 
@@ -100,7 +114,7 @@ public class ArtifactDescriptorResult
         return this;
     }
 
-    public List<? extends Dependency> getDependencies()
+    public List<Dependency> getDependencies()
     {
         return dependencies;
     }
