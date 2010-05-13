@@ -128,6 +128,7 @@ public class DefaultDependencyCollector
             managedDependencies = mergeDeps( managedDependencies, descriptorResult.getManagedDependencies() );
 
             node = new DependencyNode( root, null );
+            node.setRelocations( descriptorResult.getRelocations() );
         }
         else
         {
@@ -250,6 +251,8 @@ public class DefaultDependencyCollector
                 d.setArtifact( d.getArtifact().clone() );
                 d.getArtifact().setVersion( version );
 
+                // TODO: probably call into the dependency traverser here, too
+
                 ArtifactDescriptorResult descriptorResult;
                 try
                 {
@@ -272,7 +275,9 @@ public class DefaultDependencyCollector
                 }
 
                 DependencyNode child = node.addChild( d );
+                child.setRelocations( descriptorResult.getRelocations() );
 
+                // FIXME: This is too late to prevent POM resolution for system-scope deps
                 if ( depTraverser.accept( child ) )
                 {
                     process( context, result, child, descriptorResult.getDependencies(),

@@ -19,6 +19,7 @@ package org.apache.maven.repository.internal;
  * under the License.
  */
 
+import java.io.File;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -230,6 +231,11 @@ public class DefaultArtifactDescriptorReader
         // TODO: consider the artifact handler mappings
         artifact.setClassifier( dependency.getClassifier() );
         artifact.setType( dependency.getType() );
+
+        if ( dependency.getSystemPath() != null )
+        {
+            artifact.setFile( new File( dependency.getSystemPath() ) );
+        }
 
         Dependency result = new Dependency( artifact, dependency.getScope(), dependency.isOptional() );
 

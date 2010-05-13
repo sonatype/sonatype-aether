@@ -20,6 +20,7 @@ package org.apache.maven.repository;
  */
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,9 +31,11 @@ public class DependencyNode
 
     private Dependency dependency;
 
+    private List<Artifact> relocations = Collections.emptyList();
+
     private DependencyNode parent;
 
-    private List<DependencyNode> children = new ArrayList<DependencyNode>();
+    private List<DependencyNode> children = new ArrayList<DependencyNode>( 4 );
 
     private int depth;
 
@@ -46,6 +49,17 @@ public class DependencyNode
     public Dependency getDependency()
     {
         return dependency;
+    }
+
+    public List<Artifact> getRelocations()
+    {
+        return relocations;
+    }
+
+    public DependencyNode setRelocations( List<Artifact> relocations )
+    {
+        this.relocations = relocations;
+        return this;
     }
 
     public DependencyNode getParent()

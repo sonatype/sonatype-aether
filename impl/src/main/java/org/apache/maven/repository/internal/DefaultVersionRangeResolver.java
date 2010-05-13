@@ -100,6 +100,8 @@ public class DefaultVersionRangeResolver
             throw new VersionRangeResolutionException( result );
         }
 
+        result.setRange( !ranges.isEmpty() );
+
         if ( ranges.isEmpty() )
         {
             result.addVersion( version );

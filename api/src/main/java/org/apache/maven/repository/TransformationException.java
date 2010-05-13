@@ -22,38 +22,13 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public class TransformRequest
+public class TransformationException
+    extends RepositoryException
 {
 
-    private DependencyNode root;
-
-    private DependencyGraphTransformer transformer;
-
-    public TransformRequest()
+    public TransformationException( String message )
     {
-        // enables default constructor
-    }
-
-    public DependencyNode getRoot()
-    {
-        return root;
-    }
-
-    public TransformRequest setRoot( DependencyNode root )
-    {
-        this.root = root;
-        return this;
-    }
-
-    public DependencyGraphTransformer getTransformer()
-    {
-        return transformer;
-    }
-
-    public TransformRequest setTransformer( DependencyGraphTransformer transformer )
-    {
-        this.transformer = transformer;
-        return this;
+        super( message );
     }
 
 }

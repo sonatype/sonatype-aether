@@ -38,6 +38,8 @@ public class VersionRangeResult
 
     private final Map<String, ArtifactRepository> repositories;
 
+    private boolean range;
+
     public VersionRangeResult( VersionRangeRequest request )
     {
         if ( request == null )
@@ -97,6 +99,17 @@ public class VersionRangeResult
         {
             this.repositories.put( version, repository );
         }
+        return this;
+    }
+
+    public boolean isRange()
+    {
+        return range;
+    }
+
+    public VersionRangeResult setRange( boolean range )
+    {
+        this.range = range;
         return this;
     }
 

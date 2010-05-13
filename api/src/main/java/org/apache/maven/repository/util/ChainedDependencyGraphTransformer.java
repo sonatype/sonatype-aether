@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,41 +19,32 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import org.apache.maven.repository.DependencyGraphTransformer;
+import org.apache.maven.repository.DependencyNode;
+import org.apache.maven.repository.TransformationException;
+
 /**
  * @author Benjamin Bentmann
  */
-public class TransformRequest
+public class ChainedDependencyGraphTransformer
+    implements DependencyGraphTransformer
 {
 
-    private DependencyNode root;
+    private final DependencyGraphTransformer[] transformers;
 
-    private DependencyGraphTransformer transformer;
-
-    public TransformRequest()
+    public ChainedDependencyGraphTransformer( DependencyGraphTransformer... transformers )
     {
-        // enables default constructor
+        this.transformers = transformers;
     }
 
-    public DependencyNode getRoot()
+    public DependencyNode transformGraph( DependencyNode node )
+        throws TransformationException
     {
-        return root;
-    }
-
-    public TransformRequest setRoot( DependencyNode root )
-    {
-        this.root = root;
-        return this;
-    }
-
-    public DependencyGraphTransformer getTransformer()
-    {
-        return transformer;
-    }
-
-    public TransformRequest setTransformer( DependencyGraphTransformer transformer )
-    {
-        this.transformer = transformer;
-        return this;
+        for ( DependencyGraphTransformer transformer : transformers )
+        {
+            node = transformer.transformGraph( node );
+        }
+        return node;
     }
 
 }
