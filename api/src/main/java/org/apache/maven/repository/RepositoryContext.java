@@ -66,6 +66,8 @@ public interface RepositoryContext
 
     DependencyFilter getDependencyFilter();
 
+    DependencyGraphTransformer getDependencyGraphTransformer();
+
     // TODO: cache?
 
 }

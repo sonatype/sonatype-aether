@@ -39,6 +39,8 @@ public class DependencyNode
 
     private int depth;
 
+    private String requestedVersion;
+
     public DependencyNode( Dependency dependency, DependencyNode parent )
     {
         this.dependency = dependency;
@@ -82,6 +84,17 @@ public class DependencyNode
     public int getDepth()
     {
         return depth;
+    }
+
+    public String getRequestedVersion()
+    {
+        return requestedVersion;
+    }
+
+    public DependencyNode setRequestedVersion( String requestedVersion )
+    {
+        this.requestedVersion = ( requestedVersion != null ) ? requestedVersion : "";
+        return this;
     }
 
     @Override

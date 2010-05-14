@@ -21,7 +21,7 @@ package org.apache.maven.repository.util;
 
 import org.apache.maven.repository.DependencyGraphTransformer;
 import org.apache.maven.repository.DependencyNode;
-import org.apache.maven.repository.TransformationException;
+import org.apache.maven.repository.RepositoryException;
 
 /**
  * @author Benjamin Bentmann
@@ -38,7 +38,7 @@ public class ChainedDependencyGraphTransformer
     }
 
     public DependencyNode transformGraph( DependencyNode node )
-        throws TransformationException
+        throws RepositoryException
     {
         for ( DependencyGraphTransformer transformer : transformers )
         {

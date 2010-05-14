@@ -28,7 +28,7 @@ import java.util.Set;
 import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.DependencyGraphTransformer;
 import org.apache.maven.repository.DependencyNode;
-import org.apache.maven.repository.TransformationException;
+import org.apache.maven.repository.UnsolvableVersionConflictException;
 
 /**
  * @author Benjamin Bentmann
@@ -38,7 +38,7 @@ public class ClassicVersionConflictResolver
 {
 
     public DependencyNode transformGraph( DependencyNode node )
-        throws TransformationException
+        throws UnsolvableVersionConflictException
     {
         Map<String, VersionGroup> groups = new HashMap<String, VersionGroup>();
         analyze( node, groups );
@@ -47,7 +47,7 @@ public class ClassicVersionConflictResolver
     }
 
     private void analyze( DependencyNode node, Map<String, VersionGroup> groups )
-        throws TransformationException
+        throws UnsolvableVersionConflictException
     {
         Map<String, VersionGroup> localGroups = new HashMap<String, VersionGroup>();
 
@@ -129,14 +129,30 @@ public class ClassicVersionConflictResolver
 
         Set<String> versions;
 
+        Set<String> ranges;
+
         boolean pruned;
 
         public VersionGroup( String key, DependencyNode node )
         {
             this.key = key;
             depth = node.getDepth();
-            soft = true;
+            ranges = new LinkedHashSet<String>();
+            if ( isRange( node.getRequestedVersion() ) )
+            {
+                soft = false;
+                ranges.add( node.getRequestedVersion() );
+            }
+            else
+            {
+                soft = true;
+            }
             versions = new LinkedHashSet<String>();
+        }
+
+        private static boolean isRange( String version )
+        {
+            return version.startsWith( "[" ) || version.startsWith( "(" );
         }
 
         public void add( String version )
@@ -146,7 +162,7 @@ public class ClassicVersionConflictResolver
         }
 
         public void merge( VersionGroup that )
-            throws TransformationException
+            throws UnsolvableVersionConflictException
         {
             VersionGroup winner, loser;
             if ( that.depth < this.depth )
@@ -173,6 +189,8 @@ public class ClassicVersionConflictResolver
                 this.versions = winner.versions;
             }
 
+            this.ranges.addAll( that.ranges );
+
             this.version = selectVersion( versions, winner.version, loser.version );
 
             this.soft = this.soft && that.soft;
@@ -180,11 +198,11 @@ public class ClassicVersionConflictResolver
         }
 
         private String selectVersion( Set<String> versions, String dominant, String recessive )
-            throws TransformationException
+            throws UnsolvableVersionConflictException
         {
             if ( versions.isEmpty() )
             {
-                throw new TransformationException( "Unresolvable version conflict for " + key );
+                throw new UnsolvableVersionConflictException( key, ranges );
             }
 
             String version = "";

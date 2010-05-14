@@ -214,15 +214,10 @@ public class JavaEffectiveScopeCalculator
     static class DependencyGroup
     {
 
-        String scope;
-
-        Set<String> scopes;
-
         List<DependencyNode> nodes;
 
         public DependencyGroup()
         {
-            scopes = new HashSet<String>();
             nodes = new ArrayList<DependencyNode>();
         }
 

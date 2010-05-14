@@ -33,11 +33,13 @@ import org.apache.maven.repository.CollectResult;
 import org.apache.maven.repository.Dependency;
 import org.apache.maven.repository.DependencyCollectionException;
 import org.apache.maven.repository.DependencyFilter;
+import org.apache.maven.repository.DependencyGraphTransformer;
 import org.apache.maven.repository.DependencyManager;
 import org.apache.maven.repository.DependencyNode;
 import org.apache.maven.repository.DependencyTraverser;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositoryException;
 import org.apache.maven.repository.VersionRangeRequest;
 import org.apache.maven.repository.VersionRangeResolutionException;
 import org.apache.maven.repository.VersionRangeResult;
@@ -139,6 +141,20 @@ public class DefaultDependencyCollector
 
         process( context, result, node, dependencies, managedDependencies, repositories, depFilter, depManager,
                  depTraverser );
+
+        DependencyGraphTransformer transformer = context.getDependencyGraphTransformer();
+        if ( transformer != null )
+        {
+            try
+            {
+                result.setRoot( transformer.transformGraph( node ) );
+            }
+            catch ( RepositoryException e )
+            {
+                result.addException( e );
+                throw new DependencyCollectionException( result );
+            }
+        }
 
         return result;
     }
@@ -274,8 +290,14 @@ public class DefaultDependencyCollector
                     continue;
                 }
 
+                if ( findDuplicate( node, d.getArtifact() ) != null )
+                {
+                    continue;
+                }
+
                 DependencyNode child = node.addChild( d );
                 child.setRelocations( descriptorResult.getRelocations() );
+                child.setRequestedVersion( dependency.getArtifact().getVersion() );
 
                 // FIXME: This is too late to prevent POM resolution for system-scope deps
                 if ( depTraverser.accept( child ) )
@@ -288,8 +310,45 @@ public class DefaultDependencyCollector
                              depTraverser.deriveChildTraverser( child ) );
                 }
             }
-
         }
+    }
+
+    private DependencyNode findDuplicate( DependencyNode node, Artifact artifact )
+    {
+        for ( DependencyNode n = node; n != null; n = n.getParent() )
+        {
+            Dependency dependency = n.getDependency();
+            if ( dependency == null )
+            {
+                break;
+            }
+
+            Artifact a = dependency.getArtifact();
+            if ( !a.getArtifactId().equals( artifact.getArtifactId() ) )
+            {
+                continue;
+            }
+            if ( !a.getGroupId().equals( artifact.getGroupId() ) )
+            {
+                continue;
+            }
+            if ( !a.getBaseVersion().equals( artifact.getBaseVersion() ) )
+            {
+                continue;
+            }
+            if ( !a.getType().equals( artifact.getType() ) )
+            {
+                continue;
+            }
+            if ( !a.getClassifier().equals( artifact.getClassifier() ) )
+            {
+                continue;
+            }
+
+            return n;
+        }
+
+        return null;
     }
 
 }

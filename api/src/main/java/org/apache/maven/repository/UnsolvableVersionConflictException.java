@@ -19,16 +19,36 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * @author Benjamin Bentmann
  */
-public class TransformationException
+public class UnsolvableVersionConflictException
     extends RepositoryException
 {
 
-    public TransformationException( String message )
+    private final String dependencyConflictId;
+
+    private final Collection<String> versions;
+
+    public UnsolvableVersionConflictException( String dependencyConflictId, Collection<String> versions )
     {
-        super( message );
+        super( "Could not resolve version conflict for " + dependencyConflictId + " with requested versions: "
+            + versions );
+        this.dependencyConflictId = ( dependencyConflictId != null ) ? dependencyConflictId : "";
+        this.versions = ( versions != null ) ? versions : Collections.<String> emptyList();
+    }
+
+    public String getDependencyConflictId()
+    {
+        return dependencyConflictId;
+    }
+
+    public Collection<String> getVersions()
+    {
+        return versions;
     }
 
 }

@@ -20,7 +20,6 @@ package org.apache.maven.repository;
  */
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -42,6 +41,11 @@ public class Dependency
         // enables default constructor
     }
 
+    public Dependency( Artifact artifact, String scope )
+    {
+        this( artifact, scope, false );
+    }
+
     public Dependency( Artifact artifact, String scope, boolean optional )
     {
         setArtifact( artifact );
@@ -54,6 +58,7 @@ public class Dependency
         setArtifact( original.getArtifact() );
         setScope( original.getScope() );
         setOptional( original.isOptional() );
+        setExclusions( original.getExclusions() );
     }
 
     public Artifact getArtifact()
@@ -89,9 +94,15 @@ public class Dependency
         return this;
     }
 
-    public Collection<Exclusion> getExclusions()
+    public List<Exclusion> getExclusions()
     {
         return exclusions;
+    }
+
+    public Dependency setExclusions( List<Exclusion> exclusions )
+    {
+        this.exclusions = ( exclusions != null ) ? exclusions : new ArrayList<Exclusion>( 4 );
+        return this;
     }
 
     public Dependency addExclusion( Exclusion exclusion )
@@ -107,7 +118,7 @@ public class Dependency
     @Override
     public String toString()
     {
-        return String.valueOf( getArtifact() ) + " (scope=" + getScope() + ", optional=" + isOptional() + ")";
+        return String.valueOf( getArtifact() ) + " (" + getScope() + ( isOptional() ? "?" : "" ) + ")";
     }
 
 }

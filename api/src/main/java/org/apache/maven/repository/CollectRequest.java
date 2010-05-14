@@ -19,6 +19,7 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,11 +36,11 @@ public class CollectRequest
 
     private Dependency root;
 
-    private List<Dependency> dependencies;
+    private List<Dependency> dependencies = Collections.emptyList();
 
-    private List<Dependency> managedDependencies;
+    private List<Dependency> managedDependencies = Collections.emptyList();
 
-    private List<RemoteRepository> repositories;
+    private List<RemoteRepository> repositories = Collections.emptyList();
 
     public CollectRequest()
     {
@@ -49,6 +50,21 @@ public class CollectRequest
     public CollectRequest( Dependency root, List<RemoteRepository> repositories )
     {
         setRoot( root );
+        setRepositories( repositories );
+    }
+
+    public CollectRequest( Dependency root, List<Dependency> dependencies, List<RemoteRepository> repositories )
+    {
+        setRoot( root );
+        setDependencies( dependencies );
+        setRepositories( repositories );
+    }
+
+    public CollectRequest( List<Dependency> dependencies, List<Dependency> managedDependencies,
+                           List<RemoteRepository> repositories )
+    {
+        setDependencies( dependencies );
+        setManagedDependencies( managedDependencies );
         setRepositories( repositories );
     }
 
@@ -70,7 +86,14 @@ public class CollectRequest
 
     public CollectRequest setDependencies( List<Dependency> dependencies )
     {
-        this.dependencies = dependencies;
+        if ( dependencies == null )
+        {
+            this.dependencies = Collections.emptyList();
+        }
+        else
+        {
+            this.dependencies = dependencies;
+        }
         return this;
     }
 
@@ -81,7 +104,14 @@ public class CollectRequest
 
     public CollectRequest setManagedDependencies( List<Dependency> managedDependencies )
     {
-        this.managedDependencies = managedDependencies;
+        if ( managedDependencies == null )
+        {
+            this.managedDependencies = Collections.emptyList();
+        }
+        else
+        {
+            this.managedDependencies = managedDependencies;
+        }
         return this;
     }
 
@@ -92,7 +122,14 @@ public class CollectRequest
 
     public CollectRequest setRepositories( List<RemoteRepository> repositories )
     {
-        this.repositories = repositories;
+        if ( repositories == null )
+        {
+            this.repositories = Collections.emptyList();
+        }
+        else
+        {
+            this.repositories = repositories;
+        }
         return this;
     }
 

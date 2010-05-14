@@ -26,6 +26,6 @@ public interface DependencyGraphTransformer
 {
 
     DependencyNode transformGraph( DependencyNode node )
-        throws TransformationException;
+        throws RepositoryException;
 
 }
