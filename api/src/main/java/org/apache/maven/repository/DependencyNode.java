@@ -41,6 +41,8 @@ public class DependencyNode
 
     private String requestedVersion;
 
+    private List<RemoteRepository> repositories = Collections.emptyList();
+
     public DependencyNode( Dependency dependency, DependencyNode parent )
     {
         this.dependency = dependency;
@@ -94,6 +96,24 @@ public class DependencyNode
     public DependencyNode setRequestedVersion( String requestedVersion )
     {
         this.requestedVersion = ( requestedVersion != null ) ? requestedVersion : "";
+        return this;
+    }
+
+    public List<RemoteRepository> getRepositories()
+    {
+        return repositories;
+    }
+
+    public DependencyNode setRepositories( List<RemoteRepository> repositories )
+    {
+        if ( repositories == null )
+        {
+            this.repositories = Collections.emptyList();
+        }
+        else
+        {
+            this.repositories = repositories;
+        }
         return this;
     }
 

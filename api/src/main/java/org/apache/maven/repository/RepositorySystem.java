@@ -49,15 +49,10 @@ public interface RepositorySystem
         throws ArtifactDescriptorException;
 
     /**
-     * Collects the transitive dependencies of an artifact in form of a dirty dependency tree.
+     * Collects the transitive dependencies of an artifact.
      */
     CollectResult collectDependencies( RepositoryContext context, CollectRequest request )
         throws DependencyCollectionException;
-
-    /**
-     * Performs conflict resolution or other transformations on the dependency tree/graph.
-     */
-    TransformResult transformDependencies( RepositoryContext context, TransformRequest request );
 
     /**
      * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary.
@@ -78,8 +73,5 @@ public interface RepositorySystem
      * the artifacts to the local repository.
      */
     void deployArtifacts( RepositoryContext context, DeployRequest request );
-
-    List<RemoteRepository> getEffectiveRepositories( RepositoryContext context,
-                                                     Collection<? extends RemoteRepository> repositories );
 
 }

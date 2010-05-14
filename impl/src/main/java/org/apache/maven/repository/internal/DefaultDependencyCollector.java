@@ -21,6 +21,7 @@ package org.apache.maven.repository.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.ArtifactDescriptorException;
 import org.apache.maven.repository.ArtifactDescriptorRequest;
 import org.apache.maven.repository.ArtifactDescriptorResult;
+import org.apache.maven.repository.ArtifactRepository;
 import org.apache.maven.repository.CollectRequest;
 import org.apache.maven.repository.CollectResult;
 import org.apache.maven.repository.Dependency;
@@ -267,6 +269,17 @@ public class DefaultDependencyCollector
                 d.setArtifact( d.getArtifact().clone() );
                 d.getArtifact().setVersion( version );
 
+                List<RemoteRepository> repos = null;
+                ArtifactRepository repo = rangeResult.getRepository( version );
+                if ( repo instanceof RemoteRepository )
+                {
+                    repos = Collections.singletonList( (RemoteRepository) repo );
+                }
+                else if ( repo == null )
+                {
+                    repos = repositories;
+                }
+
                 // TODO: probably call into the dependency traverser here, too
 
                 ArtifactDescriptorResult descriptorResult;
@@ -274,7 +287,7 @@ public class DefaultDependencyCollector
                 {
                     ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
                     descriptorRequest.setArtifact( d.getArtifact() );
-                    descriptorRequest.setRemoteRepositories( repositories );
+                    descriptorRequest.setRemoteRepositories( repos );
                     descriptorResult = descriptorReader.readArtifactDescriptor( context, descriptorRequest );
                 }
                 catch ( ArtifactDescriptorException e )
@@ -298,6 +311,7 @@ public class DefaultDependencyCollector
                 DependencyNode child = node.addChild( d );
                 child.setRelocations( descriptorResult.getRelocations() );
                 child.setRequestedVersion( dependency.getArtifact().getVersion() );
+                child.setRepositories( repos );
 
                 // FIXME: This is too late to prevent POM resolution for system-scope deps
                 if ( depTraverser.accept( child ) )
