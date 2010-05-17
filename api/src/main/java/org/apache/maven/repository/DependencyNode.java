@@ -33,6 +33,8 @@ public class DependencyNode
 
     private List<Artifact> relocations = Collections.emptyList();
 
+    private List<Artifact> aliases = Collections.emptyList();
+
     private DependencyNode parent;
 
     private List<DependencyNode> children = new ArrayList<DependencyNode>( 4 );
@@ -65,6 +67,17 @@ public class DependencyNode
     public DependencyNode setRelocations( List<Artifact> relocations )
     {
         this.relocations = relocations;
+        return this;
+    }
+
+    public List<Artifact> getAliases()
+    {
+        return aliases;
+    }
+
+    public DependencyNode setAliases( List<Artifact> aliases )
+    {
+        this.aliases = aliases;
         return this;
     }
 

@@ -113,7 +113,8 @@ public class ConflictMarker
         else
         {
             String key = toKey( dependency.getArtifact() );
-            if ( node.getRelocations().isEmpty() )
+
+            if ( node.getRelocations().isEmpty() && node.getAliases().isEmpty() )
             {
                 keys = Collections.singleton( key );
             }
@@ -127,8 +128,15 @@ public class ConflictMarker
                     key = toKey( relocation );
                     keys.add( key );
                 }
+
+                for ( Artifact alias : node.getAliases() )
+                {
+                    key = toKey( alias );
+                    keys.add( key );
+                }
             }
         }
+
         return keys;
     }
 
