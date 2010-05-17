@@ -20,6 +20,8 @@ package org.apache.maven.repository;
  */
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,6 +50,8 @@ public class DefaultArtifact
 
     private File file;
 
+    private Map<String, Object> properties = new HashMap<String, Object>();
+
     public DefaultArtifact()
     {
         // enables default constructor
@@ -63,6 +67,17 @@ public class DefaultArtifact
         setVersion( version );
     }
 
+    public DefaultArtifact( String groupId, String artifactId, String classifier, String type, String version,
+                            ArtifactStereotype stereotype )
+    {
+        setGroupId( groupId );
+        setArtifactId( artifactId );
+        setClassifier( ( classifier != null ) ? classifier : stereotype.getClassifier() );
+        setType( ( type != null ) ? type : stereotype.getType() );
+        setVersion( version );
+        properties.putAll( stereotype.getProperties() );
+    }
+
     public DefaultArtifact( Artifact artifact )
     {
         setGroupId( artifact.getGroupId() );
@@ -71,6 +86,10 @@ public class DefaultArtifact
         setType( artifact.getType() );
         setVersion( artifact.getVersion() );
         setFile( artifact.getFile() );
+        for ( String key : artifact.getPropertyKeys() )
+        {
+            setProperty( key, artifact.getProperty( key, Object.class, null ) );
+        }
     }
 
     public String getGroupId()
@@ -170,10 +189,28 @@ public class DefaultArtifact
         return this;
     }
 
-    public String getProperty( String key, String defaultValue )
+    public <T> T getProperty( String key, Class<T> type, T defaultValue )
     {
-        // TODO Auto-generated method stub
-        return defaultValue;
+        Object value = properties.get( key );
+        return type.isInstance( value ) ? type.cast( value ) : defaultValue;
+    }
+
+    public Iterable<String> getPropertyKeys()
+    {
+        return properties.keySet();
+    }
+
+    public DefaultArtifact setProperty( String key, Object value )
+    {
+        if ( value == null )
+        {
+            properties.remove( key );
+        }
+        else
+        {
+            properties.put( key, value );
+        }
+        return this;
     }
 
     @Override
@@ -197,6 +234,8 @@ public class DefaultArtifact
         try
         {
             DefaultArtifact clone = (DefaultArtifact) super.clone();
+
+            clone.properties = new HashMap<String, Object>( clone.properties );
 
             return clone;
         }

@@ -253,8 +253,8 @@ public class DefaultDependencyCollector
 
                 if ( rangeResult.getVersions().isEmpty() )
                 {
-                    throw new VersionRangeResolutionException( rangeResult, "No versions available within range "
-                        + rangeRequest.getArtifact().getVersion() );
+                    throw new VersionRangeResolutionException( rangeResult, "No versions available for "
+                        + dependency.getArtifact() + " within specified range" );
                 }
             }
             catch ( VersionRangeResolutionException e )

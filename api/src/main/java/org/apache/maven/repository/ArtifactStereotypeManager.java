@@ -19,41 +19,12 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.io.File;
-
 /**
  * @author Benjamin Bentmann
  */
-public interface Artifact
+public interface ArtifactStereotypeManager
 {
 
-    String getGroupId();
-
-    String getArtifactId();
-
-    String getBaseVersion();
-
-    String getVersion();
-
-    Artifact setVersion( String version );
-
-    boolean isSnapshot();
-
-    String getClassifier();
-
-    // NOTE: This represents artifactHandler.extension! The higher-level classification done with artifactHandler.type should become a property
-    String getType();
-
-    File getFile();
-
-    Artifact setFile( File file );
-
-    // holds characteristics of artifact which were previously controlled by artifact handler (e.g.
-    // includesDependencies, addedToClasspath)
-    <T> T getProperty( String key, Class<T> type, T defaultValue );
-
-    Iterable<String> getPropertyKeys();
-
-    Artifact clone();
+    ArtifactStereotype get( String stereotypeId );
 
 }

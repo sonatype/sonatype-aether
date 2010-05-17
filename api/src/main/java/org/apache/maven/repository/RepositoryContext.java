@@ -60,6 +60,8 @@ public interface RepositoryContext
 
     AuthenticationSelector getAuthenticationSelector();
 
+    ArtifactStereotypeManager getArtifactStereotypeManager();
+
     DependencyTraverser getDependencyTraverser();
 
     DependencyManager getDependencyManager();

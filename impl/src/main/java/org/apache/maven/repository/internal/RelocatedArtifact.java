@@ -25,7 +25,7 @@ import org.apache.maven.repository.DerivedArtifact;
 /**
  * @author Benjamin Bentmann
  */
-public class RelocatedArtifact
+class RelocatedArtifact
     extends DerivedArtifact
 {
 
@@ -40,14 +40,14 @@ public class RelocatedArtifact
         {
             setVersion( version );
         }
-        this.groupId = groupId;
-        this.artifactId = artifactId;
+        this.groupId = ( groupId != null ) ? groupId : "";
+        this.artifactId = ( artifactId != null ) ? artifactId : "";
     }
 
     @Override
     public String getGroupId()
     {
-        if ( groupId != null && groupId.length() > 0 )
+        if ( groupId.length() > 0 )
         {
             return groupId;
         }
@@ -60,7 +60,7 @@ public class RelocatedArtifact
     @Override
     public String getArtifactId()
     {
-        if ( artifactId != null && artifactId.length() > 0 )
+        if ( artifactId.length() > 0 )
         {
             return artifactId;
         }

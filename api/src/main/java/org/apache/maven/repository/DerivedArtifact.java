@@ -30,6 +30,8 @@ public abstract class DerivedArtifact
 
     protected Artifact mainArtifact;
 
+    private File file;
+
     protected DerivedArtifact( Artifact mainArtifact )
     {
         if ( mainArtifact == null )
@@ -82,18 +84,23 @@ public abstract class DerivedArtifact
 
     public File getFile()
     {
-        return mainArtifact.getFile();
+        return file;
     }
 
     public Artifact setFile( File file )
     {
-        mainArtifact.setFile( file );
+        this.file = file;
         return this;
     }
 
-    public String getProperty( String key, String defaultValue )
+    public <T> T getProperty( String key, Class<T> type, T defaultValue )
     {
-        return mainArtifact.getProperty( key, defaultValue );
+        return mainArtifact.getProperty( key, type, defaultValue );
+    }
+
+    public Iterable<String> getPropertyKeys()
+    {
+        return mainArtifact.getPropertyKeys();
     }
 
     @Override

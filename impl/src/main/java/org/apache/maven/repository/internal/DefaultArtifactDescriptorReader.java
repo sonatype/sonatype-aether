@@ -38,7 +38,10 @@ import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.ArtifactDescriptorException;
 import org.apache.maven.repository.ArtifactResolutionException;
+import org.apache.maven.repository.ArtifactStereotype;
+import org.apache.maven.repository.ArtifactStereotypeManager;
 import org.apache.maven.repository.DefaultArtifact;
+import org.apache.maven.repository.RepositoryException;
 import org.apache.maven.repository.SubArtifact;
 import org.apache.maven.repository.ArtifactDescriptorRequest;
 import org.apache.maven.repository.ArtifactDescriptorResult;
@@ -99,20 +102,24 @@ public class DefaultArtifactDescriptorReader
 
         if ( model != null )
         {
+            ArtifactStereotypeManager stereotypes = context.getArtifactStereotypeManager();
+
             for ( Repository r : model.getRepositories() )
             {
                 result.addRepository( convert( r ) );
             }
+
             for ( org.apache.maven.model.Dependency dependency : model.getDependencies() )
             {
-                result.addDependency( convert( dependency ) );
+                result.addDependency( convert( dependency, stereotypes ) );
             }
+
             DependencyManagement mngt = model.getDependencyManagement();
             if ( mngt != null )
             {
                 for ( org.apache.maven.model.Dependency dependency : mngt.getDependencies() )
                 {
-                    result.addManagedDependency( convert( dependency ) );
+                    result.addManagedDependency( convert( dependency, stereotypes ) );
                 }
             }
         }
@@ -132,7 +139,7 @@ public class DefaultArtifactDescriptorReader
                 {
                     return null;
                 }
-                result.addException( new Exception( "Artifact relocations form a cycle: " + visited ) );
+                result.addException( new RepositoryException( "Artifact relocations form a cycle: " + visited ) );
                 throw new ArtifactDescriptorException( result );
             }
 
@@ -164,7 +171,8 @@ public class DefaultArtifactDescriptorReader
                 modelRequest.setTwoPhaseBuilding( false );
                 modelRequest.setSystemProperties( context.getSystemProperties() );
                 modelRequest.setUserProperties( context.getUserProperties() );
-                modelRequest.setModelResolver( new DefaultModelResolver( context, artifactResolver, request.getRemoteRepositories() ) );
+                modelRequest.setModelResolver( new DefaultModelResolver( context, artifactResolver,
+                                                                         request.getRemoteRepositories() ) );
                 if ( resolveResult.getRepository() instanceof WorkspaceRepository )
                 {
                     modelRequest.setPomFile( pomArtifact.getFile() );
@@ -222,15 +230,13 @@ public class DefaultArtifactDescriptorReader
         return relocation;
     }
 
-    private Dependency convert( org.apache.maven.model.Dependency dependency )
+    private Dependency convert( org.apache.maven.model.Dependency dependency, ArtifactStereotypeManager stereotypes )
     {
-        DefaultArtifact artifact = new DefaultArtifact();
-        artifact.setGroupId( dependency.getGroupId() );
-        artifact.setArtifactId( dependency.getArtifactId() );
-        artifact.setVersion( dependency.getVersion() );
-        // TODO: consider the artifact handler mappings
-        artifact.setClassifier( dependency.getClassifier() );
-        artifact.setType( dependency.getType() );
+        ArtifactStereotype stereotype = stereotypes.get( dependency.getType() );
+
+        DefaultArtifact artifact =
+            new DefaultArtifact( dependency.getGroupId(), dependency.getArtifactId(), dependency.getClassifier(), null,
+                                 dependency.getVersion(), stereotype );
 
         if ( dependency.getSystemPath() != null )
         {

@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,36 +19,37 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.maven.repository.ArtifactStereotype;
+import org.apache.maven.repository.ArtifactStereotypeManager;
+
 /**
  * @author Benjamin Bentmann
  */
-public class RepositoryException
-    extends Exception
+public class DefaultArtifactStereotypeManager
+    implements ArtifactStereotypeManager
 {
 
-    public RepositoryException( String message )
+    private final Map<String, ArtifactStereotype> stereotypes = new HashMap<String, ArtifactStereotype>();
+
+    public DefaultArtifactStereotypeManager addStereotype( ArtifactStereotype stereotype )
     {
-        super( message );
+        stereotypes.put( stereotype.getId(), stereotype );
+        return this;
     }
 
-    public RepositoryException( String message, Throwable cause )
+    public ArtifactStereotype get( String stereotypeId )
     {
-        super( message, cause );
-    }
+        ArtifactStereotype stereotype = stereotypes.get( stereotypeId );
 
-    public static String getMessage( String prefix, Throwable cause )
-    {
-        String msg = "";
-        if ( cause != null )
+        if ( stereotype == null )
         {
-            msg = cause.getMessage();
-            if ( msg == null || msg.length() <= 0 )
-            {
-                msg = cause.getClass().getSimpleName();
-            }
-            msg = prefix + msg;
+            stereotype = new DefaultArtifactStereotype( stereotypeId );
         }
-        return msg;
+
+        return stereotype;
     }
 
 }
