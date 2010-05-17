@@ -25,9 +25,9 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.DependencyGraphTransformer;
 import org.apache.maven.repository.DependencyNode;
+import org.apache.maven.repository.RepositoryException;
 import org.apache.maven.repository.UnsolvableVersionConflictException;
 
 /**
@@ -38,22 +38,22 @@ public class ClassicVersionConflictResolver
 {
 
     public DependencyNode transformGraph( DependencyNode node )
-        throws UnsolvableVersionConflictException
+        throws RepositoryException
     {
-        Map<String, VersionGroup> groups = new HashMap<String, VersionGroup>();
+        Map<Object, VersionGroup> groups = new HashMap<Object, VersionGroup>();
         analyze( node, groups );
         prune( node, groups );
         return node;
     }
 
-    private void analyze( DependencyNode node, Map<String, VersionGroup> groups )
-        throws UnsolvableVersionConflictException
+    private void analyze( DependencyNode node, Map<Object, VersionGroup> groups )
+        throws RepositoryException
     {
-        Map<String, VersionGroup> localGroups = new HashMap<String, VersionGroup>();
+        Map<Object, VersionGroup> localGroups = new HashMap<Object, VersionGroup>();
 
         for ( DependencyNode child : node.getChildren() )
         {
-            String key = VersionGroup.toKey( child.getDependency().getArtifact() );
+            Object key = child.getConflictId();
 
             VersionGroup localGroup = localGroups.get( key );
             if ( localGroup == null )
@@ -65,7 +65,7 @@ public class ClassicVersionConflictResolver
             localGroup.add( child.getDependency().getArtifact().getVersion() );
         }
 
-        for ( Map.Entry<String, VersionGroup> entry : localGroups.entrySet() )
+        for ( Map.Entry<Object, VersionGroup> entry : localGroups.entrySet() )
         {
             VersionGroup group = groups.get( entry.getKey() );
             if ( group == null )
@@ -82,7 +82,7 @@ public class ClassicVersionConflictResolver
 
         for ( DependencyNode child : node.getChildren() )
         {
-            String key = VersionGroup.toKey( child.getDependency().getArtifact() );
+            Object key = child.getConflictId();
 
             VersionGroup group = groups.get( key );
 
@@ -93,13 +93,13 @@ public class ClassicVersionConflictResolver
         }
     }
 
-    private void prune( DependencyNode node, Map<String, VersionGroup> groups )
+    private void prune( DependencyNode node, Map<Object, VersionGroup> groups )
     {
         for ( Iterator<DependencyNode> it = node.getChildren().iterator(); it.hasNext(); )
         {
             DependencyNode child = it.next();
 
-            String key = VersionGroup.toKey( child.getDependency().getArtifact() );
+            Object key = child.getConflictId();
 
             VersionGroup group = groups.get( key );
 
@@ -119,7 +119,7 @@ public class ClassicVersionConflictResolver
     static class VersionGroup
     {
 
-        final String key;
+        final Object key;
 
         int depth;
 
@@ -133,7 +133,7 @@ public class ClassicVersionConflictResolver
 
         boolean pruned;
 
-        public VersionGroup( String key, DependencyNode node )
+        public VersionGroup( Object key, DependencyNode node )
         {
             this.key = key;
             depth = node.getDepth();
@@ -222,12 +222,6 @@ public class ClassicVersionConflictResolver
                 }
             }
             return version;
-        }
-
-        static String toKey( Artifact artifact )
-        {
-            return artifact.getGroupId() + ':' + artifact.getArtifactId() + ':' + artifact.getClassifier() + ':'
-                + artifact.getType();
         }
 
     }

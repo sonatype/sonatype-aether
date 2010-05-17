@@ -36,8 +36,6 @@ public class DefaultDependencyManager
     implements DependencyManager
 {
 
-    public static final DependencyManager INSTANCE = new DefaultDependencyManager();
-
     private final Map<String, String> managedVersions;
 
     private final Map<String, String> managedScopes;

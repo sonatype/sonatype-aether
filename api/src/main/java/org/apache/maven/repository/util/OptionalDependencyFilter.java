@@ -30,8 +30,6 @@ public class OptionalDependencyFilter
     implements DependencyFilter
 {
 
-    public static final DependencyFilter INSTANCE = new OptionalDependencyFilter();
-
     public boolean accept( DependencyNode node, Dependency dependency )
     {
         if ( node.getDependency() != null && dependency.isOptional() )

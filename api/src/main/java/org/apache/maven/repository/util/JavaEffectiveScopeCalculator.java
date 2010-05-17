@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.Dependency;
 import org.apache.maven.repository.DependencyGraphTransformer;
 import org.apache.maven.repository.DependencyNode;
@@ -53,17 +52,17 @@ public class JavaEffectiveScopeCalculator
     public DependencyNode transformGraph( DependencyNode node )
     {
         Map<DependencyNode, String> scopes = new IdentityHashMap<DependencyNode, String>();
-        Map<String, DependencyGroup> groups = new HashMap<String, DependencyGroup>();
+        Map<Object, DependencyGroup> groups = new HashMap<Object, DependencyGroup>();
 
         Dependency parent = node.getDependency();
         String parentScope = ( parent != null ) ? parent.getScope() : null;
         analyze( node, parentScope, scopes, groups );
 
-        Set<String> keys = new HashSet<String>( groups.keySet() );
+        Set<Object> keys = new HashSet<Object>( groups.keySet() );
         while ( !keys.isEmpty() )
         {
-            Iterator<String> it = keys.iterator();
-            String key = it.next();
+            Iterator<Object> it = keys.iterator();
+            Object key = it.next();
             it.remove();
 
             DependencyGroup group = groups.get( key );
@@ -79,14 +78,14 @@ public class JavaEffectiveScopeCalculator
     }
 
     private void analyze( DependencyNode node, String scope, Map<DependencyNode, String> scopes,
-                          Map<String, DependencyGroup> groups )
+                          Map<Object, DependencyGroup> groups )
     {
         Dependency dependeny = node.getDependency();
         if ( dependeny != null )
         {
             scopes.put( node, scope );
 
-            String key = toKey( dependeny.getArtifact() );
+            Object key = node.getConflictId();
             DependencyGroup group = groups.get( key );
             if ( group == null )
             {
@@ -105,7 +104,7 @@ public class JavaEffectiveScopeCalculator
         }
     }
 
-    private void resolve( DependencyGroup group, Map<DependencyNode, String> scopes, Set<String> keys )
+    private void resolve( DependencyGroup group, Map<DependencyNode, String> scopes, Set<Object> keys )
     {
         if ( group.nodes.size() <= 1 )
         {
@@ -160,7 +159,7 @@ public class JavaEffectiveScopeCalculator
         }
     }
 
-    private void adjust( DependencyNode node, String scope, Map<DependencyNode, String> scopes, Set<String> keys )
+    private void adjust( DependencyNode node, String scope, Map<DependencyNode, String> scopes, Set<Object> keys )
     {
         scopes.put( node, scope );
 
@@ -171,16 +170,10 @@ public class JavaEffectiveScopeCalculator
             String oldScope = scopes.get( childNode );
             if ( !inheritedScope.equals( oldScope ) )
             {
-                keys.add( toKey( childNode.getDependency().getArtifact() ) );
+                keys.add( childNode.getConflictId() );
                 adjust( childNode, inheritedScope, scopes, keys );
             }
         }
-    }
-
-    private String toKey( Artifact artifact )
-    {
-        return artifact.getGroupId() + ':' + artifact.getArtifactId() + ':' + artifact.getClassifier() + ':'
-            + artifact.getType();
     }
 
     private String getInheritedScope( String parentScope, String childScope )

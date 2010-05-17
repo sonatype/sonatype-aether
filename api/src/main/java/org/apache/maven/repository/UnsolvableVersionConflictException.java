@@ -29,11 +29,11 @@ public class UnsolvableVersionConflictException
     extends RepositoryException
 {
 
-    private final String dependencyConflictId;
+    private final Object dependencyConflictId;
 
     private final Collection<String> versions;
 
-    public UnsolvableVersionConflictException( String dependencyConflictId, Collection<String> versions )
+    public UnsolvableVersionConflictException( Object dependencyConflictId, Collection<String> versions )
     {
         super( "Could not resolve version conflict for " + dependencyConflictId + " with requested versions: "
             + versions );
@@ -41,7 +41,7 @@ public class UnsolvableVersionConflictException
         this.versions = ( versions != null ) ? versions : Collections.<String> emptyList();
     }
 
-    public String getDependencyConflictId()
+    public Object getDependencyConflictId()
     {
         return dependencyConflictId;
     }

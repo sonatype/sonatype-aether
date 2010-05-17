@@ -39,6 +39,8 @@ public class DependencyNode
 
     private int depth;
 
+    private Object conflictId;
+
     private String requestedVersion;
 
     private List<RemoteRepository> repositories = Collections.emptyList();
@@ -86,6 +88,17 @@ public class DependencyNode
     public int getDepth()
     {
         return depth;
+    }
+
+    public Object getConflictId()
+    {
+        return conflictId;
+    }
+
+    public DependencyNode setConflictId( Object conflictId )
+    {
+        this.conflictId = conflictId;
+        return this;
     }
 
     public String getRequestedVersion()

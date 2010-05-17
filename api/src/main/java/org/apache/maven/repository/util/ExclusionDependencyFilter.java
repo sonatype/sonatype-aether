@@ -37,8 +37,6 @@ public class ExclusionDependencyFilter
     implements DependencyFilter
 {
 
-    public static final DependencyFilter INSTANCE = new ExclusionDependencyFilter();
-
     private final List<Exclusion> exclusions;
 
     public ExclusionDependencyFilter()
