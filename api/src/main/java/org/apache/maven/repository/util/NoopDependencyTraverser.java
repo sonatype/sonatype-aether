@@ -19,6 +19,7 @@ package org.apache.maven.repository.util;
  * under the License.
  */
 
+import org.apache.maven.repository.Dependency;
 import org.apache.maven.repository.DependencyNode;
 import org.apache.maven.repository.DependencyTraverser;
 
@@ -31,7 +32,7 @@ public class NoopDependencyTraverser
 
     public static final DependencyTraverser INSTANCE = new NoopDependencyTraverser();
 
-    public boolean accept( DependencyNode node )
+    public boolean accept( DependencyNode node, Dependency dependency )
     {
         return true;
     }

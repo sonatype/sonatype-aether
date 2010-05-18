@@ -133,6 +133,8 @@ public class DefaultDependencyCollector
 
             node = new DependencyNode( root, null );
             node.setRelocations( descriptorResult.getRelocations() );
+            node.setRequestedVersion( root.getArtifact().getVersion() );
+            node.setRepositories( request.getRepositories() );
         }
         else
         {
@@ -141,9 +143,14 @@ public class DefaultDependencyCollector
 
         result.setRoot( node );
 
-        process( context, result, node, dependencies, managedDependencies, repositories, depFilter, depManager,
-                 depTraverser );
+        boolean traverse = ( root == null ) || depTraverser.accept( null, root );
 
+        if ( traverse )
+        {
+            process( context, result, node, dependencies, managedDependencies, repositories,
+                     depFilter.deriveChildFilter( node ), depManager, depTraverser.deriveChildTraverser( node ) );
+        }
+ 
         DependencyGraphTransformer transformer = context.getDependencyGraphTransformer();
         if ( transformer != null )
         {
@@ -234,6 +241,8 @@ public class DefaultDependencyCollector
                           DependencyManager depManager, DependencyTraverser depTraverser )
         throws DependencyCollectionException
     {
+        // TODO: many dirty trees will have repetetive sub trees, optimize and don't reprocess what we already did
+
         for ( Dependency dependency : dependencies )
         {
             if ( !depFilter.accept( node, dependency ) )
@@ -242,6 +251,10 @@ public class DefaultDependencyCollector
             }
 
             depManager.manageDependency( node, dependency );
+
+            boolean system = dependency.getArtifact().getFile() != null;
+
+            boolean traverse = !system && depTraverser.accept( node, dependency );
 
             VersionRangeResult rangeResult;
             try
@@ -280,23 +293,28 @@ public class DefaultDependencyCollector
                     repos = repositories;
                 }
 
-                // TODO: probably call into the dependency traverser here, too
-
                 ArtifactDescriptorResult descriptorResult;
                 try
                 {
                     ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
                     descriptorRequest.setArtifact( d.getArtifact() );
                     descriptorRequest.setRemoteRepositories( repos );
-                    descriptorResult = descriptorReader.readArtifactDescriptor( context, descriptorRequest );
+                    if ( system )
+                    {
+                        descriptorResult = new ArtifactDescriptorResult( descriptorRequest );
+                        descriptorResult.setArtifact( d.getArtifact() );
+                    }
+                    else
+                    {
+                        descriptorResult = descriptorReader.readArtifactDescriptor( context, descriptorRequest );
+                        d.setArtifact( descriptorResult.getArtifact() );
+                    }
                 }
                 catch ( ArtifactDescriptorException e )
                 {
                     result.addException( e );
                     continue;
                 }
-
-                d.setArtifact( descriptorResult.getArtifact() );
 
                 if ( !descriptorResult.getRelocations().isEmpty() && !depFilter.accept( node, d ) )
                 {
@@ -313,8 +331,7 @@ public class DefaultDependencyCollector
                 child.setRequestedVersion( dependency.getArtifact().getVersion() );
                 child.setRepositories( repos );
 
-                // FIXME: This is too late to prevent POM resolution for system-scope deps
-                if ( depTraverser.accept( child ) )
+                if ( traverse )
                 {
                     process( context, result, child, descriptorResult.getDependencies(),
                              descriptorResult.getManagedDependencies(),

@@ -72,8 +72,8 @@ public class DefaultArtifact
     {
         setGroupId( groupId );
         setArtifactId( artifactId );
-        setClassifier( ( classifier != null ) ? classifier : stereotype.getClassifier() );
-        setType( ( type != null ) ? type : stereotype.getType() );
+        setClassifier( ( classifier != null || stereotype == null ) ? classifier : stereotype.getClassifier() );
+        setType( ( type != null || stereotype == null ) ? type : stereotype.getType() );
         setVersion( version );
         properties.putAll( stereotype.getProperties() );
     }

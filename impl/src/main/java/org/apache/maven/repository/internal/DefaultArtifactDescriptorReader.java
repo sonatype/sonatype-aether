@@ -57,6 +57,7 @@ import org.apache.maven.repository.spi.ArtifactResolver;
 import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.NullLogger;
 import org.apache.maven.repository.spi.ArtifactDescriptorReader;
+import org.apache.maven.repository.util.DefaultArtifactStereotype;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 
@@ -233,6 +234,10 @@ public class DefaultArtifactDescriptorReader
     private Dependency convert( org.apache.maven.model.Dependency dependency, ArtifactStereotypeManager stereotypes )
     {
         ArtifactStereotype stereotype = stereotypes.get( dependency.getType() );
+        if ( stereotype == null )
+        {
+            stereotype = new DefaultArtifactStereotype( dependency.getType() );
+        }
 
         DefaultArtifact artifact =
             new DefaultArtifact( dependency.getGroupId(), dependency.getArtifactId(), dependency.getClassifier(), null,

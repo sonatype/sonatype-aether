@@ -90,7 +90,8 @@ public class ExclusionDependencyFilter
 
     public DependencyFilter deriveChildFilter( DependencyNode childNode )
     {
-        Collection<Exclusion> exclusions = childNode.getDependency().getExclusions();
+        Dependency dependency = childNode.getDependency();
+        Collection<Exclusion> exclusions = ( dependency != null ) ? dependency.getExclusions() : null;
         if ( exclusions == null || exclusions.isEmpty() )
         {
             return this;

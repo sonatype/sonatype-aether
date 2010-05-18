@@ -19,10 +19,6 @@ package org.apache.maven.repository.util;
  * under the License.
  */
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-
 import org.apache.maven.repository.Dependency;
 import org.apache.maven.repository.DependencyNode;
 import org.apache.maven.repository.DependencyTraverser;
@@ -30,37 +26,13 @@ import org.apache.maven.repository.DependencyTraverser;
 /**
  * @author Benjamin Bentmann
  */
-public class ScopeDependencyTraverser
+public class FatArtifactTraverser
     implements DependencyTraverser
 {
 
-    private final Collection<String> included = new HashSet<String>();
-
-    private final Collection<String> excluded = new HashSet<String>();
-
-    public ScopeDependencyTraverser( Collection<String> included, Collection<String> excluded )
+    public boolean accept( DependencyNode node, Dependency dependency )
     {
-        this.included.addAll( included );
-        this.excluded.addAll( excluded );
-    }
-
-    public ScopeDependencyTraverser( String... excluded )
-    {
-        this.excluded.addAll( Arrays.asList( excluded ) );
-    }
-
-    public boolean accept( DependencyNode node )
-    {
-        Dependency dependency = node.getDependency();
-
-        if ( dependency == null )
-        {
-            return true;
-        }
-
-        String scope = dependency.getScope();
-        return ( included.isEmpty() || included.contains( scope ) )
-            && ( excluded.isEmpty() || !excluded.contains( scope ) );
+        return !dependency.getArtifact().getProperty( "includesDependencies", Boolean.class, Boolean.FALSE ).booleanValue();
     }
 
     public DependencyTraverser deriveChildTraverser( DependencyNode childNode )

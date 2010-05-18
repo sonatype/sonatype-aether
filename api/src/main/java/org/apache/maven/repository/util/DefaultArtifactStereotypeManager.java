@@ -44,11 +44,6 @@ public class DefaultArtifactStereotypeManager
     {
         ArtifactStereotype stereotype = stereotypes.get( stereotypeId );
 
-        if ( stereotype == null )
-        {
-            stereotype = new DefaultArtifactStereotype( stereotypeId );
-        }
-
         return stereotype;
     }
 

@@ -29,13 +29,14 @@ public interface DependencyTraverser
 {
 
     /**
-     * Decides whether the dependencies of the specified node should be traversed.
+     * Decides whether the transitive dependencies of the specified dependency should be traversed.
      * 
-     * @param node The dependency node to check, must not be {@code null}.
-     * @return {@code true} if the dependency tree builder should recurse into the specified node and process its
+     * @param node The node whose dependency should be checked or {@code null} in case of the root dependency.
+     * @param dependency The dependency to check, must not be {@code null}.
+     * @return {@code true} if the dependency tree builder should recurse into the specified dependency and process its
      *         dependencies, {@code false} otherwise.
      */
-    boolean accept( DependencyNode node );
+    boolean accept( DependencyNode node, Dependency dependency );
 
     /**
      * Derives a dependency traverser for the specified child node of the current node, i.e. the parent of the specified
