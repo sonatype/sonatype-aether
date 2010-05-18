@@ -57,6 +57,7 @@ import org.apache.maven.repository.spi.ArtifactResolver;
 import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.NullLogger;
 import org.apache.maven.repository.spi.ArtifactDescriptorReader;
+import org.apache.maven.repository.spi.RemoteRepositoryManager;
 import org.apache.maven.repository.util.DefaultArtifactStereotype;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -73,6 +74,9 @@ public class DefaultArtifactDescriptorReader
     private Logger logger = NullLogger.INSTANCE;
 
     @Requirement
+    private RemoteRepositoryManager remoteRepositoryManager;
+
+    @Requirement
     private ArtifactResolver artifactResolver;
 
     @Requirement
@@ -81,6 +85,16 @@ public class DefaultArtifactDescriptorReader
     public DefaultArtifactDescriptorReader setLogger( Logger logger )
     {
         this.logger = ( logger != null ) ? logger : NullLogger.INSTANCE;
+        return this;
+    }
+
+    public DefaultArtifactDescriptorReader setRemoteRepositoryManager( RemoteRepositoryManager remoteRepositoryManager )
+    {
+        if ( remoteRepositoryManager == null )
+        {
+            throw new IllegalArgumentException( "remote repository manager has not been specified" );
+        }
+        this.remoteRepositoryManager = remoteRepositoryManager;
         return this;
     }
 
@@ -173,6 +187,7 @@ public class DefaultArtifactDescriptorReader
                 modelRequest.setSystemProperties( context.getSystemProperties() );
                 modelRequest.setUserProperties( context.getUserProperties() );
                 modelRequest.setModelResolver( new DefaultModelResolver( context, artifactResolver,
+                                                                         remoteRepositoryManager,
                                                                          request.getRemoteRepositories() ) );
                 if ( resolveResult.getRepository() instanceof WorkspaceRepository )
                 {
@@ -263,7 +278,7 @@ public class DefaultArtifactDescriptorReader
         return new Exclusion( exclusion.getGroupId(), exclusion.getArtifactId(), "*", "*" );
     }
 
-    private RemoteRepository convert( Repository repository )
+    static RemoteRepository convert( Repository repository )
     {
         RemoteRepository result =
             new RemoteRepository( repository.getId(), repository.getLayout(), repository.getUrl() );
@@ -272,7 +287,7 @@ public class DefaultArtifactDescriptorReader
         return result;
     }
 
-    private RepositoryPolicy convert( org.apache.maven.model.RepositoryPolicy policy )
+    private static RepositoryPolicy convert( org.apache.maven.model.RepositoryPolicy policy )
     {
         RepositoryPolicy result = new RepositoryPolicy();
         if ( policy != null )

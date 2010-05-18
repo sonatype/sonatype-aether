@@ -19,7 +19,10 @@ package org.apache.maven.repository.internal;
  * under the License.
  */
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.maven.model.Repository;
 import org.apache.maven.model.building.FileModelSource;
@@ -34,6 +37,7 @@ import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositoryContext;
 import org.apache.maven.repository.ArtifactRequest;
 import org.apache.maven.repository.spi.ArtifactResolver;
+import org.apache.maven.repository.spi.RemoteRepositoryManager;
 
 /**
  * @author Benjamin Bentmann
@@ -48,25 +52,42 @@ class DefaultModelResolver
 
     private final ArtifactResolver resolver;
 
-    public DefaultModelResolver( RepositoryContext context, ArtifactResolver resolver, List<RemoteRepository> repositories )
+    private final RemoteRepositoryManager remoteRepositoryManager;
+
+    private final Set<String> repositoryIds;
+
+    public DefaultModelResolver( RepositoryContext context, ArtifactResolver resolver,
+                                 RemoteRepositoryManager remoteRepositoryManager, List<RemoteRepository> repositories )
     {
         this.context = context;
         this.resolver = resolver;
+        this.remoteRepositoryManager = remoteRepositoryManager;
         this.repositories = repositories;
+        this.repositoryIds = new HashSet<String>();
     }
 
     private DefaultModelResolver( DefaultModelResolver original )
     {
         this.context = original.context;
         this.resolver = original.resolver;
+        this.remoteRepositoryManager = original.remoteRepositoryManager;
         this.repositories = original.repositories;
+        this.repositoryIds = new HashSet<String>( original.repositoryIds );
     }
 
     public void addRepository( Repository repository )
         throws InvalidRepositoryException
     {
-        // TODO Auto-generated method stub
+        if ( !repositoryIds.add( repository.getId() ) )
+        {
+            return;
+        }
 
+        RemoteRepository remoteRepository = DefaultArtifactDescriptorReader.convert( repository );
+
+        this.repositories =
+            remoteRepositoryManager.aggregateRepositories( context, repositories,
+                                                           Collections.singletonList( remoteRepository ) );
     }
 
     public ModelResolver newCopy()

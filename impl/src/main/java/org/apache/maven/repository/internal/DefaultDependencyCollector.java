@@ -49,6 +49,7 @@ import org.apache.maven.repository.spi.ArtifactDescriptorReader;
 import org.apache.maven.repository.spi.DependencyCollector;
 import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.NullLogger;
+import org.apache.maven.repository.spi.RemoteRepositoryManager;
 import org.apache.maven.repository.spi.VersionRangeResolver;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -65,6 +66,9 @@ public class DefaultDependencyCollector
     private Logger logger = NullLogger.INSTANCE;
 
     @Requirement
+    private RemoteRepositoryManager remoteRepositoryManager;
+
+    @Requirement
     private ArtifactDescriptorReader descriptorReader;
 
     @Requirement
@@ -73,6 +77,16 @@ public class DefaultDependencyCollector
     public DefaultDependencyCollector setLogger( Logger logger )
     {
         this.logger = ( logger != null ) ? logger : NullLogger.INSTANCE;
+        return this;
+    }
+
+    public DefaultDependencyCollector setRemoteRepositoryManager( RemoteRepositoryManager remoteRepositoryManager )
+    {
+        if ( remoteRepositoryManager == null )
+        {
+            throw new IllegalArgumentException( "remote repository manager has not been specified" );
+        }
+        this.remoteRepositoryManager = remoteRepositoryManager;
         return this;
     }
 
@@ -127,7 +141,9 @@ public class DefaultDependencyCollector
                 throw new DependencyCollectionException( result );
             }
 
-            repositories = mergeRepos( repositories, descriptorResult.getRepositories() );
+            repositories =
+                remoteRepositoryManager.aggregateRepositories( context, repositories,
+                                                               descriptorResult.getRepositories() );
             dependencies = mergeDeps( dependencies, descriptorResult.getDependencies() );
             managedDependencies = mergeDeps( managedDependencies, descriptorResult.getManagedDependencies() );
 
@@ -150,7 +166,7 @@ public class DefaultDependencyCollector
             process( context, result, node, dependencies, managedDependencies, repositories,
                      depFilter.deriveChildFilter( node ), depManager, depTraverser.deriveChildTraverser( node ) );
         }
- 
+
         DependencyGraphTransformer transformer = context.getDependencyGraphTransformer();
         if ( transformer != null )
         {
@@ -199,37 +215,6 @@ public class DefaultDependencyCollector
         return result;
     }
 
-    private List<RemoteRepository> mergeRepos( List<RemoteRepository> dominant, List<RemoteRepository> recessive )
-    {
-        List<RemoteRepository> result;
-        if ( dominant == null || dominant.isEmpty() )
-        {
-            result = recessive;
-        }
-        else if ( recessive == null || recessive.isEmpty() )
-        {
-            result = dominant;
-        }
-        else
-        {
-            result = new ArrayList<RemoteRepository>( dominant.size() + recessive.size() );
-            Collection<String> ids = new HashSet<String>();
-            for ( RemoteRepository repository : dominant )
-            {
-                ids.add( repository.getId() );
-                result.add( repository );
-            }
-            for ( RemoteRepository repository : recessive )
-            {
-                if ( !ids.contains( repository.getId() ) )
-                {
-                    result.add( repository );
-                }
-            }
-        }
-        return result;
-    }
-
     private String getId( Artifact a )
     {
         return a.getGroupId() + ':' + a.getArtifactId() + ':' + a.getClassifier() + ':' + a.getType();
@@ -241,7 +226,7 @@ public class DefaultDependencyCollector
                           DependencyManager depManager, DependencyTraverser depTraverser )
         throws DependencyCollectionException
     {
-        // TODO: many dirty trees will have repetetive sub trees, optimize and don't reprocess what we already did
+        // TODO: many dirty trees will have repetitive sub trees, optimize and don't reprocess what we already did
 
         for ( Dependency dependency : dependencies )
         {
@@ -335,7 +320,8 @@ public class DefaultDependencyCollector
                 {
                     process( context, result, child, descriptorResult.getDependencies(),
                              descriptorResult.getManagedDependencies(),
-                             mergeRepos( repositories, descriptorResult.getRepositories() ),
+                             remoteRepositoryManager.aggregateRepositories( context, repositories,
+                                                                            descriptorResult.getRepositories() ),
                              depFilter.deriveChildFilter( child ),
                              depManager.deriveChildManager( child, managedDependencies ),
                              depTraverser.deriveChildTraverser( child ) );

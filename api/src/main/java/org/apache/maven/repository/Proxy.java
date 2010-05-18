@@ -46,6 +46,17 @@ public class Proxy
         setAuthentication( auth );
     }
 
+    public Proxy( Proxy proxy )
+    {
+        setType( proxy.getType() );
+        setHost( proxy.getHost() );
+        setPort( proxy.getPort() );
+        if ( proxy.getAuthentication() != null )
+        {
+            setAuthentication( new Authentication( proxy.getAuthentication() ) );
+        }
+    }
+
     public String getType()
     {
         return type;

@@ -19,6 +19,8 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,8 +30,6 @@ import java.util.regex.Pattern;
 public class RemoteRepository
     implements ArtifactRepository
 {
-
-    // TODO: allow tracking of remote repositories mirrored by this one
 
     private String id;
 
@@ -49,6 +49,8 @@ public class RemoteRepository
 
     private Authentication authentication;
 
+    private List<RemoteRepository> mirroredRepositories = Collections.emptyList();
+
     public RemoteRepository()
     {
         setPolicy( true, null );
@@ -62,6 +64,9 @@ public class RemoteRepository
         setUrl( repo.getUrl() );
         setPolicy( true, repo.getPolicy( true ) );
         setPolicy( false, repo.getPolicy( false ) );
+        setAuthentication( repo.getAuthentication() );
+        setProxy( repo.getProxy() );
+        setMirroredRepositories( repo.getMirroredRepositories() );
     }
 
     public RemoteRepository( String id, String type, String url )
@@ -176,6 +181,24 @@ public class RemoteRepository
     {
         this.authentication = authentication;
 
+        return this;
+    }
+
+    public List<RemoteRepository> getMirroredRepositories()
+    {
+        return mirroredRepositories;
+    }
+
+    public RemoteRepository setMirroredRepositories( List<RemoteRepository> mirroredRepositories )
+    {
+        if ( mirroredRepositories == null )
+        {
+            this.mirroredRepositories = Collections.emptyList();
+        }
+        else
+        {
+            this.mirroredRepositories = mirroredRepositories;
+        }
         return this;
     }
 

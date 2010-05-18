@@ -1,4 +1,4 @@
-package org.apache.maven.repository.spi;
+package org.apache.maven.repository.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,27 +19,39 @@ package org.apache.maven.repository.spi;
  * under the License.
  */
 
-import java.util.List;
+import java.util.Collections;
 
-import org.apache.maven.repository.NoRepositoryReaderException;
+import org.apache.maven.repository.MirrorSelector;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
-import org.apache.maven.repository.RepositoryPolicy;
 
 /**
  * @author Benjamin Bentmann
  */
-public interface RemoteRepositoryManager
+public class RepoManMirrorSelector
+    implements MirrorSelector
 {
 
-    List<RemoteRepository> aggregateRepositories( RepositoryContext context,
-                                                  List<RemoteRepository> effectiveRepositories,
-                                                  List<RemoteRepository> rawRepositories );
+    private String id;
 
-    RepositoryPolicy getPolicy( RepositoryContext context, RemoteRepository repository, boolean releases,
-                                boolean snapshots );
+    private String url;
 
-    RepositoryReader getRepositoryReader( RepositoryContext context, RemoteRepository repository )
-        throws NoRepositoryReaderException;
+    private String type;
+
+    public RepoManMirrorSelector setRepositoryManager( String id, String url, String type )
+    {
+        this.id = id;
+        this.url = url;
+        this.type = type;
+
+        return this;
+    }
+
+    public RemoteRepository getMirror( RemoteRepository repository )
+    {
+        RemoteRepository repo = new RemoteRepository( id, type, url );
+        // TODO: what about the policies?
+        repo.setMirroredRepositories( Collections.singletonList( repository ) );
+        return repo;
+    }
 
 }

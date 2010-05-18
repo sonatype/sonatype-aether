@@ -20,6 +20,7 @@ package org.apache.maven.repository.util;
  */
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.maven.repository.MirrorSelector;
@@ -54,14 +55,24 @@ public class DefaultMirrorSelector
             return null;
         }
 
-        RemoteRepository repo = new RemoteRepository( repository );
+        RemoteRepository repo = new RemoteRepository();
 
         repo.setId( mirror.id );
         repo.setUrl( mirror.url );
+
         if ( mirror.type != null && mirror.type.length() > 0 )
         {
             repo.setType( mirror.type );
         }
+        else
+        {
+            repo.setType( repository.getType() );
+        }
+
+        repo.setPolicy( true, repository.getPolicy( true ) );
+        repo.setPolicy( false, repository.getPolicy( false ) );
+
+        repo.setMirroredRepositories( Collections.singletonList( repository ) );
 
         return repo;
     }

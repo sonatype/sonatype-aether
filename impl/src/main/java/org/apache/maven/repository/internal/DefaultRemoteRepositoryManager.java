@@ -22,8 +22,12 @@ package org.apache.maven.repository.internal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 
+import org.apache.maven.repository.AuthenticationSelector;
+import org.apache.maven.repository.MirrorSelector;
 import org.apache.maven.repository.NoRepositoryReaderException;
+import org.apache.maven.repository.ProxySelector;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositoryContext;
 import org.apache.maven.repository.RepositoryPolicy;
@@ -81,6 +85,90 @@ public class DefaultRemoteRepositoryManager
         return this;
     }
 
+    public List<RemoteRepository> aggregateRepositories( RepositoryContext context,
+                                                         List<RemoteRepository> effectiveRepositories,
+                                                         List<RemoteRepository> rawRepositories )
+    {
+        if ( rawRepositories.isEmpty() )
+        {
+            return effectiveRepositories;
+        }
+
+        MirrorSelector mirrorSelector = context.getMirrorSelector();
+        AuthenticationSelector authSelector = context.getAuthenticationSelector();
+        ProxySelector proxySelector = context.getProxySelector();
+
+        List<RemoteRepository> result = new ArrayList<RemoteRepository>( effectiveRepositories );
+
+        next: for ( RemoteRepository rawRepository : rawRepositories )
+        {
+            RemoteRepository mirrorRepository = mirrorSelector.getMirror( rawRepository );
+
+            RemoteRepository repository = ( mirrorRepository != null ) ? mirrorRepository : rawRepository;
+
+            String key = getKey( repository );
+
+            for ( ListIterator<RemoteRepository> it = result.listIterator(); it.hasNext(); )
+            {
+                RemoteRepository effectiveRepository = it.next();
+
+                if ( key.equals( getKey( effectiveRepository ) ) )
+                {
+                    if ( !effectiveRepository.getMirroredRepositories().isEmpty()
+                        && !repository.getMirroredRepositories().isEmpty() )
+                    {
+                        RemoteRepository mergedRepository = new RemoteRepository();
+
+                        mergedRepository.setId( effectiveRepository.getId() );
+                        mergedRepository.setType( effectiveRepository.getType() );
+                        mergedRepository.setUrl( effectiveRepository.getUrl() );
+
+                        mergedRepository.setAuthentication( effectiveRepository.getAuthentication() );
+                        mergedRepository.setProxy( effectiveRepository.getProxy() );
+
+                        mergedRepository.setPolicy( true, merge( context, effectiveRepository.getPolicy( true ),
+                                                                 repository.getPolicy( true ) ) );
+                        mergedRepository.setPolicy( false, merge( context, effectiveRepository.getPolicy( false ),
+                                                                  repository.getPolicy( false ) ) );
+
+                        List<RemoteRepository> mirroredRepositories = effectiveRepository.getMirroredRepositories();
+                        String rawKey = getKey( rawRepository );
+                        RemoteRepository mirroredRepository = null;
+                        for ( RemoteRepository repo : mirroredRepositories )
+                        {
+                            if ( rawKey.equals( getKey( repo ) ) )
+                            {
+                                mirroredRepository = repo;
+                                break;
+                            }
+                        }
+                        if ( mirroredRepository == null )
+                        {
+                            mirroredRepositories = new ArrayList<RemoteRepository>( mirroredRepositories );
+                            mirroredRepositories.add( rawRepository );
+                        }
+                        mergedRepository.setMirroredRepositories( mirroredRepositories );
+
+                        it.set( mergedRepository );
+                    }
+
+                    continue next;
+                }
+            }
+
+            repository.setAuthentication( authSelector.getAuthentication( repository ) );
+            repository.setProxy( proxySelector.getProxy( repository ) );
+            result.add( repository );
+        }
+
+        return result;
+    }
+
+    private String getKey( RemoteRepository repository )
+    {
+        return repository.getId();
+    }
+
     public RepositoryPolicy getPolicy( RepositoryContext context, RemoteRepository repository, boolean releases,
                                        boolean snapshots )
     {
@@ -89,22 +177,7 @@ public class DefaultRemoteRepositoryManager
         // get effective per-repository policy
         if ( releases && snapshots )
         {
-            RepositoryPolicy policy1 = repository.getPolicy( false );
-            RepositoryPolicy policy2 = repository.getPolicy( true );
-            policy = new RepositoryPolicy( policy1 );
-            if ( policy2.isEnabled() )
-            {
-                policy.setEnabled( true );
-
-                if ( ordinalOfChecksumPolicy( policy2.getChecksumPolicy() ) < ordinalOfChecksumPolicy( policy.getChecksumPolicy() ) )
-                {
-                    policy.setChecksumPolicy( policy2.getChecksumPolicy() );
-                }
-
-                policy.setChecksumPolicy( updateCheckManager.getEffectiveUpdatePolicy( context,
-                                                                                       policy.getChecksumPolicy(),
-                                                                                       policy2.getChecksumPolicy() ) );
-            }
+            policy = merge( context, repository.getPolicy( false ), repository.getPolicy( true ) );
         }
         else
         {
@@ -119,6 +192,26 @@ public class DefaultRemoteRepositoryManager
         if ( StringUtils.isNotEmpty( context.getUpdatePolicy() ) )
         {
             policy.setUpdatePolicy( context.getUpdatePolicy() );
+        }
+
+        return policy;
+    }
+
+    private RepositoryPolicy merge( RepositoryContext context, RepositoryPolicy policy1, RepositoryPolicy policy2 )
+    {
+        RepositoryPolicy policy = new RepositoryPolicy( policy1 );
+
+        if ( policy2.isEnabled() )
+        {
+            policy.setEnabled( true );
+
+            if ( ordinalOfChecksumPolicy( policy2.getChecksumPolicy() ) < ordinalOfChecksumPolicy( policy.getChecksumPolicy() ) )
+            {
+                policy.setChecksumPolicy( policy2.getChecksumPolicy() );
+            }
+
+            policy.setChecksumPolicy( updateCheckManager.getEffectiveUpdatePolicy( context, policy.getChecksumPolicy(),
+                                                                                   policy2.getChecksumPolicy() ) );
         }
 
         return policy;
