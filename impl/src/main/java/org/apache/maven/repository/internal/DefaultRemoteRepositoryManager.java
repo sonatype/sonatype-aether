@@ -29,7 +29,7 @@ import org.apache.maven.repository.MirrorSelector;
 import org.apache.maven.repository.NoRepositoryReaderException;
 import org.apache.maven.repository.ProxySelector;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryPolicy;
 import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.NullLogger;
@@ -85,7 +85,7 @@ public class DefaultRemoteRepositoryManager
         return this;
     }
 
-    public List<RemoteRepository> aggregateRepositories( RepositoryContext context,
+    public List<RemoteRepository> aggregateRepositories( RepositorySession session,
                                                          List<RemoteRepository> effectiveRepositories,
                                                          List<RemoteRepository> rawRepositories )
     {
@@ -94,9 +94,9 @@ public class DefaultRemoteRepositoryManager
             return effectiveRepositories;
         }
 
-        MirrorSelector mirrorSelector = context.getMirrorSelector();
-        AuthenticationSelector authSelector = context.getAuthenticationSelector();
-        ProxySelector proxySelector = context.getProxySelector();
+        MirrorSelector mirrorSelector = session.getMirrorSelector();
+        AuthenticationSelector authSelector = session.getAuthenticationSelector();
+        ProxySelector proxySelector = session.getProxySelector();
 
         List<RemoteRepository> result = new ArrayList<RemoteRepository>( effectiveRepositories );
 
@@ -128,9 +128,9 @@ public class DefaultRemoteRepositoryManager
                         mergedRepository.setAuthentication( effectiveRepository.getAuthentication() );
                         mergedRepository.setProxy( effectiveRepository.getProxy() );
 
-                        mergedRepository.setPolicy( true, merge( context, effectiveRepository.getPolicy( true ),
+                        mergedRepository.setPolicy( true, merge( session, effectiveRepository.getPolicy( true ),
                                                                  repository.getPolicy( true ) ) );
-                        mergedRepository.setPolicy( false, merge( context, effectiveRepository.getPolicy( false ),
+                        mergedRepository.setPolicy( false, merge( session, effectiveRepository.getPolicy( false ),
                                                                   repository.getPolicy( false ) ) );
 
                         List<RemoteRepository> mirroredRepositories = effectiveRepository.getMirroredRepositories();
@@ -171,7 +171,7 @@ public class DefaultRemoteRepositoryManager
         return repository.getId();
     }
 
-    public RepositoryPolicy getPolicy( RepositoryContext context, RemoteRepository repository, boolean releases,
+    public RepositoryPolicy getPolicy( RepositorySession session, RemoteRepository repository, boolean releases,
                                        boolean snapshots )
     {
         RepositoryPolicy policy;
@@ -179,7 +179,7 @@ public class DefaultRemoteRepositoryManager
         // get effective per-repository policy
         if ( releases && snapshots )
         {
-            policy = merge( context, repository.getPolicy( false ), repository.getPolicy( true ) );
+            policy = merge( session, repository.getPolicy( false ), repository.getPolicy( true ) );
         }
         else
         {
@@ -187,19 +187,19 @@ public class DefaultRemoteRepositoryManager
         }
 
         // superimpose global policy
-        if ( StringUtils.isNotEmpty( context.getChecksumPolicy() ) )
+        if ( StringUtils.isNotEmpty( session.getChecksumPolicy() ) )
         {
-            policy.setChecksumPolicy( context.getChecksumPolicy() );
+            policy.setChecksumPolicy( session.getChecksumPolicy() );
         }
-        if ( StringUtils.isNotEmpty( context.getUpdatePolicy() ) )
+        if ( StringUtils.isNotEmpty( session.getUpdatePolicy() ) )
         {
-            policy.setUpdatePolicy( context.getUpdatePolicy() );
+            policy.setUpdatePolicy( session.getUpdatePolicy() );
         }
 
         return policy;
     }
 
-    private RepositoryPolicy merge( RepositoryContext context, RepositoryPolicy policy1, RepositoryPolicy policy2 )
+    private RepositoryPolicy merge( RepositorySession session, RepositoryPolicy policy1, RepositoryPolicy policy2 )
     {
         RepositoryPolicy policy = new RepositoryPolicy( policy1 );
 
@@ -212,7 +212,7 @@ public class DefaultRemoteRepositoryManager
                 policy.setChecksumPolicy( policy2.getChecksumPolicy() );
             }
 
-            policy.setChecksumPolicy( updateCheckManager.getEffectiveUpdatePolicy( context, policy.getChecksumPolicy(),
+            policy.setChecksumPolicy( updateCheckManager.getEffectiveUpdatePolicy( session, policy.getChecksumPolicy(),
                                                                                    policy2.getChecksumPolicy() ) );
         }
 
@@ -235,7 +235,7 @@ public class DefaultRemoteRepositoryManager
         }
     }
 
-    public RepositoryReader getRepositoryReader( RepositoryContext context, RemoteRepository repository )
+    public RepositoryReader getRepositoryReader( RepositorySession session, RemoteRepository repository )
         throws NoRepositoryReaderException
     {
         List<RepositoryReaderFactory> factories = new ArrayList<RepositoryReaderFactory>( readerFactories );
@@ -245,7 +245,7 @@ public class DefaultRemoteRepositoryManager
         {
             try
             {
-                return factory.newInstance( context, repository );
+                return factory.newInstance( session, repository );
             }
             catch ( NoRepositoryReaderException e )
             {

@@ -34,7 +34,7 @@ import org.apache.maven.repository.LocalArtifactQuery;
 import org.apache.maven.repository.LocalRepositoryManager;
 import org.apache.maven.repository.NoRepositoryReaderException;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryPolicy;
 import org.apache.maven.repository.ArtifactRequest;
 import org.apache.maven.repository.ArtifactResult;
@@ -110,20 +110,20 @@ public class DefaultArtifactResolver
         return this;
     }
 
-    public ArtifactResult resolveArtifact( RepositoryContext context, ArtifactRequest request )
+    public ArtifactResult resolveArtifact( RepositorySession session, ArtifactRequest request )
         throws ArtifactResolutionException
     {
-        return resolveArtifacts( context, Collections.singleton( request ) ).get( 0 );
+        return resolveArtifacts( session, Collections.singleton( request ) ).get( 0 );
     }
 
-    public List<ArtifactResult> resolveArtifacts( RepositoryContext context,
+    public List<ArtifactResult> resolveArtifacts( RepositorySession session,
                                                   Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException
     {
         List<ArtifactResult> results = new ArrayList<ArtifactResult>( requests.size() );
 
-        LocalRepositoryManager lrm = context.getLocalRepositoryManager();
-        WorkspaceReader workspace = context.getWorkspaceReader();
+        LocalRepositoryManager lrm = session.getLocalRepositoryManager();
+        WorkspaceReader workspace = session.getWorkspaceReader();
 
         List<ResolutionGroup> groups = new ArrayList<ResolutionGroup>();
 
@@ -150,7 +150,7 @@ public class DefaultArtifactResolver
             VersionResult versionResult;
             try
             {
-                versionResult = versionResolver.resolveVersion( context, versionRequest );
+                versionResult = versionResolver.resolveVersion( session, versionRequest );
             }
             catch ( VersionResolutionException e )
             {
@@ -183,7 +183,7 @@ public class DefaultArtifactResolver
                 }
             }
 
-            LocalArtifactQuery query = new LocalArtifactQuery( artifact, repos );
+            LocalArtifactQuery query = new LocalArtifactQuery( artifact, repos, request.getContext() );
             lrm.find( query );
             if ( query.isAvailable() )
             {
@@ -192,7 +192,7 @@ public class DefaultArtifactResolver
                 continue;
             }
 
-            if ( context.isOffline() )
+            if ( session.isOffline() )
             {
                 result.addException( new ArtifactNotFoundException( artifact, null,
                                                                     "The repository system is offline but the artifact "
@@ -241,6 +241,7 @@ public class DefaultArtifactResolver
 
                 ArtifactDownload download = new ArtifactDownload();
                 download.setArtifact( artifact );
+                download.setContext( item.request.getContext() );
                 if ( item.query.getFile() != null )
                 {
                     download.setFile( item.query.getFile() );
@@ -248,15 +249,15 @@ public class DefaultArtifactResolver
                 }
                 else
                 {
-                    String path = lrm.getPathForRemoteArtifact( artifact, group.repository );
+                    String path = lrm.getPathForRemoteArtifact( artifact, group.repository, item.request.getContext() );
                     download.setFile( new File( lrm.getRepository().getBasedir(), path ) );
                 }
 
                 boolean snapshot = artifact.isSnapshot();
                 RepositoryPolicy policy =
-                    remoteRepositoryManager.getPolicy( context, group.repository, !snapshot, snapshot );
+                    remoteRepositoryManager.getPolicy( session, group.repository, !snapshot, snapshot );
 
-                if ( context.isNotFoundCachingEnabled() || context.isTransferErrorCachingEnabled() )
+                if ( session.isNotFoundCachingEnabled() || session.isTransferErrorCachingEnabled() )
                 {
                     UpdateCheck<Artifact, ArtifactTransferException> check =
                         new UpdateCheck<Artifact, ArtifactTransferException>();
@@ -265,7 +266,7 @@ public class DefaultArtifactResolver
                     check.setRepository( group.repository );
                     check.setPolicy( policy.getUpdatePolicy() );
                     item.updateCheck = check;
-                    updateCheckManager.checkArtifact( context, check );
+                    updateCheckManager.checkArtifact( session, check );
                     if ( !check.isRequired() )
                     {
                         item.result.addException( check.getException() );
@@ -283,7 +284,7 @@ public class DefaultArtifactResolver
             }
             try
             {
-                RepositoryReader reader = remoteRepositoryManager.getRepositoryReader( context, group.repository );
+                RepositoryReader reader = remoteRepositoryManager.getRepositoryReader( session, group.repository );
                 try
                 {
                     reader.getArtifacts( downloads );
@@ -304,7 +305,7 @@ public class DefaultArtifactResolver
             {
                 if ( item.updateCheck != null )
                 {
-                    updateCheckManager.touchArtifact( context, item.updateCheck );
+                    updateCheckManager.touchArtifact( session, item.updateCheck );
                 }
                 ArtifactDownload download = item.download;
                 if ( download == null )
@@ -315,7 +316,7 @@ public class DefaultArtifactResolver
                 {
                     download.getArtifact().setFile( download.getFile() );
                     item.result.setRepository( group.repository );
-                    lrm.addRemoteArtifact( download.getArtifact(), group.repository );
+                    lrm.addRemoteArtifact( download.getArtifact(), group.repository, item.request.getContext() );
                 }
                 else
                 {

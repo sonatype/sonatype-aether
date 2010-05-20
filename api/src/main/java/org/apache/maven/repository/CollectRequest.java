@@ -42,6 +42,8 @@ public class CollectRequest
 
     private List<RemoteRepository> repositories = Collections.emptyList();
 
+    private String context;
+
     public CollectRequest()
     {
         // enables default constructor
@@ -130,6 +132,17 @@ public class CollectRequest
         {
             this.repositories = repositories;
         }
+        return this;
+    }
+
+    public String getContext()
+    {
+        return context;
+    }
+
+    public CollectRequest setContext( String context )
+    {
+        this.context = context;
         return this;
     }
 

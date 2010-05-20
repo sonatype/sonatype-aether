@@ -19,7 +19,7 @@ package org.apache.maven.repository.spi;
  * under the License.
  */
 
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.VersionRequest;
 import org.apache.maven.repository.VersionResolutionException;
 import org.apache.maven.repository.VersionResult;
@@ -34,7 +34,7 @@ public interface VersionResolver
      * Resolves a metaversion to a concrete version. For example, resolves "1.0-SNAPSHOT" to "1.0-20090208.132618-23" or
      * "RELEASE"/"LATEST" to "2.0".
      */
-    VersionResult resolveVersion( RepositoryContext context, VersionRequest request )
+    VersionResult resolveVersion( RepositorySession session, VersionRequest request )
         throws VersionResolutionException;
 
 }

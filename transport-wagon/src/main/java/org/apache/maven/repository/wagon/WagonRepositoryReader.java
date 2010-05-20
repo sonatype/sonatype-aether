@@ -46,7 +46,7 @@ import org.apache.maven.repository.NoRepositoryReaderException;
 import org.apache.maven.repository.Proxy;
 import org.apache.maven.repository.ProxySelector;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryPolicy;
 import org.apache.maven.repository.TransferEvent;
 import org.apache.maven.repository.TransferListener;
@@ -95,17 +95,17 @@ class WagonRepositoryReader
 
     private boolean closed;
 
-    public WagonRepositoryReader( PlexusContainer container, RemoteRepository repository, RepositoryContext context )
+    public WagonRepositoryReader( PlexusContainer container, RemoteRepository repository, RepositorySession session )
         throws NoRepositoryReaderException
     {
         this.container = container;
         this.repository = repository;
-        this.listener = context.getTransferListener();
+        this.listener = session.getTransferListener();
 
         wagonRepo = new Repository( repository.getId(), repository.getUrl() );
         wagonHint = wagonRepo.getProtocol().toLowerCase( Locale.ENGLISH );
-        wagonAuth = getAuthenticationInfo( repository, context.getAuthenticationSelector() );
-        wagonProxy = getProxy( repository, context.getProxySelector() );
+        wagonAuth = getAuthenticationInfo( repository, session.getAuthenticationSelector() );
+        wagonProxy = getProxy( repository, session.getProxySelector() );
 
         try
         {

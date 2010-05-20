@@ -37,7 +37,7 @@ import org.apache.maven.repository.Metadata;
 import org.apache.maven.repository.MetadataRequest;
 import org.apache.maven.repository.MetadataResult;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.VersionRequest;
 import org.apache.maven.repository.VersionResolutionException;
 import org.apache.maven.repository.VersionResult;
@@ -81,7 +81,7 @@ public class DefaultVersionResolver
         return this;
     }
 
-    public VersionResult resolveVersion( RepositoryContext context, VersionRequest request )
+    public VersionResult resolveVersion( RepositorySession session, VersionRequest request )
         throws VersionResolutionException
     {
         String version = request.getArtifact().getVersion();
@@ -101,7 +101,7 @@ public class DefaultVersionResolver
         }
         else if ( version.endsWith( "SNAPSHOT" ) )
         {
-            WorkspaceReader workspace = context.getWorkspaceReader();
+            WorkspaceReader workspace = session.getWorkspaceReader();
             if ( workspace != null && workspace.findVersions( request.getArtifact() ).contains( version ) )
             {
                 metadata = null;
@@ -128,17 +128,17 @@ public class DefaultVersionResolver
         }
         else
         {
-            List<MetadataRequest> metadataRequests =
-                new ArrayList<MetadataRequest>( request.getRepositories().size() );
+            List<MetadataRequest> metadataRequests = new ArrayList<MetadataRequest>( request.getRepositories().size() );
             for ( RemoteRepository repository : request.getRepositories() )
             {
-                MetadataRequest metadataRequest = new MetadataRequest( new Metadata( metadata ), repository );
+                MetadataRequest metadataRequest =
+                    new MetadataRequest( new Metadata( metadata ), repository, request.getContext() );
                 metadataRequest.setDeleteLocalCopyIfMissing( true );
                 metadataRequests.add( metadataRequest );
             }
-            List<MetadataResult> metadataResults = metadataResolver.resolveMetadata( context, metadataRequests );
+            List<MetadataResult> metadataResults = metadataResolver.resolveMetadata( session, metadataRequests );
 
-            LocalRepositoryManager lrm = context.getLocalRepositoryManager();
+            LocalRepositoryManager lrm = session.getLocalRepositoryManager();
             File localMetadataFile =
                 new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalMetadata( metadata ) );
             if ( localMetadataFile.isFile() )
@@ -146,16 +146,16 @@ public class DefaultVersionResolver
                 metadata.setFile( localMetadataFile );
             }
 
-            Versioning versioning = readVersions( context, metadata, result );
-            ArtifactRepository repo = context.getLocalRepositoryManager().getRepository();
+            Versioning versioning = readVersions( session, metadata, result );
+            ArtifactRepository repo = session.getLocalRepositoryManager().getRepository();
 
             for ( MetadataResult metadataResult : metadataResults )
             {
                 result.addException( metadataResult.getException() );
-                Versioning v = readVersions( context, metadataResult.getRequest().getMetadata(), result );
+                Versioning v = readVersions( session, metadataResult.getRequest().getMetadata(), result );
                 if ( mergeVersions( versioning, v ) )
                 {
-                    repo = metadataResult.getRequest().getRemoteRepository();
+                    repo = metadataResult.getRequest().getRepository();
                 }
             }
 
@@ -185,7 +185,7 @@ public class DefaultVersionResolver
                     {
                         subRequest.setRepositories( request.getRepositories() );
                     }
-                    VersionResult subResult = resolveVersion( context, subRequest );
+                    VersionResult subResult = resolveVersion( session, subRequest );
                     result.setVersion( subResult.getVersion() );
                     repo = subResult.getRepository();
                     for ( Exception exception : subResult.getExceptions() )
@@ -224,7 +224,7 @@ public class DefaultVersionResolver
         return result;
     }
 
-    private Versioning readVersions( RepositoryContext context, Metadata metadata, VersionResult result )
+    private Versioning readVersions( RepositorySession session, Metadata metadata, VersionResult result )
     {
         Versioning versioning = null;
 

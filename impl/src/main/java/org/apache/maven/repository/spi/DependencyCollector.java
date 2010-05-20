@@ -22,7 +22,7 @@ package org.apache.maven.repository.spi;
 import org.apache.maven.repository.CollectRequest;
 import org.apache.maven.repository.CollectResult;
 import org.apache.maven.repository.DependencyCollectionException;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 
 /**
  * @author Benjamin Bentmann
@@ -30,7 +30,7 @@ import org.apache.maven.repository.RepositoryContext;
 public interface DependencyCollector
 {
 
-    CollectResult collectDependencies( RepositoryContext context, CollectRequest request )
+    CollectResult collectDependencies( RepositorySession session, CollectRequest request )
         throws DependencyCollectionException;
 
 }

@@ -29,16 +29,16 @@ public interface LocalRepositoryManager
 
     String getPathForLocalArtifact( Artifact artifact );
 
-    String getPathForRemoteArtifact( Artifact artifact, RemoteRepository repository );
+    String getPathForRemoteArtifact( Artifact artifact, RemoteRepository repository, String context );
 
     String getPathForLocalMetadata( Metadata metadata );
 
-    String getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository );
+    String getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository, String context );
 
     void find( LocalArtifactQuery query );
 
     void addLocalArtifact( Artifact artifact );
 
-    void addRemoteArtifact( Artifact artifact, RemoteRepository repository );
+    void addRemoteArtifact( Artifact artifact, RemoteRepository repository, String context );
 
 }

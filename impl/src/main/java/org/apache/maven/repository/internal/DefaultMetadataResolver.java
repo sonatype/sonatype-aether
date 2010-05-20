@@ -41,7 +41,7 @@ import org.apache.maven.repository.MetadataResult;
 import org.apache.maven.repository.MetadataTransferException;
 import org.apache.maven.repository.NoRepositoryReaderException;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryPolicy;
 import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.MetadataDownload;
@@ -97,7 +97,7 @@ public class DefaultMetadataResolver
         return this;
     }
 
-    public List<MetadataResult> resolveMetadata( RepositoryContext context,
+    public List<MetadataResult> resolveMetadata( RepositorySession session,
                                                  Collection<? extends MetadataRequest> requests )
     {
         List<MetadataResult> results = new ArrayList<MetadataResult>( requests.size() );
@@ -113,18 +113,18 @@ public class DefaultMetadataResolver
             results.add( result );
 
             Metadata metadata = request.getMetadata();
-            RemoteRepository repository = request.getRemoteRepository();
+            RemoteRepository repository = request.getRepository();
 
-            RepositoryPolicy policy = getPolicy( context, repository, metadata.getNature() );
+            RepositoryPolicy policy = getPolicy( session, repository, metadata.getNature() );
 
             if ( !policy.isEnabled() )
             {
                 continue;
             }
 
-            File metadataFile = getFile( context, metadata, repository );
+            File metadataFile = getFile( session, metadata, repository, request.getContext() );
 
-            if ( context.isOffline() )
+            if ( session.isOffline() )
             {
                 if ( metadataFile.isFile() )
                 {
@@ -140,7 +140,7 @@ public class DefaultMetadataResolver
                 continue;
             }
 
-            File localFile = getFile( context, metadata, null );
+            File localFile = getFile( session, metadata, null, null );
             Long localLastUpdate = localLastUpdates.get( localFile );
             if ( localLastUpdate == null )
             {
@@ -155,11 +155,11 @@ public class DefaultMetadataResolver
             check.setFile( metadataFile );
             check.setRepository( repository );
             check.setPolicy( policy.getUpdatePolicy() );
-            updateCheckManager.checkMetadata( context, check );
+            updateCheckManager.checkMetadata( session, check );
 
             if ( check.isRequired() )
             {
-                ResolveTask task = new ResolveTask( context, result, check, policy.getChecksumPolicy(), latch );
+                ResolveTask task = new ResolveTask( session, result, check, policy.getChecksumPolicy(), latch );
                 tasks.add( task );
             }
             else
@@ -197,7 +197,7 @@ public class DefaultMetadataResolver
                 {
                     MetadataResult result = task.result;
                     result.setException( new MetadataTransferException( result.getRequest().getMetadata(),
-                                                                        result.getRequest().getRemoteRepository(), e ) );
+                                                                        result.getRequest().getRepository(), e ) );
                 }
             }
             finally
@@ -217,20 +217,20 @@ public class DefaultMetadataResolver
         return results;
     }
 
-    private RepositoryPolicy getPolicy( RepositoryContext context, RemoteRepository repository, Metadata.Nature nature )
+    private RepositoryPolicy getPolicy( RepositorySession session, RemoteRepository repository, Metadata.Nature nature )
     {
         boolean releases = !Metadata.Nature.SNAPSHOT.equals( nature );
         boolean snapshots = !Metadata.Nature.RELEASE.equals( nature );
-        return remoteRepositoryManager.getPolicy( context, repository, releases, snapshots );
+        return remoteRepositoryManager.getPolicy( session, repository, releases, snapshots );
     }
 
-    private File getFile( RepositoryContext context, Metadata metadata, RemoteRepository repository )
+    private File getFile( RepositorySession session, Metadata metadata, RemoteRepository repository, String context )
     {
-        LocalRepositoryManager lrm = context.getLocalRepositoryManager();
+        LocalRepositoryManager lrm = session.getLocalRepositoryManager();
         String path;
         if ( repository != null )
         {
-            path = lrm.getPathForRemoteMetadata( metadata, repository );
+            path = lrm.getPathForRemoteMetadata( metadata, repository, context );
         }
         else
         {
@@ -269,7 +269,7 @@ public class DefaultMetadataResolver
         implements Runnable
     {
 
-        final RepositoryContext context;
+        final RepositorySession session;
 
         final MetadataResult result;
 
@@ -281,10 +281,10 @@ public class DefaultMetadataResolver
 
         volatile MetadataTransferException exception;
 
-        public ResolveTask( RepositoryContext context, MetadataResult result,
+        public ResolveTask( RepositorySession session, MetadataResult result,
                             UpdateCheck<Metadata, MetadataTransferException> check, String policy, CountDownLatch latch )
         {
-            this.context = context;
+            this.session = session;
             this.result = result;
             this.policy = policy;
             this.check = check;
@@ -297,10 +297,11 @@ public class DefaultMetadataResolver
 
             try
             {
-                MetadataDownload download = new MetadataDownload( request.getMetadata(), check.getFile(), policy );
+                MetadataDownload download =
+                    new MetadataDownload( request.getMetadata(), request.getContext(), check.getFile(), policy );
 
                 RepositoryReader reader =
-                    remoteRepositoryManager.getRepositoryReader( context, request.getRemoteRepository() );
+                    remoteRepositoryManager.getRepositoryReader( session, request.getRepository() );
                 try
                 {
                     reader.getMetadata( Arrays.asList( download ) );
@@ -319,14 +320,14 @@ public class DefaultMetadataResolver
             }
             catch ( NoRepositoryReaderException e )
             {
-                exception = new MetadataTransferException( request.getMetadata(), request.getRemoteRepository(), e );
+                exception = new MetadataTransferException( request.getMetadata(), request.getRepository(), e );
             }
             finally
             {
                 latch.countDown();
             }
 
-            updateCheckManager.touchMetadata( context, check.setException( exception ) );
+            updateCheckManager.touchMetadata( session, check.setException( exception ) );
         }
 
     }

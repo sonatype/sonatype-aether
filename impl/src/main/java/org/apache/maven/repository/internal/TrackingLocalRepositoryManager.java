@@ -66,9 +66,10 @@ public class TrackingLocalRepositoryManager
             }
             else
             {
+                String context = query.getContext();
                 for ( RemoteRepository repository : query.getRepositories() )
                 {
-                    if ( props.getProperty( getKey( file, getRepositoryKey( repository ) ) ) != null )
+                    if ( props.getProperty( getKey( file, getRepositoryKey( repository, context ) ) ) != null )
                     {
                         query.setAvailable( true );
                         break;
@@ -85,9 +86,9 @@ public class TrackingLocalRepositoryManager
     }
 
     @Override
-    public void addRemoteArtifact( Artifact artifact, RemoteRepository repository )
+    public void addRemoteArtifact( Artifact artifact, RemoteRepository repository, String context )
     {
-        addArtifact( artifact, getRepositoryKey( repository ) );
+        addArtifact( artifact, getRepositoryKey( repository, context ) );
     }
 
     private void addArtifact( Artifact artifact, String repository )

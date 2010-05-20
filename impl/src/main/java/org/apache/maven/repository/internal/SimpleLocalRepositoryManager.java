@@ -20,7 +20,9 @@ package org.apache.maven.repository.internal;
  */
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -83,7 +85,7 @@ public class SimpleLocalRepositoryManager
         return path.toString();
     }
 
-    public String getPathForRemoteArtifact( Artifact artifact, RemoteRepository repository )
+    public String getPathForRemoteArtifact( Artifact artifact, RemoteRepository repository, String context )
     {
         return getPathForLocalArtifact( artifact );
     }
@@ -93,70 +95,44 @@ public class SimpleLocalRepositoryManager
         return getPath( metadata, "local" );
     }
 
-    public String getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository )
+    public String getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository, String context )
     {
-        return getPath( metadata, getRepositoryKey( repository ) );
+        return getPath( metadata, getRepositoryKey( repository, context ) );
     }
 
-    String getRepositoryKey( RemoteRepository repository )
+    String getRepositoryKey( RemoteRepository repository, String context )
     {
         String key;
 
         if ( repository.isRepositoryManager() )
         {
-            // repository serving dynamic contents, take mirrored repositories into account for key
+            // repository serves dynamic contents, take request parameters into account for key
 
             StringBuilder buffer = new StringBuilder( 128 );
 
             buffer.append( repository.getId() );
 
-            if ( !repository.getMirroredRepositories().isEmpty() )
+            buffer.append( '-' );
+
+            SortedSet<String> subKeys = new TreeSet<String>();
+            for ( RemoteRepository mirroredRepo : repository.getMirroredRepositories() )
             {
-                buffer.append( '-' );
-
-                SortedSet<String> subKeys = new TreeSet<String>();
-                for ( RemoteRepository mirroredRepo : repository.getMirroredRepositories() )
-                {
-                    subKeys.add( mirroredRepo.getId() );
-                }
-
-                try
-                {
-                    MessageDigest digest = MessageDigest.getInstance( "SHA-1" );
-                    for ( String subKey : subKeys )
-                    {
-                        digest.update( subKey.getBytes( "UTF-8" ) );
-                    }
-                    byte[] bytes = digest.digest();
-
-                    for ( int i = 0; i < bytes.length; i++ )
-                    {
-                        int b = bytes[i] & 0xFF;
-
-                        if ( b < 0x10 )
-                        {
-                            buffer.append( '0' );
-                        }
-
-                        buffer.append( Integer.toHexString( b ) );
-                    }
-                }
-                catch ( Exception e )
-                {
-                    long hash = 13;
-                    for ( String subKey : subKeys )
-                    {
-                        hash = hash * 31 + subKey.hashCode();
-                    }
-                    buffer.append( hash );
-                }
+                subKeys.add( mirroredRepo.getId() );
             }
+
+            SafeDigest digest = new SafeDigest();
+            digest.update( context );
+            for ( String subKey : subKeys )
+            {
+                digest.update( subKey );
+            }
+            buffer.append( digest.digest() );
 
             key = buffer.toString();
         }
         else
         {
-            // repository serving static contents, its id is sufficient as key
+            // repository serves static contents, its id is sufficient as key
 
             key = repository.getId();
         }
@@ -219,9 +195,80 @@ public class SimpleLocalRepositoryManager
         // noop
     }
 
-    public void addRemoteArtifact( Artifact artifact, RemoteRepository repository )
+    public void addRemoteArtifact( Artifact artifact, RemoteRepository repository, String context )
     {
         // noop
+    }
+
+    static class SafeDigest
+    {
+
+        private MessageDigest digest;
+
+        private long hash;
+
+        public SafeDigest()
+        {
+            try
+            {
+                digest = MessageDigest.getInstance( "SHA-1" );
+            }
+            catch ( NoSuchAlgorithmException e )
+            {
+                digest = null;
+                hash = 13;
+            }
+        }
+
+        public void update( String data )
+        {
+            if ( data == null )
+            {
+                return;
+            }
+            if ( digest != null )
+            {
+                try
+                {
+                    digest.update( data.getBytes( "UTF-8" ) );
+                }
+                catch ( UnsupportedEncodingException e )
+                {
+                    // broken JVM
+                }
+            }
+            else
+            {
+                hash = hash * 31 + data.hashCode();
+            }
+        }
+
+        public String digest()
+        {
+            if ( digest != null )
+            {
+                StringBuilder buffer = new StringBuilder( "64" );
+
+                byte[] bytes = digest.digest();
+                for ( int i = 0; i < bytes.length; i++ )
+                {
+                    int b = bytes[i] & 0xFF;
+
+                    if ( b < 0x10 )
+                    {
+                        buffer.append( '0' );
+                    }
+
+                    buffer.append( Integer.toHexString( b ) );
+                }
+
+                return buffer.toString();
+            }
+            else
+            {
+                return Long.toHexString( hash );
+            }
+        }
     }
 
 }

@@ -40,7 +40,7 @@ import org.apache.maven.repository.DependencyManager;
 import org.apache.maven.repository.DependencyNode;
 import org.apache.maven.repository.DependencyTraverser;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryException;
 import org.apache.maven.repository.VersionRangeRequest;
 import org.apache.maven.repository.VersionRangeResolutionException;
@@ -110,14 +110,14 @@ public class DefaultDependencyCollector
         return this;
     }
 
-    public CollectResult collectDependencies( RepositoryContext context, CollectRequest request )
+    public CollectResult collectDependencies( RepositorySession session, CollectRequest request )
         throws DependencyCollectionException
     {
         CollectResult result = new CollectResult( request );
 
-        DependencyFilter depFilter = context.getDependencyFilter();
-        DependencyManager depManager = context.getDependencyManager();
-        DependencyTraverser depTraverser = context.getDependencyTraverser();
+        DependencyFilter depFilter = session.getDependencyFilter();
+        DependencyManager depManager = session.getDependencyManager();
+        DependencyTraverser depTraverser = session.getDependencyTraverser();
 
         Dependency root = request.getRoot();
         List<RemoteRepository> repositories = request.getRepositories();
@@ -132,8 +132,9 @@ public class DefaultDependencyCollector
             {
                 ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
                 descriptorRequest.setArtifact( root.getArtifact() );
-                descriptorRequest.setRemoteRepositories( request.getRepositories() );
-                descriptorResult = descriptorReader.readArtifactDescriptor( context, descriptorRequest );
+                descriptorRequest.setRepositories( request.getRepositories() );
+                descriptorRequest.setContext( request.getContext() );
+                descriptorResult = descriptorReader.readArtifactDescriptor( session, descriptorRequest );
             }
             catch ( ArtifactDescriptorException e )
             {
@@ -142,7 +143,7 @@ public class DefaultDependencyCollector
             }
 
             repositories =
-                remoteRepositoryManager.aggregateRepositories( context, repositories,
+                remoteRepositoryManager.aggregateRepositories( session, repositories,
                                                                descriptorResult.getRepositories() );
             dependencies = mergeDeps( dependencies, descriptorResult.getDependencies() );
             managedDependencies = mergeDeps( managedDependencies, descriptorResult.getManagedDependencies() );
@@ -152,6 +153,7 @@ public class DefaultDependencyCollector
             node.setRequestedVersion( root.getArtifact().getVersion() );
             node.setRepositories( request.getRepositories() );
             node.setPropertes( descriptorResult.getProperties() );
+            node.setContext( request.getContext() );
         }
         else
         {
@@ -164,11 +166,11 @@ public class DefaultDependencyCollector
 
         if ( traverse )
         {
-            process( context, result, node, dependencies, managedDependencies, repositories,
+            process( session, result, node, dependencies, managedDependencies, repositories,
                      depFilter.deriveChildFilter( node ), depManager, depTraverser.deriveChildTraverser( node ) );
         }
 
-        DependencyGraphTransformer transformer = context.getDependencyGraphTransformer();
+        DependencyGraphTransformer transformer = session.getDependencyGraphTransformer();
         if ( transformer != null )
         {
             try
@@ -221,7 +223,7 @@ public class DefaultDependencyCollector
         return a.getGroupId() + ':' + a.getArtifactId() + ':' + a.getClassifier() + ':' + a.getType();
     }
 
-    private void process( RepositoryContext context, CollectResult result, DependencyNode node,
+    private void process( RepositorySession session, CollectResult result, DependencyNode node,
                           List<Dependency> dependencies, List<Dependency> managedDependencies,
                           List<RemoteRepository> repositories, DependencyFilter depFilter,
                           DependencyManager depManager, DependencyTraverser depTraverser )
@@ -248,7 +250,8 @@ public class DefaultDependencyCollector
                 VersionRangeRequest rangeRequest = new VersionRangeRequest();
                 rangeRequest.setArtifact( dependency.getArtifact() );
                 rangeRequest.setRepositories( repositories );
-                rangeResult = versionRangeResolver.resolveVersionRange( context, rangeRequest );
+                rangeRequest.setContext( result.getRequest().getContext() );
+                rangeResult = versionRangeResolver.resolveVersionRange( session, rangeRequest );
 
                 if ( rangeResult.getVersions().isEmpty() )
                 {
@@ -284,7 +287,8 @@ public class DefaultDependencyCollector
                 {
                     ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
                     descriptorRequest.setArtifact( d.getArtifact() );
-                    descriptorRequest.setRemoteRepositories( repos );
+                    descriptorRequest.setRepositories( repos );
+                    descriptorRequest.setContext( result.getRequest().getContext() );
                     if ( system )
                     {
                         descriptorResult = new ArtifactDescriptorResult( descriptorRequest );
@@ -292,7 +296,7 @@ public class DefaultDependencyCollector
                     }
                     else
                     {
-                        descriptorResult = descriptorReader.readArtifactDescriptor( context, descriptorRequest );
+                        descriptorResult = descriptorReader.readArtifactDescriptor( session, descriptorRequest );
                         d.setArtifact( descriptorResult.getArtifact() );
                     }
                 }
@@ -317,12 +321,13 @@ public class DefaultDependencyCollector
                 child.setRequestedVersion( dependency.getArtifact().getVersion() );
                 child.setRepositories( repos );
                 child.setPropertes( descriptorResult.getProperties() );
+                child.setContext( result.getRequest().getContext() );
 
                 if ( traverse )
                 {
-                    process( context, result, child, descriptorResult.getDependencies(),
+                    process( session, result, child, descriptorResult.getDependencies(),
                              descriptorResult.getManagedDependencies(),
-                             remoteRepositoryManager.aggregateRepositories( context, repositories,
+                             remoteRepositoryManager.aggregateRepositories( session, repositories,
                                                                             descriptorResult.getRepositories() ),
                              depFilter.deriveChildFilter( child ),
                              depManager.deriveChildManager( child, managedDependencies ),

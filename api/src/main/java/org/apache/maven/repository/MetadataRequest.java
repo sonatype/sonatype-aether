@@ -29,6 +29,8 @@ public class MetadataRequest
 
     private RemoteRepository repository;
 
+    private String context;
+
     private boolean deleteLocalCopyIfMissing;
 
     public MetadataRequest()
@@ -36,10 +38,11 @@ public class MetadataRequest
         // enables default constructor
     }
 
-    public MetadataRequest( Metadata metadata, RemoteRepository repository )
+    public MetadataRequest( Metadata metadata, RemoteRepository repository, String context )
     {
-        this.metadata = metadata;
-        this.repository = repository;
+        setMetadata( metadata );
+        setRepository( repository );
+        setContext( context );
     }
 
     public Metadata getMetadata()
@@ -53,14 +56,25 @@ public class MetadataRequest
         return this;
     }
 
-    public RemoteRepository getRemoteRepository()
+    public RemoteRepository getRepository()
     {
         return repository;
     }
 
-    public MetadataRequest setRemoteRepository( RemoteRepository repository )
+    public MetadataRequest setRepository( RemoteRepository repository )
     {
         this.repository = repository;
+        return this;
+    }
+
+    public String getContext()
+    {
+        return context;
+    }
+
+    public MetadataRequest setContext( String context )
+    {
+        this.context = context;
         return this;
     }
 

@@ -32,15 +32,18 @@ public class ArtifactRequest
 
     private List<RemoteRepository> repositories = Collections.emptyList();
 
+    private String context;
+
     public ArtifactRequest()
     {
         // enables default constructor
     }
 
-    public ArtifactRequest( Artifact artifact, List<RemoteRepository> repositories )
+    public ArtifactRequest( Artifact artifact, List<RemoteRepository> repositories, String context )
     {
         setArtifact( artifact );
         setRepositories( repositories );
+        setContext( context );
     }
 
     public Artifact getArtifact()
@@ -62,6 +65,17 @@ public class ArtifactRequest
     public ArtifactRequest setRepositories( List<RemoteRepository> repositories )
     {
         this.repositories = ( repositories != null ) ? repositories : Collections.<RemoteRepository> emptyList();
+        return this;
+    }
+
+    public String getContext()
+    {
+        return context;
+    }
+
+    public ArtifactRequest setContext( String context )
+    {
+        this.context = context;
         return this;
     }
 

@@ -2,7 +2,7 @@ package org.apache.maven.repository.spi;
 
 import org.apache.maven.repository.NoRepositoryReaderException;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -30,7 +30,7 @@ public interface RepositoryReaderFactory
     extends PluggableComponent
 {
 
-    RepositoryReader newInstance( RepositoryContext context, RemoteRepository repository )
+    RepositoryReader newInstance( RepositorySession session, RemoteRepository repository )
         throws NoRepositoryReaderException;
 
 }

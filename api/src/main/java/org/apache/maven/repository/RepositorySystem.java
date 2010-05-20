@@ -32,48 +32,48 @@ public interface RepositorySystem
      * Expands a version range to a list of matching versions, in ascending order. For example, resolves "[3.8,4.0)" to
      * ["3.8", "3.8.1", "3.8.2"].
      */
-    VersionRangeResult resolveVersionRange( RepositoryContext context, VersionRangeRequest request )
+    VersionRangeResult resolveVersionRange( RepositorySession session, VersionRangeRequest request )
         throws VersionRangeResolutionException;
 
     /**
      * Resolves a metaversion to a concrete version. For example, resolves "1.0-SNAPSHOT" to "1.0-20090208.132618-23" or
      * "RELEASE"/"LATEST" to "2.0".
      */
-    VersionResult resolveVersion( RepositoryContext context, VersionRequest request )
+    VersionResult resolveVersion( RepositorySession session, VersionRequest request )
         throws VersionResolutionException;
 
     /**
      * Gets information about an artifact like its direct dependencies.
      */
-    ArtifactDescriptorResult readArtifactDescriptor( RepositoryContext context, ArtifactDescriptorRequest request )
+    ArtifactDescriptorResult readArtifactDescriptor( RepositorySession session, ArtifactDescriptorRequest request )
         throws ArtifactDescriptorException;
 
     /**
      * Collects the transitive dependencies of an artifact.
      */
-    CollectResult collectDependencies( RepositoryContext context, CollectRequest request )
+    CollectResult collectDependencies( RepositorySession session, CollectRequest request )
         throws DependencyCollectionException;
 
     /**
      * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary.
      */
-    List<ArtifactResult> resolveArtifacts( RepositoryContext context, Collection<? extends ArtifactRequest> requests )
+    List<ArtifactResult> resolveArtifacts( RepositorySession session, Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException;
 
     /**
      * Resolves the paths for a collection of metadata. Metadata will be downloaded if necessary.
      */
-    List<MetadataResult> resolveMetadata( RepositoryContext context, Collection<? extends MetadataRequest> requests );
+    List<MetadataResult> resolveMetadata( RepositorySession session, Collection<? extends MetadataRequest> requests );
 
     /**
      * Installs a collection of artifacts to the local repository.
      */
-    void installArtifacts( RepositoryContext context, InstallRequest request );
+    void installArtifacts( RepositorySession session, InstallRequest request );
 
     /**
      * Uploads a collection of artifacts to a remote repository. This process automatically includes the installation of
      * the artifacts to the local repository.
      */
-    void deployArtifacts( RepositoryContext context, DeployRequest request );
+    void deployArtifacts( RepositorySession session, DeployRequest request );
 
 }

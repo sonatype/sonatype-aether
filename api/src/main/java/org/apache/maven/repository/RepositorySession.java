@@ -24,7 +24,7 @@ import java.util.Properties;
 /**
  * @author Benjamin Bentmann
  */
-public interface RepositoryContext
+public interface RepositorySession
 {
 
     boolean isOffline();

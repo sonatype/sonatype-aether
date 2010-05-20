@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.apache.maven.repository.NoRepositoryReaderException;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryPolicy;
 
 /**
@@ -32,14 +32,14 @@ import org.apache.maven.repository.RepositoryPolicy;
 public interface RemoteRepositoryManager
 {
 
-    List<RemoteRepository> aggregateRepositories( RepositoryContext context,
+    List<RemoteRepository> aggregateRepositories( RepositorySession session,
                                                   List<RemoteRepository> effectiveRepositories,
                                                   List<RemoteRepository> rawRepositories );
 
-    RepositoryPolicy getPolicy( RepositoryContext context, RemoteRepository repository, boolean releases,
+    RepositoryPolicy getPolicy( RepositorySession session, RemoteRepository repository, boolean releases,
                                 boolean snapshots );
 
-    RepositoryReader getRepositoryReader( RepositoryContext context, RemoteRepository repository )
+    RepositoryReader getRepositoryReader( RepositorySession session, RemoteRepository repository )
         throws NoRepositoryReaderException;
 
 }

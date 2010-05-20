@@ -38,6 +38,8 @@ public class ArtifactDownload
 
     private String checksumPolicy;
 
+    private String context;
+
     private ArtifactTransferException exception;
 
     public ArtifactDownload()
@@ -45,9 +47,10 @@ public class ArtifactDownload
         // enables default constructor
     }
 
-    public ArtifactDownload( Artifact artifact, File file, String checksumPolicy )
+    public ArtifactDownload( Artifact artifact, String context, File file, String checksumPolicy )
     {
         setArtifact( artifact );
+        setContext( context );
         setFile( file );
         setChecksumPolicy( checksumPolicy );
     }
@@ -93,6 +96,17 @@ public class ArtifactDownload
     public ArtifactDownload setChecksumPolicy( String checksumPolicy )
     {
         this.checksumPolicy = checksumPolicy;
+        return this;
+    }
+
+    public String getContext()
+    {
+        return context;
+    }
+
+    public ArtifactDownload setContext( String context )
+    {
+        this.context = context;
         return this;
     }
 

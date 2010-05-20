@@ -52,7 +52,7 @@ import org.apache.maven.repository.ArtifactDescriptorResult;
 import org.apache.maven.repository.Dependency;
 import org.apache.maven.repository.Exclusion;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryPolicy;
 import org.apache.maven.repository.ArtifactRequest;
 import org.apache.maven.repository.ArtifactResult;
@@ -112,16 +112,16 @@ public class DefaultArtifactDescriptorReader
         return this;
     }
 
-    public ArtifactDescriptorResult readArtifactDescriptor( RepositoryContext context, ArtifactDescriptorRequest request )
+    public ArtifactDescriptorResult readArtifactDescriptor( RepositorySession session, ArtifactDescriptorRequest request )
         throws ArtifactDescriptorException
     {
         ArtifactDescriptorResult result = new ArtifactDescriptorResult( request );
 
-        Model model = loadPom( context, request, result );
+        Model model = loadPom( session, request, result );
 
         if ( model != null )
         {
-            ArtifactStereotypeManager stereotypes = context.getArtifactStereotypeManager();
+            ArtifactStereotypeManager stereotypes = session.getArtifactStereotypeManager();
 
             for ( Repository r : model.getRepositories() )
             {
@@ -161,7 +161,7 @@ public class DefaultArtifactDescriptorReader
         return result;
     }
 
-    private Model loadPom( RepositoryContext context, ArtifactDescriptorRequest request, ArtifactDescriptorResult result )
+    private Model loadPom( RepositorySession session, ArtifactDescriptorRequest request, ArtifactDescriptorResult result )
         throws ArtifactDescriptorException
     {
         Set<String> visited = new LinkedHashSet<String>();
@@ -169,7 +169,7 @@ public class DefaultArtifactDescriptorReader
         {
             if ( !visited.add( artifact.getGroupId() + ':' + artifact.getArtifactId() + ':' + artifact.getBaseVersion() ) )
             {
-                if ( context.isIgnoreInvalidArtifactDescriptor() )
+                if ( session.isIgnoreInvalidArtifactDescriptor() )
                 {
                     return null;
                 }
@@ -182,13 +182,14 @@ public class DefaultArtifactDescriptorReader
             ArtifactResult resolveResult;
             try
             {
-                ArtifactRequest resolveRequest = new ArtifactRequest( pomArtifact, request.getRemoteRepositories() );
-                resolveResult = artifactResolver.resolveArtifact( context, resolveRequest );
+                ArtifactRequest resolveRequest =
+                    new ArtifactRequest( pomArtifact, request.getRepositories(), request.getContext() );
+                resolveResult = artifactResolver.resolveArtifact( session, resolveRequest );
                 result.setRepository( resolveResult.getRepository() );
             }
             catch ( ArtifactResolutionException e )
             {
-                if ( context.isIgnoreMissingArtifactDescriptor() )
+                if ( session.isIgnoreMissingArtifactDescriptor() )
                 {
                     return null;
                 }
@@ -203,11 +204,11 @@ public class DefaultArtifactDescriptorReader
                 modelRequest.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
                 modelRequest.setProcessPlugins( false );
                 modelRequest.setTwoPhaseBuilding( false );
-                modelRequest.setSystemProperties( context.getSystemProperties() );
-                modelRequest.setUserProperties( context.getUserProperties() );
-                modelRequest.setModelResolver( new DefaultModelResolver( context, artifactResolver,
-                                                                         remoteRepositoryManager,
-                                                                         request.getRemoteRepositories() ) );
+                modelRequest.setSystemProperties( session.getSystemProperties() );
+                modelRequest.setUserProperties( session.getUserProperties() );
+                modelRequest.setModelResolver( new DefaultModelResolver( session, request.getContext(),
+                                                                         artifactResolver, remoteRepositoryManager,
+                                                                         request.getRepositories() ) );
                 if ( resolveResult.getRepository() instanceof WorkspaceRepository )
                 {
                     modelRequest.setPomFile( pomArtifact.getFile() );
@@ -229,7 +230,7 @@ public class DefaultArtifactDescriptorReader
                         throw new ArtifactDescriptorException( result );
                     }
                 }
-                if ( context.isIgnoreInvalidArtifactDescriptor() )
+                if ( session.isIgnoreInvalidArtifactDescriptor() )
                 {
                     return null;
                 }

@@ -31,15 +31,18 @@ public class VersionRangeRequest
 
     private List<RemoteRepository> repositories;
 
+    private String context;
+
     public VersionRangeRequest()
     {
         // enables default constructor
     }
 
-    public VersionRangeRequest( Artifact artifact, List<RemoteRepository> repositories )
+    public VersionRangeRequest( Artifact artifact, List<RemoteRepository> repositories, String context )
     {
         setArtifact( artifact );
         setRepositories( repositories );
+        setContext( context );
     }
 
     public Artifact getArtifact()
@@ -61,6 +64,17 @@ public class VersionRangeRequest
     public VersionRangeRequest setRepositories( List<RemoteRepository> repositories )
     {
         this.repositories = repositories;
+        return this;
+    }
+
+    public String getContext()
+    {
+        return context;
+    }
+
+    public VersionRangeRequest setContext( String context )
+    {
+        this.context = context;
         return this;
     }
 

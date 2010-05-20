@@ -31,6 +31,8 @@ public class LocalArtifactQuery
 
     private Artifact artifact;
 
+    private String context;
+
     private List<RemoteRepository> repositories;
 
     private File file;
@@ -42,10 +44,11 @@ public class LocalArtifactQuery
         // enables default constructor
     }
 
-    public LocalArtifactQuery( Artifact artifact, List<RemoteRepository> repositories )
+    public LocalArtifactQuery( Artifact artifact, List<RemoteRepository> repositories, String context )
     {
         setArtifact( artifact );
         setRepositories( repositories );
+        setContext( context );
     }
 
     public Artifact getArtifact()
@@ -56,6 +59,17 @@ public class LocalArtifactQuery
     public LocalArtifactQuery setArtifact( Artifact artifact )
     {
         this.artifact = artifact;
+        return this;
+    }
+
+    public String getContext()
+    {
+        return context;
+    }
+
+    public LocalArtifactQuery setContext( String context )
+    {
+        this.context = context;
         return this;
     }
 

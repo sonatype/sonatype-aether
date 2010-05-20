@@ -34,7 +34,7 @@ import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.ArtifactResolutionException;
 import org.apache.maven.repository.DefaultArtifact;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.ArtifactRequest;
 import org.apache.maven.repository.spi.ArtifactResolver;
 import org.apache.maven.repository.spi.RemoteRepositoryManager;
@@ -46,7 +46,9 @@ class DefaultModelResolver
     implements ModelResolver
 {
 
-    private final RepositoryContext context;
+    private final RepositorySession session;
+
+    private final String context;
 
     private List<RemoteRepository> repositories;
 
@@ -56,9 +58,10 @@ class DefaultModelResolver
 
     private final Set<String> repositoryIds;
 
-    public DefaultModelResolver( RepositoryContext context, ArtifactResolver resolver,
+    public DefaultModelResolver( RepositorySession session, String context, ArtifactResolver resolver,
                                  RemoteRepositoryManager remoteRepositoryManager, List<RemoteRepository> repositories )
     {
+        this.session = session;
         this.context = context;
         this.resolver = resolver;
         this.remoteRepositoryManager = remoteRepositoryManager;
@@ -68,6 +71,7 @@ class DefaultModelResolver
 
     private DefaultModelResolver( DefaultModelResolver original )
     {
+        this.session = original.session;
         this.context = original.context;
         this.resolver = original.resolver;
         this.remoteRepositoryManager = original.remoteRepositoryManager;
@@ -86,7 +90,7 @@ class DefaultModelResolver
         RemoteRepository remoteRepository = DefaultArtifactDescriptorReader.convert( repository );
 
         this.repositories =
-            remoteRepositoryManager.aggregateRepositories( context, repositories,
+            remoteRepositoryManager.aggregateRepositories( session, repositories,
                                                            Collections.singletonList( remoteRepository ) );
     }
 
@@ -102,8 +106,8 @@ class DefaultModelResolver
 
         try
         {
-            ArtifactRequest request = new ArtifactRequest( pomArtifact, repositories );
-            resolver.resolveArtifact( context, request );
+            ArtifactRequest request = new ArtifactRequest( pomArtifact, repositories, context );
+            resolver.resolveArtifact( session, request );
         }
         catch ( ArtifactResolutionException e )
         {

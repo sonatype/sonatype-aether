@@ -37,7 +37,7 @@ import org.apache.maven.repository.Metadata;
 import org.apache.maven.repository.MetadataRequest;
 import org.apache.maven.repository.MetadataResult;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.VersionRangeRequest;
 import org.apache.maven.repository.VersionRangeResolutionException;
 import org.apache.maven.repository.VersionRangeResult;
@@ -80,7 +80,7 @@ public class DefaultVersionRangeResolver
         return this;
     }
 
-    public VersionRangeResult resolveVersionRange( RepositoryContext context, VersionRangeRequest request )
+    public VersionRangeResult resolveVersionRange( RepositorySession session, VersionRangeRequest request )
         throws VersionRangeResolutionException
     {
         VersionRangeResult result = new VersionRangeResult( request );
@@ -109,7 +109,7 @@ public class DefaultVersionRangeResolver
         else
         {
             Map<String, ArtifactRepository> versionIndex =
-                getVersions( context, result, request, getNature( context, ranges ) );
+                getVersions( session, result, request, getNature( session, ranges ) );
 
             List<Comparable<Object>> versions = new ArrayList<Comparable<Object>>();
             for ( String v : versionIndex.keySet() )
@@ -151,7 +151,7 @@ public class DefaultVersionRangeResolver
         return false;
     }
 
-    private Map<String, ArtifactRepository> getVersions( RepositoryContext context, VersionRangeResult result,
+    private Map<String, ArtifactRepository> getVersions( RepositorySession session, VersionRangeResult result,
                                                          VersionRangeRequest request, Metadata.Nature nature )
     {
         Map<String, ArtifactRepository> versionIndex = new HashMap<String, ArtifactRepository>();
@@ -162,17 +162,17 @@ public class DefaultVersionRangeResolver
         metadata.setType( "maven-metadata.xml" );
         metadata.setNature( nature );
 
-        List<MetadataRequest> metadataRequests =
-            new ArrayList<MetadataRequest>( request.getRepositories().size() );
+        List<MetadataRequest> metadataRequests = new ArrayList<MetadataRequest>( request.getRepositories().size() );
         for ( RemoteRepository repository : request.getRepositories() )
         {
-            MetadataRequest metadataRequest = new MetadataRequest( new Metadata( metadata ), repository );
+            MetadataRequest metadataRequest =
+                new MetadataRequest( new Metadata( metadata ), repository, request.getContext() );
             metadataRequest.setDeleteLocalCopyIfMissing( true );
             metadataRequests.add( metadataRequest );
         }
-        List<MetadataResult> metadataResults = metadataResolver.resolveMetadata( context, metadataRequests );
+        List<MetadataResult> metadataResults = metadataResolver.resolveMetadata( session, metadataRequests );
 
-        WorkspaceReader workspace = context.getWorkspaceReader();
+        WorkspaceReader workspace = session.getWorkspaceReader();
         if ( workspace != null )
         {
             List<String> versions = workspace.findVersions( request.getArtifact() );
@@ -182,12 +182,12 @@ public class DefaultVersionRangeResolver
             }
         }
 
-        LocalRepositoryManager lrm = context.getLocalRepositoryManager();
+        LocalRepositoryManager lrm = session.getLocalRepositoryManager();
         File localMetadataFile = new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalMetadata( metadata ) );
         if ( localMetadataFile.isFile() )
         {
             metadata.setFile( localMetadataFile );
-            Versioning versioning = readVersions( context, metadata, result );
+            Versioning versioning = readVersions( session, metadata, result );
             for ( String version : versioning.getVersions() )
             {
                 if ( !versionIndex.containsKey( version ) )
@@ -200,12 +200,12 @@ public class DefaultVersionRangeResolver
         for ( MetadataResult metadataResult : metadataResults )
         {
             result.addException( metadataResult.getException() );
-            Versioning versioning = readVersions( context, metadataResult.getRequest().getMetadata(), result );
+            Versioning versioning = readVersions( session, metadataResult.getRequest().getMetadata(), result );
             for ( String version : versioning.getVersions() )
             {
                 if ( !versionIndex.containsKey( version ) )
                 {
-                    versionIndex.put( version, metadataResult.getRequest().getRemoteRepository() );
+                    versionIndex.put( version, metadataResult.getRequest().getRepository() );
                 }
             }
         }
@@ -213,7 +213,7 @@ public class DefaultVersionRangeResolver
         return versionIndex;
     }
 
-    private Metadata.Nature getNature( RepositoryContext context, List<VersionRange> ranges )
+    private Metadata.Nature getNature( RepositorySession session, List<VersionRange> ranges )
     {
         for ( VersionRange range : ranges )
         {
@@ -225,7 +225,7 @@ public class DefaultVersionRangeResolver
         return Metadata.Nature.RELEASE;
     }
 
-    private Versioning readVersions( RepositoryContext context, Metadata metadata, VersionRangeResult result )
+    private Versioning readVersions( RepositorySession session, Metadata metadata, VersionRangeResult result )
     {
         Versioning versioning = null;
 

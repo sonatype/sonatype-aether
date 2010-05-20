@@ -21,7 +21,7 @@ package org.apache.maven.repository.wagon;
 
 import org.apache.maven.repository.NoRepositoryReaderException;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.spi.RepositoryReader;
 import org.apache.maven.repository.spi.RepositoryReaderFactory;
 import org.codehaus.plexus.PlexusContainer;
@@ -44,10 +44,10 @@ public class WagonRepositoryReaderFactory
         return 0;
     }
 
-    public RepositoryReader newInstance( RepositoryContext context, RemoteRepository repository )
+    public RepositoryReader newInstance( RepositorySession session, RemoteRepository repository )
         throws NoRepositoryReaderException
     {
-        return new WagonRepositoryReader( container, repository, context );
+        return new WagonRepositoryReader( container, repository, session );
     }
 
 }

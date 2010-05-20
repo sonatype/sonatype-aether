@@ -31,15 +31,18 @@ public class VersionRequest
 
     private List<RemoteRepository> repositories;
 
+    private String context;
+
     public VersionRequest()
     {
         // enables default constructor
     }
 
-    public VersionRequest( Artifact artifact, List<RemoteRepository> repositories )
+    public VersionRequest( Artifact artifact, List<RemoteRepository> repositories, String context )
     {
         setArtifact( artifact );
         setRepositories( repositories );
+        setContext( context );
     }
 
     public Artifact getArtifact()
@@ -64,4 +67,14 @@ public class VersionRequest
         return this;
     }
 
+    public String getContext()
+    {
+        return context;
+    }
+
+    public VersionRequest setContext( String context )
+    {
+        this.context = context;
+        return this;
+    }
 }

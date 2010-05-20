@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.apache.maven.repository.MetadataRequest;
 import org.apache.maven.repository.MetadataResult;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 
 /**
  * @author Benjamin Bentmann
@@ -35,6 +35,6 @@ public interface MetadataResolver
     /**
      * Resolves the paths for a collection of metadata. Metadata will be downloaded if necessary.
      */
-    List<MetadataResult> resolveMetadata( RepositoryContext context, Collection<? extends MetadataRequest> requests );
+    List<MetadataResult> resolveMetadata( RepositorySession session, Collection<? extends MetadataRequest> requests );
 
 }

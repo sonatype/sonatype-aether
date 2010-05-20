@@ -33,7 +33,7 @@ import org.apache.maven.repository.DeployRequest;
 import org.apache.maven.repository.InstallRequest;
 import org.apache.maven.repository.MetadataRequest;
 import org.apache.maven.repository.MetadataResult;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.repository.ArtifactRequest;
 import org.apache.maven.repository.ArtifactResult;
@@ -128,50 +128,50 @@ public class DefaultRepositorySystem
         return this;
     }
 
-    public VersionResult resolveVersion( RepositoryContext context, VersionRequest request )
+    public VersionResult resolveVersion( RepositorySession session, VersionRequest request )
         throws VersionResolutionException
     {
-        return versionResolver.resolveVersion( context, request );
+        return versionResolver.resolveVersion( session, request );
     }
 
-    public VersionRangeResult resolveVersionRange( RepositoryContext context, VersionRangeRequest request )
+    public VersionRangeResult resolveVersionRange( RepositorySession session, VersionRangeRequest request )
         throws VersionRangeResolutionException
     {
-        return versionRangeResolver.resolveVersionRange( context, request );
+        return versionRangeResolver.resolveVersionRange( session, request );
     }
 
-    public ArtifactDescriptorResult readArtifactDescriptor( RepositoryContext context, ArtifactDescriptorRequest request )
+    public ArtifactDescriptorResult readArtifactDescriptor( RepositorySession session, ArtifactDescriptorRequest request )
         throws ArtifactDescriptorException
     {
-        return artifactDescriptorReader.readArtifactDescriptor( context, request );
+        return artifactDescriptorReader.readArtifactDescriptor( session, request );
     }
 
-    public List<ArtifactResult> resolveArtifacts( RepositoryContext context,
+    public List<ArtifactResult> resolveArtifacts( RepositorySession session,
                                                   Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException
     {
-        return artifactResolver.resolveArtifacts( context, requests );
+        return artifactResolver.resolveArtifacts( session, requests );
     }
 
-    public List<MetadataResult> resolveMetadata( RepositoryContext context,
+    public List<MetadataResult> resolveMetadata( RepositorySession session,
                                                  Collection<? extends MetadataRequest> requests )
     {
-        return metadataResolver.resolveMetadata( context, requests );
+        return metadataResolver.resolveMetadata( session, requests );
     }
 
-    public CollectResult collectDependencies( RepositoryContext context, CollectRequest request )
+    public CollectResult collectDependencies( RepositorySession session, CollectRequest request )
         throws DependencyCollectionException
     {
-        return dependencyCollector.collectDependencies( context, request );
+        return dependencyCollector.collectDependencies( session, request );
     }
 
-    public void installArtifacts( RepositoryContext context, InstallRequest request )
+    public void installArtifacts( RepositorySession session, InstallRequest request )
     {
         // TODO Auto-generated method stub
 
     }
 
-    public void deployArtifacts( RepositoryContext context, DeployRequest request )
+    public void deployArtifacts( RepositorySession session, DeployRequest request )
     {
         // TODO Auto-generated method stub
 

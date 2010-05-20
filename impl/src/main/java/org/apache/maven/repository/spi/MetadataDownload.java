@@ -36,6 +36,8 @@ public class MetadataDownload
 
     private String checksumPolicy;
 
+    private String context;
+
     private MetadataTransferException exception;
 
     public MetadataDownload()
@@ -43,9 +45,10 @@ public class MetadataDownload
         // enables default constructor
     }
 
-    public MetadataDownload( Metadata metadata, File file, String checksumPolicy )
+    public MetadataDownload( Metadata metadata, String context, File file, String checksumPolicy )
     {
         setMetadata( metadata );
+        setContext( context );
         setFile( file );
         setChecksumPolicy( checksumPolicy );
     }
@@ -80,6 +83,17 @@ public class MetadataDownload
     public MetadataDownload setChecksumPolicy( String checksumPolicy )
     {
         this.checksumPolicy = checksumPolicy;
+        return this;
+    }
+
+    public String getContext()
+    {
+        return context;
+    }
+
+    public MetadataDownload setContext( String context )
+    {
+        this.context = context;
         return this;
     }
 

@@ -4,7 +4,7 @@ import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.ArtifactTransferException;
 import org.apache.maven.repository.Metadata;
 import org.apache.maven.repository.MetadataTransferException;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -31,14 +31,14 @@ import org.apache.maven.repository.RepositoryContext;
 public interface UpdateCheckManager
 {
 
-    String getEffectiveUpdatePolicy( RepositoryContext context, String policy1, String policy2 );
+    String getEffectiveUpdatePolicy( RepositorySession session, String policy1, String policy2 );
 
-    void checkArtifact( RepositoryContext context, UpdateCheck<Artifact, ArtifactTransferException> check );
+    void checkArtifact( RepositorySession session, UpdateCheck<Artifact, ArtifactTransferException> check );
 
-    void touchArtifact( RepositoryContext context, UpdateCheck<Artifact, ArtifactTransferException> check );
+    void touchArtifact( RepositorySession session, UpdateCheck<Artifact, ArtifactTransferException> check );
 
-    void checkMetadata( RepositoryContext context, UpdateCheck<Metadata, MetadataTransferException> check );
+    void checkMetadata( RepositorySession session, UpdateCheck<Metadata, MetadataTransferException> check );
 
-    void touchMetadata( RepositoryContext context, UpdateCheck<Metadata, MetadataTransferException> check );
+    void touchMetadata( RepositorySession session, UpdateCheck<Metadata, MetadataTransferException> check );
 
 }

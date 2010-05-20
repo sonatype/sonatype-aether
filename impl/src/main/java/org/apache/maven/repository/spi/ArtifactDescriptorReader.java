@@ -22,7 +22,7 @@ package org.apache.maven.repository.spi;
 import org.apache.maven.repository.ArtifactDescriptorException;
 import org.apache.maven.repository.ArtifactDescriptorRequest;
 import org.apache.maven.repository.ArtifactDescriptorResult;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 
 /**
  * @author Benjamin Bentmann
@@ -30,7 +30,7 @@ import org.apache.maven.repository.RepositoryContext;
 public interface ArtifactDescriptorReader
 {
 
-    ArtifactDescriptorResult readArtifactDescriptor( RepositoryContext context, ArtifactDescriptorRequest request )
+    ArtifactDescriptorResult readArtifactDescriptor( RepositorySession session, ArtifactDescriptorRequest request )
         throws ArtifactDescriptorException;
 
 }

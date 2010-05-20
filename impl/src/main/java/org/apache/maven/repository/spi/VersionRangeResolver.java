@@ -19,7 +19,7 @@ package org.apache.maven.repository.spi;
  * under the License.
  */
 
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.VersionRangeRequest;
 import org.apache.maven.repository.VersionRangeResolutionException;
 import org.apache.maven.repository.VersionRangeResult;
@@ -34,7 +34,7 @@ public interface VersionRangeResolver
      * Expands a version range to a list of matching versions, in ascending order. For example, resolves "[3.8,4.0)" to
      * ["3.8", "3.8.1", "3.8.2"].
      */
-    VersionRangeResult resolveVersionRange( RepositoryContext context, VersionRangeRequest request )
+    VersionRangeResult resolveVersionRange( RepositorySession session, VersionRangeRequest request )
         throws VersionRangeResolutionException;
 
 }

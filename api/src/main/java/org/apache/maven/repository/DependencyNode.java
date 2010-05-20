@@ -32,6 +32,8 @@ public class DependencyNode
 
     private Dependency dependency;
 
+    private String context;
+
     private List<Artifact> relocations = Collections.emptyList();
 
     private List<Artifact> aliases = Collections.emptyList();
@@ -60,6 +62,17 @@ public class DependencyNode
     public Dependency getDependency()
     {
         return dependency;
+    }
+
+    public String getContext()
+    {
+        return context;
+    }
+
+    public DependencyNode setContext( String context )
+    {
+        this.context = context;
+        return this;
     }
 
     public List<Artifact> getRelocations()

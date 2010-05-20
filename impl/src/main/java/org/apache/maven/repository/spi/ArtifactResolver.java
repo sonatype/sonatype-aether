@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.maven.repository.ArtifactResolutionException;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.ArtifactRequest;
 import org.apache.maven.repository.ArtifactResult;
 
@@ -36,13 +36,13 @@ public interface ArtifactResolver
     /**
      * Resolves the path for an artifact. The artifact will be downloaded if necessary.
      */
-    ArtifactResult resolveArtifact( RepositoryContext context, ArtifactRequest request )
+    ArtifactResult resolveArtifact( RepositorySession session, ArtifactRequest request )
         throws ArtifactResolutionException;
 
     /**
      * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary.
      */
-    List<ArtifactResult> resolveArtifacts( RepositoryContext context, Collection<? extends ArtifactRequest> requests )
+    List<ArtifactResult> resolveArtifacts( RepositorySession session, Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException;
 
 }

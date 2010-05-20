@@ -31,15 +31,18 @@ public class ArtifactDescriptorRequest
 
     private List<RemoteRepository> repositories;
 
+    private String context;
+
     public ArtifactDescriptorRequest()
     {
         // enables default constructor
     }
 
-    public ArtifactDescriptorRequest( Artifact artifact, List<RemoteRepository> repositories )
+    public ArtifactDescriptorRequest( Artifact artifact, List<RemoteRepository> repositories, String context )
     {
         setArtifact( artifact );
-        setRemoteRepositories( repositories );
+        setRepositories( repositories );
+        setContext( context );
     }
 
     public Artifact getArtifact()
@@ -53,14 +56,25 @@ public class ArtifactDescriptorRequest
         return this;
     }
 
-    public List<RemoteRepository> getRemoteRepositories()
+    public List<RemoteRepository> getRepositories()
     {
         return repositories;
     }
 
-    public ArtifactDescriptorRequest setRemoteRepositories( List<RemoteRepository> repositories )
+    public ArtifactDescriptorRequest setRepositories( List<RemoteRepository> repositories )
     {
         this.repositories = repositories;
+        return this;
+    }
+
+    public String getContext()
+    {
+        return context;
+    }
+
+    public ArtifactDescriptorRequest setContext( String context )
+    {
+        this.context = context;
         return this;
     }
 

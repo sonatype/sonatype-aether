@@ -35,7 +35,7 @@ import org.apache.maven.repository.MetadataNotFoundException;
 import org.apache.maven.repository.MetadataTransferException;
 import org.apache.maven.repository.Proxy;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositoryContext;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryPolicy;
 import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.NullLogger;
@@ -65,7 +65,7 @@ public class DefaultUpdateCheckManager
         return this;
     }
 
-    public String getEffectiveUpdatePolicy( RepositoryContext context, String policy1, String policy2 )
+    public String getEffectiveUpdatePolicy( RepositorySession session, String policy1, String policy2 )
     {
         return ordinalOfUpdatePolicy( policy1 ) < ordinalOfUpdatePolicy( policy2 ) ? policy1 : policy2;
     }
@@ -92,7 +92,7 @@ public class DefaultUpdateCheckManager
         }
     }
 
-    public void checkArtifact( RepositoryContext context, UpdateCheck<Artifact, ArtifactTransferException> check )
+    public void checkArtifact( RepositorySession session, UpdateCheck<Artifact, ArtifactTransferException> check )
     {
         if ( check.getLocalLastUpdated() != 0 && !isUpdatedRequired( check.getLocalLastUpdated(), check.getPolicy() ) )
         {
@@ -128,7 +128,7 @@ public class DefaultUpdateCheckManager
             String error = getError( props, key );
             if ( error == null )
             {
-                if ( context.isNotFoundCachingEnabled() )
+                if ( session.isNotFoundCachingEnabled() )
                 {
                     check.setRequired( false );
                     check.setException( new ArtifactNotFoundException( artifact, repository, "Failure to find "
@@ -143,7 +143,7 @@ public class DefaultUpdateCheckManager
             }
             else
             {
-                if ( context.isTransferErrorCachingEnabled() )
+                if ( session.isTransferErrorCachingEnabled() )
                 {
                     check.setRequired( false );
                     check.setException( new ArtifactTransferException( artifact, repository, "Failure to transfer "
@@ -159,7 +159,7 @@ public class DefaultUpdateCheckManager
         }
     }
 
-    public void checkMetadata( RepositoryContext context, UpdateCheck<Metadata, MetadataTransferException> check )
+    public void checkMetadata( RepositorySession session, UpdateCheck<Metadata, MetadataTransferException> check )
     {
         if ( check.getLocalLastUpdated() != 0 && !isUpdatedRequired( check.getLocalLastUpdated(), check.getPolicy() ) )
         {
@@ -202,7 +202,7 @@ public class DefaultUpdateCheckManager
             }
             else
             {
-                if ( context.isTransferErrorCachingEnabled() )
+                if ( session.isTransferErrorCachingEnabled() )
                 {
                     check.setRequired( false );
                     check.setException( new MetadataTransferException( metadata, repository, "Failure to transfer "
@@ -321,7 +321,7 @@ public class DefaultUpdateCheckManager
         return new TrackingFileManager( logger ).read( touchFile );
     }
 
-    public void touchArtifact( RepositoryContext context, UpdateCheck<Artifact, ArtifactTransferException> check )
+    public void touchArtifact( RepositorySession session, UpdateCheck<Artifact, ArtifactTransferException> check )
     {
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
 
@@ -337,7 +337,7 @@ public class DefaultUpdateCheckManager
         }
     }
 
-    public void touchMetadata( RepositoryContext context, UpdateCheck<Metadata, MetadataTransferException> check )
+    public void touchMetadata( RepositorySession session, UpdateCheck<Metadata, MetadataTransferException> check )
     {
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
 
