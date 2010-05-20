@@ -51,6 +51,8 @@ public class RemoteRepository
 
     private List<RemoteRepository> mirroredRepositories = Collections.emptyList();
 
+    private boolean repositoryManager;
+
     public RemoteRepository()
     {
         setPolicy( true, null );
@@ -67,6 +69,7 @@ public class RemoteRepository
         setAuthentication( repo.getAuthentication() );
         setProxy( repo.getProxy() );
         setMirroredRepositories( repo.getMirroredRepositories() );
+        setRepositoryManager( repo.isRepositoryManager() );
     }
 
     public RemoteRepository( String id, String type, String url )
@@ -202,6 +205,17 @@ public class RemoteRepository
         return this;
     }
 
+    public boolean isRepositoryManager()
+    {
+        return repositoryManager;
+    }
+
+    public RemoteRepository setRepositoryManager( boolean repositoryManager )
+    {
+        this.repositoryManager = repositoryManager;
+        return this;
+    }
+
     @Override
     public String toString()
     {
@@ -210,6 +224,7 @@ public class RemoteRepository
         buffer.append( " (" ).append( getUrl() );
         buffer.append( ", releases=" ).append( getPolicy( false ).isEnabled() );
         buffer.append( ", snapshots=" ).append( getPolicy( true ).isEnabled() );
+        buffer.append( ", managed=" ).append( isRepositoryManager() );
         buffer.append( ")" );
         return buffer.toString();
     }

@@ -68,7 +68,7 @@ public class TrackingLocalRepositoryManager
             {
                 for ( RemoteRepository repository : query.getRepositories() )
                 {
-                    if ( props.getProperty( getKey( file, repository.getId() ) ) != null )
+                    if ( props.getProperty( getKey( file, getRepositoryKey( repository ) ) ) != null )
                     {
                         query.setAvailable( true );
                         break;
@@ -87,7 +87,7 @@ public class TrackingLocalRepositoryManager
     @Override
     public void addRemoteArtifact( Artifact artifact, RemoteRepository repository )
     {
-        addArtifact( artifact, repository.getId() );
+        addArtifact( artifact, getRepositoryKey( repository ) );
     }
 
     private void addArtifact( Artifact artifact, String repository )

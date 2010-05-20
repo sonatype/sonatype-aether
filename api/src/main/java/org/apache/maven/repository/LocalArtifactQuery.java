@@ -31,7 +31,7 @@ public class LocalArtifactQuery
 
     private Artifact artifact;
 
-    private List<? extends RemoteRepository> repositories;
+    private List<RemoteRepository> repositories;
 
     private File file;
 
@@ -42,7 +42,7 @@ public class LocalArtifactQuery
         // enables default constructor
     }
 
-    public LocalArtifactQuery( Artifact artifact, List<? extends RemoteRepository> repositories )
+    public LocalArtifactQuery( Artifact artifact, List<RemoteRepository> repositories )
     {
         setArtifact( artifact );
         setRepositories( repositories );
@@ -59,13 +59,13 @@ public class LocalArtifactQuery
         return this;
     }
 
-    public LocalArtifactQuery setRepositories( List<? extends RemoteRepository> repositories )
+    public LocalArtifactQuery setRepositories( List<RemoteRepository> repositories )
     {
         this.repositories = ( repositories != null ) ? repositories : Collections.<RemoteRepository> emptyList();
         return this;
     }
 
-    public List<? extends RemoteRepository> getRepositories()
+    public List<RemoteRepository> getRepositories()
     {
         return repositories;
     }

@@ -117,7 +117,7 @@ public class DefaultArtifactResolver
     }
 
     public List<ArtifactResult> resolveArtifacts( RepositoryContext context,
-                                                 Collection<? extends ArtifactRequest> requests )
+                                                  Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException
     {
         List<ArtifactResult> results = new ArrayList<ArtifactResult>( requests.size() );

@@ -119,6 +119,8 @@ public class DefaultRemoteRepositoryManager
                     {
                         RemoteRepository mergedRepository = new RemoteRepository();
 
+                        mergedRepository.setRepositoryManager( effectiveRepository.isRepositoryManager() );
+
                         mergedRepository.setId( effectiveRepository.getId() );
                         mergedRepository.setType( effectiveRepository.getType() );
                         mergedRepository.setUrl( effectiveRepository.getUrl() );

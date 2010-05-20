@@ -30,7 +30,7 @@ public class ArtifactRequest
 
     private Artifact artifact;
 
-    private List<RemoteRepository> repositories;
+    private List<RemoteRepository> repositories = Collections.emptyList();
 
     public ArtifactRequest()
     {
@@ -39,8 +39,8 @@ public class ArtifactRequest
 
     public ArtifactRequest( Artifact artifact, List<RemoteRepository> repositories )
     {
-        this.artifact = artifact;
-        this.repositories = repositories;
+        setArtifact( artifact );
+        setRepositories( repositories );
     }
 
     public Artifact getArtifact()
@@ -56,12 +56,12 @@ public class ArtifactRequest
 
     public List<RemoteRepository> getRepositories()
     {
-        return ( repositories != null ) ? repositories : Collections.<RemoteRepository> emptyList();
+        return repositories;
     }
 
     public ArtifactRequest setRepositories( List<RemoteRepository> repositories )
     {
-        this.repositories = repositories;
+        this.repositories = ( repositories != null ) ? repositories : Collections.<RemoteRepository> emptyList();
         return this;
     }
 

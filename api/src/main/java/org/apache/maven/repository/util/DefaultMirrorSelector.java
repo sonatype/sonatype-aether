@@ -39,9 +39,10 @@ public class DefaultMirrorSelector
 
     private final List<MirrorDef> mirrors = new ArrayList<MirrorDef>();
 
-    public DefaultMirrorSelector add( String id, String url, String type, String mirrorOfIds, String mirrorOfTypes )
+    public DefaultMirrorSelector add( String id, String url, String type, boolean repositoryManager,
+                                      String mirrorOfIds, String mirrorOfTypes )
     {
-        mirrors.add( new MirrorDef( id, url, type, mirrorOfIds, mirrorOfTypes ) );
+        mirrors.add( new MirrorDef( id, url, type, repositoryManager, mirrorOfIds, mirrorOfTypes ) );
 
         return this;
     }
@@ -57,6 +58,7 @@ public class DefaultMirrorSelector
 
         RemoteRepository repo = new RemoteRepository();
 
+        repo.setRepositoryManager( mirror.repositoryManager );
         repo.setId( mirror.id );
         repo.setUrl( mirror.url );
 
@@ -237,15 +239,19 @@ public class DefaultMirrorSelector
 
         final String type;
 
+        final boolean repositoryManager;
+
         final String mirrorOfIds;
 
         final String mirrorOfTypes;
 
-        public MirrorDef( String id, String url, String type, String mirrorOfIds, String mirrorOfTypes )
+        public MirrorDef( String id, String url, String type, boolean repositoryManager, String mirrorOfIds,
+                          String mirrorOfTypes )
         {
             this.id = id;
             this.url = url;
             this.type = type;
+            this.repositoryManager = repositoryManager;
             this.mirrorOfIds = mirrorOfIds;
             this.mirrorOfTypes = mirrorOfTypes;
         }

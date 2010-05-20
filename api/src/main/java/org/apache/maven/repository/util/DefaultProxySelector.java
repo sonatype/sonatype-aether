@@ -65,6 +65,19 @@ public class DefaultProxySelector
 
         String protocol = repository.getProtocol().toLowerCase( Locale.ENGLISH );
 
+        if ( "davs".equals( protocol ) )
+        {
+            protocol = "https";
+        }
+        else if ( "dav".equals( protocol ) )
+        {
+            protocol = "http";
+        }
+        else if ( protocol.startsWith( "dav:" ) )
+        {
+            protocol = protocol.substring( "dav:".length() );
+        }
+
         ProxyDef proxy = candidates.get( protocol );
         if ( proxy == null && "https".equals( protocol ) )
         {

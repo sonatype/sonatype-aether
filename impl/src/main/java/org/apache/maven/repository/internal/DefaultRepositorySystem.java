@@ -31,6 +31,8 @@ import org.apache.maven.repository.ArtifactDescriptorResult;
 import org.apache.maven.repository.DependencyCollectionException;
 import org.apache.maven.repository.DeployRequest;
 import org.apache.maven.repository.InstallRequest;
+import org.apache.maven.repository.MetadataRequest;
+import org.apache.maven.repository.MetadataResult;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositoryContext;
 import org.apache.maven.repository.RepositorySystem;
@@ -47,6 +49,7 @@ import org.apache.maven.repository.VersionResult;
 import org.apache.maven.repository.spi.ArtifactDescriptorReader;
 import org.apache.maven.repository.spi.ArtifactResolver;
 import org.apache.maven.repository.spi.DependencyCollector;
+import org.apache.maven.repository.spi.MetadataResolver;
 import org.apache.maven.repository.spi.VersionRangeResolver;
 import org.apache.maven.repository.spi.VersionResolver;
 import org.codehaus.plexus.component.annotations.Component;
@@ -68,6 +71,9 @@ public class DefaultRepositorySystem
 
     @Requirement
     private ArtifactResolver artifactResolver;
+
+    @Requirement
+    private MetadataResolver metadataResolver;
 
     @Requirement
     private ArtifactDescriptorReader artifactDescriptorReader;
@@ -105,6 +111,16 @@ public class DefaultRepositorySystem
         return this;
     }
 
+    public DefaultRepositorySystem setMetadataResolver( MetadataResolver metadataResolver )
+    {
+        if ( metadataResolver == null )
+        {
+            throw new IllegalArgumentException( "metadata resolver has not been specified" );
+        }
+        this.metadataResolver = metadataResolver;
+        return this;
+    }
+
     public DefaultRepositorySystem setArtifactDescriptorReader( ArtifactDescriptorReader artifactDescriptorReader )
     {
         if ( artifactDescriptorReader == null )
@@ -127,11 +143,23 @@ public class DefaultRepositorySystem
         return versionRangeResolver.resolveVersionRange( context, request );
     }
 
+    public ArtifactDescriptorResult readArtifactDescriptor( RepositoryContext context, ArtifactDescriptorRequest request )
+        throws ArtifactDescriptorException
+    {
+        return artifactDescriptorReader.readArtifactDescriptor( context, request );
+    }
+
     public List<ArtifactResult> resolveArtifacts( RepositoryContext context,
                                                   Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException
     {
         return artifactResolver.resolveArtifacts( context, requests );
+    }
+
+    public List<MetadataResult> resolveMetadata( RepositoryContext context,
+                                                 Collection<? extends MetadataRequest> requests )
+    {
+        return metadataResolver.resolveMetadata( context, requests );
     }
 
     public CollectResult collectDependencies( RepositoryContext context, CollectRequest request )
@@ -140,35 +168,16 @@ public class DefaultRepositorySystem
         return dependencyCollector.collectDependencies( context, request );
     }
 
-    public void deployArtifacts( RepositoryContext context, DeployRequest request )
-    {
-        // TODO Auto-generated method stub
-
-    }
-
-    public ArtifactDescriptorResult readArtifactDescriptor( RepositoryContext context, ArtifactDescriptorRequest request )
-        throws ArtifactDescriptorException
-    {
-        return artifactDescriptorReader.readArtifactDescriptor( context, request );
-    }
-
-    public List<RemoteRepository> getEffectiveRepositories( RepositoryContext context,
-                                                            Collection<? extends RemoteRepository> repositories )
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     public void installArtifacts( RepositoryContext context, InstallRequest request )
     {
         // TODO Auto-generated method stub
 
     }
 
-    public TransformResult transformDependencies( RepositoryContext context, TransformRequest request )
+    public void deployArtifacts( RepositoryContext context, DeployRequest request )
     {
         // TODO Auto-generated method stub
-        return null;
+
     }
 
 }

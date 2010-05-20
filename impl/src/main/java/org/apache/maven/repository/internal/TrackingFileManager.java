@@ -131,7 +131,9 @@ class TrackingFileManager
                 ByteArrayOutputStream stream = new ByteArrayOutputStream( 1024 * 2 );
 
                 logger.debug( "Writing resolution tracking file " + file );
-                props.store( stream, "Last modified on: " + new Date() );
+                props.store( stream,
+                             "NOTE: This is an internal implementation file, its format can be changed without prior notice."
+                                 + " Last modified on: " + new Date() );
 
                 byte[] data = stream.toByteArray();
                 ByteBuffer buffer = ByteBuffer.allocate( data.length );

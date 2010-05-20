@@ -20,6 +20,9 @@ package org.apache.maven.repository.internal;
  */
 
 import java.io.File;
+import java.security.MessageDigest;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.LocalArtifactQuery;
@@ -92,10 +95,76 @@ public class SimpleLocalRepositoryManager
 
     public String getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository )
     {
-        return getPath( metadata, repository.getId() );
+        return getPath( metadata, getRepositoryKey( repository ) );
     }
 
-    private String getPath( Metadata metadata, String repositoryId )
+    String getRepositoryKey( RemoteRepository repository )
+    {
+        String key;
+
+        if ( repository.isRepositoryManager() )
+        {
+            // repository serving dynamic contents, take mirrored repositories into account for key
+
+            StringBuilder buffer = new StringBuilder( 128 );
+
+            buffer.append( repository.getId() );
+
+            if ( !repository.getMirroredRepositories().isEmpty() )
+            {
+                buffer.append( '-' );
+
+                SortedSet<String> subKeys = new TreeSet<String>();
+                for ( RemoteRepository mirroredRepo : repository.getMirroredRepositories() )
+                {
+                    subKeys.add( mirroredRepo.getId() );
+                }
+
+                try
+                {
+                    MessageDigest digest = MessageDigest.getInstance( "SHA-1" );
+                    for ( String subKey : subKeys )
+                    {
+                        digest.update( subKey.getBytes( "UTF-8" ) );
+                    }
+                    byte[] bytes = digest.digest();
+
+                    for ( int i = 0; i < bytes.length; i++ )
+                    {
+                        int b = bytes[i] & 0xFF;
+
+                        if ( b < 0x10 )
+                        {
+                            buffer.append( '0' );
+                        }
+
+                        buffer.append( Integer.toHexString( b ) );
+                    }
+                }
+                catch ( Exception e )
+                {
+                    long hash = 13;
+                    for ( String subKey : subKeys )
+                    {
+                        hash = hash * 31 + subKey.hashCode();
+                    }
+                    buffer.append( hash );
+                }
+            }
+
+            key = buffer.toString();
+        }
+        else
+        {
+            // repository serving static contents, its id is sufficient as key
+
+            key = repository.getId();
+        }
+
+        return key;
+    }
+
+    private String getPath( Metadata metadata, String repositoryKey )
     {
         StringBuilder path = new StringBuilder( 128 );
 
@@ -114,22 +183,22 @@ public class SimpleLocalRepositoryManager
             }
         }
 
-        path.append( insertRepositoryId( metadata.getType(), repositoryId ) );
+        path.append( insertRepositoryKey( metadata.getType(), repositoryKey ) );
 
         return path.toString();
     }
 
-    private String insertRepositoryId( String filename, String repositoryId )
+    private String insertRepositoryKey( String filename, String repositoryKey )
     {
         String result;
         int idx = filename.indexOf( '.' );
         if ( idx < 0 )
         {
-            result = filename + '-' + repositoryId;
+            result = filename + '-' + repositoryKey;
         }
         else
         {
-            result = filename.substring( 0, idx ) + '-' + repositoryId + filename.substring( idx );
+            result = filename.substring( 0, idx ) + '-' + repositoryKey + filename.substring( idx );
         }
         return result;
     }

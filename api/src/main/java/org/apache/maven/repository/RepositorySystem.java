@@ -60,8 +60,10 @@ public interface RepositorySystem
     List<ArtifactResult> resolveArtifacts( RepositoryContext context, Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException;
 
-    // TODO:
-    // MetadataResult resolveMetadata( MetadataRequest request );
+    /**
+     * Resolves the paths for a collection of metadata. Metadata will be downloaded if necessary.
+     */
+    List<MetadataResult> resolveMetadata( RepositoryContext context, Collection<? extends MetadataRequest> requests );
 
     /**
      * Installs a collection of artifacts to the local repository.
