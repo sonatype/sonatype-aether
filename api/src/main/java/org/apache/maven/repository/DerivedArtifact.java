@@ -20,6 +20,7 @@ package org.apache.maven.repository;
  */
 
 import java.io.File;
+import java.util.Map;
 
 /**
  * @author Benjamin Bentmann
@@ -98,9 +99,9 @@ public abstract class DerivedArtifact
         return mainArtifact.getProperty( key, type, defaultValue );
     }
 
-    public Iterable<String> getPropertyKeys()
+    public Map<String, Object> getProperties()
     {
-        return mainArtifact.getPropertyKeys();
+        return mainArtifact.getProperties();
     }
 
     @Override

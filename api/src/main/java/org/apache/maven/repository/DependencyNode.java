@@ -22,6 +22,7 @@ package org.apache.maven.repository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Benjamin Bentmann
@@ -34,6 +35,8 @@ public class DependencyNode
     private List<Artifact> relocations = Collections.emptyList();
 
     private List<Artifact> aliases = Collections.emptyList();
+
+    private Map<String, Object> properties = Collections.emptyMap();
 
     private DependencyNode parent;
 
@@ -78,6 +81,24 @@ public class DependencyNode
     public DependencyNode setAliases( List<Artifact> aliases )
     {
         this.aliases = aliases;
+        return this;
+    }
+
+    public Map<String, Object> getProperties()
+    {
+        return properties;
+    }
+
+    public DependencyNode setPropertes( Map<String, Object> properties )
+    {
+        if ( properties == null )
+        {
+            this.properties = Collections.emptyMap();
+        }
+        else
+        {
+            this.properties = properties;
+        }
         return this;
     }
 

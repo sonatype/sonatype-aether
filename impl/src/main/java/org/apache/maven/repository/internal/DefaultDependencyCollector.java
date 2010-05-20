@@ -151,6 +151,7 @@ public class DefaultDependencyCollector
             node.setRelocations( descriptorResult.getRelocations() );
             node.setRequestedVersion( root.getArtifact().getVersion() );
             node.setRepositories( request.getRepositories() );
+            node.setPropertes( descriptorResult.getProperties() );
         }
         else
         {
@@ -315,6 +316,7 @@ public class DefaultDependencyCollector
                 child.setRelocations( descriptorResult.getRelocations() );
                 child.setRequestedVersion( dependency.getArtifact().getVersion() );
                 child.setRepositories( repos );
+                child.setPropertes( descriptorResult.getProperties() );
 
                 if ( traverse )
                 {

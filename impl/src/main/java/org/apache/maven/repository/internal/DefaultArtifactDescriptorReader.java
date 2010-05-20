@@ -20,11 +20,15 @@ package org.apache.maven.repository.internal;
  */
 
 import java.io.File;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.DistributionManagement;
+import org.apache.maven.model.License;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Relocation;
 import org.apache.maven.model.Repository;
@@ -137,6 +141,21 @@ public class DefaultArtifactDescriptorReader
                     result.addManagedDependency( convert( dependency, stereotypes ) );
                 }
             }
+
+            Map<String, Object> properties = new LinkedHashMap<String, Object>();
+
+            List<License> licenses = model.getLicenses();
+            properties.put( "license.count", Integer.valueOf( licenses.size() ) );
+            for ( int i = 0; i < licenses.size(); i++ )
+            {
+                License license = licenses.get( i );
+                properties.put( "license." + i + ".name", license.getName() );
+                properties.put( "license." + i + ".url", license.getUrl() );
+                properties.put( "license." + i + ".comments", license.getComments() );
+                properties.put( "license." + i + ".distribution", license.getDistribution() );
+            }
+
+            result.setProperties( properties );
         }
 
         return result;

@@ -20,6 +20,7 @@ package org.apache.maven.repository;
  */
 
 import java.io.File;
+import java.util.Map;
 
 /**
  * @author Benjamin Bentmann
@@ -52,7 +53,7 @@ public interface Artifact
     // includesDependencies, addedToClasspath)
     <T> T getProperty( String key, Class<T> type, T defaultValue );
 
-    Iterable<String> getPropertyKeys();
+    Map<String, Object> getProperties();
 
     Artifact clone();
 

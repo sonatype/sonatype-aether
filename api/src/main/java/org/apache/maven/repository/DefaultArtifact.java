@@ -86,10 +86,7 @@ public class DefaultArtifact
         setType( artifact.getType() );
         setVersion( artifact.getVersion() );
         setFile( artifact.getFile() );
-        for ( String key : artifact.getPropertyKeys() )
-        {
-            setProperty( key, artifact.getProperty( key, Object.class, null ) );
-        }
+        properties.putAll( artifact.getProperties() );
     }
 
     public String getGroupId()
@@ -195,9 +192,9 @@ public class DefaultArtifact
         return type.isInstance( value ) ? type.cast( value ) : defaultValue;
     }
 
-    public Iterable<String> getPropertyKeys()
+    public Map<String, Object> getProperties()
     {
-        return properties.keySet();
+        return properties;
     }
 
     public DefaultArtifact setProperty( String key, Object value )

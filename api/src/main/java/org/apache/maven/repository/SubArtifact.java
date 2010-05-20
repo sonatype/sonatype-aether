@@ -72,9 +72,9 @@ public class SubArtifact
         return type.isInstance( value ) ? type.cast( value ) : defaultValue;
     }
 
-    public Iterable<String> getPropertyKeys()
+    public Map<String, Object> getPropertiess()
     {
-        return properties.keySet();
+        return properties;
     }
 
     public SubArtifact setProperty( String key, Object value )

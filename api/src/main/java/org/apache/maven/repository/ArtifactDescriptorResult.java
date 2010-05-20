@@ -20,7 +20,9 @@ package org.apache.maven.repository;
  */
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Benjamin Bentmann
@@ -44,6 +46,8 @@ public class ArtifactDescriptorResult
 
     private List<RemoteRepository> repositories;
 
+    private Map<String, Object> properties;
+
     public ArtifactDescriptorResult( ArtifactDescriptorRequest request )
     {
         if ( request == null )
@@ -57,6 +61,7 @@ public class ArtifactDescriptorResult
         this.dependencies = new ArrayList<Dependency>();
         this.managedDependencies = new ArrayList<Dependency>();
         this.repositories = new ArrayList<RemoteRepository>();
+        this.properties = Collections.emptyMap();
     }
 
     public ArtifactDescriptorRequest getRequest()
@@ -159,9 +164,22 @@ public class ArtifactDescriptorResult
         return this;
     }
 
-    /*
-     * REVIEW: I think it would be really handy if we also provided some more infos like licenses to avoid the need to
-     * reparse the POM to get those additional bits.
-     */
+    public Map<String, Object> getProperties()
+    {
+        return properties;
+    }
+
+    public ArtifactDescriptorResult setProperties( Map<String, Object> properties )
+    {
+        if ( properties == null )
+        {
+            this.properties = Collections.emptyMap();
+        }
+        else
+        {
+            this.properties = properties;
+        }
+        return this;
+    }
 
 }
