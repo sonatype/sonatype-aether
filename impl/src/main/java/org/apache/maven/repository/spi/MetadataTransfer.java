@@ -19,27 +19,54 @@ package org.apache.maven.repository.spi;
  * under the License.
  */
 
-import java.util.List;
+import java.io.File;
 
-import org.apache.maven.repository.NoRepositoryConnectorException;
-import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositorySession;
-import org.apache.maven.repository.RepositoryPolicy;
+import org.apache.maven.repository.Metadata;
+import org.apache.maven.repository.MetadataTransferException;
 
 /**
  * @author Benjamin Bentmann
  */
-public interface RemoteRepositoryManager
+public abstract class MetadataTransfer
 {
 
-    List<RemoteRepository> aggregateRepositories( RepositorySession session,
-                                                  List<RemoteRepository> effectiveRepositories,
-                                                  List<RemoteRepository> rawRepositories );
+    private Metadata metadata;
 
-    RepositoryPolicy getPolicy( RepositorySession session, RemoteRepository repository, boolean releases,
-                                boolean snapshots );
+    private File file;
 
-    RepositoryConnector getRepositoryConnector( RepositorySession session, RemoteRepository repository )
-        throws NoRepositoryConnectorException;
+    private MetadataTransferException exception;
+
+    public Metadata getMetadata()
+    {
+        return metadata;
+    }
+
+    public MetadataTransfer setMetadata( Metadata metadata )
+    {
+        this.metadata = metadata;
+        return this;
+    }
+
+    public File getFile()
+    {
+        return file;
+    }
+
+    public MetadataTransfer setFile( File file )
+    {
+        this.file = file;
+        return this;
+    }
+
+    public MetadataTransferException getException()
+    {
+        return exception;
+    }
+
+    public MetadataTransfer setException( MetadataTransferException exception )
+    {
+        this.exception = exception;
+        return this;
+    }
 
 }

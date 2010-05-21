@@ -32,7 +32,7 @@ import org.apache.maven.repository.ArtifactResolutionException;
 import org.apache.maven.repository.ArtifactTransferException;
 import org.apache.maven.repository.LocalArtifactQuery;
 import org.apache.maven.repository.LocalRepositoryManager;
-import org.apache.maven.repository.NoRepositoryReaderException;
+import org.apache.maven.repository.NoRepositoryConnectorException;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryPolicy;
@@ -47,7 +47,7 @@ import org.apache.maven.repository.spi.ArtifactResolver;
 import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.NullLogger;
 import org.apache.maven.repository.spi.RemoteRepositoryManager;
-import org.apache.maven.repository.spi.RepositoryReader;
+import org.apache.maven.repository.spi.RepositoryConnector;
 import org.apache.maven.repository.spi.UpdateCheck;
 import org.apache.maven.repository.spi.UpdateCheckManager;
 import org.apache.maven.repository.spi.VersionResolver;
@@ -284,17 +284,18 @@ public class DefaultArtifactResolver
             }
             try
             {
-                RepositoryReader reader = remoteRepositoryManager.getRepositoryReader( session, group.repository );
+                RepositoryConnector connector =
+                    remoteRepositoryManager.getRepositoryConnector( session, group.repository );
                 try
                 {
-                    reader.getArtifacts( downloads );
+                    connector.get( downloads, null );
                 }
                 finally
                 {
-                    reader.close();
+                    connector.close();
                 }
             }
-            catch ( NoRepositoryReaderException e )
+            catch ( NoRepositoryConnectorException e )
             {
                 for ( ArtifactDownload download : downloads )
                 {

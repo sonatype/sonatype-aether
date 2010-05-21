@@ -26,7 +26,7 @@ import java.util.ListIterator;
 
 import org.apache.maven.repository.AuthenticationSelector;
 import org.apache.maven.repository.MirrorSelector;
-import org.apache.maven.repository.NoRepositoryReaderException;
+import org.apache.maven.repository.NoRepositoryConnectorException;
 import org.apache.maven.repository.ProxySelector;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositorySession;
@@ -35,8 +35,8 @@ import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.NullLogger;
 import org.apache.maven.repository.spi.PluggableComponent;
 import org.apache.maven.repository.spi.RemoteRepositoryManager;
-import org.apache.maven.repository.spi.RepositoryReader;
-import org.apache.maven.repository.spi.RepositoryReaderFactory;
+import org.apache.maven.repository.spi.RepositoryConnector;
+import org.apache.maven.repository.spi.RepositoryConnectorFactory;
 import org.apache.maven.repository.spi.UpdateCheckManager;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -56,8 +56,8 @@ public class DefaultRemoteRepositoryManager
     @Requirement
     private UpdateCheckManager updateCheckManager;
 
-    @Requirement( role = RepositoryReaderFactory.class )
-    private List<RepositoryReaderFactory> readerFactories = new ArrayList<RepositoryReaderFactory>();
+    @Requirement( role = RepositoryConnectorFactory.class )
+    private List<RepositoryConnectorFactory> connectorFactories = new ArrayList<RepositoryConnectorFactory>();
 
     public DefaultRemoteRepositoryManager setLogger( Logger logger )
     {
@@ -75,13 +75,13 @@ public class DefaultRemoteRepositoryManager
         return this;
     }
 
-    public DefaultRemoteRepositoryManager addRepositoryReaderFactory( RepositoryReaderFactory factory )
+    public DefaultRemoteRepositoryManager addRepositoryConnectorFactory( RepositoryConnectorFactory factory )
     {
         if ( factory == null )
         {
-            throw new IllegalArgumentException( "repository reader factory has not been specified" );
+            throw new IllegalArgumentException( "repository connector factory has not been specified" );
         }
-        readerFactories.add( factory );
+        connectorFactories.add( factory );
         return this;
     }
 
@@ -235,25 +235,25 @@ public class DefaultRemoteRepositoryManager
         }
     }
 
-    public RepositoryReader getRepositoryReader( RepositorySession session, RemoteRepository repository )
-        throws NoRepositoryReaderException
+    public RepositoryConnector getRepositoryConnector( RepositorySession session, RemoteRepository repository )
+        throws NoRepositoryConnectorException
     {
-        List<RepositoryReaderFactory> factories = new ArrayList<RepositoryReaderFactory>( readerFactories );
+        List<RepositoryConnectorFactory> factories = new ArrayList<RepositoryConnectorFactory>( connectorFactories );
         Collections.sort( factories, PluggableComponent.COMPARATOR );
 
-        for ( RepositoryReaderFactory factory : factories )
+        for ( RepositoryConnectorFactory factory : factories )
         {
             try
             {
                 return factory.newInstance( session, repository );
             }
-            catch ( NoRepositoryReaderException e )
+            catch ( NoRepositoryConnectorException e )
             {
                 // continue and try next factory
             }
         }
 
-        throw new NoRepositoryReaderException( repository );
+        throw new NoRepositoryConnectorException( repository );
     }
 
 }

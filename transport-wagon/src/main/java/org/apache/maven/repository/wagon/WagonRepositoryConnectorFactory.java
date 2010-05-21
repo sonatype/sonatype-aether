@@ -19,35 +19,48 @@ package org.apache.maven.repository.wagon;
  * under the License.
  */
 
-import org.apache.maven.repository.NoRepositoryReaderException;
+import org.apache.maven.repository.NoRepositoryConnectorException;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositorySession;
-import org.apache.maven.repository.spi.RepositoryReader;
-import org.apache.maven.repository.spi.RepositoryReaderFactory;
-import org.codehaus.plexus.PlexusContainer;
+import org.apache.maven.repository.spi.RepositoryConnector;
+import org.apache.maven.repository.spi.RepositoryConnectorFactory;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 
 /**
  * @author Benjamin Bentmann
  */
-@Component( role = RepositoryReaderFactory.class, hint = "wagon" )
-public class WagonRepositoryReaderFactory
-    implements RepositoryReaderFactory
+@Component( role = RepositoryConnectorFactory.class, hint = "wagon" )
+public class WagonRepositoryConnectorFactory
+    implements RepositoryConnectorFactory
 {
 
     @Requirement
-    private PlexusContainer container;
+    private WagonProvider wagonProvider;
+
+    private int priority;
+
+    public WagonRepositoryConnectorFactory setWagonProvider( WagonProvider wagonProvider )
+    {
+        this.wagonProvider = wagonProvider;
+        return this;
+    }
 
     public int getPriority()
     {
-        return 0;
+        return priority;
     }
 
-    public RepositoryReader newInstance( RepositorySession session, RemoteRepository repository )
-        throws NoRepositoryReaderException
+    public WagonRepositoryConnectorFactory setPriority( int priority )
     {
-        return new WagonRepositoryReader( container, repository, session );
+        this.priority = priority;
+        return this;
+    }
+
+    public RepositoryConnector newInstance( RepositorySession session, RemoteRepository repository )
+        throws NoRepositoryConnectorException
+    {
+        return new WagonRepositoryConnector( wagonProvider, repository, session );
     }
 
 }

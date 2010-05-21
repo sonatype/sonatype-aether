@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,38 +19,18 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import org.apache.maven.repository.NoRepositoryConnectorException;
+import org.apache.maven.repository.RemoteRepository;
+import org.apache.maven.repository.RepositorySession;
+
 /**
  * @author Benjamin Bentmann
  */
-public class NoRepositoryReaderException
-    extends RepositoryException
+public interface RepositoryConnectorFactory
+    extends PluggableComponent
 {
 
-    private final RemoteRepository repository;
-
-    public NoRepositoryReaderException( RemoteRepository repository )
-    {
-        super( toMessage( repository ) );
-
-        this.repository = repository;
-    }
-
-    private static String toMessage( RemoteRepository repository )
-    {
-        if ( repository != null )
-        {
-            return "No adapter available to read from repository '" + repository.getId() + "' (" + repository.getUrl()
-                + ") of type '" + repository.getType() + "'";
-        }
-        else
-        {
-            return "No adapter available to read from repository";
-        }
-    }
-
-    public RemoteRepository getRepository()
-    {
-        return repository;
-    }
+    RepositoryConnector newInstance( RepositorySession session, RemoteRepository repository )
+        throws NoRepositoryConnectorException;
 
 }

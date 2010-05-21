@@ -25,7 +25,7 @@ import org.apache.maven.repository.Metadata;
 /**
  * @author Benjamin Bentmann
  */
-class Maven2Layout
+class DefaultLayout
 {
 
     public String getPath( Artifact artifact )

@@ -28,19 +28,14 @@ import org.apache.maven.repository.ArtifactTransferException;
  * @author Benjamin Bentmann
  */
 public class ArtifactDownload
+    extends ArtifactTransfer
 {
-
-    private Artifact artifact;
-
-    private File file;
 
     private boolean existenceCheck;
 
     private String checksumPolicy;
 
     private String context;
-
-    private ArtifactTransferException exception;
 
     public ArtifactDownload()
     {
@@ -55,25 +50,17 @@ public class ArtifactDownload
         setChecksumPolicy( checksumPolicy );
     }
 
-    public Artifact getArtifact()
-    {
-        return artifact;
-    }
-
+    @Override
     public ArtifactDownload setArtifact( Artifact artifact )
     {
-        this.artifact = artifact;
+        super.setArtifact( artifact );
         return this;
     }
 
-    public File getFile()
-    {
-        return file;
-    }
-
+    @Override
     public ArtifactDownload setFile( File file )
     {
-        this.file = file;
+        super.setFile( file );
         return this;
     }
 
@@ -110,14 +97,10 @@ public class ArtifactDownload
         return this;
     }
 
-    public ArtifactTransferException getException()
-    {
-        return exception;
-    }
-
+    @Override
     public ArtifactDownload setException( ArtifactTransferException exception )
     {
-        this.exception = exception;
+        super.setException( exception );
         return this;
     }
 

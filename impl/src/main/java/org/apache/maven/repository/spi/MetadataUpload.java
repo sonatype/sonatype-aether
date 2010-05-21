@@ -27,65 +27,37 @@ import org.apache.maven.repository.MetadataTransferException;
 /**
  * @author Benjamin Bentmann
  */
-public class MetadataDownload
+public class MetadataUpload
     extends MetadataTransfer
 {
 
-    private String checksumPolicy;
-
-    private String context;
-
-    public MetadataDownload()
+    public MetadataUpload()
     {
         // enables default constructor
     }
 
-    public MetadataDownload( Metadata metadata, String context, File file, String checksumPolicy )
+    public MetadataUpload( Metadata metadata, File file )
     {
         setMetadata( metadata );
-        setContext( context );
         setFile( file );
-        setChecksumPolicy( checksumPolicy );
     }
 
     @Override
-    public MetadataDownload setMetadata( Metadata metadata )
+    public MetadataUpload setMetadata( Metadata metadata )
     {
         super.setMetadata( metadata );
         return this;
     }
 
     @Override
-    public MetadataDownload setFile( File file )
+    public MetadataUpload setFile( File file )
     {
         super.setFile( file );
         return this;
     }
 
-    public String getChecksumPolicy()
-    {
-        return checksumPolicy;
-    }
-
-    public MetadataDownload setChecksumPolicy( String checksumPolicy )
-    {
-        this.checksumPolicy = checksumPolicy;
-        return this;
-    }
-
-    public String getContext()
-    {
-        return context;
-    }
-
-    public MetadataDownload setContext( String context )
-    {
-        this.context = context;
-        return this;
-    }
-
     @Override
-    public MetadataDownload setException( MetadataTransferException exception )
+    public MetadataUpload setException( MetadataTransferException exception )
     {
         super.setException( exception );
         return this;

@@ -19,27 +19,19 @@ package org.apache.maven.repository.spi;
  * under the License.
  */
 
-import java.util.List;
-
-import org.apache.maven.repository.NoRepositoryConnectorException;
-import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositorySession;
-import org.apache.maven.repository.RepositoryPolicy;
+import java.util.Collection;
 
 /**
  * @author Benjamin Bentmann
  */
-public interface RemoteRepositoryManager
+public interface RepositoryConnector
 {
 
-    List<RemoteRepository> aggregateRepositories( RepositorySession session,
-                                                  List<RemoteRepository> effectiveRepositories,
-                                                  List<RemoteRepository> rawRepositories );
+    void get( Collection<? extends ArtifactDownload> artifactDownloads,
+              Collection<? extends MetadataDownload> metadataDownloads );
 
-    RepositoryPolicy getPolicy( RepositorySession session, RemoteRepository repository, boolean releases,
-                                boolean snapshots );
+    void put( Collection<? extends ArtifactUpload> artifactUploads, Collection<? extends MetadataUpload> metadataUploads );
 
-    RepositoryConnector getRepositoryConnector( RepositorySession session, RemoteRepository repository )
-        throws NoRepositoryConnectorException;
+    void close();
 
 }

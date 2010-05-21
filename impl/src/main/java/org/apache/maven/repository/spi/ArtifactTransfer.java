@@ -1,9 +1,5 @@
 package org.apache.maven.repository.spi;
 
-import org.apache.maven.repository.NoRepositoryReaderException;
-import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositorySession;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,14 +19,54 @@ import org.apache.maven.repository.RepositorySession;
  * under the License.
  */
 
+import java.io.File;
+
+import org.apache.maven.repository.Artifact;
+import org.apache.maven.repository.ArtifactTransferException;
+
 /**
  * @author Benjamin Bentmann
  */
-public interface RepositoryReaderFactory
-    extends PluggableComponent
+public abstract class ArtifactTransfer
 {
 
-    RepositoryReader newInstance( RepositorySession session, RemoteRepository repository )
-        throws NoRepositoryReaderException;
+    private Artifact artifact;
+
+    private File file;
+
+    private ArtifactTransferException exception;
+
+    public Artifact getArtifact()
+    {
+        return artifact;
+    }
+
+    public ArtifactTransfer setArtifact( Artifact artifact )
+    {
+        this.artifact = artifact;
+        return this;
+    }
+
+    public File getFile()
+    {
+        return file;
+    }
+
+    public ArtifactTransfer setFile( File file )
+    {
+        this.file = file;
+        return this;
+    }
+
+    public ArtifactTransferException getException()
+    {
+        return exception;
+    }
+
+    public ArtifactTransfer setException( ArtifactTransferException exception )
+    {
+        this.exception = exception;
+        return this;
+    }
 
 }

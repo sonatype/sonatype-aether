@@ -1,4 +1,4 @@
-package org.apache.maven.repository.spi;
+package org.apache.maven.repository.wagon;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,19 +19,41 @@ package org.apache.maven.repository.spi;
  * under the License.
  */
 
-import java.util.Collection;
-
+import org.apache.maven.wagon.Wagon;
+import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 
 /**
  * @author Benjamin Bentmann
  */
-public interface RepositoryReader
+@Component( role = WagonProvider.class )
+public class PlexusWagonProvider
+    implements WagonProvider
 {
 
-    void getArtifacts( Collection<? extends ArtifactDownload> requests );
+    @Requirement
+    private PlexusContainer container;
 
-    void getMetadata( Collection<? extends MetadataDownload> requests );
+    public Wagon lookup( String roleHint )
+        throws Exception
+    {
+        return container.lookup( Wagon.class, roleHint );
+    }
 
-    void close();
+    public void release( Wagon wagon )
+    {
+        try
+        {
+            if ( wagon != null )
+            {
+                container.release( wagon );
+            }
+        }
+        catch ( Exception e )
+        {
+            // too bad
+        }
+    }
 
 }

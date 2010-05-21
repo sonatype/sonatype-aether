@@ -23,37 +23,39 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.ArtifactNotFoundException;
 import org.apache.maven.repository.ArtifactTransferException;
 import org.apache.maven.repository.Authentication;
 import org.apache.maven.repository.AuthenticationSelector;
 import org.apache.maven.repository.ChecksumFailureException;
-import org.apache.maven.repository.Metadata;
 import org.apache.maven.repository.MetadataNotFoundException;
 import org.apache.maven.repository.MetadataTransferException;
-import org.apache.maven.repository.NoRepositoryReaderException;
+import org.apache.maven.repository.NoRepositoryConnectorException;
 import org.apache.maven.repository.Proxy;
 import org.apache.maven.repository.ProxySelector;
 import org.apache.maven.repository.RemoteRepository;
-import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryPolicy;
+import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.TransferEvent;
 import org.apache.maven.repository.TransferListener;
 import org.apache.maven.repository.internal.ChecksumUtils;
 import org.apache.maven.repository.spi.ArtifactDownload;
+import org.apache.maven.repository.spi.ArtifactTransfer;
+import org.apache.maven.repository.spi.ArtifactUpload;
 import org.apache.maven.repository.spi.MetadataDownload;
-import org.apache.maven.repository.spi.RepositoryReader;
+import org.apache.maven.repository.spi.MetadataTransfer;
+import org.apache.maven.repository.spi.MetadataUpload;
+import org.apache.maven.repository.spi.RepositoryConnector;
 import org.apache.maven.repository.util.DefaultTransferEvent;
 import org.apache.maven.wagon.ResourceDoesNotExistException;
 import org.apache.maven.wagon.Wagon;
@@ -63,60 +65,61 @@ import org.apache.maven.wagon.observers.ChecksumObserver;
 import org.apache.maven.wagon.proxy.ProxyInfo;
 import org.apache.maven.wagon.proxy.ProxyInfoProvider;
 import org.apache.maven.wagon.repository.Repository;
-import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.util.FileUtils;
 
 /**
  * @author Benjamin Bentmann
  */
-class WagonRepositoryReader
-    implements RepositoryReader
+class WagonRepositoryConnector
+    implements RepositoryConnector
 {
 
-    private final RemoteRepository repository;
+    protected final RemoteRepository repository;
 
-    private final PlexusContainer container;
+    protected final RepositorySession session;
+
+    protected final WagonProvider wagonProvider;
 
     private final String wagonHint;
 
-    private final Repository wagonRepo;
+    protected final Repository wagonRepo;
 
-    private final AuthenticationInfo wagonAuth;
+    protected final AuthenticationInfo wagonAuth;
 
-    private final ProxyInfoProvider wagonProxy;
+    protected final ProxyInfoProvider wagonProxy;
+
+    protected final DefaultLayout layout = new DefaultLayout();
+
+    protected final TransferListener listener;
 
     private final Queue<Wagon> wagons = new ConcurrentLinkedQueue<Wagon>();
 
-    private final Maven2Layout layout = new Maven2Layout();
-
     private final Executor executor;
-
-    private final TransferListener listener;
 
     private boolean closed;
 
-    public WagonRepositoryReader( PlexusContainer container, RemoteRepository repository, RepositorySession session )
-        throws NoRepositoryReaderException
+    public WagonRepositoryConnector( WagonProvider wagonProvider, RemoteRepository repository, RepositorySession session )
+        throws NoRepositoryConnectorException
     {
-        this.container = container;
+        this.wagonProvider = wagonProvider;
         this.repository = repository;
+        this.session = session;
         this.listener = session.getTransferListener();
 
         wagonRepo = new Repository( repository.getId(), repository.getUrl() );
         wagonHint = wagonRepo.getProtocol().toLowerCase( Locale.ENGLISH );
         wagonAuth = getAuthenticationInfo( repository, session.getAuthenticationSelector() );
         wagonProxy = getProxy( repository, session.getProxySelector() );
-
         try
         {
             releaseWagon( lookupWagon() );
         }
         catch ( Exception e )
         {
-            throw new NoRepositoryReaderException( repository );
+            throw new NoRepositoryConnectorException( repository );
         }
 
-        int threads = Integer.getInteger( "maven.artifact.threads", 5 ).intValue();
+        int threads = getOption( "maven.artifact.threads", 5 );
         if ( threads <= 1 )
         {
             executor = new Executor()
@@ -134,46 +137,16 @@ class WagonRepositoryReader
         }
     }
 
-    private Wagon lookupWagon()
-        throws Exception
+    protected int getOption( String key, int defaultValue )
     {
-        return container.lookup( Wagon.class, wagonHint );
-    }
-
-    private void releaseWagon( Wagon wagon )
-    {
+        String value = session.getConfigProperties().getProperty( key );
         try
         {
-            if ( wagon != null )
-            {
-                container.release( wagon );
-            }
+            return Integer.valueOf( value );
         }
         catch ( Exception e )
         {
-            // too bad
-        }
-    }
-
-    private void connectWagon( Wagon wagon )
-        throws Exception
-    {
-        wagon.setTimeout( 10 * 1000 );
-        wagon.connect( wagonRepo, wagonAuth, wagonProxy );
-    }
-
-    private void disconnectWagon( Wagon wagon )
-    {
-        try
-        {
-            if ( wagon != null )
-            {
-                wagon.disconnect();
-            }
-        }
-        catch ( Exception e )
-        {
-            // too bad
+            return defaultValue;
         }
     }
 
@@ -228,69 +201,75 @@ class WagonRepositoryReader
         return proxy;
     }
 
-    public void getArtifacts( Collection<? extends ArtifactDownload> downloads )
+    protected Wagon lookupWagon()
+        throws Exception
     {
-        if ( closed )
-        {
-            throw new IllegalStateException( "reader closed" );
-        }
+        return wagonProvider.lookup( wagonHint );
+    }
 
-        CountDownLatch latch = new CountDownLatch( downloads.size() );
-        Collection<GetTask<ArtifactDownload>> tasks = new ArrayList<GetTask<ArtifactDownload>>();
-        for ( ArtifactDownload download : downloads )
-        {
-            Artifact artifact = download.getArtifact();
-            String resource = layout.getPath( artifact );
-            GetTask<ArtifactDownload> task =
-                new GetTask<ArtifactDownload>( resource, download.isExistenceCheck() ? null : download.getFile(),
-                                               download.getChecksumPolicy(), latch, download );
-            tasks.add( task );
-            executor.execute( task );
-        }
+    protected void releaseWagon( Wagon wagon )
+    {
+        wagonProvider.release( wagon );
+    }
 
+    protected void connectWagon( Wagon wagon )
+        throws Exception
+    {
+        wagon.setTimeout( getOption( "maven.artifact.timeout", 10 * 1000 ) );
+        wagon.connect( wagonRepo, wagonAuth, wagonProxy );
+    }
+
+    protected void disconnectWagon( Wagon wagon )
+    {
         try
         {
-            latch.await();
-
-            for ( GetTask<ArtifactDownload> task : tasks )
+            if ( wagon != null )
             {
-                ArtifactDownload download = task.getDownload();
-                Exception e = task.getException();
-                if ( e instanceof ResourceDoesNotExistException )
-                {
-                    download.setException( new ArtifactNotFoundException( download.getArtifact(), repository ) );
-                }
-                else if ( e != null )
-                {
-                    download.setException( new ArtifactTransferException( download.getArtifact(), repository, e ) );
-                }
+                wagon.disconnect();
             }
         }
-        catch ( InterruptedException e )
+        catch ( Exception e )
         {
-            for ( ArtifactDownload download : downloads )
-            {
-                download.setException( new ArtifactTransferException( download.getArtifact(), repository, e ) );
-            }
+            // too bad
         }
     }
 
-    public void getMetadata( Collection<? extends MetadataDownload> downloads )
+    private <T> Collection<T> safe( Collection<T> items )
+    {
+        return ( items != null ) ? items : Collections.<T> emptyList();
+    }
+
+    public void get( Collection<? extends ArtifactDownload> artifactDownloads,
+                     Collection<? extends MetadataDownload> metadataDownloads )
     {
         if ( closed )
         {
-            throw new IllegalStateException( "reader closed" );
+            throw new IllegalStateException( "connector closed" );
         }
 
-        CountDownLatch latch = new CountDownLatch( downloads.size() );
-        Collection<GetTask<MetadataDownload>> tasks = new ArrayList<GetTask<MetadataDownload>>();
-        for ( MetadataDownload download : downloads )
+        artifactDownloads = safe( artifactDownloads );
+        metadataDownloads = safe( metadataDownloads );
+
+        CountDownLatch latch = new CountDownLatch( artifactDownloads.size() + metadataDownloads.size() );
+
+        Collection<GetTask<?>> tasks = new ArrayList<GetTask<?>>();
+
+        for ( MetadataDownload download : metadataDownloads )
         {
-            Metadata metadata = download.getMetadata();
-            String resource = layout.getPath( metadata );
-            GetTask<MetadataDownload> task =
-                new GetTask<MetadataDownload>( resource, download.getFile(), download.getChecksumPolicy(), latch,
-                                               download );
+            String resource = layout.getPath( download.getMetadata() );
+            GetTask<?> task =
+                new GetTask<MetadataTransfer>( resource, download.getFile(), download.getChecksumPolicy(), latch,
+                                               download, METADATA );
+            tasks.add( task );
+            executor.execute( task );
+        }
+
+        for ( ArtifactDownload download : artifactDownloads )
+        {
+            String resource = layout.getPath( download.getArtifact() );
+            GetTask<?> task =
+                new GetTask<ArtifactTransfer>( resource, download.getFile(), download.getChecksumPolicy(), latch,
+                                               download, ARTIFACT );
             tasks.add( task );
             executor.execute( task );
         }
@@ -299,37 +278,54 @@ class WagonRepositoryReader
         {
             latch.await();
 
-            for ( GetTask<MetadataDownload> task : tasks )
+            for ( GetTask<?> task : tasks )
             {
-                MetadataDownload download = task.getDownload();
-                Exception e = task.getException();
-                if ( e instanceof ResourceDoesNotExistException )
-                {
-                    download.setException( new MetadataNotFoundException( download.getMetadata(), repository ) );
-                }
-                else if ( e != null )
-                {
-                    download.setException( new MetadataTransferException( download.getMetadata(), repository, e ) );
-                }
+                task.flush();
             }
         }
         catch ( InterruptedException e )
         {
-            for ( MetadataDownload download : downloads )
+            for ( GetTask<?> task : tasks )
             {
-                download.setException( new MetadataTransferException( download.getMetadata(), repository, e ) );
+                task.flush( e );
             }
+        }
+
+    }
+
+    public void put( Collection<? extends ArtifactUpload> artifactUploads,
+                     Collection<? extends MetadataUpload> metadataUploads )
+    {
+        if ( closed )
+        {
+            throw new IllegalStateException( "connector closed" );
+        }
+
+        artifactUploads = safe( artifactUploads );
+        metadataUploads = safe( metadataUploads );
+
+        for ( ArtifactUpload upload : artifactUploads )
+        {
+            String path = layout.getPath( upload.getArtifact() );
+
+            PutTask<?> task = new PutTask<ArtifactTransfer>( path, upload.getFile(), upload, ARTIFACT );
+            task.run();
+            task.flush();
+        }
+
+        for ( MetadataUpload upload : metadataUploads )
+        {
+            String path = layout.getPath( upload.getMetadata() );
+
+            PutTask<?> task = new PutTask<MetadataTransfer>( path, upload.getFile(), upload, METADATA );
+            task.run();
+            task.flush();
         }
     }
 
     public void close()
     {
         closed = true;
-
-        if ( executor instanceof ExecutorService )
-        {
-            ( (ExecutorService) executor ).shutdown();
-        }
 
         for ( Wagon wagon = wagons.poll(); wagon != null; wagon = wagons.poll() )
         {
@@ -354,13 +350,17 @@ class WagonRepositoryReader
 
         private volatile Exception exception;
 
-        public GetTask( String path, File file, String checksumPolicy, CountDownLatch latch, T download )
+        private final ExceptionWrapper<T> wrapper;
+
+        public GetTask( String path, File file, String checksumPolicy, CountDownLatch latch, T download,
+                        ExceptionWrapper<T> wrapper )
         {
             this.path = path;
             this.file = file;
             this.checksumPolicy = checksumPolicy;
             this.latch = latch;
             this.download = download;
+            this.wrapper = wrapper;
         }
 
         public T getDownload()
@@ -509,6 +509,17 @@ class WagonRepositoryReader
             }
         }
 
+        public void flush()
+        {
+            wrapper.wrap( download, exception, repository );
+        }
+
+        public void flush( Exception exception )
+        {
+            Exception e = this.exception;
+            wrapper.wrap( download, ( e != null ) ? e : exception, repository );
+        }
+
         private boolean verifyChecksum( Wagon wagon, String actual, String ext )
             throws ChecksumFailureException
         {
@@ -574,5 +585,149 @@ class WagonRepositoryReader
         }
 
     }
+
+    class PutTask<T>
+        implements Runnable
+    {
+
+        private final T upload;
+
+        private final ExceptionWrapper<T> wrapper;
+
+        private final String path;
+
+        private final File file;
+
+        private volatile Exception exception;
+
+        public PutTask( String path, File file, T upload, ExceptionWrapper<T> wrapper )
+        {
+            this.path = path;
+            this.file = file;
+            this.upload = upload;
+            this.wrapper = wrapper;
+        }
+
+        public void run()
+        {
+            WagonTransferListenerAdapter wagonListener = null;
+            if ( listener != null )
+            {
+                wagonListener = new WagonTransferListenerAdapter( listener, wagonRepo.getUrl(), path );
+            }
+
+            try
+            {
+                if ( listener != null )
+                {
+                    DefaultTransferEvent event = wagonListener.newEvent();
+                    event.setRequestType( TransferEvent.RequestType.PUT );
+                    event.setType( TransferEvent.EventType.INITIATED );
+                    listener.transferInitiated( event );
+                }
+
+                Wagon wagon = wagons.poll();
+                if ( wagon == null )
+                {
+                    try
+                    {
+                        wagon = lookupWagon();
+                        connectWagon( wagon );
+                    }
+                    catch ( Exception e )
+                    {
+                        releaseWagon( wagon );
+                        throw e;
+                    }
+                }
+
+                try
+                {
+                    try
+                    {
+                        wagon.addTransferListener( wagonListener );
+
+                        wagon.put( file, path );
+                    }
+                    finally
+                    {
+                        wagon.removeTransferListener( wagonListener );
+                    }
+
+                    if ( listener != null )
+                    {
+                        DefaultTransferEvent event = wagonListener.newEvent();
+                        event.setRequestType( TransferEvent.RequestType.PUT );
+                        event.setType( TransferEvent.EventType.SUCCEEDED );
+                        listener.transferSucceeded( event );
+                    }
+                }
+                finally
+                {
+                    wagons.add( wagon );
+                }
+            }
+            catch ( Exception e )
+            {
+                exception = e;
+
+                if ( listener != null )
+                {
+                    DefaultTransferEvent event = wagonListener.newEvent();
+                    event.setRequestType( TransferEvent.RequestType.PUT );
+                    event.setType( TransferEvent.EventType.FAILED );
+                    event.setException( e );
+                    listener.transferFailed( event );
+                }
+            }
+        }
+
+        public void flush()
+        {
+            wrapper.wrap( upload, exception, repository );
+        }
+
+    }
+
+    static interface ExceptionWrapper<T>
+    {
+
+        void wrap( T transfer, Exception e, RemoteRepository repository );
+
+    }
+
+    private static final ExceptionWrapper<MetadataTransfer> METADATA = new ExceptionWrapper<MetadataTransfer>()
+    {
+        public void wrap( MetadataTransfer transfer, Exception e, RemoteRepository repository )
+        {
+            MetadataTransferException ex = null;
+            if ( e instanceof ResourceDoesNotExistException )
+            {
+                ex = new MetadataNotFoundException( transfer.getMetadata(), repository );
+            }
+            else if ( e != null )
+            {
+                ex = new MetadataTransferException( transfer.getMetadata(), repository, e );
+            }
+            transfer.setException( ex );
+        }
+    };
+
+    private static final ExceptionWrapper<ArtifactTransfer> ARTIFACT = new ExceptionWrapper<ArtifactTransfer>()
+    {
+        public void wrap( ArtifactTransfer transfer, Exception e, RemoteRepository repository )
+        {
+            ArtifactTransferException ex = null;
+            if ( e instanceof ResourceDoesNotExistException )
+            {
+                ex = new ArtifactNotFoundException( transfer.getArtifact(), repository );
+            }
+            else if ( e != null )
+            {
+                ex = new ArtifactTransferException( transfer.getArtifact(), repository, e );
+            }
+            transfer.setException( ex );
+        }
+    };
 
 }

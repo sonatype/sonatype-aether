@@ -39,7 +39,7 @@ import org.apache.maven.repository.MetadataNotFoundException;
 import org.apache.maven.repository.MetadataRequest;
 import org.apache.maven.repository.MetadataResult;
 import org.apache.maven.repository.MetadataTransferException;
-import org.apache.maven.repository.NoRepositoryReaderException;
+import org.apache.maven.repository.NoRepositoryConnectorException;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryPolicy;
@@ -48,7 +48,7 @@ import org.apache.maven.repository.spi.MetadataDownload;
 import org.apache.maven.repository.spi.MetadataResolver;
 import org.apache.maven.repository.spi.NullLogger;
 import org.apache.maven.repository.spi.RemoteRepositoryManager;
-import org.apache.maven.repository.spi.RepositoryReader;
+import org.apache.maven.repository.spi.RepositoryConnector;
 import org.apache.maven.repository.spi.UpdateCheck;
 import org.apache.maven.repository.spi.UpdateCheckManager;
 import org.codehaus.plexus.component.annotations.Component;
@@ -300,15 +300,15 @@ public class DefaultMetadataResolver
                 MetadataDownload download =
                     new MetadataDownload( request.getMetadata(), request.getContext(), check.getFile(), policy );
 
-                RepositoryReader reader =
-                    remoteRepositoryManager.getRepositoryReader( session, request.getRepository() );
+                RepositoryConnector connector =
+                    remoteRepositoryManager.getRepositoryConnector( session, request.getRepository() );
                 try
                 {
-                    reader.getMetadata( Arrays.asList( download ) );
+                    connector.get( null, Arrays.asList( download ) );
                 }
                 finally
                 {
-                    reader.close();
+                    connector.close();
                 }
 
                 exception = download.getException();
@@ -318,7 +318,7 @@ public class DefaultMetadataResolver
                     download.getFile().delete();
                 }
             }
-            catch ( NoRepositoryReaderException e )
+            catch ( NoRepositoryConnectorException e )
             {
                 exception = new MetadataTransferException( request.getMetadata(), request.getRepository(), e );
             }

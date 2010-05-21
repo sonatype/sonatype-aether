@@ -21,71 +21,43 @@ package org.apache.maven.repository.spi;
 
 import java.io.File;
 
-import org.apache.maven.repository.Metadata;
-import org.apache.maven.repository.MetadataTransferException;
+import org.apache.maven.repository.Artifact;
+import org.apache.maven.repository.ArtifactTransferException;
 
 /**
  * @author Benjamin Bentmann
  */
-public class MetadataDownload
-    extends MetadataTransfer
+public class ArtifactUpload
+    extends ArtifactTransfer
 {
 
-    private String checksumPolicy;
-
-    private String context;
-
-    public MetadataDownload()
+    public ArtifactUpload()
     {
         // enables default constructor
     }
 
-    public MetadataDownload( Metadata metadata, String context, File file, String checksumPolicy )
+    public ArtifactUpload( Artifact artifact, File file )
     {
-        setMetadata( metadata );
-        setContext( context );
+        setArtifact( artifact );
         setFile( file );
-        setChecksumPolicy( checksumPolicy );
     }
 
     @Override
-    public MetadataDownload setMetadata( Metadata metadata )
+    public ArtifactUpload setArtifact( Artifact artifact )
     {
-        super.setMetadata( metadata );
+        super.setArtifact( artifact );
         return this;
     }
 
     @Override
-    public MetadataDownload setFile( File file )
+    public ArtifactUpload setFile( File file )
     {
         super.setFile( file );
         return this;
     }
 
-    public String getChecksumPolicy()
-    {
-        return checksumPolicy;
-    }
-
-    public MetadataDownload setChecksumPolicy( String checksumPolicy )
-    {
-        this.checksumPolicy = checksumPolicy;
-        return this;
-    }
-
-    public String getContext()
-    {
-        return context;
-    }
-
-    public MetadataDownload setContext( String context )
-    {
-        this.context = context;
-        return this;
-    }
-
     @Override
-    public MetadataDownload setException( MetadataTransferException exception )
+    public ArtifactUpload setException( ArtifactTransferException exception )
     {
         super.setException( exception );
         return this;
