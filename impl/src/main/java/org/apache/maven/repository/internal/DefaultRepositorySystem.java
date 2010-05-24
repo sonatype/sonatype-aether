@@ -31,6 +31,7 @@ import org.apache.maven.repository.ArtifactDescriptorResult;
 import org.apache.maven.repository.DependencyCollectionException;
 import org.apache.maven.repository.DeployRequest;
 import org.apache.maven.repository.InstallRequest;
+import org.apache.maven.repository.InstallationException;
 import org.apache.maven.repository.MetadataRequest;
 import org.apache.maven.repository.MetadataResult;
 import org.apache.maven.repository.RepositorySession;
@@ -46,6 +47,7 @@ import org.apache.maven.repository.VersionResult;
 import org.apache.maven.repository.spi.ArtifactDescriptorReader;
 import org.apache.maven.repository.spi.ArtifactResolver;
 import org.apache.maven.repository.spi.DependencyCollector;
+import org.apache.maven.repository.spi.Installer;
 import org.apache.maven.repository.spi.MetadataResolver;
 import org.apache.maven.repository.spi.VersionRangeResolver;
 import org.apache.maven.repository.spi.VersionResolver;
@@ -77,6 +79,9 @@ public class DefaultRepositorySystem
 
     @Requirement
     private DependencyCollector dependencyCollector;
+
+    @Requirement
+    private Installer installer;
 
     public DefaultRepositorySystem setVersionResolver( VersionResolver versionResolver )
     {
@@ -128,6 +133,16 @@ public class DefaultRepositorySystem
         return this;
     }
 
+    public DefaultRepositorySystem setInstaller( Installer installer )
+    {
+        if ( installer == null )
+        {
+            throw new IllegalArgumentException( "installer has not been specified" );
+        }
+        this.installer = installer;
+        return this;
+    }
+
     public VersionResult resolveVersion( RepositorySession session, VersionRequest request )
         throws VersionResolutionException
     {
@@ -165,13 +180,13 @@ public class DefaultRepositorySystem
         return dependencyCollector.collectDependencies( session, request );
     }
 
-    public void installArtifacts( RepositorySession session, InstallRequest request )
+    public void install( RepositorySession session, InstallRequest request )
+        throws InstallationException
     {
-        // TODO Auto-generated method stub
-
+        installer.install( session, request );
     }
 
-    public void deployArtifacts( RepositorySession session, DeployRequest request )
+    public void deploy( RepositorySession session, DeployRequest request )
     {
         // TODO Auto-generated method stub
 

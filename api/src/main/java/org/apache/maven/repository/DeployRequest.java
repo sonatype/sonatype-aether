@@ -19,17 +19,70 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author Benjamin Bentmann
  */
-public interface DeployRequest
+public class DeployRequest
 {
-    // what about metadata? do we really need to add that to the artifact or can it be updated by the repo itself
 
-    List<? extends Artifact> getArtifacts();
+    private Collection<Artifact> artifacts = new ArrayList<Artifact>();
 
-    RemoteRepository getRemoteRepository();
+    private Collection<Metadata> metadata = new ArrayList<Metadata>();
+
+    private RemoteRepository repository;
+
+    public Collection<Artifact> getArtifacts()
+    {
+        return artifacts;
+    }
+
+    public DeployRequest setArtifacts( Collection<Artifact> artifacts )
+    {
+        this.artifacts = ( artifacts != null ) ? artifacts : new ArrayList<Artifact>();
+        return this;
+    }
+
+    public DeployRequest addArtifact( Artifact artifact )
+    {
+        if ( artifact != null )
+        {
+            artifacts.add( artifact );
+        }
+        return this;
+    }
+
+    public Collection<Metadata> getMetadata()
+    {
+        return metadata;
+    }
+
+    public DeployRequest setMetadata( Collection<Metadata> metadata )
+    {
+        this.metadata = ( metadata != null ) ? metadata : new ArrayList<Metadata>();
+        return this;
+    }
+
+    public DeployRequest addMetadata( Metadata metadata )
+    {
+        if ( metadata != null )
+        {
+            this.metadata.add( metadata );
+        }
+        return this;
+    }
+
+    public RemoteRepository getRepository()
+    {
+        return repository;
+    }
+
+    public DeployRequest setRepository( RemoteRepository repository )
+    {
+        this.repository = repository;
+        return this;
+    }
 
 }

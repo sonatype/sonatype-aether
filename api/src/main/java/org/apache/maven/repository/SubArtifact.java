@@ -55,10 +55,9 @@ public class SubArtifact
     }
 
     @Override
-    public SubArtifact setVersion( String version )
+    public void setVersion( String version )
     {
         // ignored, version is always controlled by main artifact
-        return this;
     }
 
     private static String expand( String pattern, String replacement )

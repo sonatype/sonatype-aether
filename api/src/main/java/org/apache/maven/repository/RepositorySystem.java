@@ -66,14 +66,15 @@ public interface RepositorySystem
     List<MetadataResult> resolveMetadata( RepositorySession session, Collection<? extends MetadataRequest> requests );
 
     /**
-     * Installs a collection of artifacts to the local repository.
+     * Installs a collection of artifacts and their accompanying metadata to the local repository.
      */
-    void installArtifacts( RepositorySession session, InstallRequest request );
+    void install( RepositorySession session, InstallRequest request )
+        throws InstallationException;
 
     /**
-     * Uploads a collection of artifacts to a remote repository. This process automatically includes the installation of
-     * the artifacts to the local repository.
+     * Uploads a collection of artifacts and their accompanying metadata to a remote repository. This process
+     * automatically includes the installation of the artifacts to the local repository.
      */
-    void deployArtifacts( RepositorySession session, DeployRequest request );
+    void deploy( RepositorySession session, DeployRequest request );
 
 }

@@ -19,37 +19,16 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.io.File;
-
 /**
  * @author Benjamin Bentmann
  */
-public interface Metadata
+public class InstallationException
+    extends RepositoryException
 {
 
-    enum Nature
+    public InstallationException(String message, Throwable cause)
     {
-        RELEASE, SNAPSHOT, RELEASE_OR_SNAPSHOT
+        super( message, cause );
     }
 
-    String getGroupId();
-
-    String getArtifactId();
-
-    String getVersion();
-
-    String getType();
-
-    Nature getNature();
-
-    public File getFile();
-
-    void setFile( File file );
-
-    /*
-     * <metadata> <versioning> <snapshot> <timestamp>20100419.164221</timestamp> <buildNumber>46</buildNumber>
-     * </snapshot> <!-- beware MODELLO-237 --> <snapshotVersions> <snapshotVersion> <classifier>win</classifier>
-     * <format>${timeStamp}-${buildNo}</format> <timeStamp>20100419.164221</timeStamp> <buildNo>46</buildNo>
-     * </snapshotVersion> </snapshotVersions> <lastUpdated>20100419164659</lastUpdated> </versioning> </metadata>
-     */
 }

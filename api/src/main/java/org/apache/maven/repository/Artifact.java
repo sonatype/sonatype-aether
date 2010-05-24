@@ -36,7 +36,7 @@ public interface Artifact
 
     String getVersion();
 
-    Artifact setVersion( String version );
+    void setVersion( String version );
 
     boolean isSnapshot();
 
@@ -47,7 +47,7 @@ public interface Artifact
 
     File getFile();
 
-    Artifact setFile( File file );
+    void setFile( File file );
 
     // holds characteristics of artifact which were previously controlled by artifact handler (e.g.
     // includesDependencies, addedToClasspath)

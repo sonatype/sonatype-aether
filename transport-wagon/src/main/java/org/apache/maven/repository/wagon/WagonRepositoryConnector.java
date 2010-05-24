@@ -29,6 +29,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -331,6 +332,11 @@ class WagonRepositoryConnector
         {
             disconnectWagon( wagon );
             releaseWagon( wagon );
+        }
+
+        if ( executor instanceof ExecutorService )
+        {
+            ( (ExecutorService) executor ).shutdown();
         }
     }
 

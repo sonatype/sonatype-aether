@@ -141,10 +141,9 @@ public class DefaultArtifact
         return version;
     }
 
-    public DefaultArtifact setVersion( String version )
+    public void setVersion( String version )
     {
         this.version = ( version != null ) ? version : "";
-        return this;
     }
 
     public boolean isSnapshot()
@@ -180,10 +179,9 @@ public class DefaultArtifact
         return file;
     }
 
-    public DefaultArtifact setFile( File file )
+    public void setFile( File file )
     {
         this.file = file;
-        return this;
     }
 
     public <T> T getProperty( String key, Class<T> type, T defaultValue )

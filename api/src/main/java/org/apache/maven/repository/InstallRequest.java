@@ -19,16 +19,57 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author Benjamin Bentmann
  */
-public interface InstallRequest
+public class InstallRequest
 {
 
-    // what about metadata? do we really need to add that to the artifact or can it be updated by the repo itself
+    private Collection<Artifact> artifacts = new ArrayList<Artifact>();
 
-    List<? extends Artifact> getArtifacts();
+    private Collection<Metadata> metadata = new ArrayList<Metadata>();
+
+    public Collection<Artifact> getArtifacts()
+    {
+        return artifacts;
+    }
+
+    public InstallRequest setArtifacts( Collection<Artifact> artifacts )
+    {
+        this.artifacts = ( artifacts != null ) ? artifacts : new ArrayList<Artifact>();
+        return this;
+    }
+
+    public InstallRequest addArtifact( Artifact artifact )
+    {
+        if ( artifact != null )
+        {
+            artifacts.add( artifact );
+        }
+        return this;
+    }
+
+    public Collection<Metadata> getMetadata()
+    {
+        return metadata;
+    }
+
+    public InstallRequest setMetadata( Collection<Metadata> metadata )
+    {
+        this.metadata = ( metadata != null ) ? metadata : new ArrayList<Metadata>();
+        return this;
+    }
+
+    public InstallRequest addMetadata( Metadata metadata )
+    {
+        if ( metadata != null )
+        {
+            this.metadata.add( metadata );
+        }
+        return this;
+    }
 
 }

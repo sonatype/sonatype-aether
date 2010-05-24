@@ -62,10 +62,9 @@ public abstract class DerivedArtifact
         return mainArtifact.getVersion();
     }
 
-    public Artifact setVersion( String version )
+    public void setVersion( String version )
     {
         mainArtifact.setVersion( version );
-        return this;
     }
 
     public boolean isSnapshot()
@@ -88,10 +87,9 @@ public abstract class DerivedArtifact
         return file;
     }
 
-    public Artifact setFile( File file )
+    public void setFile( File file )
     {
         this.file = file;
-        return this;
     }
 
     public <T> T getProperty( String key, Class<T> type, T defaultValue )

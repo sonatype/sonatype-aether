@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,37 +19,17 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.io.File;
+import org.apache.maven.repository.InstallRequest;
+import org.apache.maven.repository.InstallationException;
+import org.apache.maven.repository.RepositorySession;
 
 /**
  * @author Benjamin Bentmann
  */
-public interface Metadata
+public interface Installer
 {
 
-    enum Nature
-    {
-        RELEASE, SNAPSHOT, RELEASE_OR_SNAPSHOT
-    }
+    void install( RepositorySession session, InstallRequest request )
+        throws InstallationException;
 
-    String getGroupId();
-
-    String getArtifactId();
-
-    String getVersion();
-
-    String getType();
-
-    Nature getNature();
-
-    public File getFile();
-
-    void setFile( File file );
-
-    /*
-     * <metadata> <versioning> <snapshot> <timestamp>20100419.164221</timestamp> <buildNumber>46</buildNumber>
-     * </snapshot> <!-- beware MODELLO-237 --> <snapshotVersions> <snapshotVersion> <classifier>win</classifier>
-     * <format>${timeStamp}-${buildNo}</format> <timeStamp>20100419.164221</timeStamp> <buildNo>46</buildNo>
-     * </snapshotVersion> </snapshotVersions> <lastUpdated>20100419164659</lastUpdated> </versioning> </metadata>
-     */
 }

@@ -24,32 +24,11 @@ import java.io.File;
 /**
  * @author Benjamin Bentmann
  */
-public interface Metadata
+public interface MergeableMetadata
+    extends Metadata
 {
 
-    enum Nature
-    {
-        RELEASE, SNAPSHOT, RELEASE_OR_SNAPSHOT
-    }
+    void merge( File existing, File result )
+        throws RepositoryException;
 
-    String getGroupId();
-
-    String getArtifactId();
-
-    String getVersion();
-
-    String getType();
-
-    Nature getNature();
-
-    public File getFile();
-
-    void setFile( File file );
-
-    /*
-     * <metadata> <versioning> <snapshot> <timestamp>20100419.164221</timestamp> <buildNumber>46</buildNumber>
-     * </snapshot> <!-- beware MODELLO-237 --> <snapshotVersions> <snapshotVersion> <classifier>win</classifier>
-     * <format>${timeStamp}-${buildNo}</format> <timeStamp>20100419.164221</timeStamp> <buildNo>46</buildNo>
-     * </snapshotVersion> </snapshotVersions> <lastUpdated>20100419164659</lastUpdated> </versioning> </metadata>
-     */
 }

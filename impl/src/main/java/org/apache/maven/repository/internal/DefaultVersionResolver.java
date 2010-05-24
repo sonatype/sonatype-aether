@@ -32,6 +32,7 @@ import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.ArtifactRepository;
 import org.apache.maven.repository.DefaultArtifact;
+import org.apache.maven.repository.DefaultMetadata;
 import org.apache.maven.repository.LocalRepositoryManager;
 import org.apache.maven.repository.Metadata;
 import org.apache.maven.repository.MetadataRequest;
@@ -88,11 +89,11 @@ public class DefaultVersionResolver
 
         VersionResult result = new VersionResult( request );
 
-        Metadata metadata;
+        DefaultMetadata metadata;
 
         if ( "RELEASE".equals( version ) || "LATEST".equals( version ) )
         {
-            metadata = new Metadata();
+            metadata = new DefaultMetadata();
             metadata.setGroupId( request.getArtifact().getGroupId() );
             metadata.setArtifactId( request.getArtifact().getArtifactId() );
             metadata.setType( "maven-metadata.xml" );
@@ -109,7 +110,7 @@ public class DefaultVersionResolver
             }
             else
             {
-                metadata = new Metadata();
+                metadata = new DefaultMetadata();
                 metadata.setGroupId( request.getArtifact().getGroupId() );
                 metadata.setArtifactId( request.getArtifact().getArtifactId() );
                 metadata.setVersion( version );
@@ -132,7 +133,7 @@ public class DefaultVersionResolver
             for ( RemoteRepository repository : request.getRepositories() )
             {
                 MetadataRequest metadataRequest =
-                    new MetadataRequest( new Metadata( metadata ), repository, request.getContext() );
+                    new MetadataRequest( new DefaultMetadata( metadata ), repository, request.getContext() );
                 metadataRequest.setDeleteLocalCopyIfMissing( true );
                 metadataRequests.add( metadataRequest );
             }

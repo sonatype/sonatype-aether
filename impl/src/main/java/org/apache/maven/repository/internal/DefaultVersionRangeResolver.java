@@ -31,6 +31,7 @@ import java.util.Map;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.repository.ArtifactRepository;
+import org.apache.maven.repository.DefaultMetadata;
 import org.apache.maven.repository.InvalidVersionException;
 import org.apache.maven.repository.LocalRepositoryManager;
 import org.apache.maven.repository.Metadata;
@@ -156,7 +157,7 @@ public class DefaultVersionRangeResolver
     {
         Map<String, ArtifactRepository> versionIndex = new HashMap<String, ArtifactRepository>();
 
-        Metadata metadata = new Metadata();
+        DefaultMetadata metadata = new DefaultMetadata();
         metadata.setGroupId( request.getArtifact().getGroupId() );
         metadata.setArtifactId( request.getArtifact().getArtifactId() );
         metadata.setType( "maven-metadata.xml" );
@@ -166,7 +167,7 @@ public class DefaultVersionRangeResolver
         for ( RemoteRepository repository : request.getRepositories() )
         {
             MetadataRequest metadataRequest =
-                new MetadataRequest( new Metadata( metadata ), repository, request.getContext() );
+                new MetadataRequest( new DefaultMetadata( metadata ), repository, request.getContext() );
             metadataRequest.setDeleteLocalCopyIfMissing( true );
             metadataRequests.add( metadataRequest );
         }
