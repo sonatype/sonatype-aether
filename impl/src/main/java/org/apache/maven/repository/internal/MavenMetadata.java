@@ -28,6 +28,7 @@ import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
+import org.apache.maven.repository.MergeableMetadata;
 import org.apache.maven.repository.RepositoryException;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.ReaderFactory;
@@ -38,6 +39,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
  * @author Benjamin Bentmann
  */
 abstract class MavenMetadata
+    implements MergeableMetadata
 {
 
     private File file;
@@ -62,8 +64,15 @@ abstract class MavenMetadata
     public void merge( File existing, File result )
         throws RepositoryException
     {
-        org.apache.maven.artifact.repository.metadata.Metadata recessive = read( existing );
+        Metadata recessive = read( existing );
 
+        merge( recessive );
+
+        write( result, metadata );
+    }
+
+    protected void merge( Metadata recessive )
+    {
         Versioning versioning = recessive.getVersioning();
         if ( versioning != null )
         {
@@ -79,8 +88,6 @@ abstract class MavenMetadata
         }
 
         dominant.merge( recessive );
-
-        write( result, dominant );
     }
 
     private org.apache.maven.artifact.repository.metadata.Metadata read( File metadataFile )
@@ -128,6 +135,26 @@ abstract class MavenMetadata
         {
             IOUtil.close( writer );
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder buffer = new StringBuilder( 128 );
+        if ( getGroupId().length() > 0 )
+        {
+            buffer.append( getGroupId() );
+        }
+        if ( getArtifactId().length() > 0 )
+        {
+            buffer.append( ':' ).append( getArtifactId() );
+        }
+        if ( getVersion().length() > 0 )
+        {
+            buffer.append( ':' ).append( getVersion() );
+        }
+        buffer.append( '/' ).append( getType() );
+        return buffer.toString();
     }
 
 }

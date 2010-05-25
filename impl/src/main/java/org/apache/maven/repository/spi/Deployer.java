@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,20 +19,17 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import org.apache.maven.repository.DeployRequest;
+import org.apache.maven.repository.DeploymentException;
+import org.apache.maven.repository.RepositorySession;
+
 /**
  * @author Benjamin Bentmann
  */
-public interface SubArtifact
-    extends Artifact
+public interface Deployer
 {
 
-    Artifact getMainArtifact();
-
-    /**
-     * Does nothing, the sub artifact will always use the version of its main artifact.
-     */
-    void setVersion( String version );
-
-    SubArtifact clone();
+    void deploy( RepositorySession session, DeployRequest request )
+        throws DeploymentException;
 
 }

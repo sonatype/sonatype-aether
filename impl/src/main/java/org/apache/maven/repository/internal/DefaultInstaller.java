@@ -105,6 +105,8 @@ public class DefaultInstaller
             logger.debug( "Skipped re-installing " + srcFile + " to " + dstFile + ", seems unchanged" );
         }
 
+        lrm.addLocalArtifact( artifact );
+
         List<MergeableMetadata> versionMetadata = generateVersionMetadata( artifact );
         for ( MergeableMetadata metadata : versionMetadata )
         {

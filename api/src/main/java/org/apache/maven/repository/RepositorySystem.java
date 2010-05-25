@@ -55,6 +55,13 @@ public interface RepositorySystem
         throws DependencyCollectionException;
 
     /**
+     * Resolves the paths for the artifacts referenced by the specified dependency graph. Artifacts will be downloaded
+     * if necessary.
+     */
+    public void resolveDependencies( RepositorySession session, DependencyNode node )
+        throws ArtifactResolutionException;
+
+    /**
      * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary.
      */
     List<ArtifactResult> resolveArtifacts( RepositorySession session, Collection<? extends ArtifactRequest> requests )
@@ -72,9 +79,9 @@ public interface RepositorySystem
         throws InstallationException;
 
     /**
-     * Uploads a collection of artifacts and their accompanying metadata to a remote repository. This process
-     * automatically includes the installation of the artifacts to the local repository.
+     * Uploads a collection of artifacts and their accompanying metadata to a remote repository.
      */
-    void deploy( RepositorySession session, DeployRequest request );
+    void deploy( RepositorySession session, DeployRequest request )
+        throws DeploymentException;
 
 }

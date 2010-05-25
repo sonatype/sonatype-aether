@@ -26,7 +26,12 @@ public class InstallationException
     extends RepositoryException
 {
 
-    public InstallationException(String message, Throwable cause)
+    public InstallationException( String message )
+    {
+        super( message );
+    }
+
+    public InstallationException( String message, Throwable cause )
     {
         super( message, cause );
     }

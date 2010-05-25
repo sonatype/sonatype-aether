@@ -22,17 +22,18 @@ package org.apache.maven.repository;
 /**
  * @author Benjamin Bentmann
  */
-public interface SubArtifact
-    extends Artifact
+public class DeploymentException
+    extends RepositoryException
 {
 
-    Artifact getMainArtifact();
+    public DeploymentException( String message )
+    {
+        super( message );
+    }
 
-    /**
-     * Does nothing, the sub artifact will always use the version of its main artifact.
-     */
-    void setVersion( String version );
-
-    SubArtifact clone();
+    public DeploymentException( String message, Throwable cause )
+    {
+        super( message, cause );
+    }
 
 }

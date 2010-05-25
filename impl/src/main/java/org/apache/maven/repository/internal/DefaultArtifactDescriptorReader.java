@@ -46,7 +46,7 @@ import org.apache.maven.repository.ArtifactStereotype;
 import org.apache.maven.repository.ArtifactStereotypeManager;
 import org.apache.maven.repository.DefaultArtifact;
 import org.apache.maven.repository.RepositoryException;
-import org.apache.maven.repository.SubArtifact;
+import org.apache.maven.repository.DefaultSubArtifact;
 import org.apache.maven.repository.ArtifactDescriptorRequest;
 import org.apache.maven.repository.ArtifactDescriptorResult;
 import org.apache.maven.repository.Dependency;
@@ -177,7 +177,7 @@ public class DefaultArtifactDescriptorReader
                 throw new ArtifactDescriptorException( result );
             }
 
-            Artifact pomArtifact = new SubArtifact( artifact, "", "pom" );
+            Artifact pomArtifact = new DefaultSubArtifact( artifact, "", "pom" );
 
             ArtifactResult resolveResult;
             try

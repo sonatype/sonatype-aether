@@ -103,6 +103,21 @@ public abstract class DerivedArtifact
     }
 
     @Override
+    public String toString()
+    {
+        StringBuilder buffer = new StringBuilder( 128 );
+        buffer.append( getGroupId() );
+        buffer.append( ':' ).append( getArtifactId() );
+        buffer.append( ':' ).append( getType() );
+        if ( getClassifier().length() > 0 )
+        {
+            buffer.append( ':' ).append( getClassifier() );
+        }
+        buffer.append( ':' ).append( getVersion() );
+        return buffer.toString();
+    }
+
+    @Override
     public Artifact clone()
     {
         try

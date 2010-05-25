@@ -19,6 +19,7 @@ package org.apache.maven.repository.internal;
  * under the License.
  */
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -28,8 +29,11 @@ import org.apache.maven.repository.CollectRequest;
 import org.apache.maven.repository.CollectResult;
 import org.apache.maven.repository.ArtifactDescriptorRequest;
 import org.apache.maven.repository.ArtifactDescriptorResult;
+import org.apache.maven.repository.Dependency;
 import org.apache.maven.repository.DependencyCollectionException;
+import org.apache.maven.repository.DependencyNode;
 import org.apache.maven.repository.DeployRequest;
+import org.apache.maven.repository.DeploymentException;
 import org.apache.maven.repository.InstallRequest;
 import org.apache.maven.repository.InstallationException;
 import org.apache.maven.repository.MetadataRequest;
@@ -47,6 +51,7 @@ import org.apache.maven.repository.VersionResult;
 import org.apache.maven.repository.spi.ArtifactDescriptorReader;
 import org.apache.maven.repository.spi.ArtifactResolver;
 import org.apache.maven.repository.spi.DependencyCollector;
+import org.apache.maven.repository.spi.Deployer;
 import org.apache.maven.repository.spi.Installer;
 import org.apache.maven.repository.spi.MetadataResolver;
 import org.apache.maven.repository.spi.VersionRangeResolver;
@@ -82,6 +87,9 @@ public class DefaultRepositorySystem
 
     @Requirement
     private Installer installer;
+
+    @Requirement
+    private Deployer deployer;
 
     public DefaultRepositorySystem setVersionResolver( VersionResolver versionResolver )
     {
@@ -143,6 +151,16 @@ public class DefaultRepositorySystem
         return this;
     }
 
+    public DefaultRepositorySystem setDeployer( Deployer deployer )
+    {
+        if ( deployer == null )
+        {
+            throw new IllegalArgumentException( "deployer has not been specified" );
+        }
+        this.deployer = deployer;
+        return this;
+    }
+
     public VersionResult resolveVersion( RepositorySession session, VersionRequest request )
         throws VersionResolutionException
     {
@@ -180,6 +198,31 @@ public class DefaultRepositorySystem
         return dependencyCollector.collectDependencies( session, request );
     }
 
+    public void resolveDependencies( RepositorySession session, DependencyNode node )
+        throws ArtifactResolutionException
+    {
+        List<ArtifactRequest> requests = new ArrayList<ArtifactRequest>();
+        toArtifactRequest( requests, node );
+
+        resolveArtifacts( session, requests );
+    }
+
+    private void toArtifactRequest( List<ArtifactRequest> requests, DependencyNode node )
+    {
+        Dependency dependency = node.getDependency();
+        if ( dependency != null )
+        {
+            ArtifactRequest request =
+                new ArtifactRequest( dependency.getArtifact(), node.getRepositories(), node.getContext() );
+            requests.add( request );
+        }
+
+        for ( DependencyNode child : node.getChildren() )
+        {
+            toArtifactRequest( requests, child );
+        }
+    }
+
     public void install( RepositorySession session, InstallRequest request )
         throws InstallationException
     {
@@ -187,9 +230,9 @@ public class DefaultRepositorySystem
     }
 
     public void deploy( RepositorySession session, DeployRequest request )
+        throws DeploymentException
     {
-        // TODO Auto-generated method stub
-
+        deployer.deploy( session, request );
     }
 
 }

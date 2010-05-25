@@ -19,6 +19,11 @@ package org.apache.maven.repository.internal;
  * under the License.
  */
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Snapshot;
 import org.apache.maven.artifact.repository.metadata.Versioning;
@@ -27,18 +32,23 @@ import org.apache.maven.repository.Artifact;
 /**
  * @author Benjamin Bentmann
  */
-class LocalSnapshotMetadata
+class RemoteSnapshotMetadata
     extends MavenMetadata
 {
 
     private final Artifact artifact;
 
-    public LocalSnapshotMetadata( Artifact artifact )
+    public RemoteSnapshotMetadata( Artifact artifact )
     {
         this.artifact = artifact;
 
+        DateFormat utcDateFormatter = new SimpleDateFormat( "yyyyMMdd.HHmmss" );
+        utcDateFormatter.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
+
         Snapshot snapshot = new Snapshot();
-        snapshot.setLocalCopy( true );
+        snapshot.setBuildNumber( 1 );
+        snapshot.setTimestamp( utcDateFormatter.format( new Date() ) );
+
         Versioning versioning = new Versioning();
         versioning.setSnapshot( snapshot );
 
@@ -49,6 +59,34 @@ class LocalSnapshotMetadata
         metadata.setVersion( artifact.getBaseVersion() );
 
         this.metadata = metadata;
+    }
+
+    public String getExpandedVersion()
+    {
+        String version = metadata.getVersion();
+
+        Snapshot snapshot = metadata.getVersioning().getSnapshot();
+        String qualifier = snapshot.getTimestamp() + "-" + snapshot.getBuildNumber();
+        version = version.substring( 0, version.length() - "SNAPSHOT".length() ) + qualifier;
+
+        return version;
+    }
+
+    @Override
+    protected void merge( Metadata recessive )
+    {
+        Versioning versioning = recessive.getVersioning();
+        if ( versioning != null )
+        {
+            Snapshot snapshot = versioning.getSnapshot();
+            if ( snapshot != null )
+            {
+                metadata.getVersioning().getSnapshot().setBuildNumber( snapshot.getBuildNumber() + 1 );
+                versioning.setSnapshot( null );
+            }
+        }
+
+        super.merge( recessive );
     }
 
     public String getGroupId()

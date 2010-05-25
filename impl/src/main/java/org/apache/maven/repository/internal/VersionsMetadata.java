@@ -22,14 +22,12 @@ package org.apache.maven.repository.internal;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.repository.Artifact;
-import org.apache.maven.repository.MergeableMetadata;
 
 /**
  * @author Benjamin Bentmann
  */
 class VersionsMetadata
     extends MavenMetadata
-    implements MergeableMetadata
 {
 
     private final Artifact artifact;

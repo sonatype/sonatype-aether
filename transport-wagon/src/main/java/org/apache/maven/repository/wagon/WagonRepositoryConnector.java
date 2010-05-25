@@ -660,6 +660,8 @@ class WagonRepositoryConnector
                         wagon.removeTransferListener( wagonListener );
                     }
 
+                    // TODO: upload checksums
+
                     if ( listener != null )
                     {
                         DefaultTransferEvent event = wagonListener.newEvent();

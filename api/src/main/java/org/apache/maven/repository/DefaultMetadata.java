@@ -47,7 +47,7 @@ public class DefaultMetadata
         // enables default constructor
     }
 
-    public DefaultMetadata( DefaultMetadata original )
+    public DefaultMetadata( Metadata original )
     {
         setGroupId( original.getGroupId() );
         setArtifactId( original.getArtifactId() );
@@ -124,6 +124,26 @@ public class DefaultMetadata
     public void setFile( File file )
     {
         this.file = file;
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder buffer = new StringBuilder( 128 );
+        if ( getGroupId().length() > 0 )
+        {
+            buffer.append( getGroupId() );
+        }
+        if ( getArtifactId().length() > 0 )
+        {
+            buffer.append( ':' ).append( getArtifactId() );
+        }
+        if ( getVersion().length() > 0 )
+        {
+            buffer.append( ':' ).append( getVersion() );
+        }
+        buffer.append( '/' ).append( getType() );
+        return buffer.toString();
     }
 
 }
