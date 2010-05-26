@@ -1,6 +1,7 @@
 import java.io.File;
 import java.util.Arrays;
 
+import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.AuthenticationSelector;
 import org.apache.maven.repository.CollectRequest;
 import org.apache.maven.repository.DefaultArtifact;
@@ -11,6 +12,7 @@ import org.apache.maven.repository.DependencyGraphTransformer;
 import org.apache.maven.repository.DependencyManager;
 import org.apache.maven.repository.DependencyNode;
 import org.apache.maven.repository.DependencyTraverser;
+import org.apache.maven.repository.DeployRequest;
 import org.apache.maven.repository.LocalRepositoryManager;
 import org.apache.maven.repository.MirrorSelector;
 import org.apache.maven.repository.ProxySelector;
@@ -37,7 +39,7 @@ import org.apache.maven.repository.util.OptionalDependencyFilter;
 import org.apache.maven.repository.util.ScopeDependencyFilter;
 import org.codehaus.plexus.DefaultPlexusContainer;
 
-public class Main
+public class RepoSys
 {
 
     public static void main( String[] args )
@@ -59,6 +61,13 @@ public class Main
         dump( root, "" );
 
         repoSystem.resolveDependencies( session, root );
+        
+        Artifact projectOutput = new DefaultArtifact( "test", "test", "", "jar", "0.1-SNAPSHOT" );
+        projectOutput.setFile( new File("/Users/bentmann/tmp/z/pom.xml") );
+        DeployRequest deployRequest = new DeployRequest();
+        deployRequest.addArtifact( projectOutput );
+        deployRequest.setRepository( new RemoteRepository( "nexus", "default", "file:///Users/bentmann/tmp/dist-repo/" ) );
+        repoSystem.deploy( session, deployRequest );
     }
 
     private static RepositorySession newSession()

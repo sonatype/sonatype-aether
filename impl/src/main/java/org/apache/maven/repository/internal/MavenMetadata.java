@@ -124,6 +124,7 @@ abstract class MavenMetadata
         Writer writer = null;
         try
         {
+            metadataFile.getParentFile().mkdirs();
             writer = WriterFactory.newXmlWriter( metadataFile );
             new MetadataXpp3Writer().write( writer, metadata );
         }

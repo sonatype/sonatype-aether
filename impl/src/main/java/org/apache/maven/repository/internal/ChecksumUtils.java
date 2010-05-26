@@ -20,7 +20,11 @@ package org.apache.maven.repository.internal;
  */
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import org.codehaus.plexus.util.FileUtils;
 
@@ -56,6 +60,46 @@ public class ChecksumUtils
         }
 
         return checksum;
+    }
+
+    public static String calc( File dataFile, String algo )
+        throws NoSuchAlgorithmException, IOException
+    {
+        MessageDigest digest = MessageDigest.getInstance( algo );
+
+        FileInputStream fis = new FileInputStream( dataFile );
+        try
+        {
+            DigestInputStream dis = new DigestInputStream( fis, digest );
+            for ( byte[] buffer = new byte[1024 * 4];; )
+            {
+                int read = dis.read( buffer );
+                if ( read < 0 )
+                {
+                    break;
+                }
+            }
+        }
+        finally
+        {
+            fis.close();
+        }
+
+        byte[] bytes = digest.digest();
+
+        StringBuilder buffer = new StringBuilder( 64 );
+
+        for ( int i = 0; i < bytes.length; i++ )
+        {
+            byte b = bytes[i];
+            if ( b < 0x10 )
+            {
+                buffer.append( '0' );
+            }
+            buffer.append( Integer.toHexString( b & 0xFF ) );
+        }
+
+        return buffer.toString();
     }
 
 }

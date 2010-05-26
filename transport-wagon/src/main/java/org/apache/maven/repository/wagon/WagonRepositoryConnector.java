@@ -53,6 +53,7 @@ import org.apache.maven.repository.internal.ChecksumUtils;
 import org.apache.maven.repository.spi.ArtifactDownload;
 import org.apache.maven.repository.spi.ArtifactTransfer;
 import org.apache.maven.repository.spi.ArtifactUpload;
+import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.MetadataDownload;
 import org.apache.maven.repository.spi.MetadataTransfer;
 import org.apache.maven.repository.spi.MetadataUpload;
@@ -75,23 +76,25 @@ class WagonRepositoryConnector
     implements RepositoryConnector
 {
 
-    protected final RemoteRepository repository;
+    private final Logger logger;
 
-    protected final RepositorySession session;
+    private final RemoteRepository repository;
 
-    protected final WagonProvider wagonProvider;
+    private final RepositorySession session;
+
+    private final WagonProvider wagonProvider;
 
     private final String wagonHint;
 
-    protected final Repository wagonRepo;
+    private final Repository wagonRepo;
 
-    protected final AuthenticationInfo wagonAuth;
+    private final AuthenticationInfo wagonAuth;
 
-    protected final ProxyInfoProvider wagonProxy;
+    private final ProxyInfoProvider wagonProxy;
 
-    protected final DefaultLayout layout = new DefaultLayout();
+    private final DefaultLayout layout = new DefaultLayout();
 
-    protected final TransferListener listener;
+    private final TransferListener listener;
 
     private final Queue<Wagon> wagons = new ConcurrentLinkedQueue<Wagon>();
 
@@ -99,9 +102,11 @@ class WagonRepositoryConnector
 
     private boolean closed;
 
-    public WagonRepositoryConnector( WagonProvider wagonProvider, RemoteRepository repository, RepositorySession session )
+    public WagonRepositoryConnector( WagonProvider wagonProvider, RemoteRepository repository,
+                                     RepositorySession session, Logger logger )
         throws NoRepositoryConnectorException
     {
+        this.logger = logger;
         this.wagonProvider = wagonProvider;
         this.repository = repository;
         this.session = session;
@@ -138,7 +143,7 @@ class WagonRepositoryConnector
         }
     }
 
-    protected int getOption( String key, int defaultValue )
+    private int getOption( String key, int defaultValue )
     {
         String value = session.getConfigProperties().getProperty( key );
         try
@@ -202,25 +207,25 @@ class WagonRepositoryConnector
         return proxy;
     }
 
-    protected Wagon lookupWagon()
+    private Wagon lookupWagon()
         throws Exception
     {
         return wagonProvider.lookup( wagonHint );
     }
 
-    protected void releaseWagon( Wagon wagon )
+    private void releaseWagon( Wagon wagon )
     {
         wagonProvider.release( wagon );
     }
 
-    protected void connectWagon( Wagon wagon )
+    private void connectWagon( Wagon wagon )
         throws Exception
     {
         wagon.setTimeout( getOption( "maven.artifact.timeout", 10 * 1000 ) );
         wagon.connect( wagonRepo, wagonAuth, wagonProxy );
     }
 
-    protected void disconnectWagon( Wagon wagon )
+    private void disconnectWagon( Wagon wagon )
     {
         try
         {
@@ -660,7 +665,8 @@ class WagonRepositoryConnector
                         wagon.removeTransferListener( wagonListener );
                     }
 
-                    // TODO: upload checksums
+                    uploadChecksum( wagon, file, path, ".sha1", "SHA-1" );
+                    uploadChecksum( wagon, file, path, ".md5", "MD5" );
 
                     if ( listener != null )
                     {
@@ -693,6 +699,28 @@ class WagonRepositoryConnector
         public void flush()
         {
             wrapper.wrap( upload, exception, repository );
+        }
+
+        private void uploadChecksum( Wagon wagon, File file, String path, String ext, String algo )
+        {
+            try
+            {
+                String checksum = ChecksumUtils.calc( file, algo );
+                File tmpFile = File.createTempFile( "checksum", ext );
+                try
+                {
+                    FileUtils.fileWrite( tmpFile.getAbsolutePath(), "UTF-8", checksum );
+                    wagon.put( tmpFile, path + ext );
+                }
+                finally
+                {
+                    tmpFile.delete();
+                }
+            }
+            catch ( Exception e )
+            {
+                logger.debug( "Failed to upload " + algo + " checksum for " + file + ": " + e.getMessage(), e );
+            }
         }
 
     }

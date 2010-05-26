@@ -22,6 +22,8 @@ package org.apache.maven.repository.wagon;
 import org.apache.maven.repository.NoRepositoryConnectorException;
 import org.apache.maven.repository.RemoteRepository;
 import org.apache.maven.repository.RepositorySession;
+import org.apache.maven.repository.spi.Logger;
+import org.apache.maven.repository.spi.NullLogger;
 import org.apache.maven.repository.spi.RepositoryConnector;
 import org.apache.maven.repository.spi.RepositoryConnectorFactory;
 import org.codehaus.plexus.component.annotations.Component;
@@ -36,9 +38,18 @@ public class WagonRepositoryConnectorFactory
 {
 
     @Requirement
+    private Logger logger = NullLogger.INSTANCE;
+
+    @Requirement
     private WagonProvider wagonProvider;
 
     private int priority;
+
+    public WagonRepositoryConnectorFactory setLogger( Logger logger )
+    {
+        this.logger = ( logger != null ) ? logger : NullLogger.INSTANCE;
+        return this;
+    }
 
     public WagonRepositoryConnectorFactory setWagonProvider( WagonProvider wagonProvider )
     {
@@ -60,7 +71,7 @@ public class WagonRepositoryConnectorFactory
     public RepositoryConnector newInstance( RepositorySession session, RemoteRepository repository )
         throws NoRepositoryConnectorException
     {
-        return new WagonRepositoryConnector( wagonProvider, repository, session );
+        return new WagonRepositoryConnector( wagonProvider, repository, session, logger );
     }
 
 }
