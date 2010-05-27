@@ -91,12 +91,12 @@ public class ChecksumUtils
 
         for ( int i = 0; i < bytes.length; i++ )
         {
-            byte b = bytes[i];
+            int b = bytes[i] & 0xFF;
             if ( b < 0x10 )
             {
                 buffer.append( '0' );
             }
-            buffer.append( Integer.toHexString( b & 0xFF ) );
+            buffer.append( Integer.toHexString( b ) );
         }
 
         return buffer.toString();
