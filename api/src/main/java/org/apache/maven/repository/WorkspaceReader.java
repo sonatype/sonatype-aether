@@ -23,15 +23,34 @@ import java.io.File;
 import java.util.List;
 
 /**
+ * Manages a repository backed by the IDE workspace or a build session.
+ * 
  * @author Benjamin Bentmann
  */
 public interface WorkspaceReader
 {
 
+    /**
+     * Gets a description of the workspace repository.
+     * 
+     * @return The repository description, never {@code null}.
+     */
     WorkspaceRepository getRepository();
 
+    /**
+     * Locates the specified artifact.
+     * 
+     * @param artifact The artifact to locate, must not be {@code null}.
+     * @return The path to the artifact or {@code null} if the artifact is not available.
+     */
     File findArtifact( Artifact artifact );
 
+    /**
+     * Determines all available versions of the specified artifact.
+     * 
+     * @param artifact The artifact whose versions should be listed, must not be {@code null}.
+     * @return The available versions of the artifact, must not be {@code null}.
+     */
     List<String> findVersions( Artifact artifact );
 
 }

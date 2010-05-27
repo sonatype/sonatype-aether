@@ -124,7 +124,7 @@ public class DefaultDependencyCollector
         List<Dependency> dependencies = request.getDependencies();
         List<Dependency> managedDependencies = request.getManagedDependencies();
 
-        DependencyNode node = new DependencyNode( null, null );
+        DependencyNode node = new DependencyNode( null );
         if ( root != null )
         {
             ArtifactDescriptorResult descriptorResult;
@@ -148,7 +148,7 @@ public class DefaultDependencyCollector
             dependencies = mergeDeps( dependencies, descriptorResult.getDependencies() );
             managedDependencies = mergeDeps( managedDependencies, descriptorResult.getManagedDependencies() );
 
-            node = new DependencyNode( root, null );
+            node = new DependencyNode( root );
             node.setRelocations( descriptorResult.getRelocations() );
             node.setRequestedVersion( root.getArtifact().getVersion() );
             node.setRepositories( request.getRepositories() );
@@ -157,7 +157,7 @@ public class DefaultDependencyCollector
         }
         else
         {
-            node = new DependencyNode( null, null );
+            node = new DependencyNode( null );
         }
 
         result.setRoot( node );
