@@ -112,6 +112,16 @@ public class DefaultArtifactDescriptorReader
         return this;
     }
 
+    public DefaultArtifactDescriptorReader setModelBuilder( ModelBuilder modelBuilder )
+    {
+        if ( modelBuilder == null )
+        {
+            throw new IllegalArgumentException( "model builder has not been specified" );
+        }
+        this.modelBuilder = modelBuilder;
+        return this;
+    }
+
     public ArtifactDescriptorResult readArtifactDescriptor( RepositorySession session, ArtifactDescriptorRequest request )
         throws ArtifactDescriptorException
     {

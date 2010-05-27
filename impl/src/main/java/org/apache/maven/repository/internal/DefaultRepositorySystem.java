@@ -141,6 +141,16 @@ public class DefaultRepositorySystem
         return this;
     }
 
+    public DefaultRepositorySystem setDependencyCollector( DependencyCollector dependencyCollector )
+    {
+        if ( dependencyCollector == null )
+        {
+            throw new IllegalArgumentException( "dependency collector has not been specified" );
+        }
+        this.dependencyCollector = dependencyCollector;
+        return this;
+    }
+
     public DefaultRepositorySystem setInstaller( Installer installer )
     {
         if ( installer == null )

@@ -20,11 +20,19 @@ package org.apache.maven.repository;
  */
 
 /**
+ * Selects a proxy for a given remote repository.
+ * 
  * @author Benjamin Bentmann
  */
 public interface ProxySelector
 {
 
+    /**
+     * Selects a proxy for the specified remote repository.
+     * 
+     * @param repository The repository for which to select a proxy, must not be {@code null}.
+     * @return The selected proxy or {@code null} if none.
+     */
     Proxy getProxy( RemoteRepository repository );
 
 }

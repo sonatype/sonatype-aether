@@ -20,11 +20,19 @@ package org.apache.maven.repository;
  */
 
 /**
+ * Selects a mirror for a given remote repository.
+ * 
  * @author Benjamin Bentmann
  */
 public interface MirrorSelector
 {
 
+    /**
+     * Selects a mirror for the specified repository.
+     * 
+     * @param repository The repository to select a mirror for, must not be {@code null}.
+     * @return The selected mirror or {@code null} if none.
+     */
     RemoteRepository getMirror( RemoteRepository repository );
 
 }

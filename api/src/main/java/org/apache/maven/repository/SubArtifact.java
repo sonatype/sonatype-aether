@@ -20,12 +20,20 @@ package org.apache.maven.repository;
  */
 
 /**
+ * An artifact that is linked to another artifact. In particular, a sub artifact has no own version but uses the version
+ * of the associated main artifact.
+ * 
  * @author Benjamin Bentmann
  */
 public interface SubArtifact
     extends Artifact
 {
 
+    /**
+     * Gets the artifact this artifact is linked to.
+     * 
+     * @return The main artifact, never {@code null}.
+     */
     Artifact getMainArtifact();
 
     /**
@@ -33,6 +41,11 @@ public interface SubArtifact
      */
     void setVersion( String version );
 
+    /**
+     * Creates a deep copy of this artifact.
+     * 
+     * @return The clone of this artifact, never {@code null}.
+     */
     SubArtifact clone();
 
 }

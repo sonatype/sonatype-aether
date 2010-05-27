@@ -22,12 +22,21 @@ package org.apache.maven.repository;
 import java.io.File;
 
 /**
+ * A piece of metadata that needs to be merged with any existing metadata before installation/deployment.
+ * 
  * @author Benjamin Bentmann
  */
 public interface MergeableMetadata
     extends Metadata
 {
 
+    /**
+     * Merges this metadata into the existing metadata.
+     * 
+     * @param existing The path to the existing metadata file, must not be {@code null}.
+     * @param result The path to the result file where the merged metadata should be stored, must not be {@code null}.
+     * @throws RepositoryException If the metadata could not be merged.
+     */
     void merge( File existing, File result )
         throws RepositoryException;
 

@@ -22,25 +22,39 @@ package org.apache.maven.repository;
 import java.io.File;
 
 /**
+ * A repository on the local file system.
+ * 
  * @author Benjamin Bentmann
  */
 public class LocalRepository
     implements ArtifactRepository
 {
 
-    private final File basedir;
+    private File basedir;
 
-    private final String type;
+    private String type;
 
+    /**
+     * Creates a new local repository with the specified properties.
+     * 
+     * @param basedir The base directory of the repository, may be {@code null}.
+     * @param type The type of the repository, may be {@code null}.
+     */
     public LocalRepository( File basedir, String type )
     {
-        this.basedir = basedir;
-        this.type = type;
+        setBasedir( basedir );
+        setType( type );
     }
 
     public String getType()
     {
         return type;
+    }
+
+    private LocalRepository setType( String type )
+    {
+        this.type = ( type != null ) ? type : "";
+        return this;
     }
 
     public String getId()
@@ -51,6 +65,12 @@ public class LocalRepository
     public File getBasedir()
     {
         return basedir;
+    }
+
+    private LocalRepository setBasedir( File basedir )
+    {
+        this.basedir = basedir;
+        return this;
     }
 
     @Override

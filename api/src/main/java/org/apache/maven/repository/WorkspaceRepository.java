@@ -20,6 +20,8 @@ package org.apache.maven.repository;
  */
 
 /**
+ * A repository backed by an IDE workspace or a build session.
+ * 
  * @author Benjamin Bentmann
  */
 public class WorkspaceRepository

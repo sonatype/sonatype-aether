@@ -22,28 +22,84 @@ package org.apache.maven.repository;
 import java.io.File;
 
 /**
+ * A piece of repository metadata.
+ * 
  * @author Benjamin Bentmann
  */
 public interface Metadata
 {
 
+    /**
+     * The nature of the metadata.
+     */
     enum Nature
     {
-        RELEASE, SNAPSHOT, RELEASE_OR_SNAPSHOT
+        /**
+         * The metadata refers to release artifacts only.
+         */
+        RELEASE,
+
+        /**
+         * The metadata refers to snapshot artifacts only.
+         */
+        SNAPSHOT,
+
+        /**
+         * The metadata refers to either release or snapshot artifacts.
+         */
+        RELEASE_OR_SNAPSHOT
     }
 
+    /**
+     * Gets the group identifier of this metadata.
+     * 
+     * @return The group identifier or an empty string if the metadata applies to the entire repository, never {@code
+     *         null}.
+     */
     String getGroupId();
 
+    /**
+     * Gets the artifact identifier of this metadata.
+     * 
+     * @return The artifact identifier or an empty string if the metadata applies to the groupId level only, never
+     *         {@code null}.
+     */
     String getArtifactId();
 
+    /**
+     * Gets the version of this metadata.
+     * 
+     * @return The version or an empty string if the metadata applies to the groupId:artifactId level only, never
+     *         {@code null}.
+     */
     String getVersion();
 
+    /**
+     * Gets the type of the metadata, e.g. "maven-metadata.xml".
+     * 
+     * @return The type of the metadata, never {@code null}.
+     */
     String getType();
 
+    /**
+     * Gets the nature of this metadata. The nature indicates to what artifact versions the metadata refers.
+     * 
+     * @return The nature, never {@code null}.
+     */
     Nature getNature();
 
+    /**
+     * Gets the file of this metadata. Note that only resolved metadata has a file associated with it.
+     * 
+     * @return The file or {@code null} if none.
+     */
     public File getFile();
 
+    /**
+     * Sets the file of the metadata.
+     * 
+     * @param file The file of the metadata, may be {@code null}
+     */
     void setFile( File file );
 
     /*
