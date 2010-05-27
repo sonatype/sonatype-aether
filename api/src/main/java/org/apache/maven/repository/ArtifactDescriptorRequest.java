@@ -19,25 +19,40 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
+ * A request to read an artifact descriptor.
+ * 
  * @author Benjamin Bentmann
+ * @see RepositorySystem#readArtifactDescriptor(RepositorySession, ArtifactDescriptorRequest)
  */
 public class ArtifactDescriptorRequest
 {
 
     private Artifact artifact;
 
-    private List<RemoteRepository> repositories;
+    private List<RemoteRepository> repositories = Collections.emptyList();
 
-    private String context;
+    private String context = "";
 
+    /**
+     * Creates an uninitialized request.
+     */
     public ArtifactDescriptorRequest()
     {
         // enables default constructor
     }
 
+    /**
+     * Creates a request with the specified properties.
+     * 
+     * @param artifact The artifact whose (meta-)version should be resolved, may be {@code null}.
+     * @param repositories The repositories to resolve the version from, may be {@code null}.
+     * @param context The context in which this request is made, may be {@code null}.
+     */
     public ArtifactDescriptorRequest( Artifact artifact, List<RemoteRepository> repositories, String context )
     {
         setArtifact( artifact );
@@ -45,36 +60,95 @@ public class ArtifactDescriptorRequest
         setContext( context );
     }
 
+    /**
+     * Gets the artifact whose (meta-)version shall be resolved.
+     * 
+     * @return The artifact or {@code null} if not set.
+     */
     public Artifact getArtifact()
     {
         return artifact;
     }
 
+    /**
+     * Sets the artifact whose (meta-)version shall be resolved.
+     * 
+     * @param artifact The artifact, may be {@code null}.
+     * @return This request for chaining, never {@code null}.
+     */
     public ArtifactDescriptorRequest setArtifact( Artifact artifact )
     {
         this.artifact = artifact;
         return this;
     }
 
+    /**
+     * Gets the repositories to resolve the version from.
+     * 
+     * @return The repositories, never {@code null}.
+     */
     public List<RemoteRepository> getRepositories()
     {
         return repositories;
     }
 
+    /**
+     * Sets the repositories to resolve the descriptor from.
+     * 
+     * @param repositories The repositories, may be {@code null}.
+     * @return This request for chaining, never {@code null}.
+     */
     public ArtifactDescriptorRequest setRepositories( List<RemoteRepository> repositories )
     {
-        this.repositories = repositories;
+        if ( repositories == null )
+        {
+            this.repositories = Collections.emptyList();
+        }
+        else
+        {
+            this.repositories = repositories;
+        }
         return this;
     }
 
+    /**
+     * Adds the specified repository for the resolution.
+     * 
+     * @param repository The repository to add, may be {@code null}.
+     * @return This request for chaining, never {@code null}.
+     */
+    public ArtifactDescriptorRequest addRepository( RemoteRepository repository )
+    {
+        if ( repository != null )
+        {
+            if ( this.repositories.isEmpty() )
+            {
+                this.repositories = new ArrayList<RemoteRepository>();
+            }
+            this.repositories.add( repository );
+        }
+        return this;
+    }
+
+    /**
+     * Gets the context in which this request is made.
+     * 
+     * @return The context, never {@code null}.
+     */
     public String getContext()
     {
         return context;
     }
 
+    /**
+     * Sets the context in which this request is made.
+     * 
+     * @param context The context, may be {@code null}.
+     * @return This request for chaining, never {@code null}.
+     */
     public ArtifactDescriptorRequest setContext( String context )
     {
-        this.context = context;
+        this.context = ( context != null ) ? context : "";
         return this;
     }
 

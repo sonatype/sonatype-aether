@@ -22,6 +22,8 @@ package org.apache.maven.repository;
 import java.util.Properties;
 
 /**
+ * Defines settings and components that control the repository system.
+ * 
  * @author Benjamin Bentmann
  */
 public interface RepositorySession

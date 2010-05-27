@@ -23,7 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
+ * A request to deploy artifacts and their accompanying metadata into the a remote repository.
+ * 
  * @author Benjamin Bentmann
+ * @see RepositorySystem#deploy(RepositorySession, DeployRequest)
  */
 public class DeployRequest
 {
@@ -34,17 +37,41 @@ public class DeployRequest
 
     private RemoteRepository repository;
 
+    /**
+     * Gets the artifact to deploy.
+     * 
+     * @return The artifacts to deploy, never {@code null}.
+     */
     public Collection<Artifact> getArtifacts()
     {
         return artifacts;
     }
 
+    /**
+     * Sets the artifacts to deploy
+     * 
+     * @param artifacts The artifacts to deploy, may be {@code null}.
+     * @return This request for chaining, never {@code null}.
+     */
     public DeployRequest setArtifacts( Collection<Artifact> artifacts )
     {
-        this.artifacts = ( artifacts != null ) ? artifacts : new ArrayList<Artifact>();
+        if ( artifacts == null )
+        {
+            this.artifacts = new ArrayList<Artifact>();
+        }
+        else
+        {
+            this.artifacts = artifacts;
+        }
         return this;
     }
 
+    /**
+     * Adds the specified artifacts for deployment.
+     * 
+     * @param artifact The artifact to add, may be {@code null}.
+     * @return This request for chaining, never {@code null}.
+     */
     public DeployRequest addArtifact( Artifact artifact )
     {
         if ( artifact != null )
@@ -54,17 +81,41 @@ public class DeployRequest
         return this;
     }
 
+    /**
+     * Gets the metadata to deploy.
+     * 
+     * @return The metadata to deploy, never {@code null}.
+     */
     public Collection<Metadata> getMetadata()
     {
         return metadata;
     }
 
+    /**
+     * Sets the metadata to deploy.
+     * 
+     * @param metadata The metadata to deploy.
+     * @return This request for chaining, never {@code null}.
+     */
     public DeployRequest setMetadata( Collection<Metadata> metadata )
     {
-        this.metadata = ( metadata != null ) ? metadata : new ArrayList<Metadata>();
+        if ( metadata == null )
+        {
+            this.metadata = new ArrayList<Metadata>();
+        }
+        else
+        {
+            this.metadata = metadata;
+        }
         return this;
     }
 
+    /**
+     * Adds the specified metadata for deployment.
+     * 
+     * @param metadata The metadata to add, may be {@code null}.
+     * @return This request for chaining, never {@code null}.
+     */
     public DeployRequest addMetadata( Metadata metadata )
     {
         if ( metadata != null )
@@ -74,11 +125,22 @@ public class DeployRequest
         return this;
     }
 
+    /**
+     * Gets the repository to deploy to.
+     * 
+     * @return The repository to deploy to or {@code null} if not set.
+     */
     public RemoteRepository getRepository()
     {
         return repository;
     }
 
+    /**
+     * Sets the repository to deploy to.
+     * 
+     * @param repository The repository to deploy to, may be {@code null}.
+     * @return This request for chaining, never {@code null}.
+     */
     public DeployRequest setRepository( RemoteRepository repository )
     {
         this.repository = repository;

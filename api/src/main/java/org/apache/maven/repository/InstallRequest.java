@@ -23,7 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
+ * A request to install artifacts and their accompanying metadata into the local repository.
+ * 
  * @author Benjamin Bentmann
+ * @see RepositorySystem#install(RepositorySession, InstallRequest)
  */
 public class InstallRequest
 {
@@ -32,17 +35,41 @@ public class InstallRequest
 
     private Collection<Metadata> metadata = new ArrayList<Metadata>();
 
+    /**
+     * Gets the artifact to install.
+     * 
+     * @return The artifacts to install, never {@code null}.
+     */
     public Collection<Artifact> getArtifacts()
     {
         return artifacts;
     }
 
+    /**
+     * Sets the artifacts to install.
+     * 
+     * @param artifacts The artifacts to install, may be {@code null}.
+     * @return This request for chaining, never {@code null}.
+     */
     public InstallRequest setArtifacts( Collection<Artifact> artifacts )
     {
-        this.artifacts = ( artifacts != null ) ? artifacts : new ArrayList<Artifact>();
+        if ( artifacts == null )
+        {
+            this.artifacts = new ArrayList<Artifact>();
+        }
+        else
+        {
+            this.artifacts = artifacts;
+        }
         return this;
     }
 
+    /**
+     * Adds the specified artifacts for installation.
+     * 
+     * @param artifact The artifact to add, may be {@code null}.
+     * @return This request for chaining, never {@code null}.
+     */
     public InstallRequest addArtifact( Artifact artifact )
     {
         if ( artifact != null )
@@ -52,17 +79,41 @@ public class InstallRequest
         return this;
     }
 
+    /**
+     * Gets the metadata to install.
+     * 
+     * @return The metadata to install, never {@code null}.
+     */
     public Collection<Metadata> getMetadata()
     {
         return metadata;
     }
 
+    /**
+     * Sets the metadata to install.
+     * 
+     * @param metadata The metadata to install.
+     * @return This request for chaining, never {@code null}.
+     */
     public InstallRequest setMetadata( Collection<Metadata> metadata )
     {
-        this.metadata = ( metadata != null ) ? metadata : new ArrayList<Metadata>();
+        if ( metadata == null )
+        {
+            this.metadata = new ArrayList<Metadata>();
+        }
+        else
+        {
+            this.metadata = metadata;
+        }
         return this;
     }
 
+    /**
+     * Adds the specified metadata for installation.
+     * 
+     * @param metadata The metadata to add, may be {@code null}.
+     * @return This request for chaining, never {@code null}.
+     */
     public InstallRequest addMetadata( Metadata metadata )
     {
         if ( metadata != null )

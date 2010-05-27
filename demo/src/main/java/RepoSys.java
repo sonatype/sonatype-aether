@@ -97,7 +97,7 @@ public class RepoSys
         DeployRequest deployRequest = new DeployRequest();
         deployRequest.addArtifact( projectOutput );
         deployRequest.setRepository( new RemoteRepository( "nexus", "default", "file:///Users/bentmann/tmp/dist-repo/" ) );
-        repoSystem.deploy( session, deployRequest );
+        //repoSystem.deploy( session, deployRequest );
 
         System.out.println("============================================================");
         dump( root, "" );
@@ -227,9 +227,10 @@ public class RepoSys
             new ChainedDependencyGraphTransformer( 
                                                    new ConflictMarker(), 
                                                    new JavaEffectiveScopeCalculator(),
-//                                                   new ClassicVersionConflictResolver(),
+                                                   new ClassicVersionConflictResolver(),
                                                    new JavaDependencyContextRefiner() 
                                                    );
+        transformer = null;
         session.setDependencyGraphTransformer( transformer );
 
         session.setIgnoreInvalidArtifactDescriptor( true );
