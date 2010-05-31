@@ -34,7 +34,7 @@ public class DefaultSubArtifact
 
     private final String type;
 
-    private Map<String, Object> properties = new HashMap<String, Object>();
+    private Map<String, String> properties = new HashMap<String, String>();
 
     public DefaultSubArtifact( Artifact mainArtifact, String classifier, String type )
     {
@@ -101,18 +101,20 @@ public class DefaultSubArtifact
         return result;
     }
 
-    public <T> T getProperty( String key, Class<T> type, T defaultValue )
+    @Override
+    public String getProperty( String key, String defaultValue )
     {
-        Object value = properties.get( key );
-        return type.isInstance( value ) ? type.cast( value ) : defaultValue;
+        String value = properties.get( key );
+        return ( value != null ) ? value : defaultValue;
     }
 
-    public Map<String, Object> getPropertiess()
+    @Override
+    public Map<String, String> getProperties()
     {
         return properties;
     }
 
-    public DefaultSubArtifact setProperty( String key, Object value )
+    public DefaultSubArtifact setProperty( String key, String value )
     {
         if ( value == null )
         {
@@ -135,7 +137,7 @@ public class DefaultSubArtifact
     {
         DefaultSubArtifact clone = (DefaultSubArtifact) super.clone();
 
-        clone.properties = new HashMap<String, Object>( clone.properties );
+        clone.properties = new HashMap<String, String>( clone.properties );
 
         return clone;
     }

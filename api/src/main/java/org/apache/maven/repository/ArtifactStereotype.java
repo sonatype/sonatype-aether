@@ -55,6 +55,6 @@ public interface ArtifactStereotype
      * 
      * @return The properties, never {@code null}.
      */
-    Map<String, Object> getProperties();
+    Map<String, String> getProperties();
 
 }

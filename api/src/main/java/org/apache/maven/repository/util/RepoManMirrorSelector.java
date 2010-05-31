@@ -49,6 +49,7 @@ public class RepoManMirrorSelector
     public RemoteRepository getMirror( RemoteRepository repository )
     {
         RemoteRepository repo = new RemoteRepository( id, type, url );
+        repo.setRepositoryManager( true );
         // TODO: what about the policies?
         repo.setMirroredRepositories( Collections.singletonList( repository ) );
         return repo;

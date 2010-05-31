@@ -70,6 +70,8 @@ public class DefaultRepositorySession
 
     private DependencyGraphTransformer dependencyGraphTransformer;
 
+    private RepositoryCache cache;
+
     public DefaultRepositorySession()
     {
         // enables default constructor
@@ -98,6 +100,7 @@ public class DefaultRepositorySession
         setDependencyManager( session.getDependencyManager() );
         setDependencyFilter( session.getDependencyFilter() );
         setDependencyGraphTransformer( session.getDependencyGraphTransformer() );
+        setCache( session.getCache() );
     }
 
     public boolean isOffline()
@@ -328,6 +331,17 @@ public class DefaultRepositorySession
     public DefaultRepositorySession setDependencyGraphTransformer( DependencyGraphTransformer dependencyGraphTransformer )
     {
         this.dependencyGraphTransformer = dependencyGraphTransformer;
+        return this;
+    }
+
+    public RepositoryCache getCache()
+    {
+        return cache;
+    }
+
+    public DefaultRepositorySession setCache( RepositoryCache cache )
+    {
+        this.cache = cache;
         return this;
     }
 

@@ -32,7 +32,7 @@ public class FatArtifactTraverser
 
     public boolean accept( DependencyNode node, Dependency dependency )
     {
-        return !dependency.getArtifact().getProperty( "includesDependencies", Boolean.class, Boolean.FALSE ).booleanValue();
+        return !Boolean.valueOf( dependency.getArtifact().getProperty( "includesDependencies", "" ) );
     }
 
     public DependencyTraverser deriveChildTraverser( DependencyNode childNode )

@@ -50,7 +50,7 @@ public class DefaultArtifact
 
     private File file;
 
-    private Map<String, Object> properties = new HashMap<String, Object>();
+    private Map<String, String> properties = new HashMap<String, String>();
 
     public DefaultArtifact()
     {
@@ -184,18 +184,18 @@ public class DefaultArtifact
         this.file = file;
     }
 
-    public <T> T getProperty( String key, Class<T> type, T defaultValue )
+    public String getProperty( String key, String defaultValue )
     {
-        Object value = properties.get( key );
-        return type.isInstance( value ) ? type.cast( value ) : defaultValue;
+        String value = properties.get( key );
+        return ( value != null ) ? value : defaultValue;
     }
 
-    public Map<String, Object> getProperties()
+    public Map<String, String> getProperties()
     {
         return properties;
     }
 
-    public DefaultArtifact setProperty( String key, Object value )
+    public DefaultArtifact setProperty( String key, String value )
     {
         if ( value == null )
         {
@@ -230,7 +230,7 @@ public class DefaultArtifact
         {
             DefaultArtifact clone = (DefaultArtifact) super.clone();
 
-            clone.properties = new HashMap<String, Object>( clone.properties );
+            clone.properties = new HashMap<String, String>( clone.properties );
 
             return clone;
         }

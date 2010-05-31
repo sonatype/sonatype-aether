@@ -37,7 +37,7 @@ public class DefaultArtifactStereotype
 
     private final String classifier;
 
-    private final Map<String, Object> properties;
+    private final Map<String, String> properties;
 
     public DefaultArtifactStereotype( String id )
     {
@@ -59,11 +59,11 @@ public class DefaultArtifactStereotype
         this.id = id;
         this.type = ( type != null && type.length() > 0 ) ? type : id;
         this.classifier = ( classifier != null ) ? classifier : "";
-        Map<String, Object> props = new HashMap<String, Object>();
+        Map<String, String> props = new HashMap<String, String>();
         props.put( "stereotype", id );
         props.put( "language", ( language != null && language.length() > 0 ) ? language : "none" );
-        props.put( "includesDependencies", Boolean.valueOf( includesDependencies ) );
-        props.put( "constitutesBuildPath", Boolean.valueOf( constitutesBuildPath ) );
+        props.put( "includesDependencies", Boolean.toString( includesDependencies ) );
+        props.put( "constitutesBuildPath", Boolean.toString( constitutesBuildPath ) );
         properties = props;
     }
 
@@ -82,7 +82,7 @@ public class DefaultArtifactStereotype
         return classifier;
     }
 
-    public Map<String, Object> getProperties()
+    public Map<String, String> getProperties()
     {
         return properties;
     }

@@ -107,10 +107,9 @@ public interface Artifact
      * Gets the specified property.
      * 
      * @param key The name of the property, must not be {@code null}.
-     * @param type The expected type of the property value, must not be {@code null}.
      * @param defaultValue The default value to return in case the property is not set, may be {@code null}.
      */
-    <T> T getProperty( String key, Class<T> type, T defaultValue );
+    String getProperty( String key, String defaultValue );
 
     /**
      * Gets the properties of this artifact. While the set of available properties is undefined, the following
@@ -130,7 +129,7 @@ public interface Artifact
      * 
      * @return The properties, never {@code null}.
      */
-    Map<String, Object> getProperties();
+    Map<String, String> getProperties();
 
     /**
      * Creates a deep copy of this artifact.

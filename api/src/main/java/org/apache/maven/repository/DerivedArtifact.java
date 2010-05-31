@@ -92,12 +92,12 @@ public abstract class DerivedArtifact
         this.file = file;
     }
 
-    public <T> T getProperty( String key, Class<T> type, T defaultValue )
+    public String getProperty( String key, String defaultValue )
     {
-        return mainArtifact.getProperty( key, type, defaultValue );
+        return mainArtifact.getProperty( key, defaultValue );
     }
 
-    public Map<String, Object> getProperties()
+    public Map<String, String> getProperties()
     {
         return mainArtifact.getProperties();
     }

@@ -72,6 +72,6 @@ public interface RepositorySession
 
     DependencyGraphTransformer getDependencyGraphTransformer();
 
-    // TODO: cache?
+    RepositoryCache getCache();
 
 }
