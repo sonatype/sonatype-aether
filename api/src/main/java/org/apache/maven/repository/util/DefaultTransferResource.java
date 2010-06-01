@@ -1,7 +1,5 @@
 package org.apache.maven.repository.util;
 
-import org.apache.maven.repository.TransferResource;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,6 +19,10 @@ import org.apache.maven.repository.TransferResource;
  * under the License.
  */
 
+import java.io.File;
+
+import org.apache.maven.repository.TransferResource;
+
 /**
  * @author Benjamin Bentmann
  */
@@ -32,11 +34,13 @@ public class DefaultTransferResource
 
     private final String resourceName;
 
+    private final File file;
+
     private final long startTime;
 
     private long contentLength = -1;
 
-    public DefaultTransferResource( String repositoryUrl, String resourceName )
+    public DefaultTransferResource( String repositoryUrl, String resourceName, File file )
     {
         if ( repositoryUrl == null || repositoryUrl.length() <= 0 )
         {
@@ -64,6 +68,8 @@ public class DefaultTransferResource
             this.resourceName = resourceName;
         }
 
+        this.file = file;
+
         startTime = System.currentTimeMillis();
     }
 
@@ -75,6 +81,11 @@ public class DefaultTransferResource
     public String getResourceName()
     {
         return resourceName;
+    }
+
+    public File getFile()
+    {
+        return file;
     }
 
     public long getContentLength()

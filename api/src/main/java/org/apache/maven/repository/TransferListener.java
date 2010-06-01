@@ -20,7 +20,9 @@ package org.apache.maven.repository;
  */
 
 /**
- * A listener being notified of artifact/metadata transfers from/to remote repositories.
+ * A listener being notified of artifact/metadata transfers from/to remote repositories. The listener may be called from
+ * an arbitrary thread. <em>Note:</em> Implementors are strongly advised to inherit from
+ * {@link org.apache.maven.repository.util.AbstractTransferListener} instead of directly implementing this interface.
  * 
  * @author Benjamin Bentmann
  */
@@ -56,7 +58,7 @@ public interface TransferListener
         throws TransferCancelledException;
 
     /**
-     * Notifies the listener that the a checksum validation failed. {@link TransferEvent#getException()} will be of type
+     * Notifies the listener that a checksum validation failed. {@link TransferEvent#getException()} will be of type
      * {@link ChecksumFailureException} and can be used to query further details about the expected/actual checksums.
      * 
      * @param transferEvent The event details, must not be {@code null}.

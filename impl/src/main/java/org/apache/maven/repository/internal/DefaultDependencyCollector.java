@@ -40,6 +40,7 @@ import org.apache.maven.repository.DependencyManager;
 import org.apache.maven.repository.DependencyNode;
 import org.apache.maven.repository.DependencyTraverser;
 import org.apache.maven.repository.RemoteRepository;
+import org.apache.maven.repository.RepositoryListener;
 import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryException;
 import org.apache.maven.repository.VersionRangeRequest;
@@ -51,6 +52,7 @@ import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.NullLogger;
 import org.apache.maven.repository.spi.RemoteRepositoryManager;
 import org.apache.maven.repository.spi.VersionRangeResolver;
+import org.apache.maven.repository.util.DefaultRepositoryEvent;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 
@@ -124,9 +126,14 @@ public class DefaultDependencyCollector
         List<Dependency> dependencies = request.getDependencies();
         List<Dependency> managedDependencies = request.getManagedDependencies();
 
-        DependencyNode node = new DependencyNode( null );
+        DependencyNode node = null;
         if ( root != null )
         {
+            node = new DependencyNode( root );
+            node.setRequestedVersion( root.getArtifact().getVersion() );
+            node.setRepositories( request.getRepositories() );
+            node.setContext( request.getContext() );
+
             ArtifactDescriptorResult descriptorResult;
             try
             {
@@ -148,12 +155,10 @@ public class DefaultDependencyCollector
             dependencies = mergeDeps( dependencies, descriptorResult.getDependencies() );
             managedDependencies = mergeDeps( managedDependencies, descriptorResult.getManagedDependencies() );
 
-            node = new DependencyNode( root );
             node.setRelocations( descriptorResult.getRelocations() );
-            node.setRequestedVersion( root.getArtifact().getVersion() );
-            node.setRepositories( request.getRepositories() );
             node.setPropertes( descriptorResult.getProperties() );
-            node.setContext( request.getContext() );
+
+            artifactRelocated( session, descriptorResult );
         }
         else
         {
@@ -306,6 +311,11 @@ public class DefaultDependencyCollector
                     continue;
                 }
 
+                if ( node.getDependency() == null )
+                {
+                    artifactRelocated( session, descriptorResult );
+                }
+
                 if ( !descriptorResult.getRelocations().isEmpty() && !depFilter.accept( node, d ) )
                 {
                     continue;
@@ -373,6 +383,17 @@ public class DefaultDependencyCollector
         }
 
         return null;
+    }
+
+    private void artifactRelocated( RepositorySession session, ArtifactDescriptorResult result )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null && !result.getRelocations().isEmpty() )
+        {
+            DefaultRepositoryEvent event =
+                new DefaultRepositoryEvent( session, result.getArtifact(), result.getRelocations().get( 0 ) );
+            listener.artifactRelocated( event );
+        }
     }
 
 }

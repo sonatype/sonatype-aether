@@ -20,12 +20,12 @@ package org.apache.maven.repository.spi;
  */
 
 /**
+ * A simple logger to facilitate emission of debug messages.
+ * 
  * @author Benjamin Bentmann
  */
 public interface Logger
 {
-
-    // REVIEW: This primarily supports tracing, for anything else a repository listener might be more desirable?
 
     boolean isDebugEnabled();
 

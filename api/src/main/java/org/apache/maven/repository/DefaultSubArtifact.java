@@ -55,12 +55,6 @@ public class DefaultSubArtifact
         return expand( type, super.getType() );
     }
 
-    @Override
-    public void setVersion( String version )
-    {
-        // ignored, version is always controlled by main artifact
-    }
-
     private static String expand( String pattern, String replacement )
     {
         String result = "";

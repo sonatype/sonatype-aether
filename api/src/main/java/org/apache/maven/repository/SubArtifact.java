@@ -37,11 +37,6 @@ public interface SubArtifact
     Artifact getMainArtifact();
 
     /**
-     * Does nothing, the sub artifact will always use the version of its main artifact.
-     */
-    void setVersion( String version );
-
-    /**
      * Creates a deep copy of this artifact.
      * 
      * @return The clone of this artifact, never {@code null}.

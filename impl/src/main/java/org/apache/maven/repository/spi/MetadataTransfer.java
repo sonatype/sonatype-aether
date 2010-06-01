@@ -28,6 +28,7 @@ import org.apache.maven.repository.MetadataTransferException;
  * @author Benjamin Bentmann
  */
 public abstract class MetadataTransfer
+    extends Transfer
 {
 
     private Metadata metadata;

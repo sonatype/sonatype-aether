@@ -20,35 +20,46 @@ package org.apache.maven.repository;
  */
 
 /**
+ * A listener being notified of events from the repository system. The listener may be called from an arbitrary thread.
+ * <em>Note:</em> Implementors are strongly advised to inherit from
+ * {@link org.apache.maven.repository.util.AbstractRepositoryListener} instead of directly implementing this interface.
+ * 
  * @author Benjamin Bentmann
+ * @see TransferListener
  */
 public interface RepositoryListener
 {
 
-    // TODO: what about problems, like missing POMs?
-    
-    void resolvingArtifact( RepositoryEvent event );
+    void artifactDescriptorInvalid( RepositoryEvent event );
 
-    void resolvedArtifact( RepositoryEvent event );
+    void artifactDescriptorMissing( RepositoryEvent event );
 
-    void resolvingMetadata( RepositoryEvent event );
+    void artifactRelocated( RepositoryEvent event );
 
-    void resolvedMetadata( RepositoryEvent event );
+    void metadataInvalid( RepositoryEvent event );
 
-    void installingArtifact( RepositoryEvent event );
+    void artifactResolving( RepositoryEvent event );
 
-    void installedArtifact( RepositoryEvent event );
+    void artifactResolved( RepositoryEvent event );
 
-    void installingMetadata( RepositoryEvent event );
+    void metadataResolving( RepositoryEvent event );
 
-    void installedMetadata( RepositoryEvent event );
+    void metadataResolved( RepositoryEvent event );
 
-    void deployingArtifact( RepositoryEvent event );
+    void artifactInstalling( RepositoryEvent event );
 
-    void deployedArtifact( RepositoryEvent event );
+    void artifactInstalled( RepositoryEvent event );
 
-    void deployingMetadata( RepositoryEvent event );
+    void metadataInstalling( RepositoryEvent event );
 
-    void deployedMetadata( RepositoryEvent event );
+    void metadataInstalled( RepositoryEvent event );
+
+    void artifactDeploying( RepositoryEvent event );
+
+    void artifactDeployed( RepositoryEvent event );
+
+    void metadataDeploying( RepositoryEvent event );
+
+    void metadataDeployed( RepositoryEvent event );
 
 }

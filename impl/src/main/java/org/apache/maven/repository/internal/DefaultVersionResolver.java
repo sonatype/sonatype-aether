@@ -38,6 +38,7 @@ import org.apache.maven.repository.Metadata;
 import org.apache.maven.repository.MetadataRequest;
 import org.apache.maven.repository.MetadataResult;
 import org.apache.maven.repository.RemoteRepository;
+import org.apache.maven.repository.RepositoryListener;
 import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.VersionRequest;
 import org.apache.maven.repository.VersionResolutionException;
@@ -47,6 +48,7 @@ import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.MetadataResolver;
 import org.apache.maven.repository.spi.NullLogger;
 import org.apache.maven.repository.spi.VersionResolver;
+import org.apache.maven.repository.util.DefaultRepositoryEvent;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.util.IOUtil;
@@ -59,6 +61,14 @@ import org.codehaus.plexus.util.StringUtils;
 public class DefaultVersionResolver
     implements VersionResolver
 {
+
+    private static final String MAVEN_METADATA_XML = "maven-metadata.xml";
+
+    private static final String RELEASE = "RELEASE";
+
+    private static final String LATEST = "LATEST";
+
+    private static final String SNAPSHOT = "SNAPSHOT";
 
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
@@ -91,16 +101,21 @@ public class DefaultVersionResolver
 
         DefaultMetadata metadata;
 
-        if ( "RELEASE".equals( version ) || "LATEST".equals( version ) )
+        if ( RELEASE.equals( version ) )
         {
             metadata = new DefaultMetadata();
             metadata.setGroupId( request.getArtifact().getGroupId() );
             metadata.setArtifactId( request.getArtifact().getArtifactId() );
-            metadata.setType( "maven-metadata.xml" );
-            metadata.setNature( "LATEST".equals( version ) ? Metadata.Nature.RELEASE_OR_SNAPSHOT
-                            : Metadata.Nature.RELEASE );
+            metadata.setNature( Metadata.Nature.RELEASE );
         }
-        else if ( version.endsWith( "SNAPSHOT" ) )
+        else if ( LATEST.equals( version ) )
+        {
+            metadata = new DefaultMetadata();
+            metadata.setGroupId( request.getArtifact().getGroupId() );
+            metadata.setArtifactId( request.getArtifact().getArtifactId() );
+            metadata.setNature( Metadata.Nature.RELEASE_OR_SNAPSHOT );
+        }
+        else if ( version.endsWith( SNAPSHOT ) )
         {
             WorkspaceReader workspace = session.getWorkspaceReader();
             if ( workspace != null && workspace.findVersions( request.getArtifact() ).contains( version ) )
@@ -114,7 +129,6 @@ public class DefaultVersionResolver
                 metadata.setGroupId( request.getArtifact().getGroupId() );
                 metadata.setArtifactId( request.getArtifact().getArtifactId() );
                 metadata.setVersion( version );
-                metadata.setType( "maven-metadata.xml" );
                 metadata.setNature( Metadata.Nature.SNAPSHOT );
             }
         }
@@ -129,6 +143,8 @@ public class DefaultVersionResolver
         }
         else
         {
+            metadata.setType( MAVEN_METADATA_XML );
+
             List<MetadataRequest> metadataRequests = new ArrayList<MetadataRequest>( request.getRepositories().size() );
             for ( RemoteRepository repository : request.getRepositories() )
             {
@@ -160,11 +176,11 @@ public class DefaultVersionResolver
                 }
             }
 
-            if ( "RELEASE".equals( version ) )
+            if ( RELEASE.equals( version ) )
             {
                 result.setVersion( versioning.getRelease() );
             }
-            else if ( "LATEST".equals( version ) )
+            else if ( LATEST.equals( version ) )
             {
                 result.setVersion( versioning.getLatest() );
                 if ( StringUtils.isEmpty( versioning.getLatest() ) )
@@ -172,7 +188,7 @@ public class DefaultVersionResolver
                     result.setVersion( versioning.getRelease() );
                 }
 
-                if ( result.getVersion() != null && result.getVersion().endsWith( "SNAPSHOT" ) )
+                if ( result.getVersion() != null && result.getVersion().endsWith( SNAPSHOT ) )
                 {
                     Artifact artifact = new DefaultArtifact( request.getArtifact() );
                     artifact.setVersion( result.getVersion() );
@@ -203,7 +219,7 @@ public class DefaultVersionResolver
                     if ( snapshot.getTimestamp() != null && snapshot.getBuildNumber() > 0 )
                     {
                         String qualifier = snapshot.getTimestamp() + "-" + snapshot.getBuildNumber();
-                        result.setVersion( version.substring( 0, version.length() - "SNAPSHOT".length() ) + qualifier );
+                        result.setVersion( version.substring( 0, version.length() - SNAPSHOT.length() ) + qualifier );
                     }
                     else
                     {
@@ -220,6 +236,8 @@ public class DefaultVersionResolver
             {
                 throw new VersionResolutionException( result );
             }
+
+            request.getArtifact().setVersion( result.getVersion() );
         }
 
         return result;
@@ -235,7 +253,7 @@ public class DefaultVersionResolver
             if ( metadata.getFile() != null )
             {
                 fis = new FileInputStream( metadata.getFile() );
-                org.apache.maven.artifact.repository.metadata.Metadata m = new MetadataXpp3Reader().read( fis );
+                org.apache.maven.artifact.repository.metadata.Metadata m = new MetadataXpp3Reader().read( fis, false );
                 versioning = m.getVersioning();
             }
         }
@@ -245,6 +263,7 @@ public class DefaultVersionResolver
         }
         catch ( Exception e )
         {
+            invalidMetadata( session, metadata, e );
             result.addException( e );
         }
         finally
@@ -253,6 +272,17 @@ public class DefaultVersionResolver
         }
 
         return ( versioning != null ) ? versioning : new Versioning();
+    }
+
+    private void invalidMetadata( RepositorySession session, Metadata metadata, Exception exception )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+            event.setException( exception );
+            listener.metadataInvalid( event );
+        }
     }
 
     private boolean mergeVersions( Versioning target, Versioning source )

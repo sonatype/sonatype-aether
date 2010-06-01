@@ -44,8 +44,9 @@ public interface RepositorySystem
         throws VersionRangeResolutionException;
 
     /**
-     * Resolves a metaversion to a concrete version. For example, resolves "1.0-SNAPSHOT" to "1.0-20090208.132618-23" or
-     * "RELEASE"/"LATEST" to "2.0".
+     * Resolves an artifact's metaversion (if any) to a concrete version. For example, resolves "1.0-SNAPSHOT" to
+     * "1.0-20090208.132618-23" or "RELEASE"/"LATEST" to "2.0". The resolved version is stored both in the original
+     * artifact and the returned result which provides further details about the resolution.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The version request, must not be {@code null}
@@ -56,7 +57,8 @@ public interface RepositorySystem
         throws VersionResolutionException;
 
     /**
-     * Gets information about an artifact like its direct dependencies.
+     * Gets information about an artifact like its direct dependencies. As a side effect, the artifact's version will be
+     * resolved if necessary.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The descriptor request, must not be {@code null}

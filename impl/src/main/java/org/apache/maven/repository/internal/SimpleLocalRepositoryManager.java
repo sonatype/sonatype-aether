@@ -55,7 +55,7 @@ public class SimpleLocalRepositoryManager
         {
             throw new IllegalArgumentException( "base directory has not been specified" );
         }
-        repository = new LocalRepository( basedir, type );
+        repository = new LocalRepository( basedir.getAbsoluteFile(), type );
     }
 
     public LocalRepository getRepository()

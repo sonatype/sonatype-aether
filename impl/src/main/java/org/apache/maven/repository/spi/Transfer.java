@@ -1,4 +1,4 @@
-package org.apache.maven.repository;
+package org.apache.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,29 +19,28 @@ package org.apache.maven.repository;
  * under the License.
  */
 
-import java.io.File;
-import java.util.List;
-
 /**
- * @author Benjamin Bentmann
+ * @author Benjamin
  */
-public interface RepositoryEvent
+public abstract class Transfer
 {
 
-    RepositorySession getSession();
+    public enum State
+    {
+        NEW, ACTIVE, DONE
+    }
 
-    Artifact getArtifact();
+    private State state = State.NEW;
 
-    Artifact getRelocatedArtifact();
+    public State getState()
+    {
+        return state;
+    }
 
-    Metadata getMetadata();
-
-    File getFile();
-
-    ArtifactRepository getRepository();
-
-    Exception getException();
-
-    List<Exception> getExceptions();
+    public Transfer setState( State state )
+    {
+        this.state = state;
+        return this;
+    }
 
 }

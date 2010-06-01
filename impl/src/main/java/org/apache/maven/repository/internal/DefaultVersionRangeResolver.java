@@ -38,6 +38,7 @@ import org.apache.maven.repository.Metadata;
 import org.apache.maven.repository.MetadataRequest;
 import org.apache.maven.repository.MetadataResult;
 import org.apache.maven.repository.RemoteRepository;
+import org.apache.maven.repository.RepositoryListener;
 import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.VersionRangeRequest;
 import org.apache.maven.repository.VersionRangeResolutionException;
@@ -47,6 +48,7 @@ import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.MetadataResolver;
 import org.apache.maven.repository.spi.NullLogger;
 import org.apache.maven.repository.spi.VersionRangeResolver;
+import org.apache.maven.repository.util.DefaultRepositoryEvent;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.util.IOUtil;
@@ -58,6 +60,8 @@ import org.codehaus.plexus.util.IOUtil;
 public class DefaultVersionRangeResolver
     implements VersionRangeResolver
 {
+
+    private static final String MAVEN_METADATA_XML = "maven-metadata.xml";
 
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
@@ -160,7 +164,7 @@ public class DefaultVersionRangeResolver
         DefaultMetadata metadata = new DefaultMetadata();
         metadata.setGroupId( request.getArtifact().getGroupId() );
         metadata.setArtifactId( request.getArtifact().getArtifactId() );
-        metadata.setType( "maven-metadata.xml" );
+        metadata.setType( MAVEN_METADATA_XML );
         metadata.setNature( nature );
 
         List<MetadataRequest> metadataRequests = new ArrayList<MetadataRequest>( request.getRepositories().size() );
@@ -236,7 +240,7 @@ public class DefaultVersionRangeResolver
             if ( metadata.getFile() != null )
             {
                 fis = new FileInputStream( metadata.getFile() );
-                org.apache.maven.artifact.repository.metadata.Metadata m = new MetadataXpp3Reader().read( fis );
+                org.apache.maven.artifact.repository.metadata.Metadata m = new MetadataXpp3Reader().read( fis, false );
                 versioning = m.getVersioning();
             }
         }
@@ -246,6 +250,7 @@ public class DefaultVersionRangeResolver
         }
         catch ( Exception e )
         {
+            invalidMetadata( session, metadata, e );
             result.addException( e );
         }
         finally
@@ -254,6 +259,17 @@ public class DefaultVersionRangeResolver
         }
 
         return ( versioning != null ) ? versioning : new Versioning();
+    }
+
+    private void invalidMetadata( RepositorySession session, Metadata metadata, Exception exception )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+            event.setException( exception );
+            listener.metadataInvalid( event );
+        }
     }
 
 }

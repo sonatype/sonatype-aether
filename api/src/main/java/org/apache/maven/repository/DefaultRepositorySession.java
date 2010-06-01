@@ -20,6 +20,7 @@ package org.apache.maven.repository;
  */
 
 import java.util.Properties;
+import java.util.UUID;
 
 /**
  * @author Benjamin Bentmann
@@ -27,6 +28,8 @@ import java.util.Properties;
 public class DefaultRepositorySession
     implements RepositorySession
 {
+
+    private String id;
 
     private boolean offline;
 
@@ -45,6 +48,8 @@ public class DefaultRepositorySession
     private LocalRepositoryManager localRepositoryManager;
 
     private WorkspaceReader workspaceReader;
+
+    private RepositoryListener repositoryListener;
 
     private TransferListener transferListener;
 
@@ -75,10 +80,12 @@ public class DefaultRepositorySession
     public DefaultRepositorySession()
     {
         // enables default constructor
+        setId( null );
     }
 
     public DefaultRepositorySession( RepositorySession session )
     {
+        setId( session.getId() );
         setOffline( session.isOffline() );
         setTransferErrorCachingEnabled( session.isTransferErrorCachingEnabled() );
         setNotFoundCachingEnabled( session.isNotFoundCachingEnabled() );
@@ -88,6 +95,7 @@ public class DefaultRepositorySession
         setUpdatePolicy( session.getUpdatePolicy() );
         setLocalRepositoryManager( session.getLocalRepositoryManager() );
         setWorkspaceReader( session.getWorkspaceReader() );
+        setRepositoryListener( session.getRepositoryListener() );
         setTransferListener( session.getTransferListener() );
         setSystemProperties( session.getSystemProperties() );
         setUserProperties( session.getUserProperties() );
@@ -101,6 +109,17 @@ public class DefaultRepositorySession
         setDependencyFilter( session.getDependencyFilter() );
         setDependencyGraphTransformer( session.getDependencyGraphTransformer() );
         setCache( session.getCache() );
+    }
+
+    public String getId()
+    {
+        return id;
+    }
+
+    public DefaultRepositorySession setId( String id )
+    {
+        this.id = ( id != null ) ? id : UUID.randomUUID().toString().replace( "-", "" );
+        return this;
     }
 
     public boolean isOffline()
@@ -199,6 +218,17 @@ public class DefaultRepositorySession
     public DefaultRepositorySession setWorkspaceReader( WorkspaceReader workspaceReader )
     {
         this.workspaceReader = workspaceReader;
+        return this;
+    }
+
+    public RepositoryListener getRepositoryListener()
+    {
+        return repositoryListener;
+    }
+
+    public DefaultRepositorySession setRepositoryListener( RepositoryListener repositoryListener )
+    {
+        this.repositoryListener = repositoryListener;
         return this;
     }
 

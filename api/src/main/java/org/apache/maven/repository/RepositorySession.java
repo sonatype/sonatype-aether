@@ -29,6 +29,8 @@ import java.util.Properties;
 public interface RepositorySession
 {
 
+    String getId();
+
     boolean isOffline();
 
     boolean isTransferErrorCachingEnabled();
@@ -46,6 +48,8 @@ public interface RepositorySession
     LocalRepositoryManager getLocalRepositoryManager();
 
     WorkspaceReader getWorkspaceReader();
+
+    RepositoryListener getRepositoryListener();
 
     TransferListener getTransferListener();
 

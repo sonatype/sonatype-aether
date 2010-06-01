@@ -19,6 +19,8 @@ package org.apache.maven.repository.wagon;
  * under the License.
  */
 
+import java.io.File;
+
 import org.apache.maven.repository.TransferCancelledException;
 import org.apache.maven.repository.TransferEvent.EventType;
 import org.apache.maven.repository.TransferEvent.RequestType;
@@ -42,10 +44,10 @@ class WagonTransferListenerAdapter
 
     private long transferredBytes;
 
-    public WagonTransferListenerAdapter( TransferListener delegate, String repositoryUrl, String resourceName )
+    public WagonTransferListenerAdapter( TransferListener delegate, String repositoryUrl, String resourceName, File file )
     {
         this.delegate = delegate;
-        resource = new DefaultTransferResource( repositoryUrl, resourceName );
+        resource = new DefaultTransferResource( repositoryUrl, resourceName, file );
     }
 
     public void transferStarted( TransferEvent event )

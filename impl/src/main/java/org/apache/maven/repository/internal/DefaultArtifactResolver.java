@@ -28,12 +28,14 @@ import java.util.List;
 
 import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.ArtifactNotFoundException;
+import org.apache.maven.repository.ArtifactRepository;
 import org.apache.maven.repository.ArtifactResolutionException;
 import org.apache.maven.repository.ArtifactTransferException;
 import org.apache.maven.repository.LocalArtifactQuery;
 import org.apache.maven.repository.LocalRepositoryManager;
 import org.apache.maven.repository.NoRepositoryConnectorException;
 import org.apache.maven.repository.RemoteRepository;
+import org.apache.maven.repository.RepositoryListener;
 import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryPolicy;
 import org.apache.maven.repository.ArtifactRequest;
@@ -51,6 +53,7 @@ import org.apache.maven.repository.spi.RepositoryConnector;
 import org.apache.maven.repository.spi.UpdateCheck;
 import org.apache.maven.repository.spi.UpdateCheckManager;
 import org.apache.maven.repository.spi.VersionResolver;
+import org.apache.maven.repository.util.DefaultRepositoryEvent;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 
@@ -121,6 +124,7 @@ public class DefaultArtifactResolver
         throws ArtifactResolutionException
     {
         List<ArtifactResult> results = new ArrayList<ArtifactResult>( requests.size() );
+        boolean failures = false;
 
         LocalRepositoryManager lrm = session.getLocalRepositoryManager();
         WorkspaceReader workspace = session.getWorkspaceReader();
@@ -135,30 +139,31 @@ public class DefaultArtifactResolver
             Artifact artifact = request.getArtifact();
             List<RemoteRepository> repos = request.getRepositories();
 
+            artifactResolving( session, artifact );
+
             if ( artifact.getFile() != null )
             {
                 if ( !artifact.getFile().isFile() )
                 {
+                    failures = true;
                     result.addException( new ArtifactNotFoundException( artifact, null ) );
                 }
+                artifactResolved( session, artifact, null, result.getExceptions() );
                 continue;
             }
 
-            VersionRequest versionRequest = new VersionRequest();
-            versionRequest.setArtifact( artifact );
-            versionRequest.setRepositories( repos );
             VersionResult versionResult;
             try
             {
+                VersionRequest versionRequest = new VersionRequest( artifact, repos, request.getContext() );
                 versionResult = versionResolver.resolveVersion( session, versionRequest );
             }
             catch ( VersionResolutionException e )
             {
                 result.addException( e );
+                artifactResolved( session, artifact, null, result.getExceptions() );
                 continue;
             }
-
-            artifact.setVersion( versionResult.getVersion() );
 
             if ( versionResult.getRepository() != null )
             {
@@ -179,6 +184,7 @@ public class DefaultArtifactResolver
                 {
                     artifact.setFile( file );
                     result.setRepository( workspace.getRepository() );
+                    artifactResolved( session, artifact, workspace.getRepository(), null );
                     continue;
                 }
             }
@@ -189,15 +195,17 @@ public class DefaultArtifactResolver
             {
                 artifact.setFile( query.getFile() );
                 result.setRepository( lrm.getRepository() );
+                artifactResolved( session, artifact, lrm.getRepository(), null );
                 continue;
             }
 
             if ( session.isOffline() )
             {
-                result.addException( new ArtifactNotFoundException( artifact, null,
-                                                                    "The repository system is offline but the artifact "
-                                                                        + artifact
-                                                                        + " is not available in the local repository." ) );
+                Exception exception =
+                    new ArtifactNotFoundException( artifact, null, "The repository system is offline but the artifact "
+                        + artifact + " is not available in the local repository." );
+                result.addException( exception );
+                artifactResolved( session, artifact, null, result.getExceptions() );
                 continue;
             }
 
@@ -234,10 +242,6 @@ public class DefaultArtifactResolver
             for ( ResolutionItem item : group.items )
             {
                 Artifact artifact = item.request.getArtifact();
-                if ( artifact.getFile() != null )
-                {
-                    continue;
-                }
 
                 ArtifactDownload download = new ArtifactDownload();
                 download.setArtifact( artifact );
@@ -318,6 +322,7 @@ public class DefaultArtifactResolver
                     download.getArtifact().setFile( download.getFile() );
                     item.result.setRepository( group.repository );
                     lrm.addRemoteArtifact( download.getArtifact(), group.repository, item.request.getContext() );
+                    artifactResolved( session, download.getArtifact(), group.repository, null );
                 }
                 else
                 {
@@ -331,11 +336,46 @@ public class DefaultArtifactResolver
             Artifact artifact = result.getRequest().getArtifact();
             if ( artifact.getFile() == null )
             {
-                throw new ArtifactResolutionException( results );
+                failures = true;
+                if ( result.getExceptions().isEmpty() )
+                {
+                    Exception exception = new ArtifactNotFoundException( artifact, null );
+                    result.addException( exception );
+                }
+                artifactResolved( session, artifact, null, result.getExceptions() );
             }
         }
 
+        if ( failures )
+        {
+            throw new ArtifactResolutionException( results );
+        }
+
         return results;
+    }
+
+    private void artifactResolving( RepositorySession session, Artifact artifact )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
+            listener.artifactResolving( event );
+        }
+    }
+
+    private void artifactResolved( RepositorySession session, Artifact artifact, ArtifactRepository repository,
+                                   List<Exception> exceptions )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
+            event.setRepository( repository );
+            event.setExceptions( exceptions );
+            event.setFile( artifact.getFile() );
+            listener.artifactResolved( event );
+        }
     }
 
     static class ResolutionGroup

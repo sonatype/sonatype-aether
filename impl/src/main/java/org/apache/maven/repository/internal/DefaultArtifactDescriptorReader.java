@@ -41,6 +41,7 @@ import org.apache.maven.model.building.ModelProblem;
 import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.apache.maven.repository.Artifact;
 import org.apache.maven.repository.ArtifactDescriptorException;
+import org.apache.maven.repository.ArtifactNotFoundException;
 import org.apache.maven.repository.ArtifactResolutionException;
 import org.apache.maven.repository.ArtifactStereotype;
 import org.apache.maven.repository.ArtifactStereotypeManager;
@@ -52,17 +53,22 @@ import org.apache.maven.repository.ArtifactDescriptorResult;
 import org.apache.maven.repository.Dependency;
 import org.apache.maven.repository.Exclusion;
 import org.apache.maven.repository.RemoteRepository;
+import org.apache.maven.repository.RepositoryListener;
 import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryPolicy;
 import org.apache.maven.repository.ArtifactRequest;
 import org.apache.maven.repository.ArtifactResult;
+import org.apache.maven.repository.VersionRequest;
+import org.apache.maven.repository.VersionResolutionException;
 import org.apache.maven.repository.WorkspaceRepository;
 import org.apache.maven.repository.spi.ArtifactResolver;
 import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.NullLogger;
 import org.apache.maven.repository.spi.ArtifactDescriptorReader;
 import org.apache.maven.repository.spi.RemoteRepositoryManager;
+import org.apache.maven.repository.spi.VersionResolver;
 import org.apache.maven.repository.util.DefaultArtifactStereotype;
+import org.apache.maven.repository.util.DefaultRepositoryEvent;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 
@@ -79,6 +85,9 @@ public class DefaultArtifactDescriptorReader
 
     @Requirement
     private RemoteRepositoryManager remoteRepositoryManager;
+
+    @Requirement
+    private VersionResolver versionResolver;
 
     @Requirement
     private ArtifactResolver artifactResolver;
@@ -99,6 +108,16 @@ public class DefaultArtifactDescriptorReader
             throw new IllegalArgumentException( "remote repository manager has not been specified" );
         }
         this.remoteRepositoryManager = remoteRepositoryManager;
+        return this;
+    }
+
+    public DefaultArtifactDescriptorReader setVersionResolver( VersionResolver versionResolver )
+    {
+        if ( versionResolver == null )
+        {
+            throw new IllegalArgumentException( "version resolver has not been specified" );
+        }
+        this.versionResolver = versionResolver;
         return this;
     }
 
@@ -177,13 +196,28 @@ public class DefaultArtifactDescriptorReader
         Set<String> visited = new LinkedHashSet<String>();
         for ( Artifact artifact = request.getArtifact();; )
         {
+            try
+            {
+                VersionRequest versionRequest =
+                    new VersionRequest( artifact, request.getRepositories(), request.getContext() );
+                versionResolver.resolveVersion( session, versionRequest );
+            }
+            catch ( VersionResolutionException e )
+            {
+                result.addException( e );
+                throw new ArtifactDescriptorException( result );
+            }
+
             if ( !visited.add( artifact.getGroupId() + ':' + artifact.getArtifactId() + ':' + artifact.getBaseVersion() ) )
             {
+                RepositoryException exception =
+                    new RepositoryException( "Artifact relocations form a cycle: " + visited );
+                invalidDescriptor( session, artifact, exception );
                 if ( session.isIgnoreInvalidArtifactDescriptor() )
                 {
                     return null;
                 }
-                result.addException( new RepositoryException( "Artifact relocations form a cycle: " + visited ) );
+                result.addException( exception );
                 throw new ArtifactDescriptorException( result );
             }
 
@@ -199,9 +233,13 @@ public class DefaultArtifactDescriptorReader
             }
             catch ( ArtifactResolutionException e )
             {
-                if ( session.isIgnoreMissingArtifactDescriptor() )
+                if ( e.getCause() instanceof ArtifactNotFoundException )
                 {
-                    return null;
+                    missingDescriptor( session, artifact );
+                    if ( session.isIgnoreMissingArtifactDescriptor() )
+                    {
+                        return null;
+                    }
                 }
                 result.addException( e );
                 throw new ArtifactDescriptorException( result );
@@ -240,6 +278,7 @@ public class DefaultArtifactDescriptorReader
                         throw new ArtifactDescriptorException( result );
                     }
                 }
+                invalidDescriptor( session, artifact, e );
                 if ( session.isIgnoreInvalidArtifactDescriptor() )
                 {
                     return null;
@@ -327,6 +366,27 @@ public class DefaultArtifactDescriptorReader
             result.setChecksumPolicy( policy.getChecksumPolicy() );
         }
         return result;
+    }
+
+    private void missingDescriptor( RepositorySession session, Artifact artifact )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
+            listener.artifactDescriptorMissing( event );
+        }
+    }
+
+    private void invalidDescriptor( RepositorySession session, Artifact artifact, Exception exception )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
+            event.setException( exception );
+            listener.artifactDescriptorInvalid( event );
+        }
     }
 
 }

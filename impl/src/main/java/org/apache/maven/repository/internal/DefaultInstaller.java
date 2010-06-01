@@ -30,11 +30,12 @@ import org.apache.maven.repository.InstallationException;
 import org.apache.maven.repository.LocalRepositoryManager;
 import org.apache.maven.repository.MergeableMetadata;
 import org.apache.maven.repository.Metadata;
-import org.apache.maven.repository.RepositoryException;
+import org.apache.maven.repository.RepositoryListener;
 import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.spi.Installer;
 import org.apache.maven.repository.spi.Logger;
 import org.apache.maven.repository.spi.NullLogger;
+import org.apache.maven.repository.util.DefaultRepositoryEvent;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.util.FileUtils;
@@ -59,87 +60,97 @@ public class DefaultInstaller
     public void install( RepositorySession session, InstallRequest request )
         throws InstallationException
     {
-        LocalRepositoryManager lrm = session.getLocalRepositoryManager();
-        File basedir = lrm.getRepository().getBasedir();
-
         for ( Artifact artifact : request.getArtifacts() )
         {
-            install( artifact, lrm, basedir );
+            install( session, artifact );
         }
 
         for ( Metadata metadata : request.getMetadata() )
         {
-            install( metadata, lrm, basedir );
+            install( session, metadata );
         }
     }
 
-    private void install( Artifact artifact, LocalRepositoryManager lrm, File basedir )
+    private void install( RepositorySession session, Artifact artifact )
         throws InstallationException
     {
+        LocalRepositoryManager lrm = session.getLocalRepositoryManager();
+
         File srcFile = artifact.getFile();
-        File dstFile = new File( basedir, lrm.getPathForLocalArtifact( artifact ) );
+        File dstFile = new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalArtifact( artifact ) );
 
-        boolean copy =
-            "pom".equals( artifact.getType() ) || !dstFile.exists() || srcFile.lastModified() != dstFile.lastModified()
-                || srcFile.length() != dstFile.length();
+        artifactInstalling( session, artifact, dstFile );
 
-        if ( copy )
+        Exception exception = null;
+        try
         {
-            if ( !dstFile.getParentFile().exists() )
-            {
-                dstFile.getParentFile().mkdirs();
-            }
+            boolean copy =
+                "pom".equals( artifact.getType() ) || !dstFile.exists()
+                    || srcFile.lastModified() != dstFile.lastModified() || srcFile.length() != dstFile.length();
 
-            try
+            if ( copy )
             {
+                if ( !dstFile.getParentFile().exists() )
+                {
+                    dstFile.getParentFile().mkdirs();
+                }
+
                 FileUtils.copyFile( srcFile, dstFile );
+                dstFile.setLastModified( srcFile.lastModified() );
             }
-            catch ( IOException e )
+            else
             {
-                throw new InstallationException( "Failed to install artifact " + artifact + ": " + e.getMessage(), e );
+                logger.debug( "Skipped re-installing " + srcFile + " to " + dstFile + ", seems unchanged" );
             }
-            dstFile.setLastModified( srcFile.lastModified() );
-        }
-        else
-        {
-            logger.debug( "Skipped re-installing " + srcFile + " to " + dstFile + ", seems unchanged" );
-        }
 
-        lrm.addLocalArtifact( artifact );
+            lrm.addLocalArtifact( artifact );
+        }
+        catch ( IOException e )
+        {
+            exception = e;
+            throw new InstallationException( "Failed to install artifact " + artifact + ": " + e.getMessage(), e );
+        }
+        finally
+        {
+            artifactInstalled( session, artifact, dstFile, exception );
+        }
 
         List<MergeableMetadata> versionMetadata = generateVersionMetadata( artifact );
         for ( MergeableMetadata metadata : versionMetadata )
         {
-            install( metadata, lrm, basedir );
+            install( session, metadata );
         }
     }
 
-    private void install( Metadata metadata, LocalRepositoryManager lrm, File basedir )
+    private void install( RepositorySession session, Metadata metadata )
         throws InstallationException
     {
-        File dstFile = new File( basedir, lrm.getPathForLocalMetadata( metadata ) );
+        LocalRepositoryManager lrm = session.getLocalRepositoryManager();
 
-        if ( metadata instanceof MergeableMetadata )
+        File dstFile = new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalMetadata( metadata ) );
+
+        metadataInstalling( session, metadata, dstFile );
+
+        Exception exception = null;
+        try
         {
-            try
+            if ( metadata instanceof MergeableMetadata )
             {
                 ( (MergeableMetadata) metadata ).merge( dstFile, dstFile );
             }
-            catch ( RepositoryException e )
-            {
-                throw new InstallationException( "Failed to update metadata " + metadata + ": " + e.getMessage(), e );
-            }
-        }
-        else
-        {
-            try
+            else
             {
                 FileUtils.copyFile( metadata.getFile(), dstFile );
             }
-            catch ( IOException e )
-            {
-                throw new InstallationException( "Failed to install metadata " + metadata + ": " + e.getMessage(), e );
-            }
+        }
+        catch ( Exception e )
+        {
+            exception = e;
+            throw new InstallationException( "Failed to install metadata " + metadata + ": " + e.getMessage(), e );
+        }
+        finally
+        {
+            metadataInstalled( session, metadata, dstFile, exception );
         }
     }
 
@@ -154,6 +165,56 @@ public class DefaultInstaller
         }
 
         return result;
+    }
+
+    private void artifactInstalling( RepositorySession session, Artifact artifact, File dstFile )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
+            event.setRepository( session.getLocalRepositoryManager().getRepository() );
+            event.setFile( dstFile );
+            listener.artifactInstalling( event );
+        }
+    }
+
+    private void artifactInstalled( RepositorySession session, Artifact artifact, File dstFile, Exception exception )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
+            event.setRepository( session.getLocalRepositoryManager().getRepository() );
+            event.setFile( dstFile );
+            event.setException( exception );
+            listener.artifactInstalled( event );
+        }
+    }
+
+    private void metadataInstalling( RepositorySession session, Metadata metadata, File dstFile )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+            event.setRepository( session.getLocalRepositoryManager().getRepository() );
+            event.setFile( dstFile );
+            listener.metadataInstalling( event );
+        }
+    }
+
+    private void metadataInstalled( RepositorySession session, Metadata metadata, File dstFile, Exception exception )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+            event.setRepository( session.getLocalRepositoryManager().getRepository() );
+            event.setFile( dstFile );
+            event.setException( exception );
+            listener.metadataInstalled( event );
+        }
     }
 
 }

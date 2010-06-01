@@ -19,6 +19,8 @@ package org.apache.maven.repository;
  * under the License.
  */
 
+import java.io.File;
+
 /**
  * Describes a resource being uploaded or downloaded by the repository system.
  * 
@@ -41,6 +43,14 @@ public interface TransferResource
      * @return The path of the resource, never {@code null}.
      */
     String getResourceName();
+
+    /**
+     * Gets the local file being uploaded or downloaded. When the repository system merely checks for the existence of a
+     * remote resource, no local file will be involved in the transfer.
+     * 
+     * @return The source/target file involved in the transfer or {@code null} if none.
+     */
+    File getFile();
 
     /**
      * The size of the resource in bytes.

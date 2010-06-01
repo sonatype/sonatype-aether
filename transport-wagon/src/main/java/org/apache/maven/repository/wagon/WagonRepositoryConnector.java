@@ -58,6 +58,7 @@ import org.apache.maven.repository.spi.MetadataDownload;
 import org.apache.maven.repository.spi.MetadataTransfer;
 import org.apache.maven.repository.spi.MetadataUpload;
 import org.apache.maven.repository.spi.RepositoryConnector;
+import org.apache.maven.repository.spi.Transfer;
 import org.apache.maven.repository.util.DefaultTransferEvent;
 import org.apache.maven.wagon.ResourceDoesNotExistException;
 import org.apache.maven.wagon.Wagon;
@@ -111,6 +112,11 @@ class WagonRepositoryConnector
         this.repository = repository;
         this.session = session;
         this.listener = session.getTransferListener();
+
+        if ( !"default".equals( repository.getType() ) )
+        {
+            throw new NoRepositoryConnectorException( repository );
+        }
 
         wagonRepo = new Repository( repository.getId(), repository.getUrl() );
         wagonHint = wagonRepo.getProtocol().toLowerCase( Locale.ENGLISH );
@@ -345,7 +351,7 @@ class WagonRepositoryConnector
         }
     }
 
-    class GetTask<T>
+    class GetTask<T extends Transfer>
         implements Runnable
     {
 
@@ -386,10 +392,12 @@ class WagonRepositoryConnector
 
         public void run()
         {
+            download.setState( Transfer.State.ACTIVE );
+
             WagonTransferListenerAdapter wagonListener = null;
             if ( listener != null )
             {
-                wagonListener = new WagonTransferListenerAdapter( listener, wagonRepo.getUrl(), path );
+                wagonListener = new WagonTransferListenerAdapter( listener, wagonRepo.getUrl(), path, file );
             }
 
             try
@@ -522,13 +530,14 @@ class WagonRepositoryConnector
 
         public void flush()
         {
-            wrapper.wrap( download, exception, repository );
+            flush( null );
         }
 
         public void flush( Exception exception )
         {
             Exception e = this.exception;
             wrapper.wrap( download, ( e != null ) ? e : exception, repository );
+            download.setState( Transfer.State.DONE );
         }
 
         private boolean verifyChecksum( Wagon wagon, String actual, String ext )
@@ -597,7 +606,7 @@ class WagonRepositoryConnector
 
     }
 
-    class PutTask<T>
+    class PutTask<T extends Transfer>
         implements Runnable
     {
 
@@ -621,10 +630,12 @@ class WagonRepositoryConnector
 
         public void run()
         {
+            upload.setState( Transfer.State.ACTIVE );
+
             WagonTransferListenerAdapter wagonListener = null;
             if ( listener != null )
             {
-                wagonListener = new WagonTransferListenerAdapter( listener, wagonRepo.getUrl(), path );
+                wagonListener = new WagonTransferListenerAdapter( listener, wagonRepo.getUrl(), path, file );
             }
 
             try
@@ -699,6 +710,7 @@ class WagonRepositoryConnector
         public void flush()
         {
             wrapper.wrap( upload, exception, repository );
+            upload.setState( Transfer.State.DONE );
         }
 
         private void uploadChecksum( Wagon wagon, File file, String path, String ext, String algo )

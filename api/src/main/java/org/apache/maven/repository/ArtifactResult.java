@@ -49,7 +49,7 @@ public class ArtifactResult
         return request;
     }
 
-    public List<? extends Exception> getExceptions()
+    public List<Exception> getExceptions()
     {
         return exceptions;
     }

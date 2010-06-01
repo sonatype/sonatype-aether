@@ -49,7 +49,7 @@ public class ArtifactDescriptorException
     private static Throwable getCause( ArtifactDescriptorResult result )
     {
         Throwable cause = null;
-        if ( result != null && result.getExceptions().size() == 1 )
+        if ( result != null && !result.getExceptions().isEmpty() )
         {
             cause = result.getExceptions().get( 0 );
         }

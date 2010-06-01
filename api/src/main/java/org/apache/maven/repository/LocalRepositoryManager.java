@@ -82,7 +82,8 @@ public interface LocalRepositoryManager
 
     /**
      * Registers the specified locally built artifact with the local repository. Note that artifact registration is
-     * merely concerned about updating the local repository's metadata, not about actually installing the artifact.
+     * merely concerned about updating the local repository's internal state, not about actually installing the artifact
+     * or its accompanying metadata.
      * 
      * @param artifact The artifact to register, must not be {@code null}.
      */
@@ -90,7 +91,8 @@ public interface LocalRepositoryManager
 
     /**
      * Registers the specified remotely cached artifact with the local repository. Note that artifact registration is
-     * merely concerned about updating the local repository's metadata, not about actually installing the artifact.
+     * merely concerned about updating the local repository's internal state, not about actually installing the artifact
+     * or its accompanying metadata.
      * 
      * @param artifact The artifact to register, must not be {@code null}.
      * @param repository The remote repository from which the artifact was resolved, must not be {@code null}.

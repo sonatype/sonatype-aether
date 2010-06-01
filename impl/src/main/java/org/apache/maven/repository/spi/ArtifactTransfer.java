@@ -28,6 +28,7 @@ import org.apache.maven.repository.ArtifactTransferException;
  * @author Benjamin Bentmann
  */
 public abstract class ArtifactTransfer
+    extends Transfer
 {
 
     private Artifact artifact;

@@ -35,6 +35,7 @@ import org.apache.maven.repository.DependencyManager;
 import org.apache.maven.repository.DependencyNode;
 import org.apache.maven.repository.DependencyTraverser;
 import org.apache.maven.repository.DeployRequest;
+import org.apache.maven.repository.InstallRequest;
 import org.apache.maven.repository.LocalRepositoryManager;
 import org.apache.maven.repository.MirrorSelector;
 import org.apache.maven.repository.ProxySelector;
@@ -85,7 +86,7 @@ public class RepoSys
 
         CollectRequest collectRequest = new CollectRequest();
         collectRequest.setRoot( new Dependency( new DefaultArtifact( "org.apache.maven", "maven-core", "", "jar",
-                                                                     "2.2.1" ), "compile" ) );
+                                                                     "RELEASE" ), "compile" ) );
         collectRequest.setRepositories( Arrays.asList( new RemoteRepository( "central", "default",
                                                                              "http://repo1.maven.org/maven2/" ) ) );
         DependencyNode root = repoSystem.collectDependencies( session, collectRequest ).getRoot();
@@ -93,11 +94,17 @@ public class RepoSys
         repoSystem.resolveDependencies( session, root );
 
         Artifact projectOutput = new DefaultArtifact( "test", "test", "", "jar", "0.1-SNAPSHOT" );
-        projectOutput.setFile( new File( "/Users/bentmann/tmp/z/pom.xml" ) );
+        projectOutput.setFile( new File( "pom.xml" ) );
+
+        InstallRequest installRequest = new InstallRequest();
+        installRequest.addArtifact( projectOutput );
+        repoSystem.install( session, installRequest );
+
         DeployRequest deployRequest = new DeployRequest();
         deployRequest.addArtifact( projectOutput );
-        deployRequest.setRepository( new RemoteRepository( "nexus", "default", "file:///Users/bentmann/tmp/dist-repo/" ) );
-        //repoSystem.deploy( session, deployRequest );
+        deployRequest.setRepository( new RemoteRepository( "nexus", "default",
+                                                           new File( "target/dist-repo" ).toURI().toString() ) );
+        repoSystem.deploy( session, deployRequest );
 
         System.out.println("============================================================");
         dump( root, "" );
@@ -136,6 +143,7 @@ public class RepoSys
         artifactResolver.setVersionResolver( versionResolver );
 
         DefaultArtifactDescriptorReader pomReader = new DefaultArtifactDescriptorReader();
+        pomReader.setVersionResolver( versionResolver );
         pomReader.setArtifactResolver( artifactResolver );
         pomReader.setRemoteRepositoryManager( remoteRepoMan );
         pomReader.setModelBuilder( newModelBuilder() );
@@ -202,6 +210,7 @@ public class RepoSys
         session.setLocalRepositoryManager( localRepoMan );
 
         session.setTransferListener( new ConsoleTransferListener( System.out ) );
+        session.setRepositoryListener( new ConsoleRepositoryListener( System.out ) );
 
         MirrorSelector mirrorSelector = new DefaultMirrorSelector();
         session.setMirrorSelector( mirrorSelector );

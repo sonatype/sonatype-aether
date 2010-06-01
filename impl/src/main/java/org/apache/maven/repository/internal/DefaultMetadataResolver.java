@@ -33,6 +33,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.maven.repository.ArtifactRepository;
 import org.apache.maven.repository.LocalRepositoryManager;
 import org.apache.maven.repository.Metadata;
 import org.apache.maven.repository.MetadataNotFoundException;
@@ -41,6 +42,7 @@ import org.apache.maven.repository.MetadataResult;
 import org.apache.maven.repository.MetadataTransferException;
 import org.apache.maven.repository.NoRepositoryConnectorException;
 import org.apache.maven.repository.RemoteRepository;
+import org.apache.maven.repository.RepositoryListener;
 import org.apache.maven.repository.RepositorySession;
 import org.apache.maven.repository.RepositoryPolicy;
 import org.apache.maven.repository.spi.Logger;
@@ -51,6 +53,7 @@ import org.apache.maven.repository.spi.RemoteRepositoryManager;
 import org.apache.maven.repository.spi.RepositoryConnector;
 import org.apache.maven.repository.spi.UpdateCheck;
 import org.apache.maven.repository.spi.UpdateCheckManager;
+import org.apache.maven.repository.util.DefaultRepositoryEvent;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 
@@ -122,6 +125,8 @@ public class DefaultMetadataResolver
                 continue;
             }
 
+            metadataResolving( session, metadata, repository );
+
             File metadataFile = getFile( session, metadata, repository, request.getContext() );
 
             if ( session.isOffline() )
@@ -129,6 +134,7 @@ public class DefaultMetadataResolver
                 if ( metadataFile.isFile() )
                 {
                     metadata.setFile( metadataFile );
+                    metadataResolved( session, metadata, repository, null );
                 }
                 else
                 {
@@ -136,6 +142,7 @@ public class DefaultMetadataResolver
                         "The repository system is offline but the metadata " + metadata + " from " + repository
                             + " is not available in the local repository.";
                     result.setException( new MetadataNotFoundException( metadata, repository, msg ) );
+                    metadataResolved( session, metadata, repository, result.getException() );
                 }
                 continue;
             }
@@ -169,6 +176,7 @@ public class DefaultMetadataResolver
                 {
                     metadata.setFile( metadataFile );
                 }
+                metadataResolved( session, metadata, repository, result.getException() );
             }
         }
 
@@ -209,8 +217,10 @@ public class DefaultMetadataResolver
                 File metadataFile = task.check.getFile();
                 if ( metadataFile.isFile() )
                 {
-                    task.result.getRequest().getMetadata().setFile( metadataFile );
+                    task.request.getMetadata().setFile( metadataFile );
                 }
+                metadataResolved( session, task.request.getMetadata(), task.request.getRepository(),
+                                  task.result.getException() );
             }
         }
 
@@ -237,6 +247,31 @@ public class DefaultMetadataResolver
             path = lrm.getPathForLocalMetadata( metadata );
         }
         return new File( lrm.getRepository().getBasedir(), path );
+    }
+
+    private void metadataResolving( RepositorySession session, Metadata metadata, ArtifactRepository repository )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+            event.setRepository( repository );
+            listener.metadataResolving( event );
+        }
+    }
+
+    private void metadataResolved( RepositorySession session, Metadata metadata, ArtifactRepository repository,
+                                   Exception exception )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+            event.setRepository( repository );
+            event.setException( exception );
+            event.setFile( metadata.getFile() );
+            listener.metadataResolved( event );
+        }
     }
 
     private Executor getExecutor( int threads )
@@ -273,6 +308,8 @@ public class DefaultMetadataResolver
 
         final MetadataResult result;
 
+        final MetadataRequest request;
+
         final String policy;
 
         final UpdateCheck<Metadata, MetadataTransferException> check;
@@ -286,6 +323,7 @@ public class DefaultMetadataResolver
         {
             this.session = session;
             this.result = result;
+            this.request = result.getRequest();
             this.policy = policy;
             this.check = check;
             this.latch = latch;
@@ -293,8 +331,6 @@ public class DefaultMetadataResolver
 
         public void run()
         {
-            MetadataRequest request = result.getRequest();
-
             try
             {
                 MetadataDownload download =

@@ -1,5 +1,4 @@
 
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,15 +19,21 @@
  */
 
 import java.io.PrintStream;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.maven.repository.TransferEvent;
 import org.apache.maven.repository.TransferResource;
+import org.apache.maven.repository.util.AbstractTransferListener;
 
 class ConsoleTransferListener
     extends AbstractTransferListener
 {
+
+    private PrintStream out;
 
     private Map<TransferResource, Long> downloads = new ConcurrentHashMap<TransferResource, Long>();
 
@@ -36,7 +41,15 @@ class ConsoleTransferListener
 
     public ConsoleTransferListener( PrintStream out )
     {
-        super( out );
+        this.out = ( out != null ) ? out : System.out;
+    }
+
+    @Override
+    public void transferInitiated( TransferEvent event )
+    {
+        String message = event.getRequestType() == TransferEvent.RequestType.PUT ? "Uploading" : "Downloading";
+
+        out.println( message + ": " + event.getResource().getRepositoryUrl() + event.getResource().getResourceName() );
     }
 
     @Override
@@ -99,7 +112,25 @@ class ConsoleTransferListener
     {
         transferCompleted( event );
 
-        super.transferSucceeded( event );
+        TransferResource resource = event.getResource();
+        long contentLength = event.getTransferredBytes();
+        if ( contentLength >= 0 )
+        {
+            String type = ( event.getRequestType() == TransferEvent.RequestType.PUT ? "Uploaded" : "Downloaded" );
+            String len = contentLength >= 1024 ? toKB( contentLength ) + " KB" : contentLength + " B";
+
+            String throughput = "";
+            long duration = System.currentTimeMillis() - resource.getTransferStartTime();
+            if ( duration > 0 )
+            {
+                DecimalFormat format = new DecimalFormat( "0.0", new DecimalFormatSymbols( Locale.ENGLISH ) );
+                double kbPerSec = ( contentLength / 1024.0 ) / ( duration / 1000.0 );
+                throughput = " at " + format.format( kbPerSec ) + " KB/sec";
+            }
+
+            out.println( type + ": " + resource.getRepositoryUrl() + resource.getResourceName() + " (" + len
+                + throughput + ")" );
+        }
     }
 
     @Override
@@ -107,7 +138,7 @@ class ConsoleTransferListener
     {
         transferCompleted( event );
 
-        super.transferFailed( event );
+        event.getException().printStackTrace( out );
     }
 
     private void transferCompleted( TransferEvent event )
@@ -118,6 +149,16 @@ class ConsoleTransferListener
         pad( buffer, lastLength );
         buffer.append( '\r' );
         out.print( buffer );
+    }
+
+    public void transferCorrupted( TransferEvent event )
+    {
+        event.getException().printStackTrace( out );
+    }
+
+    protected long toKB( long bytes )
+    {
+        return ( bytes + 1023 ) / 1024;
     }
 
 }
