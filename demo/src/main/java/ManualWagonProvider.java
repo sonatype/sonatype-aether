@@ -1,4 +1,4 @@
-import org.apache.maven.repository.wagon.WagonProvider;
+import org.apache.maven.repo.wagon.WagonProvider;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.providers.file.FileWagon;
 
