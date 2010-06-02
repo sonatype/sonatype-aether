@@ -28,20 +28,32 @@ public class WorkspaceRepository
     implements ArtifactRepository
 {
 
+    private final String type;
+
+    public WorkspaceRepository()
+    {
+        this( "workspace" );
+    }
+
+    public WorkspaceRepository( String type )
+    {
+        this.type = type;
+    }
+
     public String getType()
     {
-        return "workspace";
+        return type;
     }
 
     public String getId()
     {
-        return getType();
+        return "workspace";
     }
 
     @Override
     public String toString()
     {
-        return "(workspace)";
+        return "(" + getType() + ")";
     }
 
 }
