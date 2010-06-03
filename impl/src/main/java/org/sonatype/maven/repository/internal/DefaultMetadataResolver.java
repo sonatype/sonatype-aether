@@ -123,7 +123,11 @@ public class DefaultMetadataResolver
                 metadataResolving( session, metadata, session.getLocalRepositoryManager().getRepository() );
 
                 File localFile = getFile( session, metadata, null, null );
-                if ( !localFile.isFile() )
+                if ( localFile.isFile() )
+                {
+                    metadata.setFile( localFile );
+                }
+                else
                 {
                     result.setException( new MetadataNotFoundException( metadata, null ) );
                 }
