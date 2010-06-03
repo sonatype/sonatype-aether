@@ -137,4 +137,15 @@ public interface RepositorySystem
     void deploy( RepositorySession session, DeployRequest request )
         throws DeploymentException;
 
+    /**
+     * Creates a new manager for the specified local repository. If the specified local repository has no type, the
+     * default repository type will be used.
+     * 
+     * @param localRepository The local repository to create a manager for, must not be {@code null}.
+     * @return The local repository manager, never {@code null}.
+     * @throws IllegalArgumentException If the specified repository type is not recognized or no base directory is
+     *             given.
+     */
+    LocalRepositoryManager newLocalRepositoryManager( LocalRepository localRepository );
+
 }

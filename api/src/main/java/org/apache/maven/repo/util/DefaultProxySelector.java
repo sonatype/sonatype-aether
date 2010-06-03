@@ -31,6 +31,8 @@ import org.apache.maven.repo.ProxySelector;
 import org.apache.maven.repo.RemoteRepository;
 
 /**
+ * A simple proxy selector that selects the first matching proxy from a list of configured proxies.
+ * 
  * @author Benjamin Bentmann
  */
 public class DefaultProxySelector
@@ -39,6 +41,14 @@ public class DefaultProxySelector
 
     private List<ProxyDef> proxies = new ArrayList<ProxyDef>();
 
+    /**
+     * Adds the specified proxy definition to the selector. Proxy definitions are ordered, the first matching proxy for
+     * a given repository will be used.
+     * 
+     * @param proxy The proxy definition to add, must not be {@code null}.
+     * @param nonProxyHosts The list of hosts to exclude from proxying, may be {@code null}.
+     * @return This proxy selector for chaining, never {@code null}.
+     */
     public DefaultProxySelector add( Proxy proxy, String nonProxyHosts )
     {
         proxies.add( new ProxyDef( proxy, nonProxyHosts ) );

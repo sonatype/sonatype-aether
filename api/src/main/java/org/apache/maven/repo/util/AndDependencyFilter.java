@@ -24,6 +24,8 @@ import org.apache.maven.repo.DependencyFilter;
 import org.apache.maven.repo.DependencyNode;
 
 /**
+ * A dependency filter that combines zero or more other filters using a logical {@code AND}.
+ * 
  * @author Benjamin Bentmann
  */
 public class AndDependencyFilter
@@ -32,6 +34,11 @@ public class AndDependencyFilter
 
     private final DependencyFilter[] filters;
 
+    /**
+     * Creates a new filter from the specified filters.
+     * 
+     * @param filters The filters to combine, may be {@code null}.
+     */
     public AndDependencyFilter( DependencyFilter... filters )
     {
         this.filters = ( filters != null ) ? filters : new DependencyFilter[0];

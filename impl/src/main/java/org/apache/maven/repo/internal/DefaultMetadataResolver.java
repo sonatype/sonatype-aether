@@ -118,6 +118,21 @@ public class DefaultMetadataResolver
             Metadata metadata = request.getMetadata();
             RemoteRepository repository = request.getRepository();
 
+            if ( repository == null )
+            {
+                metadataResolving( session, metadata, session.getLocalRepositoryManager().getRepository() );
+
+                File localFile = getFile( session, metadata, null, null );
+                if ( !localFile.isFile() )
+                {
+                    result.setException( new MetadataNotFoundException( metadata, null ) );
+                }
+
+                metadataResolved( session, metadata, session.getLocalRepositoryManager().getRepository(),
+                                  result.getException() );
+                continue;
+            }
+
             RepositoryPolicy policy = getPolicy( session, repository, metadata.getNature() );
 
             if ( !policy.isEnabled() )

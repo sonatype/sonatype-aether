@@ -20,7 +20,7 @@ package org.apache.maven.repo;
  */
 
 /**
- * A request to resolve metadata.
+ * A request to resolve metadata from either a remote repository or the local repository.
  * 
  * @author Benjamin Bentmann
  * @see RepositorySystem#resolveMetadata(RepositorySession, java.util.Collection)
@@ -49,7 +49,8 @@ public class MetadataRequest
      * Creates a request with the specified properties.
      * 
      * @param metadata The metadata to resolve, may be {@code null}.
-     * @param repository The repository to resolve the metadata from, may be {@code null}.
+     * @param repository The repository to resolve the metadata from, may be {@code null} to resolve from the local
+     *            repository.
      * @param context The context in which this request is made, may be {@code null}.
      */
     public MetadataRequest( Metadata metadata, RemoteRepository repository, String context )
@@ -84,7 +85,7 @@ public class MetadataRequest
     /**
      * Gets the repository from which the metadata should be resolved.
      * 
-     * @return The repository or {@code null} if not set.
+     * @return The repository or {@code null} to resolve from the local repository.
      */
     public RemoteRepository getRepository()
     {
@@ -94,7 +95,7 @@ public class MetadataRequest
     /**
      * Sets the repository from which the metadata should be resolved.
      * 
-     * @param repository The repository, may be {@code null}.
+     * @param repository The repository, may be {@code null} to resolve from the local repository.
      * @return This request for chaining, never {@code null}.
      */
     public MetadataRequest setRepository( RemoteRepository repository )

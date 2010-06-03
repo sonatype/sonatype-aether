@@ -22,7 +22,8 @@ package org.apache.maven.repo;
 import java.io.File;
 
 /**
- * A repository on the local file system.
+ * A repository on the local file system used to cache contents of remote repositories and to store locally built
+ * artifacts.
  * 
  * @author Benjamin Bentmann
  */
@@ -33,6 +34,26 @@ public class LocalRepository
     private File basedir;
 
     private String type;
+
+    /**
+     * Creates a new local repository with the specified base directory and unknown type.
+     * 
+     * @param basedir The base directory of the repository, may be {@code null}.
+     */
+    public LocalRepository( String basedir )
+    {
+        this( ( basedir != null ) ? new File( basedir ) : null, "" );
+    }
+
+    /**
+     * Creates a new local repository with the specified base directory and unknown type.
+     * 
+     * @param basedir The base directory of the repository, may be {@code null}.
+     */
+    public LocalRepository( File basedir )
+    {
+        this( basedir, "" );
+    }
 
     /**
      * Creates a new local repository with the specified properties.

@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.apache.maven.repo.Artifact;
 import org.apache.maven.repo.LocalArtifactQuery;
 import org.apache.maven.repo.RemoteRepository;
+import org.apache.maven.repo.spi.Logger;
 
 /**
  * A local repository manager that builds upon the classical Maven 2.0 local repository structure but additionally keeps
@@ -36,7 +37,7 @@ import org.apache.maven.repo.RemoteRepository;
  * 
  * @author Benjamin Bentmann
  */
-public class TrackingLocalRepositoryManager
+public class EnhancedLocalRepositoryManager
     extends SimpleLocalRepositoryManager
 {
 
@@ -44,10 +45,18 @@ public class TrackingLocalRepositoryManager
 
     private TrackingFileManager trackingFileManager;
 
-    public TrackingLocalRepositoryManager( File basedir )
+    public EnhancedLocalRepositoryManager( File basedir )
     {
         super( basedir, "enhanced" );
         trackingFileManager = new TrackingFileManager();
+    }
+
+    @Override
+    public EnhancedLocalRepositoryManager setLogger( Logger logger )
+    {
+        super.setLogger( logger );
+        trackingFileManager.setLogger( logger );
+        return this;
     }
 
     @Override

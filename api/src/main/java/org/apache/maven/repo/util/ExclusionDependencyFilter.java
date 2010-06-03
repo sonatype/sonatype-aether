@@ -31,7 +31,10 @@ import org.apache.maven.repo.DependencyNode;
 import org.apache.maven.repo.Exclusion;
 
 /**
+ * A dependency filter that applies exclusions based on artifact coordinates.
+ * 
  * @author Benjamin Bentmann
+ * @see Dependency#getExclusions()
  */
 public class ExclusionDependencyFilter
     implements DependencyFilter
@@ -39,11 +42,19 @@ public class ExclusionDependencyFilter
 
     private final List<Exclusion> exclusions;
 
+    /**
+     * Creates a new filter without any exclusions.
+     */
     public ExclusionDependencyFilter()
     {
         this( Collections.<Exclusion> emptyList() );
     }
 
+    /**
+     * Creates a new filter with the specified exclusions.
+     * 
+     * @param exclusions The exclusions, may be {@code null}.
+     */
     public ExclusionDependencyFilter( List<Exclusion> exclusions )
     {
         this.exclusions = ( exclusions != null ) ? exclusions : Collections.<Exclusion> emptyList();

@@ -19,6 +19,7 @@ package org.apache.maven.repo.internal;
  * under the License.
  */
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -38,6 +39,8 @@ import org.apache.maven.repo.DeployRequest;
 import org.apache.maven.repo.DeploymentException;
 import org.apache.maven.repo.InstallRequest;
 import org.apache.maven.repo.InstallationException;
+import org.apache.maven.repo.LocalRepository;
+import org.apache.maven.repo.LocalRepositoryManager;
 import org.apache.maven.repo.MetadataRequest;
 import org.apache.maven.repo.MetadataResult;
 import org.apache.maven.repo.RepositorySession;
@@ -53,7 +56,9 @@ import org.apache.maven.repo.spi.ArtifactResolver;
 import org.apache.maven.repo.spi.DependencyCollector;
 import org.apache.maven.repo.spi.Deployer;
 import org.apache.maven.repo.spi.Installer;
+import org.apache.maven.repo.spi.Logger;
 import org.apache.maven.repo.spi.MetadataResolver;
+import org.apache.maven.repo.spi.NullLogger;
 import org.apache.maven.repo.spi.VersionRangeResolver;
 import org.apache.maven.repo.spi.VersionResolver;
 import org.codehaus.plexus.component.annotations.Component;
@@ -66,6 +71,9 @@ import org.codehaus.plexus.component.annotations.Requirement;
 public class DefaultRepositorySystem
     implements RepositorySystem
 {
+
+    @Requirement
+    private Logger logger = NullLogger.INSTANCE;
 
     @Requirement
     private VersionResolver versionResolver;
@@ -243,6 +251,25 @@ public class DefaultRepositorySystem
         throws DeploymentException
     {
         deployer.deploy( session, request );
+    }
+
+    public LocalRepositoryManager newLocalRepositoryManager( LocalRepository localRepository )
+    {
+        String type = localRepository.getType();
+        File basedir = localRepository.getBasedir();
+
+        if ( "".equals( type ) || "enhanced".equals( type ) )
+        {
+            return new EnhancedLocalRepositoryManager( basedir ).setLogger( logger );
+        }
+        else if ( "simple".equals( type ) )
+        {
+            return new SimpleLocalRepositoryManager( basedir ).setLogger( logger );
+        }
+        else
+        {
+            throw new IllegalArgumentException( "Invalid repository type: " + type );
+        }
     }
 
 }

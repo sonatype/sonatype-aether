@@ -51,7 +51,7 @@ import org.apache.maven.repo.internal.DefaultRepositorySystem;
 import org.apache.maven.repo.internal.DefaultUpdateCheckManager;
 import org.apache.maven.repo.internal.DefaultVersionRangeResolver;
 import org.apache.maven.repo.internal.DefaultVersionResolver;
-import org.apache.maven.repo.internal.TrackingLocalRepositoryManager;
+import org.apache.maven.repo.internal.EnhancedLocalRepositoryManager;
 import org.apache.maven.repo.spi.NullLogger;
 import org.apache.maven.repo.util.AndDependencyFilter;
 import org.apache.maven.repo.util.ChainedDependencyGraphTransformer;
@@ -205,8 +205,7 @@ public class RepoSys
     {
         DefaultRepositorySession session = new DefaultRepositorySession();
 
-        LocalRepositoryManager localRepoMan =
-            new TrackingLocalRepositoryManager( new File( "target/local-repo" ), NullLogger.INSTANCE );
+        LocalRepositoryManager localRepoMan = new EnhancedLocalRepositoryManager( new File( "target/local-repo" ) );
         session.setLocalRepositoryManager( localRepoMan );
 
         session.setTransferListener( new ConsoleTransferListener( System.out ) );

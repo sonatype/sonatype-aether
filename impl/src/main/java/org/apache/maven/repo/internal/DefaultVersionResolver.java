@@ -29,9 +29,7 @@ import java.util.List;
 import org.apache.maven.artifact.repository.metadata.Snapshot;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
-import org.apache.maven.repo.Artifact;
 import org.apache.maven.repo.ArtifactRepository;
-import org.apache.maven.repo.DefaultArtifact;
 import org.apache.maven.repo.DefaultMetadata;
 import org.apache.maven.repo.LocalRepositoryManager;
 import org.apache.maven.repo.Metadata;
@@ -190,10 +188,9 @@ public class DefaultVersionResolver
 
                 if ( result.getVersion() != null && result.getVersion().endsWith( SNAPSHOT ) )
                 {
-                    Artifact artifact = new DefaultArtifact( request.getArtifact() );
-                    artifact.setVersion( result.getVersion() );
+                    request.getArtifact().setVersion( result.getVersion() );
                     VersionRequest subRequest = new VersionRequest();
-                    subRequest.setArtifact( artifact );
+                    subRequest.setArtifact( request.getArtifact() );
                     if ( repo instanceof RemoteRepository )
                     {
                         subRequest.setRepositories( Collections.singletonList( (RemoteRepository) repo ) );

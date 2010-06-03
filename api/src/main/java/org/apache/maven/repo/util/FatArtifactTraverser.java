@@ -24,7 +24,11 @@ import org.apache.maven.repo.DependencyNode;
 import org.apache.maven.repo.DependencyTraverser;
 
 /**
+ * A dependency traverser that excludes fat artifacts from the traversal. Fat artifacts are artifacts that have the
+ * property "includesDependencies" set to {@code true}.
+ * 
  * @author Benjamin Bentmann
+ * @see org.apache.maven.repo.Artifact#getProperties()
  */
 public class FatArtifactTraverser
     implements DependencyTraverser

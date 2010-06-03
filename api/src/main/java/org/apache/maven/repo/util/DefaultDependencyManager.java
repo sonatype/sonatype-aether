@@ -30,6 +30,8 @@ import org.apache.maven.repo.DependencyManager;
 import org.apache.maven.repo.DependencyNode;
 
 /**
+ * A dependency manager that overrides dependency version and scope for managed dependencies.
+ * 
  * @author Benjamin Bentmann
  */
 public class DefaultDependencyManager
@@ -40,6 +42,9 @@ public class DefaultDependencyManager
 
     private final Map<String, String> managedScopes;
 
+    /**
+     * Creates a new dependency manager without any management information.
+     */
     public DefaultDependencyManager()
     {
         this( Collections.<String, String> emptyMap(), Collections.<String, String> emptyMap() );

@@ -32,6 +32,7 @@ import org.apache.maven.repo.LocalRepository;
 import org.apache.maven.repo.LocalRepositoryManager;
 import org.apache.maven.repo.Metadata;
 import org.apache.maven.repo.RemoteRepository;
+import org.apache.maven.repo.spi.Logger;
 
 /**
  * A local repository manager that realizes the classical Maven 2.0 local repository.
@@ -46,7 +47,7 @@ public class SimpleLocalRepositoryManager
 
     public SimpleLocalRepositoryManager( File basedir )
     {
-        this( basedir, "default" );
+        this( basedir, "simple" );
     }
 
     SimpleLocalRepositoryManager( File basedir, String type )
@@ -56,6 +57,11 @@ public class SimpleLocalRepositoryManager
             throw new IllegalArgumentException( "base directory has not been specified" );
         }
         repository = new LocalRepository( basedir.getAbsoluteFile(), type );
+    }
+
+    public SimpleLocalRepositoryManager setLogger( Logger logger )
+    {
+        return this;
     }
 
     public LocalRepository getRepository()

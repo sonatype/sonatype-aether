@@ -24,7 +24,10 @@ import org.apache.maven.repo.DependencyFilter;
 import org.apache.maven.repo.DependencyNode;
 
 /**
+ * A dependency filter that excludes optional transitive dependencies.
+ * 
  * @author Benjamin Bentmann
+ * @see Dependency#isOptional()
  */
 public class OptionalDependencyFilter
     implements DependencyFilter

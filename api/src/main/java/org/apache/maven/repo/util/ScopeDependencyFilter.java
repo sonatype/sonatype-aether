@@ -28,7 +28,10 @@ import org.apache.maven.repo.DependencyFilter;
 import org.apache.maven.repo.DependencyNode;
 
 /**
+ * A dependency filter based on dependency scopes.
+ * 
  * @author Benjamin Bentmann
+ * @see Dependency#getScope()
  */
 public class ScopeDependencyFilter
     implements DependencyFilter
@@ -38,15 +41,35 @@ public class ScopeDependencyFilter
 
     private final Collection<String> excluded = new HashSet<String>();
 
+    /**
+     * Creates a new filter using the specified includes and excludes.
+     * 
+     * @param included The set of scopes to include, may be {@code null} or empty to include any scope.
+     * @param excluded The set of scopes to exclude, may be {@code null} or empty to exclude no scope.
+     */
     public ScopeDependencyFilter( Collection<String> included, Collection<String> excluded )
     {
-        this.included.addAll( included );
-        this.excluded.addAll( excluded );
+        if ( included != null )
+        {
+            this.included.addAll( included );
+        }
+        if ( excluded != null )
+        {
+            this.excluded.addAll( excluded );
+        }
     }
 
+    /**
+     * Creates a new filter using the specified excludes.
+     * 
+     * @param excluded The set of scopes to exclude, may be {@code null} or empty to exclude no scope.
+     */
     public ScopeDependencyFilter( String... excluded )
     {
-        this.excluded.addAll( Arrays.asList( excluded ) );
+        if ( excluded != null )
+        {
+            this.excluded.addAll( Arrays.asList( excluded ) );
+        }
     }
 
     public boolean accept( DependencyNode node, Dependency dependency )

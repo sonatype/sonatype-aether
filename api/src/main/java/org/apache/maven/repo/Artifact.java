@@ -120,10 +120,10 @@ public interface Artifact
      * <dt>language</dt>
      * <dd>The programming language this artifact is relevant for, e.g. "java" or "none".</dd>
      * <dt>includesDependencies</dt>
-     * <dd>A flag whether the artifact presents some kind of bundle that physically includes its dependencies, e.g. a
-     * fat WAR.</dd>
+     * <dd>A boolean flag whether the artifact presents some kind of bundle that physically includes its dependencies,
+     * e.g. a fat WAR.</dd>
      * <dt>constitutesBuildPath</dt>
-     * <dd>A flag whether the artifact is meant to be used for the compile/runtime/test build path of a consumer
+     * <dd>A boolean flag whether the artifact is meant to be used for the compile/runtime/test build path of a consumer
      * project.</dd>
      * </dl>
      * 
