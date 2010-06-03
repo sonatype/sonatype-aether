@@ -25,9 +25,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.maven.repo.TransferEvent;
-import org.apache.maven.repo.TransferResource;
-import org.apache.maven.repo.util.AbstractTransferListener;
+import org.sonatype.maven.repository.TransferEvent;
+import org.sonatype.maven.repository.TransferResource;
+import org.sonatype.maven.repository.util.AbstractTransferListener;
 
 class ConsoleTransferListener
     extends AbstractTransferListener

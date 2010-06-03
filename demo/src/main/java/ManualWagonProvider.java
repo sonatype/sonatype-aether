@@ -1,6 +1,6 @@
-import org.apache.maven.repo.wagon.WagonProvider;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.providers.file.FileWagon;
+import org.sonatype.maven.repository.connector.wagon.WagonProvider;
 
 class ManualWagonProvider
     implements WagonProvider
