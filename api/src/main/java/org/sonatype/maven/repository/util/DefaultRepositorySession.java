@@ -28,6 +28,7 @@ import org.sonatype.maven.repository.DependencyFilter;
 import org.sonatype.maven.repository.DependencyGraphTransformer;
 import org.sonatype.maven.repository.DependencyManager;
 import org.sonatype.maven.repository.DependencyTraverser;
+import org.sonatype.maven.repository.LocalRepository;
 import org.sonatype.maven.repository.LocalRepositoryManager;
 import org.sonatype.maven.repository.MirrorSelector;
 import org.sonatype.maven.repository.ProxySelector;
@@ -212,6 +213,11 @@ public class DefaultRepositorySession
     {
         this.updatePolicy = updatePolicy;
         return this;
+    }
+
+    public LocalRepository getLocalRepository()
+    {
+        return getLocalRepositoryManager().getRepository();
     }
 
     public LocalRepositoryManager getLocalRepositoryManager()

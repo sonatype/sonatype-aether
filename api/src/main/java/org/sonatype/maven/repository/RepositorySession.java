@@ -45,6 +45,8 @@ public interface RepositorySession
 
     String getUpdatePolicy();
 
+    LocalRepository getLocalRepository();
+
     LocalRepositoryManager getLocalRepositoryManager();
 
     WorkspaceReader getWorkspaceReader();
