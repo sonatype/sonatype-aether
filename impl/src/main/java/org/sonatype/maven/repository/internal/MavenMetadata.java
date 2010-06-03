@@ -24,16 +24,16 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
-import org.apache.maven.artifact.repository.metadata.Metadata;
-import org.apache.maven.artifact.repository.metadata.Versioning;
-import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
-import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.WriterFactory;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.sonatype.maven.repository.MergeableMetadata;
 import org.sonatype.maven.repository.RepositoryException;
+import org.sonatype.maven.repository.internal.metadata.Metadata;
+import org.sonatype.maven.repository.internal.metadata.Versioning;
+import org.sonatype.maven.repository.internal.metadata.io.xpp3.MetadataXpp3Reader;
+import org.sonatype.maven.repository.internal.metadata.io.xpp3.MetadataXpp3Writer;
 
 /**
  * @author Benjamin Bentmann
@@ -79,7 +79,7 @@ abstract class MavenMetadata
             versioning.setLastUpdated( null );
         }
 
-        org.apache.maven.artifact.repository.metadata.Metadata dominant = metadata;
+        Metadata dominant = metadata;
 
         versioning = dominant.getVersioning();
         if ( versioning != null )
@@ -90,7 +90,7 @@ abstract class MavenMetadata
         dominant.merge( recessive );
     }
 
-    private org.apache.maven.artifact.repository.metadata.Metadata read( File metadataFile )
+    private Metadata read( File metadataFile )
         throws RepositoryException
     {
         if ( metadataFile.length() <= 0 )
@@ -118,7 +118,7 @@ abstract class MavenMetadata
         }
     }
 
-    private void write( File metadataFile, org.apache.maven.artifact.repository.metadata.Metadata metadata )
+    private void write( File metadataFile, Metadata metadata )
         throws RepositoryException
     {
         Writer writer = null;

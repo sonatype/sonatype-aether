@@ -19,10 +19,10 @@ package org.sonatype.maven.repository.internal;
  * under the License.
  */
 
-import org.apache.maven.artifact.repository.metadata.Metadata;
-import org.apache.maven.artifact.repository.metadata.Snapshot;
-import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.sonatype.maven.repository.Artifact;
+import org.sonatype.maven.repository.internal.metadata.Metadata;
+import org.sonatype.maven.repository.internal.metadata.Snapshot;
+import org.sonatype.maven.repository.internal.metadata.Versioning;
 
 /**
  * @author Benjamin Bentmann

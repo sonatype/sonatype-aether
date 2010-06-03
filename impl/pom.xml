@@ -42,11 +42,6 @@
       <artifactId>maven-model-builder</artifactId>
       <version>3.0-SNAPSHOT</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-repository-metadata</artifactId>
-      <version>3.0-SNAPSHOT</version>
-    </dependency>
   </dependencies>
 
   <build>
@@ -54,6 +49,28 @@
       <plugin>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-metadata</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.modello</groupId>
+        <artifactId>modello-maven-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <id>metadata</id>
+            <goals>
+              <goal>java</goal>
+              <goal>xpp3-reader</goal>
+              <goal>xpp3-writer</goal>
+            </goals>
+            <configuration>
+              <version>1.0.0</version>
+              <useJava5>true</useJava5>
+              <models>
+                <model>src/main/mdo/metadata.mdo</model>
+              </models>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

@@ -28,8 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.maven.artifact.repository.metadata.Versioning;
-import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.util.IOUtil;
@@ -47,6 +45,8 @@ import org.sonatype.maven.repository.VersionRangeRequest;
 import org.sonatype.maven.repository.VersionRangeResolutionException;
 import org.sonatype.maven.repository.VersionRangeResult;
 import org.sonatype.maven.repository.WorkspaceReader;
+import org.sonatype.maven.repository.internal.metadata.Versioning;
+import org.sonatype.maven.repository.internal.metadata.io.xpp3.MetadataXpp3Reader;
 import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.MetadataResolver;
 import org.sonatype.maven.repository.spi.NullLogger;
@@ -240,7 +240,7 @@ public class DefaultVersionRangeResolver
             if ( metadata.getFile() != null )
             {
                 fis = new FileInputStream( metadata.getFile() );
-                org.apache.maven.artifact.repository.metadata.Metadata m = new MetadataXpp3Reader().read( fis, false );
+                org.sonatype.maven.repository.internal.metadata.Metadata m = new MetadataXpp3Reader().read( fis, false );
                 versioning = m.getVersioning();
             }
         }
