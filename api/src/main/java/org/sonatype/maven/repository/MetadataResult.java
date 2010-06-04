@@ -29,6 +29,8 @@ public class MetadataResult
 
     private Exception exception;
 
+    private boolean updated;
+
     public MetadataResult( MetadataRequest request )
     {
         if ( request == null )
@@ -52,6 +54,17 @@ public class MetadataResult
     public Exception getException()
     {
         return exception;
+    }
+
+    public MetadataResult setUpdated( boolean updated )
+    {
+        this.updated = updated;
+        return this;
+    }
+
+    public boolean isUpdated()
+    {
+        return updated;
     }
 
 }

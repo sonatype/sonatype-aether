@@ -37,12 +37,24 @@ public class MetadataRequest
 
     private boolean deleteLocalCopyIfMissing;
 
+    private boolean favorLocalRepository;
+
     /**
      * Creates an unitialized request.
      */
     public MetadataRequest()
     {
         // enables default constructor
+    }
+
+    /**
+     * Creates a request to resolve the specified metadata from the local repository.
+     * 
+     * @param metadata The metadata to resolve, may be {@code null}.
+     */
+    public MetadataRequest( Metadata metadata )
+    {
+        setMetadata( metadata );
     }
 
     /**
@@ -149,6 +161,36 @@ public class MetadataRequest
     public MetadataRequest setDeleteLocalCopyIfMissing( boolean deleteLocalCopyIfMissing )
     {
         this.deleteLocalCopyIfMissing = deleteLocalCopyIfMissing;
+        return this;
+    }
+
+    /**
+     * Indicates whether the metadata resolution should be suppressed if the corresponding metadata of the local
+     * repository is up-to-date according to the update policy of the remote repository. In this case, the metadata
+     * resolution will even be suppressed if no local copy of the remote metadata exists yet.
+     * 
+     * @return {@code true} to suppress resolution of remote metadata if the corresponding metadata of the local
+     *         repository is up-to-date, {@code false} to resolve the remote metadata normally according to the update
+     *         policy.
+     */
+    public boolean isFavorLocalRepository()
+    {
+        return favorLocalRepository;
+    }
+
+    /**
+     * Controls resolution of remote metadata when already corresponding metadata of the local repository exists. In
+     * cases where the local repository's metadata is sufficient and going to be preferred, resolution of the remote
+     * metadata can be suppressed to avoid unneccessary network access.
+     * 
+     * @param favorLocalRepository {@code true} to suppress resolution of remote metadata if the corresponding metadata
+     *            of the local repository is up-to-date, {@code false} to resolve the remote metadata normally according
+     *            to the update policy.
+     * @return This request for chaining, never {@code null}.
+     */
+    public MetadataRequest setFavorLocalRepository( boolean favorLocalRepository )
+    {
+        this.favorLocalRepository = favorLocalRepository;
         return this;
     }
 

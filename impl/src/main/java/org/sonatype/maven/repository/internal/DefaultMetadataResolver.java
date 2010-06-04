@@ -166,17 +166,21 @@ public class DefaultMetadataResolver
                 continue;
             }
 
-            File localFile = getFile( session, metadata, null, null );
-            Long localLastUpdate = localLastUpdates.get( localFile );
-            if ( localLastUpdate == null )
+            Long localLastUpdate = null;
+            if ( request.isFavorLocalRepository() )
             {
-                localLastUpdate = Long.valueOf( localFile.lastModified() );
-                localLastUpdates.put( localFile, localLastUpdate );
+                File localFile = getFile( session, metadata, null, null );
+                localLastUpdate = localLastUpdates.get( localFile );
+                if ( localLastUpdate == null )
+                {
+                    localLastUpdate = Long.valueOf( localFile.lastModified() );
+                    localLastUpdates.put( localFile, localLastUpdate );
+                }
             }
 
             UpdateCheck<Metadata, MetadataTransferException> check =
                 new UpdateCheck<Metadata, MetadataTransferException>();
-            check.setLocalLastUpdated( localLastUpdate.longValue() );
+            check.setLocalLastUpdated( ( localLastUpdate != null ) ? localLastUpdate.longValue() : 0 );
             check.setItem( metadata );
             check.setFile( metadataFile );
             check.setRepository( repository );
@@ -237,6 +241,10 @@ public class DefaultMetadataResolver
                 if ( metadataFile.isFile() )
                 {
                     task.request.getMetadata().setFile( metadataFile );
+                }
+                if ( task.result.getException() == null )
+                {
+                    task.result.setUpdated( true );
                 }
                 metadataResolved( session, task.request.getMetadata(), task.request.getRepository(),
                                   task.result.getException() );

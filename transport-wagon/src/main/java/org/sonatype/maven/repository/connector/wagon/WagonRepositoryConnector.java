@@ -280,8 +280,8 @@ class WagonRepositoryConnector
         {
             String resource = layout.getPath( download.getArtifact() );
             GetTask<?> task =
-                new GetTask<ArtifactTransfer>( resource, download.getFile(), download.getChecksumPolicy(), latch,
-                                               download, ARTIFACT );
+                new GetTask<ArtifactTransfer>( resource, download.isExistenceCheck() ? null : download.getFile(),
+                                               download.getChecksumPolicy(), latch, download, ARTIFACT );
             tasks.add( task );
             executor.execute( task );
         }

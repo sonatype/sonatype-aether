@@ -75,7 +75,10 @@ public class DefaultArtifact
         setClassifier( ( classifier != null || stereotype == null ) ? classifier : stereotype.getClassifier() );
         setType( ( type != null || stereotype == null ) ? type : stereotype.getType() );
         setVersion( version );
-        properties.putAll( stereotype.getProperties() );
+        if ( stereotype != null )
+        {
+            properties.putAll( stereotype.getProperties() );
+        }
     }
 
     public DefaultArtifact( Artifact artifact )

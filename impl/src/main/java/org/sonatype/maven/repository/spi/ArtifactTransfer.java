@@ -25,6 +25,8 @@ import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.ArtifactTransferException;
 
 /**
+ * A download/upload of an artifact.
+ * 
  * @author Benjamin Bentmann
  */
 public abstract class ArtifactTransfer
@@ -37,33 +39,66 @@ public abstract class ArtifactTransfer
 
     private ArtifactTransferException exception;
 
+    /**
+     * Gets the artifact being transferred.
+     * 
+     * @return The artifact being transferred or {@code null} if not set.
+     */
     public Artifact getArtifact()
     {
         return artifact;
     }
 
+    /**
+     * Sets the artifact to transfer.
+     * 
+     * @param artifact The artifact, may be {@code null}.
+     * @return This transfer for chaining, never {@code null}.
+     */
     public ArtifactTransfer setArtifact( Artifact artifact )
     {
         this.artifact = artifact;
         return this;
     }
 
+    /**
+     * Gets the local file the artifact is downloaded to or uploaded from.
+     * 
+     * @return The local file or {@code null} if not set.
+     */
     public File getFile()
     {
         return file;
     }
 
+    /**
+     * Sets the local file the artifact is downloaded to or uploaded from.
+     * 
+     * @param file The local file, may be {@code null}.
+     * @return This transfer for chaining, never {@code null}.
+     */
     public ArtifactTransfer setFile( File file )
     {
         this.file = file;
         return this;
     }
 
+    /**
+     * Gets the exception that occurred during the transfer (if any).
+     * 
+     * @return The exception or {@code null} if the transfer was successful.
+     */
     public ArtifactTransferException getException()
     {
         return exception;
     }
 
+    /**
+     * Sets the exception that occurred during the transfer.
+     * 
+     * @param exception The exception, may be {@code null} to denote a successful transfer.
+     * @return This transfer for chaining, never {@code null}.
+     */
     public ArtifactTransfer setException( ArtifactTransferException exception )
     {
         this.exception = exception;

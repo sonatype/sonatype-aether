@@ -25,6 +25,8 @@ import org.sonatype.maven.repository.Metadata;
 import org.sonatype.maven.repository.MetadataTransferException;
 
 /**
+ * A download of metadata from a remote repository.
+ * 
  * @author Benjamin Bentmann
  */
 public class MetadataDownload
@@ -35,11 +37,22 @@ public class MetadataDownload
 
     private String context;
 
+    /**
+     * Creates a new uninitialized download.
+     */
     public MetadataDownload()
     {
         // enables default constructor
     }
 
+    /**
+     * Creates a new download with the specified properties.
+     * 
+     * @param metadata The metadata to download, may be {@code null}.
+     * @param context The context in which this download is performed, may be {@code null}.
+     * @param file The local file to download the artifact to, may be {@code null}.
+     * @param checksumPolicy The checksum policy, may be {@code null}.
+     */
     public MetadataDownload( Metadata metadata, String context, File file, String checksumPolicy )
     {
         setMetadata( metadata );
@@ -62,22 +75,44 @@ public class MetadataDownload
         return this;
     }
 
+    /**
+     * Gets the checksum policy for this transfer.
+     * 
+     * @return The checksum policy, never {@code null}.
+     */
     public String getChecksumPolicy()
     {
         return checksumPolicy;
     }
 
+    /**
+     * Sets the checksum policy for this transfer.
+     * 
+     * @param checksumPolicy The checksum policy, may be {@code null}.
+     * @return This transfer for chaining, never {@code null}.
+     */
     public MetadataDownload setChecksumPolicy( String checksumPolicy )
     {
         this.checksumPolicy = checksumPolicy;
         return this;
     }
 
+    /**
+     * Gets the context of this transfer.
+     * 
+     * @return The context id, never {@code null}.
+     */
     public String getContext()
     {
         return context;
     }
 
+    /**
+     * Sets the context of this transfer.
+     * 
+     * @param context The context id, may be {@code null}.
+     * @return This transfer for chaining, never {@code null}.
+     */
     public MetadataDownload setContext( String context )
     {
         this.context = context;

@@ -149,6 +149,7 @@ public class DefaultVersionResolver
                 MetadataRequest metadataRequest =
                     new MetadataRequest( new DefaultMetadata( metadata ), repository, request.getContext() );
                 metadataRequest.setDeleteLocalCopyIfMissing( true );
+                metadataRequest.setFavorLocalRepository( true );
                 metadataRequests.add( metadataRequest );
             }
             List<MetadataResult> metadataResults = metadataResolver.resolveMetadata( session, metadataRequests );

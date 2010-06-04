@@ -32,31 +32,31 @@ public abstract class AbstractTransferListener
     implements TransferListener
 {
 
-    public void transferInitiated( TransferEvent transferEvent )
+    public void transferInitiated( TransferEvent event )
         throws TransferCancelledException
     {
     }
 
-    public void transferStarted( TransferEvent transferEvent )
+    public void transferStarted( TransferEvent event )
         throws TransferCancelledException
     {
     }
 
-    public void transferProgressed( TransferEvent transferEvent )
+    public void transferProgressed( TransferEvent event )
         throws TransferCancelledException
     {
     }
 
-    public void transferCorrupted( TransferEvent transferEvent )
+    public void transferCorrupted( TransferEvent event )
         throws TransferCancelledException
     {
     }
 
-    public void transferSucceeded( TransferEvent transferEvent )
+    public void transferSucceeded( TransferEvent event )
     {
     }
 
-    public void transferFailed( TransferEvent transferEvent )
+    public void transferFailed( TransferEvent event )
     {
     }
 

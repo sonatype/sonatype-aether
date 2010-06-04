@@ -36,6 +36,8 @@ import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.NullLogger;
 
 /**
+ * Manages potentially concurrent accesses to a properties file.
+ * 
  * @author Benjamin Bentmann
  */
 class TrackingFileManager
@@ -51,39 +53,42 @@ class TrackingFileManager
 
     public Properties read( File file )
     {
-        Properties props = new Properties();
-
         if ( !file.canRead() )
         {
             logger.debug( "Skipped unreadable resolution tracking file " + file );
-            return props;
         }
-
-        synchronized ( file.getAbsolutePath().intern() )
+        else
         {
-            FileLock lock = null;
-            FileChannel channel = null;
-            try
+            synchronized ( file.getAbsolutePath().intern() )
             {
-                FileInputStream stream = new FileInputStream( file );
-                channel = new FileInputStream( file ).getChannel();
-                lock = channel.lock( 0, channel.size(), true );
+                FileLock lock = null;
+                FileChannel channel = null;
+                try
+                {
+                    FileInputStream stream = new FileInputStream( file );
+                    channel = new FileInputStream( file ).getChannel();
+                    lock = channel.lock( 0, channel.size(), true );
 
-                logger.debug( "Reading resolution tracking file " + file );
-                props.load( stream );
-            }
-            catch ( IOException e )
-            {
-                logger.debug( "Failed to read resolution tracking file " + file, e );
-            }
-            finally
-            {
-                release( lock, file );
-                close( channel, file );
+                    logger.debug( "Reading resolution tracking file " + file );
+
+                    Properties props = new Properties();
+                    props.load( stream );
+
+                    return props;
+                }
+                catch ( IOException e )
+                {
+                    logger.debug( "Failed to read resolution tracking file " + file, e );
+                }
+                finally
+                {
+                    release( lock, file );
+                    close( channel, file );
+                }
             }
         }
 
-        return props;
+        return null;
     }
 
     public Properties update( File file, Map<String, String> updates )

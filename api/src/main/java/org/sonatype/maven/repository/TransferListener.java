@@ -33,52 +33,52 @@ public interface TransferListener
      * Notifies the listener about the initiation of a transfer. This event gets fired before any actual network access
      * to the remote repository.
      * 
-     * @param transferEvent The event details, must not be {@code null}.
+     * @param event The event details, must not be {@code null}.
      * @throws TransferCancelledException If the transfer should be aborted.
      */
-    void transferInitiated( TransferEvent transferEvent )
+    void transferInitiated( TransferEvent event )
         throws TransferCancelledException;
 
     /**
      * Notifies the listener about the start of a data transfer.
      * 
-     * @param transferEvent The event details, must not be {@code null}.
+     * @param event The event details, must not be {@code null}.
      * @throws TransferCancelledException If the transfer should be aborted.
      */
-    void transferStarted( TransferEvent transferEvent )
+    void transferStarted( TransferEvent event )
         throws TransferCancelledException;
 
     /**
      * Notifies the listener about some progress in the data transfer.
      * 
-     * @param transferEvent The event details, must not be {@code null}.
+     * @param event The event details, must not be {@code null}.
      * @throws TransferCancelledException If the transfer should be aborted.
      */
-    void transferProgressed( TransferEvent transferEvent )
+    void transferProgressed( TransferEvent event )
         throws TransferCancelledException;
 
     /**
      * Notifies the listener that a checksum validation failed. {@link TransferEvent#getException()} will be of type
      * {@link ChecksumFailureException} and can be used to query further details about the expected/actual checksums.
      * 
-     * @param transferEvent The event details, must not be {@code null}.
+     * @param event The event details, must not be {@code null}.
      * @throws TransferCancelledException If the transfer should be aborted.
      */
-    void transferCorrupted( TransferEvent transferEvent )
+    void transferCorrupted( TransferEvent event )
         throws TransferCancelledException;
 
     /**
      * Notifies the listener about the successful completion of a transfer.
      * 
-     * @param transferEvent The event details, must not be {@code null}.
+     * @param event The event details, must not be {@code null}.
      */
-    void transferSucceeded( TransferEvent transferEvent );
+    void transferSucceeded( TransferEvent event );
 
     /**
      * Notifies the listener about the unsuccessful termination of a transfer.
      * 
-     * @param transferEvent The event details, must not be {@code null}.
+     * @param event The event details, must not be {@code null}.
      */
-    void transferFailed( TransferEvent transferEvent );
+    void transferFailed( TransferEvent event );
 
 }

@@ -25,17 +25,28 @@ import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.ArtifactTransferException;
 
 /**
+ * An upload of an artifact to a remote repository.
+ * 
  * @author Benjamin Bentmann
  */
 public class ArtifactUpload
     extends ArtifactTransfer
 {
 
+    /**
+     * Creates a new uninitialized upload.
+     */
     public ArtifactUpload()
     {
         // enables default constructor
     }
 
+    /**
+     * Creates a new upload with the specified properties.
+     * 
+     * @param artifact The artifact to upload, may be {@code null}.
+     * @param file The local file to upload the artifact from, may be {@code null}.
+     */
     public ArtifactUpload( Artifact artifact, File file )
     {
         setArtifact( artifact );

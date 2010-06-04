@@ -25,17 +25,28 @@ import org.sonatype.maven.repository.Metadata;
 import org.sonatype.maven.repository.MetadataTransferException;
 
 /**
+ * An upload of metadata to a remote repository.
+ * 
  * @author Benjamin Bentmann
  */
 public class MetadataUpload
     extends MetadataTransfer
 {
 
+    /**
+     * Creates a new uninitialized upload.
+     */
     public MetadataUpload()
     {
         // enables default constructor
     }
 
+    /**
+     * Creates a new upload with the specified properties.
+     * 
+     * @param metadata The metadata to upload, may be {@code null}.
+     * @param file The local file to upload the metadata from, may be {@code null}.
+     */
     public MetadataUpload( Metadata metadata, File file )
     {
         setMetadata( metadata );

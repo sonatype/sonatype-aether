@@ -68,7 +68,15 @@ public class EnhancedLocalRepositoryManager
         {
             query.setFile( file );
             Properties props = readRepos( file );
-            if ( props.getProperty( getKey( file, LOCAL_REPO_ID ) ) != null )
+            if ( props == null )
+            {
+                /*
+                 * NOTE: tracking file not present at all, for inter-op with Maven 2.x, assume the artifact was locally
+                 * built.
+                 */
+                query.setAvailable( true );
+            }
+            else if ( props.getProperty( getKey( file, LOCAL_REPO_ID ) ) != null )
             {
                 query.setAvailable( true );
             }

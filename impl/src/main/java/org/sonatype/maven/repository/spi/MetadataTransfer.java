@@ -25,6 +25,8 @@ import org.sonatype.maven.repository.Metadata;
 import org.sonatype.maven.repository.MetadataTransferException;
 
 /**
+ * A download/upload of metadata.
+ * 
  * @author Benjamin Bentmann
  */
 public abstract class MetadataTransfer
@@ -37,33 +39,66 @@ public abstract class MetadataTransfer
 
     private MetadataTransferException exception;
 
+    /**
+     * Gets the metadata being transferred.
+     * 
+     * @return The metadata being transferred or {@code null} if not set.
+     */
     public Metadata getMetadata()
     {
         return metadata;
     }
 
+    /**
+     * Sets the metadata to transfer.
+     * 
+     * @param metadata The metadata, may be {@code null}.
+     * @return This transfer for chaining, never {@code null}.
+     */
     public MetadataTransfer setMetadata( Metadata metadata )
     {
         this.metadata = metadata;
         return this;
     }
 
+    /**
+     * Gets the local file the metadata is downloaded to or uploaded from.
+     * 
+     * @return The local file or {@code null} if not set.
+     */
     public File getFile()
     {
         return file;
     }
 
+    /**
+     * Sets the local file the metadata is downloaded to or uploaded from.
+     * 
+     * @param file The local file, may be {@code null}.
+     * @return This transfer for chaining, never {@code null}.
+     */
     public MetadataTransfer setFile( File file )
     {
         this.file = file;
         return this;
     }
 
+    /**
+     * Gets the exception that occurred during the transfer (if any).
+     * 
+     * @return The exception or {@code null} if the transfer was successful.
+     */
     public MetadataTransferException getException()
     {
         return exception;
     }
 
+    /**
+     * Sets the exception that occurred during the transfer.
+     * 
+     * @param exception The exception, may be {@code null} to denote a successful transfer.
+     * @return This transfer for chaining, never {@code null}.
+     */
     public MetadataTransfer setException( MetadataTransferException exception )
     {
         this.exception = exception;

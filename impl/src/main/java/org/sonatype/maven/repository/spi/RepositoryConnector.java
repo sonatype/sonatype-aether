@@ -22,16 +22,37 @@ package org.sonatype.maven.repository.spi;
 import java.util.Collection;
 
 /**
+ * A connector for a remote repository. The connector is responsible for downloading/uploading of artifacts and metadata
+ * from/to a remote repository.
+ * 
  * @author Benjamin Bentmann
  */
 public interface RepositoryConnector
 {
 
+    /**
+     * Performs the specified downloads. Any error encountered during a transfer can be queried via
+     * {@link ArtifactDownload#getException()} and {@link MetadataDownload#getException()}, respectively.
+     * 
+     * @param artifactDownloads The artifact downloads to perform, may be {@code null} or empty.
+     * @param metadataDownloads The metadata downloads to perform, may be {@code null} or empty.
+     */
     void get( Collection<? extends ArtifactDownload> artifactDownloads,
               Collection<? extends MetadataDownload> metadataDownloads );
 
+    /**
+     * Performs the specified uploads. Any error encountered during a transfer can be queried via
+     * {@link ArtifactDownload#getException()} and {@link MetadataDownload#getException()}, respectively.
+     * 
+     * @param artifactUploads The artifact uploads to perform, may be {@code null} or empty.
+     * @param metadataUploads The metadata uploads to perform, may be {@code null} or empty.
+     */
     void put( Collection<? extends ArtifactUpload> artifactUploads, Collection<? extends MetadataUpload> metadataUploads );
 
+    /**
+     * Closes this connector and frees any network resources associated with it. Once closed, a connector must not be
+     * used for further transfers. Closing an already closed connector has no effect.
+     */
     void close();
 
 }

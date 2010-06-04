@@ -318,7 +318,8 @@ public class DefaultUpdateCheckManager
 
     private Properties read( File touchFile, Logger logger )
     {
-        return new TrackingFileManager().setLogger( logger ).read( touchFile );
+        Properties props = new TrackingFileManager().setLogger( logger ).read( touchFile );
+        return ( props != null ) ? props : new Properties();
     }
 
     public void touchArtifact( RepositorySession session, UpdateCheck<Artifact, ArtifactTransferException> check )
