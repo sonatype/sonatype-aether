@@ -36,6 +36,7 @@ import org.sonatype.maven.repository.CollectRequest;
 import org.sonatype.maven.repository.CollectResult;
 import org.sonatype.maven.repository.Dependency;
 import org.sonatype.maven.repository.DependencyCollectionException;
+import org.sonatype.maven.repository.DependencyFilter;
 import org.sonatype.maven.repository.DependencyNode;
 import org.sonatype.maven.repository.DeployRequest;
 import org.sonatype.maven.repository.DeploymentException;
@@ -216,19 +217,19 @@ public class DefaultRepositorySystem
         return dependencyCollector.collectDependencies( session, request );
     }
 
-    public void resolveDependencies( RepositorySession session, DependencyNode node )
+    public void resolveDependencies( RepositorySession session, DependencyNode node, DependencyFilter filter )
         throws ArtifactResolutionException
     {
         List<ArtifactRequest> requests = new ArrayList<ArtifactRequest>();
-        toArtifactRequest( requests, node );
+        toArtifactRequest( requests, node, filter );
 
         resolveArtifacts( session, requests );
     }
 
-    private void toArtifactRequest( List<ArtifactRequest> requests, DependencyNode node )
+    private void toArtifactRequest( List<ArtifactRequest> requests, DependencyNode node, DependencyFilter filter )
     {
         Dependency dependency = node.getDependency();
-        if ( dependency != null )
+        if ( dependency != null && ( filter == null || filter.filterDependency( node ) ) )
         {
             ArtifactRequest request =
                 new ArtifactRequest( dependency.getArtifact(), node.getRepositories(), node.getContext() );
@@ -237,7 +238,7 @@ public class DefaultRepositorySystem
 
         for ( DependencyNode child : node.getChildren() )
         {
-            toArtifactRequest( requests, child );
+            toArtifactRequest( requests, child, filter );
         }
     }
 

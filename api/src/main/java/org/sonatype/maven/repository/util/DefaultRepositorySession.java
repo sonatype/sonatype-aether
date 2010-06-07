@@ -24,7 +24,7 @@ import java.util.UUID;
 
 import org.sonatype.maven.repository.ArtifactStereotypeManager;
 import org.sonatype.maven.repository.AuthenticationSelector;
-import org.sonatype.maven.repository.DependencyFilter;
+import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyGraphTransformer;
 import org.sonatype.maven.repository.DependencyManager;
 import org.sonatype.maven.repository.DependencyTraverser;
@@ -87,7 +87,7 @@ public class DefaultRepositorySession
 
     private DependencyManager dependencyManager;
 
-    private DependencyFilter dependencyFilter;
+    private DependencySelector dependencySelector;
 
     private DependencyGraphTransformer dependencyGraphTransformer;
 
@@ -97,6 +97,9 @@ public class DefaultRepositorySession
     {
         // enables default constructor
         setId( null );
+        setDependencySelector( new StaticDependencySelector( true ) );
+        setDependencyManager( new DefaultDependencyManager() );
+        setDependencyTraverser( new StaticDependencyTraverser( true ) );
     }
 
     public DefaultRepositorySession( RepositorySession session )
@@ -122,7 +125,7 @@ public class DefaultRepositorySession
         setArtifactStereotypeManager( session.getArtifactStereotypeManager() );
         setDependencyTraverser( session.getDependencyTraverser() );
         setDependencyManager( session.getDependencyManager() );
-        setDependencyFilter( session.getDependencyFilter() );
+        setDependencySelector( session.getDependencySelector() );
         setDependencyGraphTransformer( session.getDependencyGraphTransformer() );
         setCache( session.getCache() );
     }
@@ -363,14 +366,14 @@ public class DefaultRepositorySession
         return this;
     }
 
-    public DependencyFilter getDependencyFilter()
+    public DependencySelector getDependencySelector()
     {
-        return dependencyFilter;
+        return dependencySelector;
     }
 
-    public DefaultRepositorySession setDependencyFilter( DependencyFilter dependencyFilter )
+    public DefaultRepositorySession setDependencySelector( DependencySelector dependencySelector )
     {
-        this.dependencyFilter = dependencyFilter;
+        this.dependencySelector = dependencySelector;
         return this;
     }
 

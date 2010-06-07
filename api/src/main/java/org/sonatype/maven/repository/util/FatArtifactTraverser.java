@@ -34,7 +34,7 @@ public class FatArtifactTraverser
     implements DependencyTraverser
 {
 
-    public boolean accept( DependencyNode node, Dependency dependency )
+    public boolean traverseDependency( DependencyNode node, Dependency dependency )
     {
         return !Boolean.valueOf( dependency.getArtifact().getProperty( "includesDependencies", "" ) );
     }

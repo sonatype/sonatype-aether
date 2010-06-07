@@ -74,7 +74,8 @@ public class DependencyNode
     }
 
     /**
-     * Gets the dependency associated with this node.
+     * Gets the dependency associated with this node. <em>Note:</em> For dependency graphs that have been constructed
+     * without a root dependency, the root node will not have a dependency associated with it.
      * 
      * @return The dependency or {@code null} if none.
      */
@@ -310,6 +311,28 @@ public class DependencyNode
             this.repositories = repositories;
         }
         return this;
+    }
+
+    /**
+     * Traverses this node and potentially its children using the specified visitor.
+     * 
+     * @param visitor The visitor to call back, must not be {@code null}.
+     * @return {@code true} to visit siblings nodes of this node as well, {@code false} to skip siblings.
+     */
+    public boolean accept( DependencyVisitor visitor )
+    {
+        if ( visitor.visitEnter( this ) )
+        {
+            for ( DependencyNode child : getChildren() )
+            {
+                if ( !child.accept( visitor ) )
+                {
+                    break;
+                }
+            }
+        }
+
+        return visitor.visitLeave( this );
     }
 
     @Override

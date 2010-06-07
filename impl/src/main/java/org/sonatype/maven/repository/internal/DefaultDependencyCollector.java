@@ -36,7 +36,7 @@ import org.sonatype.maven.repository.CollectRequest;
 import org.sonatype.maven.repository.CollectResult;
 import org.sonatype.maven.repository.Dependency;
 import org.sonatype.maven.repository.DependencyCollectionException;
-import org.sonatype.maven.repository.DependencyFilter;
+import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyGraphTransformer;
 import org.sonatype.maven.repository.DependencyManager;
 import org.sonatype.maven.repository.DependencyNode;
@@ -117,7 +117,7 @@ public class DefaultDependencyCollector
     {
         CollectResult result = new CollectResult( request );
 
-        DependencyFilter depFilter = session.getDependencyFilter();
+        DependencySelector depSelector = session.getDependencySelector();
         DependencyManager depManager = session.getDependencyManager();
         DependencyTraverser depTraverser = session.getDependencyTraverser();
 
@@ -167,12 +167,12 @@ public class DefaultDependencyCollector
 
         result.setRoot( node );
 
-        boolean traverse = ( root == null ) || depTraverser.accept( null, root );
+        boolean traverse = ( root == null ) || depTraverser.traverseDependency( null, root );
 
         if ( traverse )
         {
             process( session, result, node, dependencies, managedDependencies, repositories,
-                     depFilter.deriveChildFilter( node ), depManager, depTraverser.deriveChildTraverser( node ) );
+                     depSelector.deriveChildSelector( node ), depManager, depTraverser.deriveChildTraverser( node ) );
         }
 
         DependencyGraphTransformer transformer = session.getDependencyGraphTransformer();
@@ -230,7 +230,7 @@ public class DefaultDependencyCollector
 
     private void process( RepositorySession session, CollectResult result, DependencyNode node,
                           List<Dependency> dependencies, List<Dependency> managedDependencies,
-                          List<RemoteRepository> repositories, DependencyFilter depFilter,
+                          List<RemoteRepository> repositories, DependencySelector depSelector,
                           DependencyManager depManager, DependencyTraverser depTraverser )
         throws DependencyCollectionException
     {
@@ -238,7 +238,7 @@ public class DefaultDependencyCollector
 
         for ( Dependency dependency : dependencies )
         {
-            if ( !depFilter.accept( node, dependency ) )
+            if ( !depSelector.selectDependency( node, dependency ) )
             {
                 continue;
             }
@@ -247,7 +247,7 @@ public class DefaultDependencyCollector
 
             boolean system = dependency.getArtifact().getFile() != null;
 
-            boolean traverse = !system && depTraverser.accept( node, dependency );
+            boolean traverse = !system && depTraverser.traverseDependency( node, dependency );
 
             VersionRangeResult rangeResult;
             try
@@ -316,7 +316,7 @@ public class DefaultDependencyCollector
                     artifactRelocated( session, descriptorResult );
                 }
 
-                if ( !descriptorResult.getRelocations().isEmpty() && !depFilter.accept( node, d ) )
+                if ( !descriptorResult.getRelocations().isEmpty() && !depSelector.selectDependency( node, d ) )
                 {
                     continue;
                 }
@@ -339,7 +339,7 @@ public class DefaultDependencyCollector
                              descriptorResult.getManagedDependencies(),
                              remoteRepositoryManager.aggregateRepositories( session, repositories,
                                                                             descriptorResult.getRepositories() ),
-                             depFilter.deriveChildFilter( child ),
+                             depSelector.deriveChildSelector( child ),
                              depManager.deriveChildManager( child, managedDependencies ),
                              depTraverser.deriveChildTraverser( child ) );
                 }

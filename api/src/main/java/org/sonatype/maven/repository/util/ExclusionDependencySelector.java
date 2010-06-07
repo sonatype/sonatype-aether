@@ -26,41 +26,41 @@ import java.util.List;
 
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.Dependency;
-import org.sonatype.maven.repository.DependencyFilter;
+import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyNode;
 import org.sonatype.maven.repository.Exclusion;
 
 /**
- * A dependency filter that applies exclusions based on artifact coordinates.
+ * A dependency selector that applies exclusions based on artifact coordinates.
  * 
  * @author Benjamin Bentmann
  * @see Dependency#getExclusions()
  */
-public class ExclusionDependencyFilter
-    implements DependencyFilter
+public class ExclusionDependencySelector
+    implements DependencySelector
 {
 
     private final List<Exclusion> exclusions;
 
     /**
-     * Creates a new filter without any exclusions.
+     * Creates a new selector without any exclusions.
      */
-    public ExclusionDependencyFilter()
+    public ExclusionDependencySelector()
     {
         this( Collections.<Exclusion> emptyList() );
     }
 
     /**
-     * Creates a new filter with the specified exclusions.
+     * Creates a new selector with the specified exclusions.
      * 
      * @param exclusions The exclusions, may be {@code null}.
      */
-    public ExclusionDependencyFilter( List<Exclusion> exclusions )
+    public ExclusionDependencySelector( List<Exclusion> exclusions )
     {
         this.exclusions = ( exclusions != null ) ? exclusions : Collections.<Exclusion> emptyList();
     }
 
-    public boolean accept( DependencyNode node, Dependency dependency )
+    public boolean selectDependency( DependencyNode node, Dependency dependency )
     {
         Artifact artifact = dependency.getArtifact();
         for ( Exclusion exclusion : exclusions )
@@ -99,7 +99,7 @@ public class ExclusionDependencyFilter
         return "*".equals( pattern ) || pattern.equals( value );
     }
 
-    public DependencyFilter deriveChildFilter( DependencyNode childNode )
+    public DependencySelector deriveChildSelector( DependencyNode childNode )
     {
         Dependency dependency = childNode.getDependency();
         Collection<Exclusion> exclusions = ( dependency != null ) ? dependency.getExclusions() : null;
@@ -112,7 +112,7 @@ public class ExclusionDependencyFilter
         merged.addAll( this.exclusions );
         merged.addAll( exclusions );
 
-        return new ExclusionDependencyFilter( merged );
+        return new ExclusionDependencySelector( merged );
     }
 
 }

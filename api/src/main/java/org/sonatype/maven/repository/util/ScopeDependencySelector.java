@@ -24,17 +24,17 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.sonatype.maven.repository.Dependency;
-import org.sonatype.maven.repository.DependencyFilter;
+import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyNode;
 
 /**
- * A dependency fitler based on dependency scopes.
+ * A dependency selector based on dependency scopes.
  * 
  * @author Benjamin Bentmann
  * @see Dependency#getScope()
  */
-public class ScopeDependencyFilter
-    implements DependencyFilter
+public class ScopeDependencySelector
+    implements DependencySelector
 {
 
     private final Collection<String> included = new HashSet<String>();
@@ -42,12 +42,12 @@ public class ScopeDependencyFilter
     private final Collection<String> excluded = new HashSet<String>();
 
     /**
-     * Creates a new filter using the specified includes and excludes.
+     * Creates a new selector using the specified includes and excludes.
      * 
      * @param included The set of scopes to include, may be {@code null} or empty to include any scope.
      * @param excluded The set of scopes to exclude, may be {@code null} or empty to exclude no scope.
      */
-    public ScopeDependencyFilter( Collection<String> included, Collection<String> excluded )
+    public ScopeDependencySelector( Collection<String> included, Collection<String> excluded )
     {
         if ( included != null )
         {
@@ -60,11 +60,11 @@ public class ScopeDependencyFilter
     }
 
     /**
-     * Creates a new filter using the specified excludes.
+     * Creates a new selector using the specified excludes.
      * 
      * @param excluded The set of scopes to exclude, may be {@code null} or empty to exclude no scope.
      */
-    public ScopeDependencyFilter( String... excluded )
+    public ScopeDependencySelector( String... excluded )
     {
         if ( excluded != null )
         {
@@ -72,16 +72,21 @@ public class ScopeDependencyFilter
         }
     }
 
-    public boolean filterDependency( DependencyNode node )
+    public boolean selectDependency( DependencyNode node, Dependency dependency )
     {
         if ( node.getDependency() == null )
         {
             return true;
         }
 
-        String scope = node.getDependency().getScope();
+        String scope = dependency.getScope();
         return ( included.isEmpty() || included.contains( scope ) )
             && ( excluded.isEmpty() || !excluded.contains( scope ) );
+    }
+
+    public DependencySelector deriveChildSelector( DependencyNode childNode )
+    {
+        return this;
     }
 
 }

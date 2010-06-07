@@ -79,26 +79,29 @@ public interface RepositorySystem
      * @throws DependencyCollectionException If the dependency tree could not be built.
      * @see RepositorySession#getDependencyTraverser()
      * @see RepositorySession#getDependencyManager()
-     * @see RepositorySession#getDependencyFilter()
+     * @see RepositorySession#getDependencySelector()
      * @see RepositorySession#getDependencyGraphTransformer()
      */
     CollectResult collectDependencies( RepositorySession session, CollectRequest request )
         throws DependencyCollectionException;
 
     /**
-     * Resolves the paths for any unresolved artifacts referenced by the specified dependency graph. Artifacts will be
-     * downloaded if necessary.
+     * Resolves the paths for the artifacts referenced by the specified dependency graph. Artifacts will be downloaded
+     * if necessary. Artifacts that are already resolved will be skipped and are not re-resolved.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param node The root node of the dependency graph whose artifacts shall be resolved, must not be {@code null}
+     * @param filter The node filter to use to select the actual nodes to resolve, may be {@code null} to resolve all
+     *            nodes.
      * @throws ArtifactResolutionException If any artifact could not be resolved.
      * @see Artifact#getFile()
      */
-    public void resolveDependencies( RepositorySession session, DependencyNode node )
+    public void resolveDependencies( RepositorySession session, DependencyNode node, DependencyFilter filter )
         throws ArtifactResolutionException;
 
     /**
-     * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary.
+     * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary. Artifacts that are
+     * already resolved will be skipped and are not re-resolved.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param requests The resolution requests, must not be {@code null}

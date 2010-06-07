@@ -20,24 +20,36 @@ package org.sonatype.maven.repository.util;
  */
 
 import org.sonatype.maven.repository.Dependency;
+import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyNode;
-import org.sonatype.maven.repository.DependencyTraverser;
 
 /**
+ * A dependency selector with always includes or excludes dependencies.
+ * 
  * @author Benjamin Bentmann
  */
-public class NoopDependencyTraverser
-    implements DependencyTraverser
+public class StaticDependencySelector
+    implements DependencySelector
 {
 
-    public static final DependencyTraverser INSTANCE = new NoopDependencyTraverser();
+    private final boolean select;
 
-    public boolean accept( DependencyNode node, Dependency dependency )
+    /**
+     * Creates a new selector with the specified selection behavior.
+     * 
+     * @param select {@code true} to select all dependencies, {@code false} to exclude all dependencies.
+     */
+    public StaticDependencySelector( boolean select )
     {
-        return true;
+        this.select = select;
     }
 
-    public DependencyTraverser deriveChildTraverser( DependencyNode childNode )
+    public boolean selectDependency( DependencyNode node, Dependency dependency )
+    {
+        return select;
+    }
+
+    public DependencySelector deriveChildSelector( DependencyNode childNode )
     {
         return this;
     }

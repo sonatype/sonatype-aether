@@ -23,13 +23,14 @@ import org.apache.maven.model.profile.activation.OperatingSystemProfileActivator
 import org.apache.maven.model.profile.activation.PropertyProfileActivator;
 import org.apache.maven.model.superpom.DefaultSuperPomProvider;
 import org.apache.maven.model.validation.DefaultModelValidator;
+import org.apache.maven.plugin.internal.WagonExcluder;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.AuthenticationSelector;
 import org.sonatype.maven.repository.CollectRequest;
 import org.sonatype.maven.repository.DefaultArtifact;
 import org.sonatype.maven.repository.Dependency;
-import org.sonatype.maven.repository.DependencyFilter;
+import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyGraphTransformer;
 import org.sonatype.maven.repository.DependencyManager;
 import org.sonatype.maven.repository.DependencyNode;
@@ -55,7 +56,7 @@ import org.sonatype.maven.repository.internal.DefaultVersionRangeResolver;
 import org.sonatype.maven.repository.internal.DefaultVersionResolver;
 import org.sonatype.maven.repository.internal.EnhancedLocalRepositoryManager;
 import org.sonatype.maven.repository.spi.NullLogger;
-import org.sonatype.maven.repository.util.AndDependencyFilter;
+import org.sonatype.maven.repository.util.AndDependencySelector;
 import org.sonatype.maven.repository.util.ChainedDependencyGraphTransformer;
 import org.sonatype.maven.repository.util.ClassicVersionConflictResolver;
 import org.sonatype.maven.repository.util.ConflictMarker;
@@ -66,12 +67,12 @@ import org.sonatype.maven.repository.util.DefaultDependencyManager;
 import org.sonatype.maven.repository.util.DefaultMirrorSelector;
 import org.sonatype.maven.repository.util.DefaultProxySelector;
 import org.sonatype.maven.repository.util.DefaultRepositorySession;
-import org.sonatype.maven.repository.util.ExclusionDependencyFilter;
+import org.sonatype.maven.repository.util.ExclusionDependencySelector;
 import org.sonatype.maven.repository.util.FatArtifactTraverser;
 import org.sonatype.maven.repository.util.JavaDependencyContextRefiner;
 import org.sonatype.maven.repository.util.JavaEffectiveScopeCalculator;
-import org.sonatype.maven.repository.util.OptionalDependencyFilter;
-import org.sonatype.maven.repository.util.ScopeDependencyFilter;
+import org.sonatype.maven.repository.util.OptionalDependencySelector;
+import org.sonatype.maven.repository.util.ScopeDependencySelector;
 
 public class RepoSys
 {
@@ -86,12 +87,12 @@ public class RepoSys
 
         CollectRequest collectRequest = new CollectRequest();
         collectRequest.setRoot( new Dependency( new DefaultArtifact( "org.apache.maven", "maven-core", "", "jar",
-                                                                     "RELEASE" ), "compile" ) );
+                                                                     "2.2.1" ), "compile" ) );
         collectRequest.setRepositories( Arrays.asList( new RemoteRepository( "central", "default",
                                                                              "http://repo1.maven.org/maven2/" ) ) );
         DependencyNode root = repoSystem.collectDependencies( session, collectRequest ).getRoot();
 
-        repoSystem.resolveDependencies( session, root );
+        repoSystem.resolveDependencies( session, root, null );
 
         Artifact projectOutput = new DefaultArtifact( "test", "test", "", "jar", "0.1-SNAPSHOT" );
         projectOutput.setFile( new File( "pom.xml" ) );
@@ -226,10 +227,10 @@ public class RepoSys
         DependencyManager depManager = new DefaultDependencyManager();
         session.setDependencyManager( depManager );
 
-        DependencyFilter depFilter =
-            new AndDependencyFilter( new ScopeDependencyFilter( "test", "provided" ), new OptionalDependencyFilter(),
-                                     new ExclusionDependencyFilter() );
-        session.setDependencyFilter( depFilter );
+        DependencySelector depFilter =
+            new AndDependencySelector( new ScopeDependencySelector( "test", "provided" ), new OptionalDependencySelector(),
+                                     new ExclusionDependencySelector() );
+        session.setDependencySelector( depFilter );
 
         DependencyGraphTransformer transformer =
             new ChainedDependencyGraphTransformer( 

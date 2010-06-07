@@ -19,7 +19,8 @@ package org.sonatype.maven.repository.util;
  * under the License.
  */
 
-import org.sonatype.maven.repository.Dependency;
+import java.util.Collection;
+
 import org.sonatype.maven.repository.DependencyFilter;
 import org.sonatype.maven.repository.DependencyNode;
 
@@ -44,33 +45,33 @@ public class AndDependencyFilter
         this.filters = ( filters != null ) ? filters : new DependencyFilter[0];
     }
 
-    public boolean accept( DependencyNode node, Dependency dependency )
+    /**
+     * Creates a new filter from the specified filters.
+     * 
+     * @param filters The filters to combine, may be {@code null}.
+     */
+    public AndDependencyFilter( Collection<DependencyFilter> filters )
+    {
+        if ( filters != null )
+        {
+            this.filters = filters.toArray( new DependencyFilter[filters.size()] );
+        }
+        else
+        {
+            this.filters = new DependencyFilter[0];
+        }
+    }
+
+    public boolean filterDependency( DependencyNode node )
     {
         for ( DependencyFilter filter : filters )
         {
-            if ( !filter.accept( node, dependency ) )
+            if ( !filter.filterDependency( node ) )
             {
                 return false;
             }
         }
         return true;
-    }
-
-    public DependencyFilter deriveChildFilter( DependencyNode childNode )
-    {
-        DependencyFilter[] childFilters = new DependencyFilter[filters.length];
-
-        boolean changed = false;
-        for ( int i = filters.length - 1; i >= 0; i-- )
-        {
-            childFilters[i] = filters[i].deriveChildFilter( childNode );
-            if ( childFilters[i] != filters[i] )
-            {
-                changed = true;
-            }
-        }
-
-        return changed ? new AndDependencyFilter( childFilters ) : this;
     }
 
 }

@@ -20,24 +20,29 @@ package org.sonatype.maven.repository.util;
  */
 
 import org.sonatype.maven.repository.Dependency;
-import org.sonatype.maven.repository.DependencyFilter;
+import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyNode;
 
 /**
+ * A dependency selector that excludes optional transitive dependencies.
+ * 
  * @author Benjamin Bentmann
+ * @see Dependency#isOptional()
  */
-public class NoopDependencyFilter
-    implements DependencyFilter
+public class OptionalDependencySelector
+    implements DependencySelector
 {
 
-    public static final DependencyFilter INSTANCE = new NoopDependencyFilter();
-
-    public boolean accept( DependencyNode node, Dependency dependency )
+    public boolean selectDependency( DependencyNode node, Dependency dependency )
     {
+        if ( node.getDependency() != null && dependency.isOptional() )
+        {
+            return false;
+        }
         return true;
     }
 
-    public DependencyFilter deriveChildFilter( DependencyNode childNode )
+    public DependencySelector deriveChildSelector( DependencyNode childNode )
     {
         return this;
     }

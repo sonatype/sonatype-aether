@@ -20,19 +20,28 @@ package org.sonatype.maven.repository;
  */
 
 /**
- * A filter to include/exclude dependency nodes during other operations.
+ * A visitor for nodes of the dependency graph.
  * 
  * @author Benjamin Bentmann
+ * @see DependencyNode#accept(DependencyVisitor)
  */
-public interface DependencyFilter
+public interface DependencyVisitor
 {
 
     /**
-     * Indicates whether the specified dependency node shall be included or excluded.
+     * Notifies the visitor of a node visit before its children have been processed.
      * 
-     * @param node The dependency node to filter, must not be {@code null}.
-     * @return {@code true} to include the dependency node, {@code false} to exclude it.
+     * @param node The dependency node being visited, must not be {@code null}.
+     * @return {@code true} to visit child nodes of the specified node as well, {@code false} to skip children.
      */
-    boolean filterDependency( DependencyNode node );
+    boolean visitEnter( DependencyNode node );
+
+    /**
+     * Notifies the visitor of a node visit after its children have been processed.
+     * 
+     * @param node The dependency node being visited, must not be {@code null}.
+     * @return {@code true} to visit siblings nodes of the specified node as well, {@code false} to skip siblings.
+     */
+    boolean visitLeave( DependencyNode node );
 
 }

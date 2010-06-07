@@ -36,7 +36,7 @@ public interface DependencyTraverser
      * @return {@code true} if the dependency tree builder should recurse into the specified dependency and process its
      *         dependencies, {@code false} otherwise.
      */
-    boolean accept( DependencyNode node, Dependency dependency );
+    boolean traverseDependency( DependencyNode node, Dependency dependency );
 
     /**
      * Derives a dependency traverser for the specified child node of the current node, i.e. the parent of the specified

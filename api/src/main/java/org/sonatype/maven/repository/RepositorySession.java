@@ -74,7 +74,7 @@ public interface RepositorySession
 
     DependencyManager getDependencyManager();
 
-    DependencyFilter getDependencyFilter();
+    DependencySelector getDependencySelector();
 
     DependencyGraphTransformer getDependencyGraphTransformer();
 

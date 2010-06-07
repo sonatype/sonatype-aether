@@ -20,29 +20,36 @@ package org.sonatype.maven.repository.util;
  */
 
 import org.sonatype.maven.repository.Dependency;
-import org.sonatype.maven.repository.DependencyFilter;
 import org.sonatype.maven.repository.DependencyNode;
+import org.sonatype.maven.repository.DependencyTraverser;
 
 /**
- * A dependency filter that excludes optional transitive dependencies.
+ * A dependency traverser with always or never traverses children.
  * 
  * @author Benjamin Bentmann
- * @see Dependency#isOptional()
  */
-public class OptionalDependencyFilter
-    implements DependencyFilter
+public class StaticDependencyTraverser
+    implements DependencyTraverser
 {
 
-    public boolean accept( DependencyNode node, Dependency dependency )
+    private final boolean traverse;
+
+    /**
+     * Creates a new traverser with the specified traversal behavior.
+     * 
+     * @param traverse {@code true} to traverse all dependencies, {@code false} to never traverse.
+     */
+    public StaticDependencyTraverser( boolean traverse )
     {
-        if ( node.getDependency() != null && dependency.isOptional() )
-        {
-            return false;
-        }
-        return true;
+        this.traverse = traverse;
     }
 
-    public DependencyFilter deriveChildFilter( DependencyNode childNode )
+    public boolean traverseDependency( DependencyNode node, Dependency dependency )
+    {
+        return traverse;
+    }
+
+    public DependencyTraverser deriveChildTraverser( DependencyNode childNode )
     {
         return this;
     }
