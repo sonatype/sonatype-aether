@@ -25,7 +25,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * The result of a version range resolution request.
+ * 
  * @author Benjamin Bentmann
+ * @see RepositorySystem#resolveVersionRange(RepositorySession, VersionRangeRequest)
  */
 public class VersionRangeResult
 {
@@ -40,6 +43,11 @@ public class VersionRangeResult
 
     private boolean range;
 
+    /**
+     * Creates a new result for the specified request.
+     * 
+     * @param request The resolution request, must not be {@code null}.
+     */
     public VersionRangeResult( VersionRangeRequest request )
     {
         if ( request == null )
@@ -52,16 +60,32 @@ public class VersionRangeResult
         repositories = new HashMap<String, ArtifactRepository>();
     }
 
+    /**
+     * Gets the resolution request that was made.
+     * 
+     * @return The resolution request, never {@code null}.
+     */
     public VersionRangeRequest getRequest()
     {
         return request;
     }
 
-    public List<? extends Exception> getExceptions()
+    /**
+     * Gets the exceptions that occurred while resolving the version range.
+     * 
+     * @return The exceptions that occurred, never {@code null}.
+     */
+    public List<Exception> getExceptions()
     {
         return exceptions;
     }
 
+    /**
+     * Records the specified exception while resolving the version range.
+     * 
+     * @param exception The exception to record, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public VersionRangeResult addException( Exception exception )
     {
         if ( exception != null )
@@ -71,28 +95,58 @@ public class VersionRangeResult
         return this;
     }
 
+    /**
+     * Gets the versions (in ascending order) that matched the requested range.
+     * 
+     * @return The matching versions (if any), never {@code null}.
+     */
     public List<String> getVersions()
     {
         return versions;
     }
 
+    /**
+     * Adds the specified version to the result.
+     * 
+     * @param version The version to add, must not be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public VersionRangeResult addVersion( String version )
     {
         versions.add( version );
         return this;
     }
 
+    /**
+     * Sets the versions matching the requested range.
+     * 
+     * @param versions The matching versions, may be empty or {@code null} if none.
+     * @return This result for chaining, never {@code null}.
+     */
     public VersionRangeResult setVersions( List<String> versions )
     {
         this.versions = ( versions != null ) ? versions : new ArrayList<String>();
         return this;
     }
 
+    /**
+     * Gets the repository from which the specified version was resolved.
+     * 
+     * @param version The version whose source repository should be retrieved, must not be {@code null}.
+     * @return The repository from which the version was resolved or {@code null} if unknown.
+     */
     public ArtifactRepository getRepository( String version )
     {
         return repositories.get( version );
     }
 
+    /**
+     * Records the repository from which the specified version was resolved
+     * 
+     * @param version The version whose source repository is to be recorded, must not be {@code null}.
+     * @param repository The repository from which the version was resolved, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public VersionRangeResult setRepository( String version, ArtifactRepository repository )
     {
         if ( repository != null )
@@ -102,11 +156,24 @@ public class VersionRangeResult
         return this;
     }
 
+    /**
+     * Indicates whether the original request actually referred to a version range or just a simple version.
+     * 
+     * @return {@code true} if the request referred to a version range, {@code false} if the request referred only to a
+     *         simple version.
+     */
     public boolean isRange()
     {
         return range;
     }
 
+    /**
+     * Sets the version range indicator.
+     * 
+     * @param range {@code true} if the request referred to a version range, {@code false} if the request referred only
+     *            to a simple version.
+     * @return This result for chaining, never {@code null}.
+     */
     public VersionRangeResult setRange( boolean range )
     {
         this.range = range;

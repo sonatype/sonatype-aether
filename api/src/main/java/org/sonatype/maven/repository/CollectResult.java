@@ -1,8 +1,5 @@
 package org.sonatype.maven.repository;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,8 +19,14 @@ import java.util.List;
  * under the License.
  */
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
+ * The result of a dependency collection request.
+ * 
  * @author Benjamin Bentmann
+ * @see RepositorySystem#collectDependencies(RepositorySession, CollectRequest)
  */
 public class CollectResult
 {
@@ -34,6 +37,11 @@ public class CollectResult
 
     private DependencyNode root;
 
+    /**
+     * Creates a new result for the specified request.
+     * 
+     * @param request The resolution request, must not be {@code null}.
+     */
     public CollectResult( CollectRequest request )
     {
         if ( request == null )
@@ -44,16 +52,32 @@ public class CollectResult
         this.exceptions = new ArrayList<Exception>( 4 );
     }
 
+    /**
+     * Gets the collection request that was made.
+     * 
+     * @return The collection request, never {@code null}.
+     */
     public CollectRequest getRequest()
     {
         return request;
     }
 
+    /**
+     * Gets the exceptions that occurred while building the dependency graph.
+     * 
+     * @return The exceptions that occurred, never {@code null}.
+     */
     public List<Exception> getExceptions()
     {
         return exceptions;
     }
 
+    /**
+     * Records the specified exception while building the dependency graph.
+     * 
+     * @param exception The exception to record, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public CollectResult addException( Exception exception )
     {
         if ( exception != null )
@@ -63,11 +87,22 @@ public class CollectResult
         return this;
     }
 
+    /**
+     * Gets the root node of the dependency graph.
+     * 
+     * @return The root node of the dependency graph or {@code null} if none.
+     */
     public DependencyNode getRoot()
     {
         return root;
     }
 
+    /**
+     * Sets the root node of the dependency graph.
+     * 
+     * @param root The root node of the dependency graph, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public CollectResult setRoot( DependencyNode root )
     {
         this.root = root;

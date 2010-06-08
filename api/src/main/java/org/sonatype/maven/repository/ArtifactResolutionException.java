@@ -31,10 +31,28 @@ public class ArtifactResolutionException
 
     private final List<? extends ArtifactResult> results;
 
+    private DependencyNode root;
+
     public ArtifactResolutionException( List<? extends ArtifactResult> results )
     {
+        this( null, results );
+    }
+
+    public ArtifactResolutionException( DependencyNode root, List<? extends ArtifactResult> results )
+    {
         super( getMessage( results ), getCause( results ) );
+        this.root = root;
         this.results = ( results != null ) ? results : Collections.<ArtifactResult> emptyList();
+    }
+
+    public DependencyNode getRoot()
+    {
+        return root;
+    }
+
+    public void setRoot( DependencyNode root )
+    {
+        this.root = root;
     }
 
     public List<? extends ArtifactResult> getResults()

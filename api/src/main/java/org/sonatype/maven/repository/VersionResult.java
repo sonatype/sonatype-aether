@@ -1,8 +1,5 @@
 package org.sonatype.maven.repository;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,8 +19,14 @@ import java.util.List;
  * under the License.
  */
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
+ * The result of a version resolution request.
+ * 
  * @author Benjamin Bentmann
+ * @see RepositorySystem#resolveVersion(RepositorySession, VersionRequest)
  */
 public class VersionResult
 {
@@ -36,6 +39,11 @@ public class VersionResult
 
     private ArtifactRepository repository;
 
+    /**
+     * Creates a new result for the specified request.
+     * 
+     * @param request The resolution request, must not be {@code null}.
+     */
     public VersionResult( VersionRequest request )
     {
         if ( request == null )
@@ -46,23 +54,32 @@ public class VersionResult
         this.exceptions = new ArrayList<Exception>( 4 );
     }
 
-    public VersionResult( VersionRequest request, String version, ArtifactRepository repository )
-    {
-        this( request );
-        setVersion( version );
-        setRepository( repository );
-    }
-
+    /**
+     * Gets the resolution request that was made.
+     * 
+     * @return The resolution request, never {@code null}.
+     */
     public VersionRequest getRequest()
     {
         return request;
     }
 
+    /**
+     * Gets the exceptions that occurred while resolving the version.
+     * 
+     * @return The exceptions that occurred, never {@code null}.
+     */
     public List<Exception> getExceptions()
     {
         return exceptions;
     }
 
+    /**
+     * Records the specified exception while resolving the version.
+     * 
+     * @param exception The exception to record, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public VersionResult addException( Exception exception )
     {
         if ( exception != null )
@@ -72,22 +89,44 @@ public class VersionResult
         return this;
     }
 
+    /**
+     * Gets the resolved version.
+     * 
+     * @return The resolved version or {@code null} if the resolution failed.
+     */
     public String getVersion()
     {
         return version;
     }
 
+    /**
+     * Sets the resolved version.
+     * 
+     * @param version The resolved version, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public VersionResult setVersion( String version )
     {
         this.version = version;
         return this;
     }
 
+    /**
+     * Gets the repository from which the version was eventually resolved.
+     * 
+     * @return The repository from which the version was resolved or {@code null} if unknown.
+     */
     public ArtifactRepository getRepository()
     {
         return repository;
     }
 
+    /**
+     * Sets the repository from which the version was resolved.
+     * 
+     * @param repository The repository from which the version was resolved, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public VersionResult setRepository( ArtifactRepository repository )
     {
         this.repository = repository;

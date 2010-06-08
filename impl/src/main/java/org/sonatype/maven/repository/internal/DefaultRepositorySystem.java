@@ -223,7 +223,15 @@ public class DefaultRepositorySystem
         List<ArtifactRequest> requests = new ArrayList<ArtifactRequest>();
         toArtifactRequest( requests, node, filter );
 
-        resolveArtifacts( session, requests );
+        try
+        {
+            resolveArtifacts( session, requests );
+        }
+        catch ( ArtifactResolutionException e )
+        {
+            e.setRoot( node );
+            throw e;
+        }
     }
 
     private void toArtifactRequest( List<ArtifactRequest> requests, DependencyNode node, DependencyFilter filter )
