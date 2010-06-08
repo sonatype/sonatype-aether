@@ -109,7 +109,7 @@ public class Dependency
     /**
      * Gets the scope of this dependency. The scope defines in which context this dependency is relevant.
      * 
-     * @return The scope, never {@code null}.
+     * @return The scope or an empty string if not set, never {@code null}.
      */
     public String getScope()
     {

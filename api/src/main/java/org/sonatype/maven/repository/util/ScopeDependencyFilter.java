@@ -28,7 +28,8 @@ import org.sonatype.maven.repository.DependencyFilter;
 import org.sonatype.maven.repository.DependencyNode;
 
 /**
- * A dependency fitler based on dependency scopes.
+ * A dependency filter based on dependency scopes. <em>Note:</em> This filter does not assume any relationships between
+ * the scopes. In particular, the filter is not aware of scopes that logically include other scopes.
  * 
  * @author Benjamin Bentmann
  * @see Dependency#getScope()
@@ -74,14 +75,43 @@ public class ScopeDependencyFilter
 
     public boolean filterDependency( DependencyNode node )
     {
-        if ( node.getDependency() == null )
+        Dependency dependency = node.getDependency();
+
+        if ( dependency == null )
         {
             return true;
         }
 
-        String scope = node.getDependency().getScope();
+        String scope = dependency.getScope();
         return ( included.isEmpty() || included.contains( scope ) )
             && ( excluded.isEmpty() || !excluded.contains( scope ) );
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+
+        if ( obj == null || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        ScopeDependencyFilter that = (ScopeDependencyFilter) obj;
+
+        return this.included.equals( that.included ) && this.excluded.equals( that.excluded );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 17;
+        hash = hash * 31 + included.hashCode();
+        hash = hash * 31 + excluded.hashCode();
+        return hash;
     }
 
 }

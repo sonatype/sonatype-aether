@@ -173,4 +173,43 @@ public class Proxy
         return getHost() + ':' + getPort();
     }
 
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        if ( obj == null || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        Proxy that = (Proxy) obj;
+
+        return eq( this.getType(), that.getType() ) && eq( this.getHost(), that.getHost() )
+            && this.getPort() == that.getPort() && eq( this.getAuthentication(), that.getAuthentication() );
+    }
+
+    private static <T> boolean eq( T s1, T s2 )
+    {
+        return s1 != null ? s1.equals( s2 ) : s2 == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 17;
+        hash = hash * 31 + hash( getHost() );
+        hash = hash * 31 + hash( getType() );
+        hash = hash * 31 + getPort();
+        hash = hash * 31 + hash( getAuthentication() );
+        return hash;
+    }
+
+    private static int hash( Object obj )
+    {
+        return obj != null ? obj.hashCode() : 0;
+    }
+
 }

@@ -50,7 +50,7 @@ import org.sonatype.maven.repository.ArtifactRequest;
 import org.sonatype.maven.repository.ArtifactResolutionException;
 import org.sonatype.maven.repository.ArtifactResult;
 import org.sonatype.maven.repository.ArtifactStereotype;
-import org.sonatype.maven.repository.ArtifactStereotypeManager;
+import org.sonatype.maven.repository.ArtifactStereotypeRegistry;
 import org.sonatype.maven.repository.DefaultArtifact;
 import org.sonatype.maven.repository.DefaultSubArtifact;
 import org.sonatype.maven.repository.Dependency;
@@ -150,7 +150,7 @@ public class DefaultArtifactDescriptorReader
 
         if ( model != null )
         {
-            ArtifactStereotypeManager stereotypes = session.getArtifactStereotypeManager();
+            ArtifactStereotypeRegistry stereotypes = session.getArtifactStereotypeRegistry();
 
             for ( Repository r : model.getRepositories() )
             {
@@ -315,7 +315,7 @@ public class DefaultArtifactDescriptorReader
         return relocation;
     }
 
-    private Dependency convert( org.apache.maven.model.Dependency dependency, ArtifactStereotypeManager stereotypes )
+    private Dependency convert( org.apache.maven.model.Dependency dependency, ArtifactStereotypeRegistry stereotypes )
     {
         ArtifactStereotype stereotype = stereotypes.get( dependency.getType() );
         if ( stereotype == null )

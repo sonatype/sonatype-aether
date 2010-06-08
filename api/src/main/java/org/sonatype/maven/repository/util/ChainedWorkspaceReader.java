@@ -39,13 +39,22 @@ public class ChainedWorkspaceReader
     implements WorkspaceReader
 {
 
-    private WorkspaceReader[] readers;
+    private List<WorkspaceReader> readers = new ArrayList<WorkspaceReader>();
 
     private WorkspaceRepository repository;
 
+    /**
+     * Creates a new workspace reading by chaining the specified readers.
+     * 
+     * @param readers The readers to chain, may be {@code null}.
+     * @see #newInstance(WorkspaceReader, WorkspaceReader)
+     */
     public ChainedWorkspaceReader( WorkspaceReader... readers )
     {
-        this.readers = readers;
+        if ( readers != null )
+        {
+            Collections.addAll( this.readers, readers );
+        }
 
         StringBuilder buffer = new StringBuilder();
         for ( WorkspaceReader reader : readers )
@@ -57,6 +66,27 @@ public class ChainedWorkspaceReader
             buffer.append( reader.getRepository().getType() );
         }
         this.repository = new WorkspaceRepository( buffer.toString() );
+    }
+
+    /**
+     * Creates a new workspace by chaining the specified readers. In contrast to the constructor, this factory method
+     * will avoid creating an actual chained reader if one of the specified readers is actually {@code null}.
+     * 
+     * @param reader1 The first workspace reader, may be {@code null}.
+     * @param reader2 The second workspace reader, may be {@code null}.
+     * @return The chained reader or {@code null} if no workspace reader was supplied.
+     */
+    public static WorkspaceReader newInstance( WorkspaceReader reader1, WorkspaceReader reader2 )
+    {
+        if ( reader1 == null )
+        {
+            return reader2;
+        }
+        else if ( reader2 == null )
+        {
+            return reader1;
+        }
+        return new ChainedWorkspaceReader( reader1, reader2 );
     }
 
     public File findArtifact( Artifact artifact )
@@ -90,6 +120,28 @@ public class ChainedWorkspaceReader
     public WorkspaceRepository getRepository()
     {
         return repository;
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        if ( obj == null || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        ChainedWorkspaceReader that = (ChainedWorkspaceReader) obj;
+        return this.readers.equals( that.readers );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return readers.hashCode();
     }
 
 }

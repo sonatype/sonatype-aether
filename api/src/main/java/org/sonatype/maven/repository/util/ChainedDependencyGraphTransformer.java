@@ -34,7 +34,28 @@ public class ChainedDependencyGraphTransformer
 
     public ChainedDependencyGraphTransformer( DependencyGraphTransformer... transformers )
     {
-        this.transformers = transformers;
+        if ( transformers == null )
+        {
+            this.transformers = new DependencyGraphTransformer[0];
+        }
+        else
+        {
+            this.transformers = transformers;
+        }
+    }
+
+    public static DependencyGraphTransformer newInstance( DependencyGraphTransformer transformer1,
+                                                          DependencyGraphTransformer transformer2 )
+    {
+        if ( transformer1 == null )
+        {
+            return transformer2;
+        }
+        else if ( transformer2 == null )
+        {
+            return transformer1;
+        }
+        return new ChainedDependencyGraphTransformer( transformer1, transformer2 );
     }
 
     public DependencyNode transformGraph( DependencyNode node )

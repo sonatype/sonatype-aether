@@ -20,11 +20,19 @@ package org.sonatype.maven.repository;
  */
 
 /**
+ * A registry of known artifact stereotypes.
+ * 
  * @author Benjamin Bentmann
  */
-public interface ArtifactStereotypeManager
+public interface ArtifactStereotypeRegistry
 {
 
+    /**
+     * Gets the stereotype with the specified identifier.
+     * 
+     * @param stereotypeId The identifier of the stereotype, must not be {@code null}.
+     * @return The artifact stereotype or {@code null} if no stereotype with the requested identifier exists.
+     */
     ArtifactStereotype get( String stereotypeId );
 
 }

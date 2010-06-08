@@ -147,6 +147,7 @@ public class DefaultArtifact
     public void setVersion( String version )
     {
         this.version = ( version != null ) ? version : "";
+        this.baseVersion = null;
     }
 
     public boolean isSnapshot()

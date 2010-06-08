@@ -23,18 +23,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.sonatype.maven.repository.ArtifactStereotype;
-import org.sonatype.maven.repository.ArtifactStereotypeManager;
+import org.sonatype.maven.repository.ArtifactStereotypeRegistry;
 
 /**
  * @author Benjamin Bentmann
  */
-public class DefaultArtifactStereotypeManager
-    implements ArtifactStereotypeManager
+public class DefaultArtifactStereotypeRegistry
+    implements ArtifactStereotypeRegistry
 {
 
     private final Map<String, ArtifactStereotype> stereotypes = new HashMap<String, ArtifactStereotype>();
 
-    public DefaultArtifactStereotypeManager addStereotype( ArtifactStereotype stereotype )
+    public DefaultArtifactStereotypeRegistry addStereotype( ArtifactStereotype stereotype )
     {
         stereotypes.put( stereotype.getId(), stereotype );
         return this;

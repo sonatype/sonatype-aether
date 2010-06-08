@@ -33,7 +33,7 @@ public class LocalRepository
 
     private File basedir;
 
-    private String type;
+    private String type = "";
 
     /**
      * Creates a new local repository with the specified base directory and unknown type.
@@ -83,6 +83,11 @@ public class LocalRepository
         return "local";
     }
 
+    /**
+     * Gets the base directory of the repository.
+     * 
+     * @return The base directory or {@code null} if none.
+     */
     public File getBasedir()
     {
         return basedir;
@@ -98,6 +103,42 @@ public class LocalRepository
     public String toString()
     {
         return getBasedir().getAbsolutePath() + " (" + getType() + ")";
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        if ( obj == null || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        LocalRepository that = (LocalRepository) obj;
+
+        return eq( this.getBasedir(), that.getBasedir() ) && eq( this.getType(), that.getType() );
+    }
+
+    private static <T> boolean eq( T s1, T s2 )
+    {
+        return s1 != null ? s1.equals( s2 ) : s2 == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 17;
+        hash = hash * 31 + hash( getBasedir() );
+        hash = hash * 31 + hash( getType() );
+        return hash;
+    }
+
+    private static int hash( Object obj )
+    {
+        return obj != null ? obj.hashCode() : 0;
     }
 
 }

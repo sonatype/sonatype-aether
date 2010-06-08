@@ -22,7 +22,7 @@ package org.sonatype.maven.repository.util;
 import java.util.Properties;
 import java.util.UUID;
 
-import org.sonatype.maven.repository.ArtifactStereotypeManager;
+import org.sonatype.maven.repository.ArtifactStereotypeRegistry;
 import org.sonatype.maven.repository.AuthenticationSelector;
 import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyGraphTransformer;
@@ -81,7 +81,7 @@ public class DefaultRepositorySession
 
     private AuthenticationSelector authenticationSelector;
 
-    private ArtifactStereotypeManager artifactStereotypeManager;
+    private ArtifactStereotypeRegistry artifactStereotypeRegistry;
 
     private DependencyTraverser dependencyTraverser;
 
@@ -100,6 +100,9 @@ public class DefaultRepositorySession
         setDependencySelector( new StaticDependencySelector( true ) );
         setDependencyManager( new DefaultDependencyManager() );
         setDependencyTraverser( new StaticDependencyTraverser( true ) );
+        setMirrorSelector( new DefaultMirrorSelector() );
+        setAuthenticationSelector( new DefaultAuthenticationSelector() );
+        setProxySelector( new DefaultProxySelector() );
     }
 
     public DefaultRepositorySession( RepositorySession session )
@@ -122,7 +125,7 @@ public class DefaultRepositorySession
         setMirrorSelector( session.getMirrorSelector() );
         setProxySelector( session.getProxySelector() );
         setAuthenticationSelector( session.getAuthenticationSelector() );
-        setArtifactStereotypeManager( session.getArtifactStereotypeManager() );
+        setArtifactStereotypeRegistry( session.getArtifactStereotypeRegistry() );
         setDependencyTraverser( session.getDependencyTraverser() );
         setDependencyManager( session.getDependencyManager() );
         setDependencySelector( session.getDependencySelector() );
@@ -333,14 +336,14 @@ public class DefaultRepositorySession
         return this;
     }
 
-    public ArtifactStereotypeManager getArtifactStereotypeManager()
+    public ArtifactStereotypeRegistry getArtifactStereotypeRegistry()
     {
-        return artifactStereotypeManager;
+        return artifactStereotypeRegistry;
     }
 
-    public DefaultRepositorySession setArtifactStereotypeManager( ArtifactStereotypeManager artifactStereotypeManager )
+    public DefaultRepositorySession setArtifactStereotypeRegistry( ArtifactStereotypeRegistry artifactStereotypeRegistry )
     {
-        this.artifactStereotypeManager = artifactStereotypeManager;
+        this.artifactStereotypeRegistry = artifactStereotypeRegistry;
         return this;
     }
 

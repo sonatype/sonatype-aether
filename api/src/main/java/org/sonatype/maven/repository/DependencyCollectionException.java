@@ -30,13 +30,29 @@ public class DependencyCollectionException
 
     public DependencyCollectionException( CollectResult result )
     {
-        super( "Failed to collect dependencies", getCause( result ) );
+        super( "Failed to collect dependencies for " + getSource( result ), getCause( result ) );
         this.result = result;
     }
 
     public CollectResult getResult()
     {
         return result;
+    }
+
+    private static String getSource( CollectResult result )
+    {
+        if ( result == null )
+        {
+            return "";
+        }
+
+        CollectRequest request = result.getRequest();
+        if ( request.getRoot() != null )
+        {
+            return request.getRoot().toString();
+        }
+
+        return request.getDependencies().toString();
     }
 
     private static Throwable getCause( CollectResult result )

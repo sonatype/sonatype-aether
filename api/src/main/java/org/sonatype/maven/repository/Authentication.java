@@ -166,4 +166,44 @@ public class Authentication
         return getUsername();
     }
 
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        if ( obj == null || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        Authentication that = (Authentication) obj;
+
+        return eq( this.getUsername(), that.getUsername() ) && eq( this.getPassword(), that.getPassword() )
+            && eq( this.getPrivateKeyFile(), that.getPrivateKeyFile() )
+            && eq( this.getPassphrase(), that.getPassphrase() );
+    }
+
+    private static <T> boolean eq( T s1, T s2 )
+    {
+        return s1 != null ? s1.equals( s2 ) : s2 == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 17;
+        hash = hash * 31 + hash( getUsername() );
+        hash = hash * 31 + hash( getPassword() );
+        hash = hash * 31 + hash( getPrivateKeyFile() );
+        hash = hash * 31 + hash( getPassphrase() );
+        return hash;
+    }
+
+    private static int hash( Object obj )
+    {
+        return obj != null ? obj.hashCode() : 0;
+    }
+
 }

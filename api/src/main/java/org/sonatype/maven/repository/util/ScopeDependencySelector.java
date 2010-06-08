@@ -28,7 +28,8 @@ import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyNode;
 
 /**
- * A dependency selector based on dependency scopes.
+ * A dependency selector based on dependency scopes. <em>Note:</em> This filter does not assume any relationships
+ * between the scopes. In particular, the filter is not aware of scopes that logically include other scopes.
  * 
  * @author Benjamin Bentmann
  * @see Dependency#getScope()

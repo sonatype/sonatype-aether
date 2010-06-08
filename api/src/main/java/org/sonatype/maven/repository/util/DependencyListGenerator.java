@@ -22,28 +22,28 @@ package org.sonatype.maven.repository.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sonatype.maven.repository.Artifact;
+import org.sonatype.maven.repository.Dependency;
 import org.sonatype.maven.repository.DependencyFilter;
 import org.sonatype.maven.repository.DependencyNode;
 import org.sonatype.maven.repository.DependencyVisitor;
 
 /**
- * Generates a sequence of artifacts from a dependeny graph by traversing the graph in pre-order.
+ * Generates a sequence of dependencies from a dependeny graph by traversing the graph in pre-order.
  * 
  * @author Benjamin Bentmann
  */
-public class ArtifactListGenerator
+public class DependencyListGenerator
     implements DependencyVisitor
 {
 
     private DependencyFilter filter;
 
-    private List<Artifact> artifacts;
+    private List<Dependency> dependencies;
 
     /**
      * Creates a new list generator.
      */
-    public ArtifactListGenerator()
+    public DependencyListGenerator()
     {
         this( null );
     }
@@ -53,40 +53,40 @@ public class ArtifactListGenerator
      * 
      * @param filter The dependency filter to use, may be {@code null} to include all artifacts.
      */
-    public ArtifactListGenerator( DependencyFilter filter )
+    public DependencyListGenerator( DependencyFilter filter )
     {
         this.filter = filter;
-        this.artifacts = new ArrayList<Artifact>();
+        this.dependencies = new ArrayList<Dependency>();
     }
 
     /**
-     * Gets the list of artifacts that was generated during the graph traversal.
+     * Gets the list of dependencies that was generated during the graph traversal.
      * 
-     * @return The list of artifacts in preorder, never {@code null}.
+     * @return The list of dependencies in preorder, never {@code null}.
      */
-    public List<Artifact> getArtifacts()
+    public List<Dependency> getDependencies()
     {
-        return artifacts;
+        return dependencies;
     }
 
     /**
-     * Gets the list of artifacts that was generated during the traversal of the specified dependency graph.
+     * Gets the list of dependencies that was generated during the traversal of the specified dependency graph.
      * 
      * @param node The root node of the dependency graph to traverse, must not be {@code null}.
-     * @return The list of artifacts in preorder, never {@code null}.
+     * @return The list of dependencies in preorder, never {@code null}.
      */
-    public static List<Artifact> getArtifacts( DependencyNode node )
+    public static List<Dependency> getDependencies( DependencyNode node )
     {
-        ArtifactListGenerator alg = new ArtifactListGenerator();
+        DependencyListGenerator alg = new DependencyListGenerator();
         node.accept( alg );
-        return alg.getArtifacts();
+        return alg.getDependencies();
     }
 
     public boolean visitEnter( DependencyNode node )
     {
         if ( node.getDependency() != null && ( filter == null || filter.filterDependency( node ) ) )
         {
-            artifacts.add( node.getDependency().getArtifact() );
+            dependencies.add( node.getDependency() );
         }
 
         return true;

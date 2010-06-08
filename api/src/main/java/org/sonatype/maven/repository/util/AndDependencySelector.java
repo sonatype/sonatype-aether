@@ -63,6 +63,26 @@ public class AndDependencySelector
         }
     }
 
+    /**
+     * Creates a new selector from the specified selectors.
+     * 
+     * @param selector1 The first selector to combine, may be {@code null}.
+     * @param selector2 The first selector to combine, may be {@code null}.
+     * @return The combined selector or {@code null} if both selectors were {@code null}.
+     */
+    public static DependencySelector newInstance( DependencySelector selector1, DependencySelector selector2 )
+    {
+        if ( selector1 == null )
+        {
+            return selector2;
+        }
+        else if ( selector2 == null )
+        {
+            return selector1;
+        }
+        return new AndDependencySelector( selector1, selector2 );
+    }
+
     public boolean selectDependency( DependencyNode node, Dependency dependency )
     {
         for ( DependencySelector selector : selectors )

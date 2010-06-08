@@ -23,7 +23,6 @@ import org.apache.maven.model.profile.activation.OperatingSystemProfileActivator
 import org.apache.maven.model.profile.activation.PropertyProfileActivator;
 import org.apache.maven.model.superpom.DefaultSuperPomProvider;
 import org.apache.maven.model.validation.DefaultModelValidator;
-import org.apache.maven.plugin.internal.WagonExcluder;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.AuthenticationSelector;
@@ -55,13 +54,12 @@ import org.sonatype.maven.repository.internal.DefaultUpdateCheckManager;
 import org.sonatype.maven.repository.internal.DefaultVersionRangeResolver;
 import org.sonatype.maven.repository.internal.DefaultVersionResolver;
 import org.sonatype.maven.repository.internal.EnhancedLocalRepositoryManager;
-import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.util.AndDependencySelector;
 import org.sonatype.maven.repository.util.ChainedDependencyGraphTransformer;
 import org.sonatype.maven.repository.util.ClassicVersionConflictResolver;
 import org.sonatype.maven.repository.util.ConflictMarker;
 import org.sonatype.maven.repository.util.DefaultArtifactStereotype;
-import org.sonatype.maven.repository.util.DefaultArtifactStereotypeManager;
+import org.sonatype.maven.repository.util.DefaultArtifactStereotypeRegistry;
 import org.sonatype.maven.repository.util.DefaultAuthenticationSelector;
 import org.sonatype.maven.repository.util.DefaultDependencyManager;
 import org.sonatype.maven.repository.util.DefaultMirrorSelector;
@@ -247,7 +245,7 @@ public class RepoSys
 
         session.setSystemProperties( System.getProperties() );
 
-        DefaultArtifactStereotypeManager stereotypes = new DefaultArtifactStereotypeManager();
+        DefaultArtifactStereotypeRegistry stereotypes = new DefaultArtifactStereotypeRegistry();
         stereotypes.addStereotype( new DefaultArtifactStereotype( "pom" ) );
         stereotypes.addStereotype( new DefaultArtifactStereotype( "maven-plugin", "jar", "", "java" ) );
         stereotypes.addStereotype( new DefaultArtifactStereotype( "jar", "jar", "", "java" ) );
@@ -260,7 +258,7 @@ public class RepoSys
         stereotypes.addStereotype( new DefaultArtifactStereotype( "ear", "ear", "", "java", false, true ) );
         stereotypes.addStereotype( new DefaultArtifactStereotype( "rar", "rar", "", "java", false, true ) );
         stereotypes.addStereotype( new DefaultArtifactStereotype( "par", "par", "", "java", false, true ) );
-        session.setArtifactStereotypeManager( stereotypes );
+        session.setArtifactStereotypeRegistry( stereotypes );
 
         return session;
     }

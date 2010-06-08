@@ -55,7 +55,7 @@ public class JavaEffectiveScopeCalculator
         Map<Object, DependencyGroup> groups = new HashMap<Object, DependencyGroup>();
 
         Dependency parent = node.getDependency();
-        String parentScope = ( parent != null ) ? parent.getScope() : null;
+        String parentScope = ( parent != null ) ? parent.getScope() : "";
         analyze( node, parentScope, scopes, groups );
 
         Set<Object> keys = new HashSet<Object>( groups.keySet() );
@@ -184,7 +184,7 @@ public class JavaEffectiveScopeCalculator
         {
             result = childScope;
         }
-        else if ( parentScope == null || COMPILE.equals( parentScope ) )
+        else if ( parentScope.length() <= 0 || COMPILE.equals( parentScope ) )
         {
             result = childScope;
         }

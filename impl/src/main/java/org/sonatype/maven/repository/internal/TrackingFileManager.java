@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -53,38 +54,35 @@ class TrackingFileManager
 
     public Properties read( File file )
     {
-        if ( !file.canRead() )
+        synchronized ( file.getAbsolutePath().intern() )
         {
-            logger.debug( "Skipped unreadable resolution tracking file " + file );
-        }
-        else
-        {
-            synchronized ( file.getAbsolutePath().intern() )
+            FileLock lock = null;
+            FileChannel channel = null;
+            try
             {
-                FileLock lock = null;
-                FileChannel channel = null;
-                try
-                {
-                    FileInputStream stream = new FileInputStream( file );
-                    channel = new FileInputStream( file ).getChannel();
-                    lock = channel.lock( 0, channel.size(), true );
+                FileInputStream stream = new FileInputStream( file );
+                channel = new FileInputStream( file ).getChannel();
+                lock = channel.lock( 0, channel.size(), true );
 
-                    logger.debug( "Reading resolution tracking file " + file );
+                logger.debug( "Reading resolution tracking file " + file );
 
-                    Properties props = new Properties();
-                    props.load( stream );
+                Properties props = new Properties();
+                props.load( stream );
 
-                    return props;
-                }
-                catch ( IOException e )
-                {
-                    logger.debug( "Failed to read resolution tracking file " + file, e );
-                }
-                finally
-                {
-                    release( lock, file );
-                    close( channel, file );
-                }
+                return props;
+            }
+            catch ( FileNotFoundException e )
+            {
+                // not unusual
+            }
+            catch ( IOException e )
+            {
+                logger.debug( "Failed to read resolution tracking file " + file, e );
+            }
+            finally
+            {
+                release( lock, file );
+                close( channel, file );
             }
         }
 

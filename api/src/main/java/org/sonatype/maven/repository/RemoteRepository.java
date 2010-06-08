@@ -33,15 +33,15 @@ public class RemoteRepository
     implements ArtifactRepository
 {
 
-    private String id;
+    private String id = "";
 
-    private String type;
+    private String type = "";
 
-    private String url;
+    private String url = "";
 
-    private String protocol;
+    private String protocol = "";
 
-    private String host;
+    private String host = "";
 
     private RepositoryPolicy releasePolicy;
 
@@ -134,6 +134,11 @@ public class RemoteRepository
         return this;
     }
 
+    /**
+     * Gets the (base) URL of this repository.
+     * 
+     * @return The (base) URL of this repository, never {@code null}.
+     */
     public String getUrl()
     {
         return url;
@@ -330,6 +335,54 @@ public class RemoteRepository
         buffer.append( ", managed=" ).append( isRepositoryManager() );
         buffer.append( ")" );
         return buffer.toString();
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        if ( obj == null || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        RemoteRepository that = (RemoteRepository) obj;
+
+        return eq( this.getUrl(), that.getUrl() ) && eq( this.getType(), that.getType() )
+            && eq( this.getId(), that.getId() ) && eq( this.getPolicy( true ), that.getPolicy( true ) )
+            && eq( this.getPolicy( false ), that.getPolicy( false ) ) && eq( this.getProxy(), that.getProxy() )
+            && eq( this.getAuthentication(), that.getAuthentication() )
+            && eq( this.getMirroredRepositories(), that.getMirroredRepositories() )
+            && this.isRepositoryManager() == that.isRepositoryManager();
+    }
+
+    private static <T> boolean eq( T s1, T s2 )
+    {
+        return s1 != null ? s1.equals( s2 ) : s2 == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 17;
+        hash = hash * 31 + hash( getUrl() );
+        hash = hash * 31 + hash( getType() );
+        hash = hash * 31 + hash( getId() );
+        hash = hash * 31 + hash( getPolicy( true ) );
+        hash = hash * 31 + hash( getPolicy( false ) );
+        hash = hash * 31 + hash( getProxy() );
+        hash = hash * 31 + hash( getAuthentication() );
+        hash = hash * 31 + hash( getMirroredRepositories() );
+        hash = hash * 31 + ( isRepositoryManager() ? 1 : 0 );
+        return hash;
+    }
+
+    private static int hash( Object obj )
+    {
+        return obj != null ? obj.hashCode() : 0;
     }
 
 }

@@ -183,4 +183,33 @@ public class RepositoryPolicy
         return buffer.toString();
     }
 
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+
+        if ( obj == null || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        RepositoryPolicy that = (RepositoryPolicy) obj;
+
+        return this.isEnabled() == that.isEnabled() && this.getUpdatePolicy().equals( that.getUpdatePolicy() )
+            && this.getChecksumPolicy().equals( that.getChecksumPolicy() );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 17;
+        hash = hash * 31 + ( isEnabled() ? 1 : 0 );
+        hash = hash * 31 + getUpdatePolicy().hashCode();
+        hash = hash * 31 + getChecksumPolicy().hashCode();
+        return hash;
+    }
+
 }

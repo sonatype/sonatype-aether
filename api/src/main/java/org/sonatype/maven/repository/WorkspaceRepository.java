@@ -19,6 +19,8 @@ package org.sonatype.maven.repository;
  * under the License.
  */
 
+import java.util.UUID;
+
 /**
  * A repository backed by an IDE workspace or a build session.
  * 
@@ -30,6 +32,8 @@ public class WorkspaceRepository
 
     private final String type;
 
+    private final String uid;
+
     public WorkspaceRepository()
     {
         this( "workspace" );
@@ -37,7 +41,13 @@ public class WorkspaceRepository
 
     public WorkspaceRepository( String type )
     {
-        this.type = type;
+        this( type, null );
+    }
+
+    public WorkspaceRepository( String type, String uid )
+    {
+        this.type = ( type != null ) ? type : "";
+        this.uid = ( uid != null ) ? uid : UUID.randomUUID().toString().replace( "-", "" );
     }
 
     public String getType()
@@ -54,6 +64,32 @@ public class WorkspaceRepository
     public String toString()
     {
         return "(" + getType() + ")";
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        if ( obj == null || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        WorkspaceRepository that = (WorkspaceRepository) obj;
+
+        return this.getType().equals( that.getType() ) && this.uid.equals( that.uid );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 17;
+        hash = hash * 31 + uid.hashCode();
+        hash = hash * 31 + getType().hashCode();
+        return hash;
     }
 
 }

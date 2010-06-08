@@ -20,6 +20,8 @@ package org.sonatype.maven.repository.util;
  */
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 
 import org.sonatype.maven.repository.DependencyFilter;
 import org.sonatype.maven.repository.DependencyNode;
@@ -33,7 +35,7 @@ public class AndDependencyFilter
     implements DependencyFilter
 {
 
-    private final DependencyFilter[] filters;
+    private final Collection<DependencyFilter> filters = new LinkedHashSet<DependencyFilter>();
 
     /**
      * Creates a new filter from the specified filters.
@@ -42,7 +44,10 @@ public class AndDependencyFilter
      */
     public AndDependencyFilter( DependencyFilter... filters )
     {
-        this.filters = ( filters != null ) ? filters : new DependencyFilter[0];
+        if ( filters != null )
+        {
+            Collections.addAll( this.filters, filters );
+        }
     }
 
     /**
@@ -54,12 +59,28 @@ public class AndDependencyFilter
     {
         if ( filters != null )
         {
-            this.filters = filters.toArray( new DependencyFilter[filters.size()] );
+            this.filters.addAll( filters );
         }
-        else
+    }
+
+    /**
+     * Creates a new filter from the specified filters.
+     * 
+     * @param filter1 The first filter to combine, may be {@code null}.
+     * @param filter2 The first filter to combine, may be {@code null}.
+     * @return The combined filter or {@code null} if both filter were {@code null}.
+     */
+    public static DependencyFilter newInstance( DependencyFilter filter1, DependencyFilter filter2 )
+    {
+        if ( filter1 == null )
         {
-            this.filters = new DependencyFilter[0];
+            return filter2;
         }
+        else if ( filter2 == null )
+        {
+            return filter1;
+        }
+        return new AndDependencyFilter( filter1, filter2 );
     }
 
     public boolean filterDependency( DependencyNode node )
@@ -72,6 +93,32 @@ public class AndDependencyFilter
             }
         }
         return true;
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+
+        if ( obj == null || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        AndDependencyFilter that = (AndDependencyFilter) obj;
+
+        return this.filters.equals( that.filters );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 17;
+        hash = hash * 31 + filters.hashCode();
+        return hash;
     }
 
 }
