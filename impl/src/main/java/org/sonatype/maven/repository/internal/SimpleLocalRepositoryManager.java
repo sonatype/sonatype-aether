@@ -50,6 +50,11 @@ public class SimpleLocalRepositoryManager
         this( basedir, "simple" );
     }
 
+    public SimpleLocalRepositoryManager( String basedir )
+    {
+        this( ( basedir != null ) ? new File( basedir ) : null, "simple" );
+    }
+
     SimpleLocalRepositoryManager( File basedir, String type )
     {
         if ( basedir == null )

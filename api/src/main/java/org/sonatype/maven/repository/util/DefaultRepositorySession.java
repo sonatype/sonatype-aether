@@ -103,6 +103,7 @@ public class DefaultRepositorySession
         setMirrorSelector( new DefaultMirrorSelector() );
         setAuthenticationSelector( new DefaultAuthenticationSelector() );
         setProxySelector( new DefaultProxySelector() );
+        setArtifactStereotypeRegistry( new DefaultArtifactStereotypeRegistry() );
     }
 
     public DefaultRepositorySession( RepositorySession session )

@@ -185,8 +185,12 @@ public class DefaultDependencyCollector
             catch ( RepositoryException e )
             {
                 result.addException( e );
-                throw new DependencyCollectionException( result );
             }
+        }
+
+        if ( !result.getExceptions().isEmpty() )
+        {
+            throw new DependencyCollectionException( result );
         }
 
         return result;

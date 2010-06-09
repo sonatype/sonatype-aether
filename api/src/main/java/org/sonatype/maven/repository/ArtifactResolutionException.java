@@ -29,33 +29,15 @@ public class ArtifactResolutionException
     extends RepositoryException
 {
 
-    private final List<? extends ArtifactResult> results;
+    private final List<ArtifactResult> results;
 
-    private DependencyNode root;
-
-    public ArtifactResolutionException( List<? extends ArtifactResult> results )
-    {
-        this( null, results );
-    }
-
-    public ArtifactResolutionException( DependencyNode root, List<? extends ArtifactResult> results )
+    public ArtifactResolutionException( List<ArtifactResult> results )
     {
         super( getMessage( results ), getCause( results ) );
-        this.root = root;
         this.results = ( results != null ) ? results : Collections.<ArtifactResult> emptyList();
     }
 
-    public DependencyNode getRoot()
-    {
-        return root;
-    }
-
-    public void setRoot( DependencyNode root )
-    {
-        this.root = root;
-    }
-
-    public List<? extends ArtifactResult> getResults()
+    public List<ArtifactResult> getResults()
     {
         return results;
     }
@@ -83,31 +65,33 @@ public class ArtifactResolutionException
 
     private static Throwable getCause( List<? extends ArtifactResult> results )
     {
-        Throwable cause = null;
-        if ( results.size() == 1 )
+        for ( ArtifactResult result : results )
         {
-
-            Throwable nf = null;
-            Throwable te = null;
-            for ( Throwable t : results.get( 0 ).getExceptions() )
+            if ( !result.isResolved() )
             {
-                if ( t instanceof ArtifactNotFoundException )
+                Throwable nf = null;
+                for ( Throwable t : result.getExceptions() )
                 {
-                    if ( nf == null )
+                    if ( t instanceof ArtifactNotFoundException )
                     {
-                        nf = t;
+                        if ( nf == null )
+                        {
+                            nf = t;
+                        }
                     }
-                }
-                else if ( te == null )
-                {
-                    te = t;
-                    break;
-                }
+                    else
+                    {
+                        return t;
+                    }
 
+                }
+                if ( nf != null )
+                {
+                    return nf;
+                }
             }
-            cause = ( te != null ) ? te : nf;
         }
-        return cause;
+        return null;
     }
 
 }

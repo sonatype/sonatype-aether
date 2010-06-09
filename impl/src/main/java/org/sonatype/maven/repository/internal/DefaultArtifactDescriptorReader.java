@@ -256,7 +256,7 @@ public class DefaultArtifactDescriptorReader
                 modelRequest.setUserProperties( session.getUserProperties() );
                 modelRequest.setModelResolver( new DefaultModelResolver( session, request.getContext(),
                                                                          artifactResolver, remoteRepositoryManager,
-                                                                         request.getRepositories() ) );
+                                                                         request.getRepositories(), null ) );
                 if ( resolveResult.getRepository() instanceof WorkspaceRepository )
                 {
                     modelRequest.setPomFile( pomArtifact.getFile() );

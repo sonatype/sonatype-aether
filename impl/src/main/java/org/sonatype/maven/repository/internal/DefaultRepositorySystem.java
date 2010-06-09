@@ -217,21 +217,14 @@ public class DefaultRepositorySystem
         return dependencyCollector.collectDependencies( session, request );
     }
 
-    public void resolveDependencies( RepositorySession session, DependencyNode node, DependencyFilter filter )
+    public List<ArtifactResult> resolveDependencies( RepositorySession session, DependencyNode node,
+                                                     DependencyFilter filter )
         throws ArtifactResolutionException
     {
         List<ArtifactRequest> requests = new ArrayList<ArtifactRequest>();
         toArtifactRequest( requests, node, filter );
 
-        try
-        {
-            resolveArtifacts( session, requests );
-        }
-        catch ( ArtifactResolutionException e )
-        {
-            e.setRoot( node );
-            throw e;
-        }
+        return resolveArtifacts( session, requests );
     }
 
     private void toArtifactRequest( List<ArtifactRequest> requests, DependencyNode node, DependencyFilter filter )
@@ -239,8 +232,7 @@ public class DefaultRepositorySystem
         Dependency dependency = node.getDependency();
         if ( dependency != null && ( filter == null || filter.filterDependency( node ) ) )
         {
-            ArtifactRequest request =
-                new ArtifactRequest( dependency.getArtifact(), node.getRepositories(), node.getContext() );
+            ArtifactRequest request = new ArtifactRequest( dependency, node.getRepositories(), node.getContext() );
             requests.add( request );
         }
 

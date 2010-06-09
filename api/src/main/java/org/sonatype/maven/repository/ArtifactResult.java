@@ -63,6 +63,17 @@ public class ArtifactResult
     }
 
     /**
+     * Gets the artifact whose resolution was requested. This is a convenience method for {@code
+     * getRequest().getArtifact()}.
+     * 
+     * @return The requested artifact, never {@code null}.
+     */
+    public Artifact getArtifact()
+    {
+        return getRequest().getArtifact();
+    }
+
+    /**
      * Gets the exceptions that occurred while resolving the artifact.
      * 
      * @return The exceptions that occurred, never {@code null}.

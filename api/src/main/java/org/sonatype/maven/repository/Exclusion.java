@@ -154,4 +154,33 @@ public class Exclusion
             + ( getClassifier().length() > 0 ? ':' + getClassifier() : "" );
     }
 
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( obj == this )
+        {
+            return true;
+        }
+        else if ( obj == null || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        Exclusion that = (Exclusion) obj;
+
+        return getArtifactId().equals( that.getArtifactId() ) && getGroupId().equals( that.getGroupId() )
+            && getType().equals( that.getType() ) && getClassifier().equals( that.getClassifier() );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 17;
+        hash = hash * 31 + getArtifactId().hashCode();
+        hash = hash * 31 + getGroupId().hashCode();
+        hash = hash * 31 + getClassifier().hashCode();
+        hash = hash * 31 + getType().hashCode();
+        return hash;
+    }
+
 }

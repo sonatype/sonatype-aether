@@ -93,10 +93,12 @@ public interface RepositorySystem
      * @param node The root node of the dependency graph whose artifacts shall be resolved, must not be {@code null}
      * @param filter The node filter to use to select the actual nodes to resolve, may be {@code null} to resolve all
      *            nodes.
+     * @return The resolution results, never {@code null}.
      * @throws ArtifactResolutionException If any artifact could not be resolved.
      * @see Artifact#getFile()
      */
-    public void resolveDependencies( RepositorySession session, DependencyNode node, DependencyFilter filter )
+    public List<ArtifactResult> resolveDependencies( RepositorySession session, DependencyNode node,
+                                                     DependencyFilter filter )
         throws ArtifactResolutionException;
 
     /**
@@ -105,6 +107,7 @@ public interface RepositorySystem
      * 
      * @param session The repository session, must not be {@code null}.
      * @param requests The resolution requests, must not be {@code null}
+     * @return The resolution results, never {@code null}.
      * @throws ArtifactResolutionException If any artifact could not be resolved.
      * @see Artifact#getFile()
      */
@@ -116,6 +119,7 @@ public interface RepositorySystem
      * 
      * @param session The repository session, must not be {@code null}.
      * @param requests The resolution requests, must not be {@code null}
+     * @return The resolution results, never {@code null}.
      * @see Metadata#getFile()
      */
     List<MetadataResult> resolveMetadata( RepositorySession session, Collection<? extends MetadataRequest> requests );

@@ -19,6 +19,7 @@ package org.sonatype.maven.repository.util;
  * under the License.
  */
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.Dependency;
 import org.sonatype.maven.repository.DependencyManager;
 import org.sonatype.maven.repository.DependencyNode;
+import org.sonatype.maven.repository.Exclusion;
 
 /**
  * A dependency manager that overrides dependency version and scope for managed dependencies.
@@ -42,18 +44,23 @@ public class DefaultDependencyManager
 
     private final Map<String, String> managedScopes;
 
+    private final Map<String, List<Exclusion>> managedExclusions;
+
     /**
      * Creates a new dependency manager without any management information.
      */
     public DefaultDependencyManager()
     {
-        this( Collections.<String, String> emptyMap(), Collections.<String, String> emptyMap() );
+        this( Collections.<String, String> emptyMap(), Collections.<String, String> emptyMap(),
+              Collections.<String, List<Exclusion>> emptyMap() );
     }
 
-    private DefaultDependencyManager( Map<String, String> managedVersions, Map<String, String> managedScopes )
+    private DefaultDependencyManager( Map<String, String> managedVersions, Map<String, String> managedScopes,
+                                      Map<String, List<Exclusion>> managedExclusions )
     {
         this.managedVersions = managedVersions;
         this.managedScopes = managedScopes;
+        this.managedExclusions = managedExclusions;
     }
 
     public DependencyManager deriveChildManager( DependencyNode childNode,
@@ -66,6 +73,7 @@ public class DefaultDependencyManager
 
         Map<String, String> managedVersions = new HashMap<String, String>( this.managedVersions );
         Map<String, String> managedScopes = new HashMap<String, String>( this.managedScopes );
+        Map<String, List<Exclusion>> managedExclusions = new HashMap<String, List<Exclusion>>( this.managedExclusions );
 
         for ( Dependency managedDependency : managedDependencies )
         {
@@ -80,9 +88,21 @@ public class DefaultDependencyManager
             {
                 managedScopes.put( key, managedDependency.getScope() );
             }
+
+            List<Exclusion> exclusions = managedDependency.getExclusions();
+            if ( !exclusions.isEmpty() )
+            {
+                List<Exclusion> managed = managedExclusions.get( key );
+                if ( managed == null )
+                {
+                    managed = new ArrayList<Exclusion>();
+                    managedExclusions.put( key, managed );
+                }
+                managed.addAll( exclusions );
+            }
         }
 
-        return new DefaultDependencyManager( managedVersions, managedScopes );
+        return new DefaultDependencyManager( managedVersions, managedScopes, managedExclusions );
     }
 
     public void manageDependency( DependencyNode node, Dependency dependency )
@@ -99,6 +119,12 @@ public class DefaultDependencyManager
         if ( scope != null )
         {
             dependency.setScope( scope );
+        }
+
+        List<Exclusion> exclusions = managedExclusions.get( key );
+        if ( exclusions != null )
+        {
+            dependency.getExclusions().addAll( exclusions );
         }
     }
 

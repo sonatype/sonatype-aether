@@ -59,6 +59,17 @@ public class MetadataResult
     }
 
     /**
+     * Gets the metadata whose resolution was requested. This is a convenience method for {@code
+     * getRequest().getMetadata()}.
+     * 
+     * @return The requested metadata, never {@code null}.
+     */
+    public Metadata getMetadata()
+    {
+        return getRequest().getMetadata();
+    }
+
+    /**
      * Records the specified exception while resolving the metadata.
      * 
      * @param exception The exception to record, may be {@code null}.

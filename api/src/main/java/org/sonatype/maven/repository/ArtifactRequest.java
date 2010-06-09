@@ -35,6 +35,8 @@ public class ArtifactRequest
 
     private Artifact artifact;
 
+    private Dependency dependency;
+
     private List<RemoteRepository> repositories = Collections.emptyList();
 
     private String context = "";
@@ -62,9 +64,23 @@ public class ArtifactRequest
     }
 
     /**
+     * Creates a request with the specified properties.
+     * 
+     * @param dependency The dependency to resolve, may be {@code null}.
+     * @param repositories The repositories to resolve the artifact from, may be {@code null}.
+     * @param context The context in which this request is made, may be {@code null}.
+     */
+    public ArtifactRequest( Dependency dependency, List<RemoteRepository> repositories, String context )
+    {
+        setDependency( dependency );
+        setRepositories( repositories );
+        setContext( context );
+    }
+
+    /**
      * Gets the artifact to resolve.
      * 
-     * @return The artifact to resolve or {@code null}
+     * @return The artifact to resolve or {@code null}.
      */
     public Artifact getArtifact()
     {
@@ -80,6 +96,32 @@ public class ArtifactRequest
     public ArtifactRequest setArtifact( Artifact artifact )
     {
         this.artifact = artifact;
+        return this;
+    }
+
+    /**
+     * Gets the dependency for which to resolve the artifact.
+     * 
+     * @return The dependency to resolve or {@code null} if unknown.
+     */
+    public Dependency getDependency()
+    {
+        return dependency;
+    }
+
+    /**
+     * Sets the dependency to resolve.
+     * 
+     * @param dependency The dependency to resolve, may be {@code null}.
+     * @return This request for chaining, never {@code null}.
+     */
+    public ArtifactRequest setDependency( Dependency dependency )
+    {
+        this.dependency = dependency;
+        if ( dependency != null )
+        {
+            setArtifact( dependency.getArtifact() );
+        }
         return this;
     }
 

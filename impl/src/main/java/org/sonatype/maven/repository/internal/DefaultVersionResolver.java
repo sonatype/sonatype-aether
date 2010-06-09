@@ -224,6 +224,11 @@ public class DefaultVersionResolver
                         result.setVersion( version );
                     }
                 }
+                else
+                {
+                    result.setVersion( version );
+                    repo = null;
+                }
             }
 
             if ( StringUtils.isNotEmpty( result.getVersion() ) )

@@ -19,6 +19,7 @@ package org.sonatype.maven.repository.internal;
  * under the License.
  */
 
+import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +43,7 @@ import org.sonatype.maven.repository.spi.RemoteRepositoryManager;
 /**
  * @author Benjamin Bentmann
  */
-class DefaultModelResolver
+public class DefaultModelResolver
     implements ModelResolver
 {
 
@@ -58,8 +59,11 @@ class DefaultModelResolver
 
     private final Set<String> repositoryIds;
 
+    private final WorkspaceModelPool modelPool;
+
     public DefaultModelResolver( RepositorySession session, String context, ArtifactResolver resolver,
-                                 RemoteRepositoryManager remoteRepositoryManager, List<RemoteRepository> repositories )
+                                 RemoteRepositoryManager remoteRepositoryManager, List<RemoteRepository> repositories,
+                                 WorkspaceModelPool modelPool )
     {
         this.session = session;
         this.context = context;
@@ -67,6 +71,7 @@ class DefaultModelResolver
         this.remoteRepositoryManager = remoteRepositoryManager;
         this.repositories = repositories;
         this.repositoryIds = new HashSet<String>();
+        this.modelPool = modelPool;
     }
 
     private DefaultModelResolver( DefaultModelResolver original )
@@ -77,6 +82,7 @@ class DefaultModelResolver
         this.remoteRepositoryManager = original.remoteRepositoryManager;
         this.repositories = original.repositories;
         this.repositoryIds = new HashSet<String>( original.repositoryIds );
+        this.modelPool = original.modelPool;
     }
 
     public void addRepository( Repository repository )
@@ -102,20 +108,32 @@ class DefaultModelResolver
     public ModelSource resolveModel( String groupId, String artifactId, String version )
         throws UnresolvableModelException
     {
-        Artifact pomArtifact = new DefaultArtifact( groupId, artifactId, "", "pom", version );
+        File pomFile = null;
 
-        try
+        if ( modelPool != null )
         {
-            ArtifactRequest request = new ArtifactRequest( pomArtifact, repositories, context );
-            resolver.resolveArtifact( session, request );
-        }
-        catch ( ArtifactResolutionException e )
-        {
-            throw new UnresolvableModelException( "Failed to resolve POM for " + groupId + ":" + artifactId + ":"
-                + version + " due to " + e.getMessage(), groupId, artifactId, version, e );
+            pomFile = modelPool.get( groupId, artifactId, version );
         }
 
-        return new FileModelSource( pomArtifact.getFile() );
+        if ( pomFile == null )
+        {
+            Artifact pomArtifact = new DefaultArtifact( groupId, artifactId, "", "pom", version );
+
+            try
+            {
+                ArtifactRequest request = new ArtifactRequest( pomArtifact, repositories, context );
+                resolver.resolveArtifact( session, request );
+            }
+            catch ( ArtifactResolutionException e )
+            {
+                throw new UnresolvableModelException( "Failed to resolve POM for " + groupId + ":" + artifactId + ":"
+                    + version + " due to " + e.getMessage(), groupId, artifactId, version, e );
+            }
+
+            pomFile = pomArtifact.getFile();
+        }
+
+        return new FileModelSource( pomFile );
     }
 
 }
