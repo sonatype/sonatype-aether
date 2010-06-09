@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository;
+package org.sonatype.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,32 +19,28 @@ package org.sonatype.maven.repository;
  * under the License.
  */
 
-import java.io.File;
-import java.util.List;
-
 /**
- * An event describing an action performed by repository system.
+ * Performs housekeeping tasks in response to updates to the local repository. This provides an extension point to
+ * integrators to performs things like updating indexes.
  * 
  * @author Benjamin Bentmann
- * @see RepositoryListener
  */
-public interface RepositoryEvent
+public interface LocalRepositoryMaintainer
 {
 
-    RepositorySession getSession();
+    /**
+     * Notifies the maintainer of the addition of an artifact to the local repository by a local build.
+     * 
+     * @param event The event that holds details about the artifact, must not be {@code null}.
+     */
+    void artifactInstalled( LocalRepositoryEvent event );
 
-    Artifact getArtifact();
-
-    Artifact getRelocatedArtifact();
-
-    Metadata getMetadata();
-
-    File getFile();
-
-    ArtifactRepository getRepository();
-
-    Exception getException();
-
-    List<Exception> getExceptions();
+    /**
+     * Notifies the maintainer of the addition of an artifact to the local repository by download from a remote
+     * repository.
+     * 
+     * @param event The event that holds details about the artifact, must not be {@code null}.
+     */
+    void artifactDownloaded( LocalRepositoryEvent event );
 
 }

@@ -48,6 +48,7 @@ import org.sonatype.maven.repository.VersionResult;
 import org.sonatype.maven.repository.WorkspaceReader;
 import org.sonatype.maven.repository.spi.ArtifactDownload;
 import org.sonatype.maven.repository.spi.ArtifactResolver;
+import org.sonatype.maven.repository.spi.LocalRepositoryMaintainer;
 import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.spi.RemoteRepositoryManager;
@@ -76,6 +77,9 @@ public class DefaultArtifactResolver
 
     @Requirement
     private RemoteRepositoryManager remoteRepositoryManager;
+
+    @Requirement( optional = true )
+    private LocalRepositoryMaintainer maintainer;
 
     public DefaultArtifactResolver setLogger( Logger logger )
     {
@@ -110,6 +114,12 @@ public class DefaultArtifactResolver
             throw new IllegalArgumentException( "remote repository manager has not been specified" );
         }
         this.remoteRepositoryManager = remoteRepositoryManager;
+        return this;
+    }
+
+    public DefaultArtifactResolver setLocalRepositoryMaintainer( LocalRepositoryMaintainer maintainer )
+    {
+        this.maintainer = maintainer;
         return this;
     }
 
@@ -322,6 +332,10 @@ public class DefaultArtifactResolver
                     download.getArtifact().setFile( download.getFile() );
                     item.result.setRepository( group.repository );
                     lrm.addRemoteArtifact( download.getArtifact(), group.repository, item.request.getContext() );
+                    if ( maintainer != null )
+                    {
+                        maintainer.artifactDownloaded( new DefaultLocalRepositoryEvent( session, download.getArtifact() ) );
+                    }
                     artifactResolved( session, download.getArtifact(), group.repository, null );
                 }
                 else

@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository;
+package org.sonatype.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,32 +19,38 @@ package org.sonatype.maven.repository;
  * under the License.
  */
 
-import java.io.File;
-import java.util.List;
+import org.sonatype.maven.repository.Artifact;
+import org.sonatype.maven.repository.LocalRepository;
+import org.sonatype.maven.repository.RepositorySession;
 
 /**
- * An event describing an action performed by repository system.
+ * An event describing an update to the local repository.
  * 
  * @author Benjamin Bentmann
- * @see RepositoryListener
+ * @see LocalRepositoryMaintainer
  */
-public interface RepositoryEvent
+public interface LocalRepositoryEvent
 {
 
+    /**
+     * Gets the repository session from which this event originates.
+     * 
+     * @return The repository session, never {@code null}.
+     */
     RepositorySession getSession();
 
+    /**
+     * Gets the local repository which has been updated.
+     * 
+     * @return The local repository, never {@code null}.
+     */
+    LocalRepository getRepository();
+
+    /**
+     * Gets the artifact that was updated.
+     * 
+     * @return The artifact, never {@code null}.
+     */
     Artifact getArtifact();
-
-    Artifact getRelocatedArtifact();
-
-    Metadata getMetadata();
-
-    File getFile();
-
-    ArtifactRepository getRepository();
-
-    Exception getException();
-
-    List<Exception> getExceptions();
 
 }

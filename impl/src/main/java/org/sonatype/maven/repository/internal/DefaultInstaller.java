@@ -36,6 +36,7 @@ import org.sonatype.maven.repository.Metadata;
 import org.sonatype.maven.repository.RepositoryListener;
 import org.sonatype.maven.repository.RepositorySession;
 import org.sonatype.maven.repository.spi.Installer;
+import org.sonatype.maven.repository.spi.LocalRepositoryMaintainer;
 import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.util.DefaultRepositoryEvent;
@@ -51,9 +52,18 @@ public class DefaultInstaller
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
 
+    @Requirement( optional = true )
+    private LocalRepositoryMaintainer maintainer;
+
     public DefaultInstaller setLogger( Logger logger )
     {
         this.logger = ( logger != null ) ? logger : NullLogger.INSTANCE;
+        return this;
+    }
+
+    public DefaultInstaller setLocalRepositoryMaintainer( LocalRepositoryMaintainer maintainer )
+    {
+        this.maintainer = maintainer;
         return this;
     }
 
@@ -104,6 +114,11 @@ public class DefaultInstaller
             }
 
             lrm.addLocalArtifact( artifact );
+
+            if ( maintainer != null )
+            {
+                maintainer.artifactInstalled( new DefaultLocalRepositoryEvent( session, artifact ) );
+            }
         }
         catch ( IOException e )
         {
