@@ -20,6 +20,7 @@ package org.sonatype.maven.repository.internal;
  */
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.util.FileUtils;
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.ArtifactNotFoundException;
 import org.sonatype.maven.repository.ArtifactRepository;
@@ -35,6 +37,7 @@ import org.sonatype.maven.repository.ArtifactRequest;
 import org.sonatype.maven.repository.ArtifactResolutionException;
 import org.sonatype.maven.repository.ArtifactResult;
 import org.sonatype.maven.repository.ArtifactTransferException;
+import org.sonatype.maven.repository.DerivedArtifact;
 import org.sonatype.maven.repository.LocalArtifactQuery;
 import org.sonatype.maven.repository.LocalRepositoryManager;
 import org.sonatype.maven.repository.NoRepositoryConnectorException;
@@ -203,9 +206,16 @@ public class DefaultArtifactResolver
             lrm.find( query );
             if ( query.isAvailable() )
             {
-                artifact.setFile( query.getFile() );
                 result.setRepository( lrm.getRepository() );
-                artifactResolved( session, artifact, lrm.getRepository(), null );
+                try
+                {
+                    artifact.setFile( getFile( artifact, query.getFile() ) );
+                    artifactResolved( session, artifact, lrm.getRepository(), null );
+                }
+                catch ( ArtifactTransferException e )
+                {
+                    result.addException( e );
+                }
                 continue;
             }
 
@@ -252,6 +262,12 @@ public class DefaultArtifactResolver
             for ( ResolutionItem item : group.items )
             {
                 Artifact artifact = item.request.getArtifact();
+
+                if ( artifact.getFile() != null )
+                {
+                    // resolved in previous resolution group
+                    continue;
+                }
 
                 ArtifactDownload download = new ArtifactDownload();
                 download.setArtifact( artifact );
@@ -318,25 +334,36 @@ public class DefaultArtifactResolver
             }
             for ( ResolutionItem item : group.items )
             {
-                if ( item.updateCheck != null )
-                {
-                    updateCheckManager.touchArtifact( session, item.updateCheck );
-                }
                 ArtifactDownload download = item.download;
                 if ( download == null )
                 {
                     continue;
                 }
+
+                if ( item.updateCheck != null )
+                {
+                    item.updateCheck.setException( download.getException() );
+                    updateCheckManager.touchArtifact( session, item.updateCheck );
+                }
                 if ( download.getException() == null )
                 {
-                    download.getArtifact().setFile( download.getFile() );
                     item.result.setRepository( group.repository );
-                    lrm.addRemoteArtifact( download.getArtifact(), group.repository, item.request.getContext() );
+                    Artifact artifact = download.getArtifact();
+                    try
+                    {
+                        artifact.setFile( getFile( artifact, download.getFile() ) );
+                    }
+                    catch ( ArtifactTransferException e )
+                    {
+                        item.result.addException( e );
+                        continue;
+                    }
+                    lrm.addRemoteArtifact( artifact, group.repository, item.request.getContext() );
                     if ( maintainer != null )
                     {
-                        maintainer.artifactDownloaded( new DefaultLocalRepositoryEvent( session, download.getArtifact() ) );
+                        maintainer.artifactDownloaded( new DefaultLocalRepositoryEvent( session, artifact ) );
                     }
-                    artifactResolved( session, download.getArtifact(), group.repository, null );
+                    artifactResolved( session, artifact, group.repository, null );
                 }
                 else
                 {
@@ -366,6 +393,33 @@ public class DefaultArtifactResolver
         }
 
         return results;
+    }
+
+    private File getFile( Artifact artifact, File file )
+        throws ArtifactTransferException
+    {
+        if ( artifact.isSnapshot() && !artifact.getVersion().equals( artifact.getBaseVersion() ) )
+        {
+            String name = file.getName().replace( artifact.getVersion(), artifact.getBaseVersion() );
+            File dst = new File( file.getParent(), name );
+
+            boolean copy = dst.length() != file.length() || dst.lastModified() != file.lastModified();
+            if ( copy )
+            {
+                try
+                {
+                    FileUtils.copyFile( file, dst );
+                }
+                catch ( IOException e )
+                {
+                    throw new ArtifactTransferException( artifact, null, e );
+                }
+            }
+
+            file = dst;
+        }
+
+        return file;
     }
 
     private void artifactResolving( RepositorySession session, Artifact artifact )
@@ -429,6 +483,23 @@ public class DefaultArtifactResolver
             this.result = result;
             this.request = result.getRequest();
             this.query = query;
+        }
+
+    }
+
+    static class SnapshotArtifact
+        extends DerivedArtifact
+    {
+
+        public SnapshotArtifact( Artifact artifact )
+        {
+            super( artifact );
+        }
+
+        @Override
+        public String getVersion()
+        {
+            return getBaseVersion();
         }
 
     }

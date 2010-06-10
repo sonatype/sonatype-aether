@@ -52,6 +52,10 @@ public class DependencyNode
 
     private String requestedVersion;
 
+    private String premanagedVersion;
+
+    private String premanagedScope;
+
     private List<RemoteRepository> repositories = Collections.emptyList();
 
     /**
@@ -263,7 +267,9 @@ public class DependencyNode
     }
 
     /**
-     * Gets the version or version range from which this dependency node was originally created.
+     * Gets the version or version range from which this dependency node was originally resolved. Note that this version
+     * was subject to dependency management (if any), use {@link #getUnmanagedVersion()} in this case to query the
+     * version as originally declared in the artifact descriptor.
      * 
      * @return The originally requested dependency version, never {@code null}.
      */
@@ -273,7 +279,7 @@ public class DependencyNode
     }
 
     /**
-     * Sets the version or version range from this dependency node was originally created.
+     * Sets the version or version range from this dependency node was originally resolved.
      * 
      * @param requestedVersion The originally requested dependency version, may be {@code null}.
      * @return This dependency node for chaining, never {@code null}.
@@ -281,6 +287,51 @@ public class DependencyNode
     public DependencyNode setRequestedVersion( String requestedVersion )
     {
         this.requestedVersion = ( requestedVersion != null ) ? requestedVersion : "";
+        return this;
+    }
+
+    /**
+     * Gets the version or version range for this dependency before dependency management was applied (if any).
+     * 
+     * @return The dependency version before dependency management or {@code null} if the version was not managed.
+     */
+    public String getPremanagedVersion()
+    {
+        return premanagedVersion;
+    }
+
+    /**
+     * Sets the version or version range for this dependency before dependency management was applied (if any).
+     * 
+     * @param premanagedVersion The originally declared dependency version or {@code null} if the version was not
+     *            managed.
+     * @return This dependency node for chaining, never {@code null}.
+     */
+    public DependencyNode setPremanagedVersion( String premanagedVersion )
+    {
+        this.premanagedVersion = premanagedVersion;
+        return this;
+    }
+
+    /**
+     * Gets the scope for this dependency before dependency management was applied (if any).
+     * 
+     * @return The dependency scope before dependency management or {@code null} if the scope was not managed.
+     */
+    public String getPremanagedScope()
+    {
+        return premanagedScope;
+    }
+
+    /**
+     * Sets the scope for this dependency before dependency management was applied (if any).
+     * 
+     * @param premanagedScope The originally declared dependency scope or {@code null} if the scope was not managed.
+     * @return This dependency node for chaining, never {@code null}.
+     */
+    public DependencyNode setPremanagedScope( String premanagedScope )
+    {
+        this.premanagedScope = premanagedScope;
         return this;
     }
 

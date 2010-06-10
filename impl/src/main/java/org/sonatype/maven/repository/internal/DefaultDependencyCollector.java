@@ -36,6 +36,7 @@ import org.sonatype.maven.repository.CollectRequest;
 import org.sonatype.maven.repository.CollectResult;
 import org.sonatype.maven.repository.Dependency;
 import org.sonatype.maven.repository.DependencyCollectionException;
+import org.sonatype.maven.repository.DependencyManagement;
 import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyGraphTransformer;
 import org.sonatype.maven.repository.DependencyManager;
@@ -247,7 +248,27 @@ public class DefaultDependencyCollector
                 continue;
             }
 
-            depManager.manageDependency( node, dependency );
+            DependencyManagement depMngt = depManager.manageDependency( node, dependency );
+            String premanagedVersion = null;
+            String premanagedScope = null;
+
+            if ( depMngt != null )
+            {
+                if ( depMngt.getVersion() != null )
+                {
+                    premanagedVersion = dependency.getArtifact().getVersion();
+                    dependency.getArtifact().setVersion( depMngt.getVersion() );
+                }
+                if ( depMngt.getScope() != null )
+                {
+                    premanagedScope = dependency.getScope();
+                    dependency.setScope( depMngt.getScope() );
+                }
+                if ( depMngt.getExclusions() != null )
+                {
+                    dependency.getExclusions().addAll( depMngt.getExclusions() );
+                }
+            }
 
             boolean system = dependency.getArtifact().getFile() != null;
 
@@ -276,9 +297,11 @@ public class DefaultDependencyCollector
 
             for ( String version : rangeResult.getVersions() )
             {
-                Dependency d = new Dependency( dependency );
-                d.setArtifact( d.getArtifact().clone() );
-                d.getArtifact().setVersion( version );
+                Dependency d = new Dependency();
+                d.setArtifact( dependency.getArtifact().clone() );
+                d.setScope( dependency.getScope() );
+                d.setOptional( dependency.isOptional() );
+                d.getExclusions().addAll( dependency.getExclusions() );
 
                 List<RemoteRepository> repos = null;
                 ArtifactRepository repo = rangeResult.getRepository( version );
@@ -333,6 +356,8 @@ public class DefaultDependencyCollector
                 DependencyNode child = node.addChild( d );
                 child.setRelocations( descriptorResult.getRelocations() );
                 child.setRequestedVersion( dependency.getArtifact().getVersion() );
+                child.setPremanagedVersion( premanagedVersion );
+                child.setPremanagedScope( premanagedScope );
                 child.setRepositories( repos );
                 child.setPropertes( descriptorResult.getProperties() );
                 child.setContext( result.getRequest().getContext() );
@@ -349,6 +374,29 @@ public class DefaultDependencyCollector
                 }
             }
         }
+    }
+
+    private DependencyManagement manage( DependencyManager depManager, DependencyNode node, Dependency dependency )
+    {
+        DependencyManagement depMngt = depManager.manageDependency( node, dependency );
+
+        if ( depMngt != null )
+        {
+            if ( depMngt.getVersion() != null )
+            {
+                dependency.getArtifact().setVersion( depMngt.getVersion() );
+            }
+            if ( depMngt.getScope() != null )
+            {
+                dependency.setScope( depMngt.getScope() );
+            }
+            if ( depMngt.getExclusions() != null )
+            {
+                dependency.getExclusions().addAll( depMngt.getExclusions() );
+            }
+        }
+
+        return depMngt;
     }
 
     private DependencyNode findDuplicate( DependencyNode node, Artifact artifact )

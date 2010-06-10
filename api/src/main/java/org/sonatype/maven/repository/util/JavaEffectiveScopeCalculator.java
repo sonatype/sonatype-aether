@@ -80,9 +80,13 @@ public class JavaEffectiveScopeCalculator
     private void analyze( DependencyNode node, String scope, Map<DependencyNode, String> scopes,
                           Map<Object, DependencyGroup> groups )
     {
-        Dependency dependeny = node.getDependency();
-        if ( dependeny != null )
+        Dependency dependency = node.getDependency();
+        if ( dependency != null )
         {
+            if ( node.getPremanagedScope() != null )
+            {
+                scope = dependency.getScope();
+            }
             scopes.put( node, scope );
 
             Object key = node.getConflictId();
@@ -165,13 +169,16 @@ public class JavaEffectiveScopeCalculator
 
         for ( DependencyNode childNode : node.getChildren() )
         {
-            String childScope = childNode.getDependency().getScope();
-            String inheritedScope = getInheritedScope( scope, childScope );
-            String oldScope = scopes.get( childNode );
-            if ( !inheritedScope.equals( oldScope ) )
+            if ( childNode.getPremanagedScope() == null )
             {
-                keys.add( childNode.getConflictId() );
-                adjust( childNode, inheritedScope, scopes, keys );
+                String childScope = childNode.getDependency().getScope();
+                String inheritedScope = getInheritedScope( scope, childScope );
+                String oldScope = scopes.get( childNode );
+                if ( !inheritedScope.equals( oldScope ) )
+                {
+                    keys.add( childNode.getConflictId() );
+                    adjust( childNode, inheritedScope, scopes, keys );
+                }
             }
         }
     }

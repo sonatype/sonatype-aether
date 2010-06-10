@@ -72,19 +72,6 @@ public class Dependency
     }
 
     /**
-     * Creates a shallow copy of the specified dependency.
-     * 
-     * @param original The dependency to copy, must not be {@code null}.
-     */
-    public Dependency( Dependency original )
-    {
-        setArtifact( original.getArtifact() );
-        setScope( original.getScope() );
-        setOptional( original.isOptional() );
-        setExclusions( original.getExclusions() );
-    }
-
-    /**
      * Gets the artifact being depended on.
      * 
      * @return The artifact or {@code null} if not set.

@@ -94,6 +94,11 @@ public class DefaultUpdateCheckManager
 
     public void checkArtifact( RepositorySession session, UpdateCheck<Artifact, ArtifactTransferException> check )
     {
+        if ( logger.isDebugEnabled() )
+        {
+            logger.debug( "Calculating update check for " + check.getItem() + " using policy " + check.getPolicy() );
+        }
+
         if ( check.getLocalLastUpdated() != 0 && !isUpdatedRequired( check.getLocalLastUpdated(), check.getPolicy() ) )
         {
             check.setRequired( false );
@@ -106,10 +111,10 @@ public class DefaultUpdateCheckManager
         File touchFile = getTouchFile( artifact, check.getFile() );
         Properties props = read( touchFile, logger );
 
+        boolean fileExists = check.getFile().exists();
         String key = getRepoKey( repository );
 
-        long lastUpdated =
-            check.getFile().exists() ? check.getFile().lastModified() : getLastUpdated( props, key, logger );
+        long lastUpdated = fileExists ? check.getFile().lastModified() : getLastUpdated( props, key, logger );
 
         if ( lastUpdated == 0 )
         {
@@ -119,7 +124,7 @@ public class DefaultUpdateCheckManager
         {
             check.setRequired( true );
         }
-        else if ( check.getFile().exists() )
+        else if ( fileExists )
         {
             check.setRequired( false );
         }
@@ -161,6 +166,11 @@ public class DefaultUpdateCheckManager
 
     public void checkMetadata( RepositorySession session, UpdateCheck<Metadata, MetadataTransferException> check )
     {
+        if ( logger.isDebugEnabled() )
+        {
+            logger.debug( "Calculating update check for " + check.getItem() + " using policy " + check.getPolicy() );
+        }
+
         if ( check.getLocalLastUpdated() != 0 && !isUpdatedRequired( check.getLocalLastUpdated(), check.getPolicy() ) )
         {
             check.setRequired( false );
@@ -173,7 +183,8 @@ public class DefaultUpdateCheckManager
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
         Properties props = read( touchFile, logger );
 
-        String key = getRepoKey( repository ) + '.' + metadata.getType();
+        boolean fileExists = check.getFile().exists();
+        String key = fileExists ? check.getFile().getName() : ( getRepoKey( repository ) + '.' + metadata.getType() );
 
         long lastUpdated = getLastUpdated( props, key, logger );
 
@@ -185,7 +196,7 @@ public class DefaultUpdateCheckManager
         {
             check.setRequired( true );
         }
-        else if ( check.getFile().exists() )
+        else if ( fileExists )
         {
             check.setRequired( false );
         }
@@ -334,7 +345,7 @@ public class DefaultUpdateCheckManager
         {
             String key = getRepoKey( check.getRepository() );
 
-            write( touchFile, key, check.getException(), logger );
+            write( touchFile, key, "artifact", check.getException(), logger );
         }
     }
 
@@ -344,18 +355,20 @@ public class DefaultUpdateCheckManager
 
         String key = getRepoKey( check.getRepository() ) + '.' + check.getItem().getType();
 
-        write( touchFile, key, check.getException(), logger );
+        write( touchFile, key, check.getFile().getName(), check.getException(), logger );
     }
 
-    private void write( File touchFile, String key, Exception error, Logger logger )
+    private void write( File touchFile, String fullKey, String simpleKey, Exception error, Logger logger )
     {
         Map<String, String> updates = new HashMap<String, String>();
 
-        updates.put( key + UPDATED_KEY_SUFFIX, Long.toString( System.currentTimeMillis() ) );
+        String timestamp = Long.toString( System.currentTimeMillis() );
+        updates.put( fullKey + UPDATED_KEY_SUFFIX, timestamp );
+        updates.put( simpleKey + UPDATED_KEY_SUFFIX, timestamp );
 
         if ( error == null || error instanceof ArtifactNotFoundException || error instanceof MetadataNotFoundException )
         {
-            updates.put( key + ERROR_KEY_SUFFIX, null );
+            updates.put( fullKey + ERROR_KEY_SUFFIX, null );
         }
         else
         {
@@ -364,7 +377,7 @@ public class DefaultUpdateCheckManager
             {
                 msg = error.getClass().getSimpleName();
             }
-            updates.put( key + ERROR_KEY_SUFFIX, msg );
+            updates.put( fullKey + ERROR_KEY_SUFFIX, msg );
         }
 
         new TrackingFileManager().setLogger( logger ).update( touchFile, updates );

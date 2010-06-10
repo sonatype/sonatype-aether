@@ -22,6 +22,7 @@ package org.sonatype.maven.repository.util;
 import java.util.List;
 
 import org.sonatype.maven.repository.Dependency;
+import org.sonatype.maven.repository.DependencyManagement;
 import org.sonatype.maven.repository.DependencyManager;
 import org.sonatype.maven.repository.DependencyNode;
 
@@ -40,8 +41,9 @@ public class NoopDependencyManager
         return this;
     }
 
-    public void manageDependency( DependencyNode node, Dependency dependency )
+    public DependencyManagement manageDependency( DependencyNode node, Dependency dependency )
     {
+        return null;
     }
 
 }

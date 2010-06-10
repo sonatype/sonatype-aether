@@ -36,9 +36,9 @@ public interface DependencyManager
      * 
      * @param node The node whose child dependency should be managed, must not be {@code null}.
      * @param dependency The dependency to manage, must not be {@code null}.
-     * @return The managed dependency, never {@code null}.
+     * @return The management update to apply to the dependency or {@code null} if the dependency is not managed at all.
      */
-    void manageDependency( DependencyNode node, Dependency dependency );
+    DependencyManagement manageDependency( DependencyNode node, Dependency dependency );
 
     /**
      * Derives a dependency manager for the specified child node of the current node, i.e. the parent of the specified

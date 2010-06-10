@@ -60,6 +60,12 @@ public class ArtifactResolutionException
             }
         }
 
+        Throwable cause = getCause( results );
+        if ( cause != null )
+        {
+            buffer.append( ": " ).append( cause.getMessage() );
+        }
+
         return buffer.toString();
     }
 

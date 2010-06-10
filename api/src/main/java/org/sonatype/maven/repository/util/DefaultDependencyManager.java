@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.Dependency;
+import org.sonatype.maven.repository.DependencyManagement;
 import org.sonatype.maven.repository.DependencyManager;
 import org.sonatype.maven.repository.DependencyNode;
 import org.sonatype.maven.repository.Exclusion;
@@ -84,7 +85,8 @@ public class DefaultDependencyManager
             {
                 managedVersions.put( key, artifact.getVersion() );
             }
-            if ( managedDependency.getScope().length() > 0 && !managedScopes.containsKey( key ) )
+            if ( childNode.getDepth() <= 1 && managedDependency.getScope().length() > 0
+                && !managedScopes.containsKey( key ) )
             {
                 managedScopes.put( key, managedDependency.getScope() );
             }
@@ -105,27 +107,43 @@ public class DefaultDependencyManager
         return new DefaultDependencyManager( managedVersions, managedScopes, managedExclusions );
     }
 
-    public void manageDependency( DependencyNode node, Dependency dependency )
+    public DependencyManagement manageDependency( DependencyNode node, Dependency dependency )
     {
+        DependencyManagement management = null;
+
         String key = getKey( dependency.getArtifact() );
 
         String version = managedVersions.get( key );
         if ( version != null )
         {
-            dependency.getArtifact().setVersion( version );
+            if ( management == null )
+            {
+                management = new DependencyManagement();
+            }
+            management.setVersion( version );
         }
 
         String scope = managedScopes.get( key );
         if ( scope != null )
         {
-            dependency.setScope( scope );
+            if ( management == null )
+            {
+                management = new DependencyManagement();
+            }
+            management.setScope( scope );
         }
 
         List<Exclusion> exclusions = managedExclusions.get( key );
         if ( exclusions != null )
         {
-            dependency.getExclusions().addAll( exclusions );
+            if ( management == null )
+            {
+                management = new DependencyManagement();
+            }
+            management.setExclusions( exclusions );
         }
+
+        return management;
     }
 
     private String getKey( Artifact a )

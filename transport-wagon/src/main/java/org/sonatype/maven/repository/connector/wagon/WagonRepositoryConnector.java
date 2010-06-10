@@ -449,6 +449,16 @@ class WagonRepositoryConnector
                                 wagon.addTransferListener( md5 );
                                 wagon.addTransferListener( sha1 );
 
+                                /*
+                                 * NOTE: AbstractWagon.createParentDirectories() seems to occasionally fail when
+                                 * executed concurrently, so we try a little harder.
+                                 */
+                                File dir = tmp.getParentFile();
+                                for ( int i = 0; i < 5 && !dir.exists(); i++ )
+                                {
+                                    dir.mkdirs();
+                                }
+
                                 wagon.get( path, tmp );
                             }
                             finally
