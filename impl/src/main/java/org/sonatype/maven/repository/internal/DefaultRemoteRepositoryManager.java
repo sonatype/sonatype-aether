@@ -86,55 +86,61 @@ public class DefaultRemoteRepositoryManager
     }
 
     public List<RemoteRepository> aggregateRepositories( RepositorySession session,
-                                                         List<RemoteRepository> effectiveRepositories,
-                                                         List<RemoteRepository> rawRepositories )
+                                                         List<RemoteRepository> dominantRepositories,
+                                                         List<RemoteRepository> recessiveRepositories,
+                                                         boolean recessiveIsRaw )
     {
-        if ( rawRepositories.isEmpty() )
+        if ( recessiveRepositories.isEmpty() )
         {
-            return effectiveRepositories;
+            return dominantRepositories;
         }
 
         MirrorSelector mirrorSelector = session.getMirrorSelector();
         AuthenticationSelector authSelector = session.getAuthenticationSelector();
         ProxySelector proxySelector = session.getProxySelector();
 
-        List<RemoteRepository> result = new ArrayList<RemoteRepository>( effectiveRepositories );
+        List<RemoteRepository> result = new ArrayList<RemoteRepository>( dominantRepositories );
 
-        next: for ( RemoteRepository rawRepository : rawRepositories )
+        next: for ( RemoteRepository recessiveRepository : recessiveRepositories )
         {
-            RemoteRepository mirrorRepository = mirrorSelector.getMirror( rawRepository );
+            RemoteRepository repository = recessiveRepository;
 
-            RemoteRepository repository = ( mirrorRepository != null ) ? mirrorRepository : rawRepository;
+            if ( recessiveIsRaw )
+            {
+                RemoteRepository mirrorRepository = mirrorSelector.getMirror( recessiveRepository );
+
+                repository = ( mirrorRepository != null ) ? mirrorRepository : recessiveRepository;
+            }
 
             String key = getKey( repository );
 
             for ( ListIterator<RemoteRepository> it = result.listIterator(); it.hasNext(); )
             {
-                RemoteRepository effectiveRepository = it.next();
+                RemoteRepository dominantRepository = it.next();
 
-                if ( key.equals( getKey( effectiveRepository ) ) )
+                if ( key.equals( getKey( dominantRepository ) ) )
                 {
-                    if ( !effectiveRepository.getMirroredRepositories().isEmpty()
+                    if ( !dominantRepository.getMirroredRepositories().isEmpty()
                         && !repository.getMirroredRepositories().isEmpty() )
                     {
                         RemoteRepository mergedRepository = new RemoteRepository();
 
-                        mergedRepository.setRepositoryManager( effectiveRepository.isRepositoryManager() );
+                        mergedRepository.setRepositoryManager( dominantRepository.isRepositoryManager() );
 
-                        mergedRepository.setId( effectiveRepository.getId() );
-                        mergedRepository.setType( effectiveRepository.getType() );
-                        mergedRepository.setUrl( effectiveRepository.getUrl() );
+                        mergedRepository.setId( dominantRepository.getId() );
+                        mergedRepository.setType( dominantRepository.getType() );
+                        mergedRepository.setUrl( dominantRepository.getUrl() );
 
-                        mergedRepository.setAuthentication( effectiveRepository.getAuthentication() );
-                        mergedRepository.setProxy( effectiveRepository.getProxy() );
+                        mergedRepository.setAuthentication( dominantRepository.getAuthentication() );
+                        mergedRepository.setProxy( dominantRepository.getProxy() );
 
-                        mergedRepository.setPolicy( true, merge( session, effectiveRepository.getPolicy( true ),
+                        mergedRepository.setPolicy( true, merge( session, dominantRepository.getPolicy( true ),
                                                                  repository.getPolicy( true ) ) );
-                        mergedRepository.setPolicy( false, merge( session, effectiveRepository.getPolicy( false ),
+                        mergedRepository.setPolicy( false, merge( session, dominantRepository.getPolicy( false ),
                                                                   repository.getPolicy( false ) ) );
 
-                        List<RemoteRepository> mirroredRepositories = effectiveRepository.getMirroredRepositories();
-                        String rawKey = getKey( rawRepository );
+                        List<RemoteRepository> mirroredRepositories = dominantRepository.getMirroredRepositories();
+                        String rawKey = getKey( recessiveRepository );
                         RemoteRepository mirroredRepository = null;
                         for ( RemoteRepository repo : mirroredRepositories )
                         {
@@ -147,7 +153,7 @@ public class DefaultRemoteRepositoryManager
                         if ( mirroredRepository == null )
                         {
                             mirroredRepositories = new ArrayList<RemoteRepository>( mirroredRepositories );
-                            mirroredRepositories.add( rawRepository );
+                            mirroredRepositories.add( recessiveRepository );
                         }
                         mergedRepository.setMirroredRepositories( mirroredRepositories );
 
@@ -158,8 +164,12 @@ public class DefaultRemoteRepositoryManager
                 }
             }
 
-            repository.setAuthentication( authSelector.getAuthentication( repository ) );
-            repository.setProxy( proxySelector.getProxy( repository ) );
+            if ( recessiveIsRaw )
+            {
+                repository.setAuthentication( authSelector.getAuthentication( repository ) );
+                repository.setProxy( proxySelector.getProxy( repository ) );
+            }
+
             result.add( repository );
         }
 

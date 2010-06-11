@@ -33,8 +33,8 @@ public interface RemoteRepositoryManager
 {
 
     List<RemoteRepository> aggregateRepositories( RepositorySession session,
-                                                  List<RemoteRepository> effectiveRepositories,
-                                                  List<RemoteRepository> rawRepositories );
+                                                  List<RemoteRepository> dominantRepositories,
+                                                  List<RemoteRepository> recessiveRepositories, boolean recessiveIsRaw );
 
     RepositoryPolicy getPolicy( RepositorySession session, RemoteRepository repository, boolean releases,
                                 boolean snapshots );

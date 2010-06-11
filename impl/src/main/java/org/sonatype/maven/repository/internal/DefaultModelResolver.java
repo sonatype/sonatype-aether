@@ -41,9 +41,13 @@ import org.sonatype.maven.repository.spi.ArtifactResolver;
 import org.sonatype.maven.repository.spi.RemoteRepositoryManager;
 
 /**
+ * A model resolver to assist building of dependency POMs. This resolver gives priority to those repositories that have
+ * been initially specified and repositories discovered in dependency POMs are recessively merged into the search chain.
+ * 
  * @author Benjamin Bentmann
+ * @see DefaultArtifactDescriptorReader
  */
-public class DefaultModelResolver
+class DefaultModelResolver
     implements ModelResolver
 {
 
@@ -59,11 +63,8 @@ public class DefaultModelResolver
 
     private final Set<String> repositoryIds;
 
-    private final WorkspaceModelPool modelPool;
-
     public DefaultModelResolver( RepositorySession session, String context, ArtifactResolver resolver,
-                                 RemoteRepositoryManager remoteRepositoryManager, List<RemoteRepository> repositories,
-                                 WorkspaceModelPool modelPool )
+                                 RemoteRepositoryManager remoteRepositoryManager, List<RemoteRepository> repositories )
     {
         this.session = session;
         this.context = context;
@@ -71,7 +72,6 @@ public class DefaultModelResolver
         this.remoteRepositoryManager = remoteRepositoryManager;
         this.repositories = repositories;
         this.repositoryIds = new HashSet<String>();
-        this.modelPool = modelPool;
     }
 
     private DefaultModelResolver( DefaultModelResolver original )
@@ -82,7 +82,6 @@ public class DefaultModelResolver
         this.remoteRepositoryManager = original.remoteRepositoryManager;
         this.repositories = original.repositories;
         this.repositoryIds = new HashSet<String>( original.repositoryIds );
-        this.modelPool = original.modelPool;
     }
 
     public void addRepository( Repository repository )
@@ -93,11 +92,11 @@ public class DefaultModelResolver
             return;
         }
 
-        RemoteRepository remoteRepository = DefaultArtifactDescriptorReader.convert( repository );
+        List<RemoteRepository> newRepositories =
+            Collections.singletonList( DefaultArtifactDescriptorReader.convert( repository ) );
 
         this.repositories =
-            remoteRepositoryManager.aggregateRepositories( session, repositories,
-                                                           Collections.singletonList( remoteRepository ) );
+            remoteRepositoryManager.aggregateRepositories( session, repositories, newRepositories, true );
     }
 
     public ModelResolver newCopy()
@@ -108,30 +107,20 @@ public class DefaultModelResolver
     public ModelSource resolveModel( String groupId, String artifactId, String version )
         throws UnresolvableModelException
     {
-        File pomFile = null;
+        Artifact pomArtifact = new DefaultArtifact( groupId, artifactId, "", "pom", version );
 
-        if ( modelPool != null )
+        try
         {
-            pomFile = modelPool.get( groupId, artifactId, version );
+            ArtifactRequest request = new ArtifactRequest( pomArtifact, repositories, context );
+            resolver.resolveArtifact( session, request );
+        }
+        catch ( ArtifactResolutionException e )
+        {
+            throw new UnresolvableModelException( "Failed to resolve POM for " + groupId + ":" + artifactId + ":"
+                + version + " due to " + e.getMessage(), groupId, artifactId, version, e );
         }
 
-        if ( pomFile == null )
-        {
-            Artifact pomArtifact = new DefaultArtifact( groupId, artifactId, "", "pom", version );
-
-            try
-            {
-                ArtifactRequest request = new ArtifactRequest( pomArtifact, repositories, context );
-                resolver.resolveArtifact( session, request );
-            }
-            catch ( ArtifactResolutionException e )
-            {
-                throw new UnresolvableModelException( "Failed to resolve POM for " + groupId + ":" + artifactId + ":"
-                    + version + " due to " + e.getMessage(), groupId, artifactId, version, e );
-            }
-
-            pomFile = pomArtifact.getFile();
-        }
+        File pomFile = pomArtifact.getFile();
 
         return new FileModelSource( pomFile );
     }

@@ -152,7 +152,7 @@ public class DefaultDependencyCollector
 
             repositories =
                 remoteRepositoryManager.aggregateRepositories( session, repositories,
-                                                               descriptorResult.getRepositories() );
+                                                               descriptorResult.getRepositories(), true );
             dependencies = mergeDeps( dependencies, descriptorResult.getDependencies() );
             managedDependencies = mergeDeps( managedDependencies, descriptorResult.getManagedDependencies() );
 
@@ -299,6 +299,7 @@ public class DefaultDependencyCollector
             {
                 Dependency d = new Dependency();
                 d.setArtifact( dependency.getArtifact().clone() );
+                d.getArtifact().setVersion( version );
                 d.setScope( dependency.getScope() );
                 d.setOptional( dependency.isOptional() );
                 d.getExclusions().addAll( dependency.getExclusions() );
@@ -367,7 +368,7 @@ public class DefaultDependencyCollector
                     process( session, result, child, descriptorResult.getDependencies(),
                              descriptorResult.getManagedDependencies(),
                              remoteRepositoryManager.aggregateRepositories( session, repositories,
-                                                                            descriptorResult.getRepositories() ),
+                                                                            descriptorResult.getRepositories(), true ),
                              depSelector.deriveChildSelector( child ),
                              depManager.deriveChildManager( child, managedDependencies ),
                              depTraverser.deriveChildTraverser( child ) );

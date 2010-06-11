@@ -256,7 +256,7 @@ public class DefaultArtifactDescriptorReader
                 modelRequest.setUserProperties( session.getUserProperties() );
                 modelRequest.setModelResolver( new DefaultModelResolver( session, request.getContext(),
                                                                          artifactResolver, remoteRepositoryManager,
-                                                                         request.getRepositories(), null ) );
+                                                                         request.getRepositories() ) );
                 if ( resolveResult.getRepository() instanceof WorkspaceRepository )
                 {
                     modelRequest.setPomFile( pomArtifact.getFile() );
@@ -362,8 +362,14 @@ public class DefaultArtifactDescriptorReader
         if ( policy != null )
         {
             result.setEnabled( policy.isEnabled() );
-            result.setUpdatePolicy( policy.getUpdatePolicy() );
-            result.setChecksumPolicy( policy.getChecksumPolicy() );
+            if ( policy.getUpdatePolicy() != null )
+            {
+                result.setUpdatePolicy( policy.getUpdatePolicy() );
+            }
+            if ( policy.getChecksumPolicy() != null )
+            {
+                result.setChecksumPolicy( policy.getChecksumPolicy() );
+            }
         }
         return result;
     }

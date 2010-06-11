@@ -409,6 +409,7 @@ public class DefaultArtifactResolver
                 try
                 {
                     FileUtils.copyFile( file, dst );
+                    dst.setLastModified( file.lastModified() );
                 }
                 catch ( IOException e )
                 {
