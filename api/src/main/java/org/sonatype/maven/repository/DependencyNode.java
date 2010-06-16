@@ -52,6 +52,10 @@ public class DependencyNode
 
     private String requestedVersion;
 
+    private VersionConstraint versionConstraint;
+
+    private Version version;
+
     private String premanagedVersion;
 
     private String premanagedScope;
@@ -290,6 +294,37 @@ public class DependencyNode
         return this;
     }
 
+    /**
+     * Gets the version constraint that was parsed from the dependency's version declaration.
+     * 
+     * @return The version constraint for this node or {@code null}.
+     */
+    public VersionConstraint getVersionConstraint()
+    {
+        return versionConstraint;
+    }
+
+    public DependencyNode setVersionConstraint( VersionConstraint versionConstraint )
+    {
+        this.versionConstraint = versionConstraint;
+        return this;
+    }
+
+    public Version getVersion()
+    {
+        return version;
+    }
+
+    public DependencyNode setVersion( Version version )
+    {
+        this.version = version;
+        if ( dependency != null )
+        {
+            dependency.getArtifact().setVersion( version != null ? version.toString() : null );
+        }
+        return this;
+    }
+    
     /**
      * Gets the version or version range for this dependency before dependency management was applied (if any).
      * 

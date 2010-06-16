@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository.internal;
+package org.sonatype.maven.repository.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,16 +19,21 @@ package org.sonatype.maven.repository.internal;
  * under the License.
  */
 
+import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.InvalidVersionException;
 import org.sonatype.maven.repository.Version;
+import org.sonatype.maven.repository.VersionConstraint;
 
 /**
  * @author Benjamin Bentmann
  */
-interface VersionScheme
+public interface VersionParser
 {
 
-    Version parseVersion( String version )
+    Version parseVersion( Artifact artifact )
+        throws InvalidVersionException;
+
+    VersionConstraint parseConstraint( Artifact artifact )
         throws InvalidVersionException;
 
 }

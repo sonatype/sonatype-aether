@@ -46,6 +46,7 @@ import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryException;
 import org.sonatype.maven.repository.RepositoryListener;
 import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.Version;
 import org.sonatype.maven.repository.VersionRangeRequest;
 import org.sonatype.maven.repository.VersionRangeResolutionException;
 import org.sonatype.maven.repository.VersionRangeResult;
@@ -159,6 +160,20 @@ public class DefaultDependencyCollector
             node.setRelocations( descriptorResult.getRelocations() );
             node.setPropertes( descriptorResult.getProperties() );
 
+            VersionRangeRequest versionRequest =
+                new VersionRangeRequest( root.getArtifact(), request.getRepositories(), request.getContext() );
+            try
+            {
+                VersionRangeResult versionResult = versionRangeResolver.resolveVersionRange( session, versionRequest );
+                node.setVersionConstraint( versionResult.getVersionConstraint() );
+                node.setVersion( versionResult.getVersions().get( 0 ) );
+            }
+            catch ( VersionRangeResolutionException e )
+            {
+                result.addException( e );
+                throw new DependencyCollectionException( result );
+            }
+
             artifactRelocated( session, descriptorResult );
         }
         else
@@ -243,9 +258,21 @@ public class DefaultDependencyCollector
 
         for ( Dependency dependency : dependencies )
         {
+            process( session, result, node, dependency, managedDependencies, repositories, depSelector, depManager,
+                     depTraverser );
+        }
+    }
+
+    private void process( RepositorySession session, CollectResult result, DependencyNode node, Dependency dependency,
+                          List<Dependency> managedDependencies, List<RemoteRepository> repositories,
+                          DependencySelector depSelector, DependencyManager depManager, DependencyTraverser depTraverser )
+        throws DependencyCollectionException
+    {
+        process: while ( true )
+        {
             if ( !depSelector.selectDependency( node, dependency ) )
             {
-                continue;
+                return;
             }
 
             DependencyManagement depMngt = depManager.manageDependency( node, dependency );
@@ -292,14 +319,14 @@ public class DefaultDependencyCollector
             catch ( VersionRangeResolutionException e )
             {
                 result.addException( e );
-                continue;
+                return;
             }
 
-            for ( String version : rangeResult.getVersions() )
+            for ( Version version : rangeResult.getVersions() )
             {
                 Dependency d = new Dependency();
                 d.setArtifact( dependency.getArtifact().clone() );
-                d.getArtifact().setVersion( version );
+                d.getArtifact().setVersion( version.toString() );
                 d.setScope( dependency.getScope() );
                 d.setOptional( dependency.isOptional() );
                 d.getExclusions().addAll( dependency.getExclusions() );
@@ -344,18 +371,21 @@ public class DefaultDependencyCollector
                     artifactRelocated( session, descriptorResult );
                 }
 
-                if ( !descriptorResult.getRelocations().isEmpty() && !depSelector.selectDependency( node, d ) )
-                {
-                    continue;
-                }
-
                 if ( findDuplicate( node, d.getArtifact() ) != null )
                 {
                     continue;
                 }
 
+                if ( !descriptorResult.getRelocations().isEmpty() )
+                {
+                    dependency = d;
+                    continue process;
+                }
+
                 DependencyNode child = node.addChild( d );
                 child.setRelocations( descriptorResult.getRelocations() );
+                child.setVersionConstraint( rangeResult.getVersionConstraint() );
+                child.setVersion( version );
                 child.setRequestedVersion( dependency.getArtifact().getVersion() );
                 child.setPremanagedVersion( premanagedVersion );
                 child.setPremanagedScope( premanagedScope );
@@ -374,30 +404,9 @@ public class DefaultDependencyCollector
                              depTraverser.deriveChildTraverser( child ) );
                 }
             }
+            
+            break;
         }
-    }
-
-    private DependencyManagement manage( DependencyManager depManager, DependencyNode node, Dependency dependency )
-    {
-        DependencyManagement depMngt = depManager.manageDependency( node, dependency );
-
-        if ( depMngt != null )
-        {
-            if ( depMngt.getVersion() != null )
-            {
-                dependency.getArtifact().setVersion( depMngt.getVersion() );
-            }
-            if ( depMngt.getScope() != null )
-            {
-                dependency.setScope( depMngt.getScope() );
-            }
-            if ( depMngt.getExclusions() != null )
-            {
-                dependency.getExclusions().addAll( depMngt.getExclusions() );
-            }
-        }
-
-        return depMngt;
     }
 
     private DependencyNode findDuplicate( DependencyNode node, Artifact artifact )

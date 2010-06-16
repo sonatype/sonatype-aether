@@ -37,11 +37,11 @@ public class VersionRangeResult
 
     private final List<Exception> exceptions;
 
-    private List<String> versions;
+    private List<Version> versions;
 
-    private final Map<String, ArtifactRepository> repositories;
+    private final Map<Version, ArtifactRepository> repositories;
 
-    private boolean range;
+    private VersionConstraint versionConstraint;
 
     /**
      * Creates a new result for the specified request.
@@ -56,8 +56,8 @@ public class VersionRangeResult
         }
         this.request = request;
         this.exceptions = new ArrayList<Exception>( 4 );
-        versions = new ArrayList<String>();
-        repositories = new HashMap<String, ArtifactRepository>();
+        versions = new ArrayList<Version>();
+        repositories = new HashMap<Version, ArtifactRepository>();
     }
 
     /**
@@ -100,7 +100,7 @@ public class VersionRangeResult
      * 
      * @return The matching versions (if any), never {@code null}.
      */
-    public List<String> getVersions()
+    public List<Version> getVersions()
     {
         return versions;
     }
@@ -111,7 +111,7 @@ public class VersionRangeResult
      * @param version The version to add, must not be {@code null}.
      * @return This result for chaining, never {@code null}.
      */
-    public VersionRangeResult addVersion( String version )
+    public VersionRangeResult addVersion( Version version )
     {
         versions.add( version );
         return this;
@@ -123,9 +123,9 @@ public class VersionRangeResult
      * @param versions The matching versions, may be empty or {@code null} if none.
      * @return This result for chaining, never {@code null}.
      */
-    public VersionRangeResult setVersions( List<String> versions )
+    public VersionRangeResult setVersions( List<Version> versions )
     {
-        this.versions = ( versions != null ) ? versions : new ArrayList<String>();
+        this.versions = ( versions != null ) ? versions : new ArrayList<Version>();
         return this;
     }
 
@@ -135,7 +135,7 @@ public class VersionRangeResult
      * @param version The version whose source repository should be retrieved, must not be {@code null}.
      * @return The repository from which the version was resolved or {@code null} if unknown.
      */
-    public ArtifactRepository getRepository( String version )
+    public ArtifactRepository getRepository( Version version )
     {
         return repositories.get( version );
     }
@@ -147,7 +147,7 @@ public class VersionRangeResult
      * @param repository The repository from which the version was resolved, may be {@code null}.
      * @return This result for chaining, never {@code null}.
      */
-    public VersionRangeResult setRepository( String version, ArtifactRepository repository )
+    public VersionRangeResult setRepository( Version version, ArtifactRepository repository )
     {
         if ( repository != null )
         {
@@ -156,27 +156,14 @@ public class VersionRangeResult
         return this;
     }
 
-    /**
-     * Indicates whether the original request actually referred to a version range or just a simple version.
-     * 
-     * @return {@code true} if the request referred to a version range, {@code false} if the request referred only to a
-     *         simple version.
-     */
-    public boolean isRange()
+    public VersionConstraint getVersionConstraint()
     {
-        return range;
+        return versionConstraint;
     }
 
-    /**
-     * Sets the version range indicator.
-     * 
-     * @param range {@code true} if the request referred to a version range, {@code false} if the request referred only
-     *            to a simple version.
-     * @return This result for chaining, never {@code null}.
-     */
-    public VersionRangeResult setRange( boolean range )
+    public VersionRangeResult setVersionConstraint( VersionConstraint versionConstraint )
     {
-        this.range = range;
+        this.versionConstraint = versionConstraint;
         return this;
     }
 

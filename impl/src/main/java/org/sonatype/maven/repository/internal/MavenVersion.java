@@ -30,6 +30,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Stack;
 
+import org.sonatype.maven.repository.Version;
+
 /**
  * Generic implementation of version comparison. Features:
  * <ul>
@@ -58,7 +60,7 @@ import java.util.Stack;
  * @author <a href="mailto:hboutemy@apache.org">Hervé Boutemy</a>
  */
 class MavenVersion
-    implements Comparable<Object>
+    implements Version
 {
 
     private final String value;
@@ -441,7 +443,7 @@ class MavenVersion
         return isDigit ? new IntegerItem( buf ) : new StringItem( buf, false );
     }
 
-    public int compareTo( Object o )
+    public int compareTo( Version o )
     {
         return items.compareTo( ( (MavenVersion) o ).items );
     }

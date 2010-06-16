@@ -19,16 +19,21 @@ package org.sonatype.maven.repository.util;
  * under the License.
  */
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.TreeSet;
 
 import org.sonatype.maven.repository.DependencyGraphTransformer;
 import org.sonatype.maven.repository.DependencyNode;
 import org.sonatype.maven.repository.RepositoryException;
 import org.sonatype.maven.repository.UnsolvableVersionConflictException;
+import org.sonatype.maven.repository.Version;
+import org.sonatype.maven.repository.VersionConstraint;
 
 /**
  * @author Benjamin Bentmann
@@ -40,60 +45,77 @@ public class ClassicVersionConflictResolver
     public DependencyNode transformGraph( DependencyNode node )
         throws RepositoryException
     {
-        Map<Object, VersionGroup> groups = new HashMap<Object, VersionGroup>();
+        Map<Object, ConflictGroup> groups = new HashMap<Object, ConflictGroup>();
         analyze( node, groups );
         prune( node, groups );
         return node;
     }
 
-    private void analyze( DependencyNode node, Map<Object, VersionGroup> groups )
+    private void analyze( DependencyNode node, Map<Object, ConflictGroup> groups )
         throws RepositoryException
     {
-        Map<Object, VersionGroup> localGroups = new HashMap<Object, VersionGroup>();
-
-        for ( DependencyNode child : node.getChildren() )
+        if ( node.getDependency() != null )
         {
-            Object key = child.getConflictId();
+            Object key = node.getConflictId();
 
-            VersionGroup localGroup = localGroups.get( key );
-            if ( localGroup == null )
-            {
-                localGroup = new VersionGroup( key, child );
-                localGroups.put( key, localGroup );
-            }
-
-            localGroup.add( child.getDependency().getArtifact().getVersion() );
-        }
-
-        for ( Map.Entry<Object, VersionGroup> entry : localGroups.entrySet() )
-        {
-            VersionGroup group = groups.get( entry.getKey() );
+            ConflictGroup group = groups.get( key );
             if ( group == null )
             {
-                groups.put( entry.getKey(), entry.getValue() );
+                group = new ConflictGroup( key, node.getVersionConstraint().getPreferredVersion(), node.getDepth() );
+                groups.put( key, group );
             }
-            else
+            else if ( !group.isAcceptable( node.getVersion() ) )
             {
-                group.merge( entry.getValue() );
+                return;
+            }
+
+            if ( !node.getVersionConstraint().getRanges().isEmpty() )
+            {
+                group.constraints.add( node.getVersionConstraint() );
+            }
+            group.versions.add( node.getVersion() );
+
+            if ( node.getDepth() < group.depth )
+            {
+                group.depth = node.getDepth();
+
+                Version recommendedVersion = node.getVersionConstraint().getPreferredVersion();
+                if ( group.isAcceptable( recommendedVersion ) )
+                {
+                    group.version = recommendedVersion;
+                }
+            }
+
+            if ( !group.isAcceptable( group.version ) )
+            {
+                group.version = null;
+                for ( Version version : group.versions )
+                {
+                    if ( group.isAcceptable( version ) )
+                    {
+                        group.version = version;
+                        break;
+                    }
+                }
+                if ( group.version == null )
+                {
+                    Collection<String> versions = new LinkedHashSet<String>();
+                    for ( VersionConstraint constraint : group.constraints )
+                    {
+                        versions.add( constraint.toString() );
+                    }
+                    throw new UnsolvableVersionConflictException( key, versions );
+                }
             }
         }
 
-        localGroups = null;
-
         for ( DependencyNode child : node.getChildren() )
         {
-            Object key = child.getConflictId();
-
-            VersionGroup group = groups.get( key );
-
-            if ( group.versions.contains( child.getDependency().getArtifact().getVersion() ) )
-            {
-                analyze( child, groups );
-            }
+            analyze( child, groups );
         }
     }
 
-    private void prune( DependencyNode node, Map<Object, VersionGroup> groups )
+    private void prune( DependencyNode node, Map<Object, ConflictGroup> groups )
     {
         for ( Iterator<DependencyNode> it = node.getChildren().iterator(); it.hasNext(); )
         {
@@ -101,10 +123,9 @@ public class ClassicVersionConflictResolver
 
             Object key = child.getConflictId();
 
-            VersionGroup group = groups.get( key );
+            ConflictGroup group = groups.get( key );
 
-            if ( !group.pruned && group.depth == child.getDepth()
-                && group.version.equals( child.getDependency().getArtifact().getVersion() ) )
+            if ( !group.pruned && group.depth == child.getDepth() && group.version.equals( child.getVersion() ) )
             {
                 group.pruned = true;
                 prune( child, groups );
@@ -116,114 +137,39 @@ public class ClassicVersionConflictResolver
         }
     }
 
-    static class VersionGroup
+    static class ConflictGroup
     {
 
         final Object key;
 
+        Collection<VersionConstraint> constraints = new HashSet<VersionConstraint>();
+
+        Collection<Version> versions = new TreeSet<Version>( Collections.reverseOrder() );
+
+        Version version;
+
         int depth;
-
-        boolean soft;
-
-        String version;
-
-        Set<String> versions;
-
-        Set<String> ranges;
 
         boolean pruned;
 
-        public VersionGroup( Object key, DependencyNode node )
+        public ConflictGroup( Object key, Version version, int depth )
         {
             this.key = key;
-            depth = node.getDepth();
-            ranges = new LinkedHashSet<String>();
-            if ( isRange( node.getRequestedVersion() ) )
-            {
-                soft = false;
-                ranges.add( node.getRequestedVersion() );
-            }
-            else
-            {
-                soft = true;
-            }
-            versions = new LinkedHashSet<String>();
-        }
-
-        private static boolean isRange( String version )
-        {
-            return version.startsWith( "[" ) || version.startsWith( "(" );
-        }
-
-        public void add( String version )
-        {
             this.version = version;
-            versions.add( version );
+            this.depth = depth;
         }
 
-        public void merge( VersionGroup that )
-            throws UnsolvableVersionConflictException
+        boolean isAcceptable( Version version )
         {
-            VersionGroup winner, loser;
-            if ( that.depth < this.depth )
+            for ( VersionConstraint constraint : constraints )
             {
-                winner = that;
-                loser = this;
-            }
-            else
-            {
-                winner = this;
-                loser = that;
-            }
-
-            if ( !this.soft && !that.soft )
-            {
-                this.versions.retainAll( that.versions );
-            }
-            else if ( !that.soft )
-            {
-                this.versions = that.versions;
-            }
-            else if ( this.soft )
-            {
-                this.versions = winner.versions;
-            }
-
-            this.ranges.addAll( that.ranges );
-
-            this.version = selectVersion( versions, winner.version, loser.version );
-
-            this.soft = this.soft && that.soft;
-            this.depth = winner.depth;
-        }
-
-        private String selectVersion( Set<String> versions, String dominant, String recessive )
-            throws UnsolvableVersionConflictException
-        {
-            if ( versions.isEmpty() )
-            {
-                throw new UnsolvableVersionConflictException( key, ranges );
-            }
-
-            String version = "";
-            if ( versions.contains( dominant ) )
-            {
-                version = dominant;
-            }
-            else if ( versions.contains( recessive ) )
-            {
-                version = recessive;
-            }
-            else
-            {
-                for ( String v : versions )
+                if ( !constraint.containsVersion( version ) )
                 {
-                    version = v;
+                    return false;
                 }
             }
-            return version;
+            return true;
         }
-
     }
 
 }

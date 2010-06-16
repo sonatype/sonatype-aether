@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,9 @@ import org.sonatype.maven.repository.MetadataResult;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryListener;
 import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.Version;
+import org.sonatype.maven.repository.VersionConstraint;
+import org.sonatype.maven.repository.VersionRange;
 import org.sonatype.maven.repository.VersionRangeRequest;
 import org.sonatype.maven.repository.VersionRangeResolutionException;
 import org.sonatype.maven.repository.VersionRangeResult;
@@ -50,6 +54,7 @@ import org.sonatype.maven.repository.internal.metadata.io.xpp3.MetadataXpp3Reade
 import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.MetadataResolver;
 import org.sonatype.maven.repository.spi.NullLogger;
+import org.sonatype.maven.repository.spi.VersionParser;
 import org.sonatype.maven.repository.spi.VersionRangeResolver;
 import org.sonatype.maven.repository.util.DefaultRepositoryEvent;
 
@@ -69,6 +74,9 @@ public class DefaultVersionRangeResolver
     @Requirement
     private MetadataResolver metadataResolver;
 
+    @Requirement
+    private VersionParser versionParser;
+
     public DefaultVersionRangeResolver setLogger( Logger logger )
     {
         this.logger = ( logger != null ) ? logger : NullLogger.INSTANCE;
@@ -85,19 +93,27 @@ public class DefaultVersionRangeResolver
         return this;
     }
 
+    public DefaultVersionRangeResolver setVersionParser( VersionParser versionParser )
+    {
+        if ( versionParser == null )
+        {
+            throw new IllegalArgumentException( "metadata resolver has not been specified" );
+        }
+        this.versionParser = versionParser;
+        return this;
+    }
+
     public VersionRangeResult resolveVersionRange( RepositorySession session, VersionRangeRequest request )
         throws VersionRangeResolutionException
     {
         VersionRangeResult result = new VersionRangeResult( request );
 
-        String version = request.getArtifact().getVersion();
-
         VersionScheme versionScheme = new MavenVersionScheme();
 
-        List<VersionRange> ranges;
+        VersionConstraint versionConstraint;
         try
         {
-            ranges = VersionRange.parseRanges( version, versionScheme );
+            versionConstraint = versionParser.parseConstraint( request.getArtifact() );
         }
         catch ( InvalidVersionException e )
         {
@@ -105,27 +121,27 @@ public class DefaultVersionRangeResolver
             throw new VersionRangeResolutionException( result );
         }
 
-        result.setRange( !ranges.isEmpty() );
+        result.setVersionConstraint( versionConstraint );
 
-        if ( ranges.isEmpty() )
+        if ( versionConstraint.getRanges().isEmpty() )
         {
-            result.addVersion( version );
+            result.addVersion( versionConstraint.getPreferredVersion() );
         }
         else
         {
             Map<String, ArtifactRepository> versionIndex =
-                getVersions( session, result, request, getNature( session, ranges ) );
+                getVersions( session, result, request, getNature( session, versionConstraint.getRanges() ) );
 
-            List<Comparable<Object>> versions = new ArrayList<Comparable<Object>>();
+            List<Version> versions = new ArrayList<Version>();
             for ( String v : versionIndex.keySet() )
             {
                 try
                 {
-                    Comparable<Object> ver = versionScheme.parseVersion( v );
-                    if ( contained( ranges, ver ) )
+                    Version ver = versionScheme.parseVersion( v );
+                    if ( versionConstraint.containsVersion( ver ) )
                     {
                         versions.add( ver );
-                        result.setRepository( v, versionIndex.get( v ) );
+                        result.setRepository( ver, versionIndex.get( v ) );
                     }
                 }
                 catch ( InvalidVersionException e )
@@ -135,25 +151,14 @@ public class DefaultVersionRangeResolver
             }
 
             Collections.sort( versions );
-            for ( Comparable<Object> ver : versions )
+            for ( Version ver : versions )
             {
-                result.addVersion( ver.toString() );
+                result.addVersion( ver );
+                versionConstraint.setPreferredVersion( ver );
             }
         }
 
         return result;
-    }
-
-    private boolean contained( List<VersionRange> ranges, Comparable<Object> version )
-    {
-        for ( VersionRange range : ranges )
-        {
-            if ( range.containsVersion( version ) )
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     private Map<String, ArtifactRepository> getVersions( RepositorySession session, VersionRangeResult result,
@@ -218,7 +223,7 @@ public class DefaultVersionRangeResolver
         return versionIndex;
     }
 
-    private Metadata.Nature getNature( RepositorySession session, List<VersionRange> ranges )
+    private Metadata.Nature getNature( RepositorySession session, Collection<VersionRange> ranges )
     {
         for ( VersionRange range : ranges )
         {

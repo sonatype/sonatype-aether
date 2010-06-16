@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository.internal;
+package org.sonatype.maven.repository;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,16 +19,14 @@ package org.sonatype.maven.repository.internal;
  * under the License.
  */
 
-import org.sonatype.maven.repository.InvalidVersionException;
-import org.sonatype.maven.repository.Version;
-
 /**
  * @author Benjamin Bentmann
  */
-interface VersionScheme
+public interface VersionRange
 {
 
-    Version parseVersion( String version )
-        throws InvalidVersionException;
+    boolean containsVersion( Version version );
+
+    boolean containsSnapshots();
 
 }
