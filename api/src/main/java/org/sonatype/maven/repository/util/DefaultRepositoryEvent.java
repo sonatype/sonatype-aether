@@ -27,7 +27,7 @@ import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.ArtifactRepository;
 import org.sonatype.maven.repository.Metadata;
 import org.sonatype.maven.repository.RepositoryEvent;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 
 /**
  * @author Benjamin Bentmann
@@ -36,7 +36,7 @@ public class DefaultRepositoryEvent
     implements RepositoryEvent
 {
 
-    private RepositorySession session;
+    private RepositorySystemSession session;
 
     private Artifact artifact;
 
@@ -50,26 +50,26 @@ public class DefaultRepositoryEvent
 
     private List<Exception> exceptions = Collections.emptyList();
 
-    public DefaultRepositoryEvent( RepositorySession session, Artifact artifact )
+    public DefaultRepositoryEvent( RepositorySystemSession session, Artifact artifact )
     {
         this.session = session;
         this.artifact = artifact;
     }
 
-    public DefaultRepositoryEvent( RepositorySession session, Artifact artifact, Artifact relocatedArtifact )
+    public DefaultRepositoryEvent( RepositorySystemSession session, Artifact artifact, Artifact relocatedArtifact )
     {
         this.session = session;
         this.artifact = artifact;
         this.relocatedArtifact = relocatedArtifact;
     }
 
-    public DefaultRepositoryEvent( RepositorySession session, Metadata metadata )
+    public DefaultRepositoryEvent( RepositorySystemSession session, Metadata metadata )
     {
         this.session = session;
         this.metadata = metadata;
     }
 
-    public RepositorySession getSession()
+    public RepositorySystemSession getSession()
     {
         return session;
     }

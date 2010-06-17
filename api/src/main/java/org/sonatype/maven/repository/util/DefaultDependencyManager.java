@@ -148,7 +148,7 @@ public class DefaultDependencyManager
 
     private String getKey( Artifact a )
     {
-        return a.getGroupId() + ':' + a.getArtifactId() + ':' + a.getType() + ':' + a.getClassifier();
+        return a.getGroupId() + ':' + a.getArtifactId() + ':' + a.getExtension() + ':' + a.getClassifier();
     }
 
 }

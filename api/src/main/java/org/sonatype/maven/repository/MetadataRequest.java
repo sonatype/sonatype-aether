@@ -69,7 +69,7 @@ public class MetadataRequest
     {
         setMetadata( metadata );
         setRepository( repository );
-        setContext( context );
+        setRequestContext( context );
     }
 
     /**
@@ -121,7 +121,7 @@ public class MetadataRequest
      * 
      * @return The context, never {@code null}.
      */
-    public String getContext()
+    public String getRequestContext()
     {
         return context;
     }
@@ -132,7 +132,7 @@ public class MetadataRequest
      * @param context The context, may be {@code null}.
      * @return This request for chaining, never {@code null}.
      */
-    public MetadataRequest setContext( String context )
+    public MetadataRequest setRequestContext( String context )
     {
         this.context = ( context != null ) ? context : "";
         return this;

@@ -31,7 +31,7 @@ import java.util.List;
 public interface RepositoryEvent
 {
 
-    RepositorySession getSession();
+    RepositorySystemSession getSession();
 
     Artifact getArtifact();
 

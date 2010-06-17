@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository.util;
+package org.sonatype.maven.repository;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,32 +19,20 @@ package org.sonatype.maven.repository.util;
  * under the License.
  */
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.sonatype.maven.repository.ArtifactStereotype;
-import org.sonatype.maven.repository.ArtifactStereotypeRegistry;
-
 /**
+ * A registry of known artifact stereotypes.
+ * 
  * @author Benjamin Bentmann
  */
-public class DefaultArtifactStereotypeRegistry
-    implements ArtifactStereotypeRegistry
+public interface ArtifactTypeRegistry
 {
 
-    private final Map<String, ArtifactStereotype> stereotypes = new HashMap<String, ArtifactStereotype>();
-
-    public DefaultArtifactStereotypeRegistry addStereotype( ArtifactStereotype stereotype )
-    {
-        stereotypes.put( stereotype.getId(), stereotype );
-        return this;
-    }
-
-    public ArtifactStereotype get( String stereotypeId )
-    {
-        ArtifactStereotype stereotype = stereotypes.get( stereotypeId );
-
-        return stereotype;
-    }
+    /**
+     * Gets the artifact type with the specified identifier.
+     * 
+     * @param typeId The identifier of the type, must not be {@code null}.
+     * @return The artifact type or {@code null} if no type with the requested identifier exists.
+     */
+    ArtifactType get( String typeId );
 
 }

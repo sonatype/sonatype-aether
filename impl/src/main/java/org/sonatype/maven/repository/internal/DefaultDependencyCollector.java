@@ -45,7 +45,7 @@ import org.sonatype.maven.repository.DependencyTraverser;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryException;
 import org.sonatype.maven.repository.RepositoryListener;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.Version;
 import org.sonatype.maven.repository.VersionRangeRequest;
 import org.sonatype.maven.repository.VersionRangeResolutionException;
@@ -114,7 +114,7 @@ public class DefaultDependencyCollector
         return this;
     }
 
-    public CollectResult collectDependencies( RepositorySession session, CollectRequest request )
+    public CollectResult collectDependencies( RepositorySystemSession session, CollectRequest request )
         throws DependencyCollectionException
     {
         CollectResult result = new CollectResult( request );
@@ -134,7 +134,7 @@ public class DefaultDependencyCollector
             node = new DependencyNode( root );
             node.setRequestedVersion( root.getArtifact().getVersion() );
             node.setRepositories( request.getRepositories() );
-            node.setContext( request.getContext() );
+            node.setContext( request.getRequestContext() );
 
             ArtifactDescriptorResult descriptorResult;
             try
@@ -142,7 +142,7 @@ public class DefaultDependencyCollector
                 ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
                 descriptorRequest.setArtifact( root.getArtifact() );
                 descriptorRequest.setRepositories( request.getRepositories() );
-                descriptorRequest.setContext( request.getContext() );
+                descriptorRequest.setRequestContext( request.getRequestContext() );
                 descriptorResult = descriptorReader.readArtifactDescriptor( session, descriptorRequest );
             }
             catch ( ArtifactDescriptorException e )
@@ -161,7 +161,7 @@ public class DefaultDependencyCollector
             node.setPropertes( descriptorResult.getProperties() );
 
             VersionRangeRequest versionRequest =
-                new VersionRangeRequest( root.getArtifact(), request.getRepositories(), request.getContext() );
+                new VersionRangeRequest( root.getArtifact(), request.getRepositories(), request.getRequestContext() );
             try
             {
                 VersionRangeResult versionResult = versionRangeResolver.resolveVersionRange( session, versionRequest );
@@ -245,10 +245,10 @@ public class DefaultDependencyCollector
 
     private String getId( Artifact a )
     {
-        return a.getGroupId() + ':' + a.getArtifactId() + ':' + a.getClassifier() + ':' + a.getType();
+        return a.getGroupId() + ':' + a.getArtifactId() + ':' + a.getClassifier() + ':' + a.getExtension();
     }
 
-    private void process( RepositorySession session, CollectResult result, DependencyNode node,
+    private void process( RepositorySystemSession session, CollectResult result, DependencyNode node,
                           List<Dependency> dependencies, List<Dependency> managedDependencies,
                           List<RemoteRepository> repositories, DependencySelector depSelector,
                           DependencyManager depManager, DependencyTraverser depTraverser )
@@ -263,7 +263,7 @@ public class DefaultDependencyCollector
         }
     }
 
-    private void process( RepositorySession session, CollectResult result, DependencyNode node, Dependency dependency,
+    private void process( RepositorySystemSession session, CollectResult result, DependencyNode node, Dependency dependency,
                           List<Dependency> managedDependencies, List<RemoteRepository> repositories,
                           DependencySelector depSelector, DependencyManager depManager, DependencyTraverser depTraverser )
         throws DependencyCollectionException
@@ -307,7 +307,7 @@ public class DefaultDependencyCollector
                 VersionRangeRequest rangeRequest = new VersionRangeRequest();
                 rangeRequest.setArtifact( dependency.getArtifact() );
                 rangeRequest.setRepositories( repositories );
-                rangeRequest.setContext( result.getRequest().getContext() );
+                rangeRequest.setRequestContext( result.getRequest().getRequestContext() );
                 rangeResult = versionRangeResolver.resolveVersionRange( session, rangeRequest );
 
                 if ( rangeResult.getVersions().isEmpty() )
@@ -348,7 +348,7 @@ public class DefaultDependencyCollector
                     ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
                     descriptorRequest.setArtifact( d.getArtifact() );
                     descriptorRequest.setRepositories( repos );
-                    descriptorRequest.setContext( result.getRequest().getContext() );
+                    descriptorRequest.setRequestContext( result.getRequest().getRequestContext() );
                     if ( system )
                     {
                         descriptorResult = new ArtifactDescriptorResult( descriptorRequest );
@@ -391,7 +391,7 @@ public class DefaultDependencyCollector
                 child.setPremanagedScope( premanagedScope );
                 child.setRepositories( repos );
                 child.setPropertes( descriptorResult.getProperties() );
-                child.setContext( result.getRequest().getContext() );
+                child.setContext( result.getRequest().getRequestContext() );
 
                 if ( traverse )
                 {
@@ -432,7 +432,7 @@ public class DefaultDependencyCollector
             {
                 continue;
             }
-            if ( !a.getType().equals( artifact.getType() ) )
+            if ( !a.getExtension().equals( artifact.getExtension() ) )
             {
                 continue;
             }
@@ -447,7 +447,7 @@ public class DefaultDependencyCollector
         return null;
     }
 
-    private void artifactRelocated( RepositorySession session, ArtifactDescriptorResult result )
+    private void artifactRelocated( RepositorySystemSession session, ArtifactDescriptorResult result )
     {
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null && !result.getRelocations().isEmpty() )

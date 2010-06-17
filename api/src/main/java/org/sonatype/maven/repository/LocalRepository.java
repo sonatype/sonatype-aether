@@ -67,7 +67,7 @@ public class LocalRepository
         setType( type );
     }
 
-    public String getType()
+    public String getContentType()
     {
         return type;
     }
@@ -102,7 +102,7 @@ public class LocalRepository
     @Override
     public String toString()
     {
-        return getBasedir().getAbsolutePath() + " (" + getType() + ")";
+        return getBasedir().getAbsolutePath() + " (" + getContentType() + ")";
     }
 
     @Override
@@ -119,7 +119,7 @@ public class LocalRepository
 
         LocalRepository that = (LocalRepository) obj;
 
-        return eq( this.getBasedir(), that.getBasedir() ) && eq( this.getType(), that.getType() );
+        return eq( this.getBasedir(), that.getBasedir() ) && eq( this.getContentType(), that.getContentType() );
     }
 
     private static <T> boolean eq( T s1, T s2 )
@@ -132,7 +132,7 @@ public class LocalRepository
     {
         int hash = 17;
         hash = hash * 31 + hash( getBasedir() );
-        hash = hash * 31 + hash( getType() );
+        hash = hash * 31 + hash( getContentType() );
         return hash;
     }
 

@@ -38,7 +38,7 @@ import org.sonatype.maven.repository.MetadataRequest;
 import org.sonatype.maven.repository.MetadataResult;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryListener;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.VersionRequest;
 import org.sonatype.maven.repository.VersionResolutionException;
 import org.sonatype.maven.repository.VersionResult;
@@ -90,7 +90,7 @@ public class DefaultVersionResolver
         return this;
     }
 
-    public VersionResult resolveVersion( RepositorySession session, VersionRequest request )
+    public VersionResult resolveVersion( RepositorySystemSession session, VersionRequest request )
         throws VersionResolutionException
     {
         String version = request.getArtifact().getVersion();
@@ -147,7 +147,7 @@ public class DefaultVersionResolver
             for ( RemoteRepository repository : request.getRepositories() )
             {
                 MetadataRequest metadataRequest =
-                    new MetadataRequest( new DefaultMetadata( metadata ), repository, request.getContext() );
+                    new MetadataRequest( new DefaultMetadata( metadata ), repository, request.getRequestContext() );
                 metadataRequest.setDeleteLocalCopyIfMissing( true );
                 metadataRequest.setFavorLocalRepository( true );
                 metadataRequests.add( metadataRequest );
@@ -246,7 +246,7 @@ public class DefaultVersionResolver
         return result;
     }
 
-    private Versioning readVersions( RepositorySession session, Metadata metadata, VersionResult result )
+    private Versioning readVersions( RepositorySystemSession session, Metadata metadata, VersionResult result )
     {
         Versioning versioning = null;
 
@@ -277,7 +277,7 @@ public class DefaultVersionResolver
         return ( versioning != null ) ? versioning : new Versioning();
     }
 
-    private void invalidMetadata( RepositorySession session, Metadata metadata, Exception exception )
+    private void invalidMetadata( RepositorySystemSession session, Metadata metadata, Exception exception )
     {
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )

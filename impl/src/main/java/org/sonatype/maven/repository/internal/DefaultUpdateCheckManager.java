@@ -38,7 +38,7 @@ import org.sonatype.maven.repository.MetadataTransferException;
 import org.sonatype.maven.repository.Proxy;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryPolicy;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.spi.UpdateCheck;
@@ -67,7 +67,7 @@ public class DefaultUpdateCheckManager
         return this;
     }
 
-    public String getEffectiveUpdatePolicy( RepositorySession session, String policy1, String policy2 )
+    public String getEffectiveUpdatePolicy( RepositorySystemSession session, String policy1, String policy2 )
     {
         return ordinalOfUpdatePolicy( policy1 ) < ordinalOfUpdatePolicy( policy2 ) ? policy1 : policy2;
     }
@@ -94,7 +94,7 @@ public class DefaultUpdateCheckManager
         }
     }
 
-    public void checkArtifact( RepositorySession session, UpdateCheck<Artifact, ArtifactTransferException> check )
+    public void checkArtifact( RepositorySystemSession session, UpdateCheck<Artifact, ArtifactTransferException> check )
     {
         if ( logger.isDebugEnabled() )
         {
@@ -166,7 +166,7 @@ public class DefaultUpdateCheckManager
         }
     }
 
-    public void checkMetadata( RepositorySession session, UpdateCheck<Metadata, MetadataTransferException> check )
+    public void checkMetadata( RepositorySystemSession session, UpdateCheck<Metadata, MetadataTransferException> check )
     {
         if ( logger.isDebugEnabled() )
         {
@@ -335,7 +335,7 @@ public class DefaultUpdateCheckManager
         return ( props != null ) ? props : new Properties();
     }
 
-    public void touchArtifact( RepositorySession session, UpdateCheck<Artifact, ArtifactTransferException> check )
+    public void touchArtifact( RepositorySystemSession session, UpdateCheck<Artifact, ArtifactTransferException> check )
     {
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
 
@@ -361,7 +361,7 @@ public class DefaultUpdateCheckManager
         return false;
     }
 
-    public void touchMetadata( RepositorySession session, UpdateCheck<Metadata, MetadataTransferException> check )
+    public void touchMetadata( RepositorySystemSession session, UpdateCheck<Metadata, MetadataTransferException> check )
     {
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
 

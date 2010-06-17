@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.sonatype.maven.repository.MetadataRequest;
 import org.sonatype.maven.repository.MetadataResult;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 
 /**
  * @author Benjamin Bentmann
@@ -35,6 +35,6 @@ public interface MetadataResolver
     /**
      * Resolves the paths for a collection of metadata. Metadata will be downloaded if necessary.
      */
-    List<MetadataResult> resolveMetadata( RepositorySession session, Collection<? extends MetadataRequest> requests );
+    List<MetadataResult> resolveMetadata( RepositorySystemSession session, Collection<? extends MetadataRequest> requests );
 
 }

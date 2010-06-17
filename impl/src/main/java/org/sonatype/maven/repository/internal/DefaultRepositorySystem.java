@@ -46,7 +46,7 @@ import org.sonatype.maven.repository.LocalRepository;
 import org.sonatype.maven.repository.LocalRepositoryManager;
 import org.sonatype.maven.repository.MetadataRequest;
 import org.sonatype.maven.repository.MetadataResult;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.RepositorySystem;
 import org.sonatype.maven.repository.VersionRangeRequest;
 import org.sonatype.maven.repository.VersionRangeResolutionException;
@@ -180,44 +180,44 @@ public class DefaultRepositorySystem
         return this;
     }
 
-    public VersionResult resolveVersion( RepositorySession session, VersionRequest request )
+    public VersionResult resolveVersion( RepositorySystemSession session, VersionRequest request )
         throws VersionResolutionException
     {
         return versionResolver.resolveVersion( session, request );
     }
 
-    public VersionRangeResult resolveVersionRange( RepositorySession session, VersionRangeRequest request )
+    public VersionRangeResult resolveVersionRange( RepositorySystemSession session, VersionRangeRequest request )
         throws VersionRangeResolutionException
     {
         return versionRangeResolver.resolveVersionRange( session, request );
     }
 
-    public ArtifactDescriptorResult readArtifactDescriptor( RepositorySession session, ArtifactDescriptorRequest request )
+    public ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session, ArtifactDescriptorRequest request )
         throws ArtifactDescriptorException
     {
         return artifactDescriptorReader.readArtifactDescriptor( session, request );
     }
 
-    public List<ArtifactResult> resolveArtifacts( RepositorySession session,
+    public List<ArtifactResult> resolveArtifacts( RepositorySystemSession session,
                                                   Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException
     {
         return artifactResolver.resolveArtifacts( session, requests );
     }
 
-    public List<MetadataResult> resolveMetadata( RepositorySession session,
+    public List<MetadataResult> resolveMetadata( RepositorySystemSession session,
                                                  Collection<? extends MetadataRequest> requests )
     {
         return metadataResolver.resolveMetadata( session, requests );
     }
 
-    public CollectResult collectDependencies( RepositorySession session, CollectRequest request )
+    public CollectResult collectDependencies( RepositorySystemSession session, CollectRequest request )
         throws DependencyCollectionException
     {
         return dependencyCollector.collectDependencies( session, request );
     }
 
-    public List<ArtifactResult> resolveDependencies( RepositorySession session, DependencyNode node,
+    public List<ArtifactResult> resolveDependencies( RepositorySystemSession session, DependencyNode node,
                                                      DependencyFilter filter )
         throws ArtifactResolutionException
     {
@@ -242,13 +242,13 @@ public class DefaultRepositorySystem
         }
     }
 
-    public void install( RepositorySession session, InstallRequest request )
+    public void install( RepositorySystemSession session, InstallRequest request )
         throws InstallationException
     {
         installer.install( session, request );
     }
 
-    public void deploy( RepositorySession session, DeployRequest request )
+    public void deploy( RepositorySystemSession session, DeployRequest request )
         throws DeploymentException
     {
         deployer.deploy( session, request );
@@ -256,7 +256,7 @@ public class DefaultRepositorySystem
 
     public LocalRepositoryManager newLocalRepositoryManager( LocalRepository localRepository )
     {
-        String type = localRepository.getType();
+        String type = localRepository.getContentType();
         File basedir = localRepository.getBasedir();
 
         if ( "".equals( type ) || "enhanced".equals( type ) )

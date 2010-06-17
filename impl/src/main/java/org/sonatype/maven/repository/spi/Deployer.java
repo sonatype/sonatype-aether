@@ -21,7 +21,7 @@ package org.sonatype.maven.repository.spi;
 
 import org.sonatype.maven.repository.DeployRequest;
 import org.sonatype.maven.repository.DeploymentException;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 
 /**
  * @author Benjamin Bentmann
@@ -29,7 +29,7 @@ import org.sonatype.maven.repository.RepositorySession;
 public interface Deployer
 {
 
-    void deploy( RepositorySession session, DeployRequest request )
+    void deploy( RepositorySystemSession session, DeployRequest request )
         throws DeploymentException;
 
 }

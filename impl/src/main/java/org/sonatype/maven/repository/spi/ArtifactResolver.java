@@ -25,7 +25,7 @@ import java.util.List;
 import org.sonatype.maven.repository.ArtifactRequest;
 import org.sonatype.maven.repository.ArtifactResolutionException;
 import org.sonatype.maven.repository.ArtifactResult;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 
 /**
  * @author Benjamin Bentmann
@@ -36,13 +36,13 @@ public interface ArtifactResolver
     /**
      * Resolves the path for an artifact. The artifact will be downloaded if necessary.
      */
-    ArtifactResult resolveArtifact( RepositorySession session, ArtifactRequest request )
+    ArtifactResult resolveArtifact( RepositorySystemSession session, ArtifactRequest request )
         throws ArtifactResolutionException;
 
     /**
      * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary.
      */
-    List<ArtifactResult> resolveArtifacts( RepositorySession session, Collection<? extends ArtifactRequest> requests )
+    List<ArtifactResult> resolveArtifacts( RepositorySystemSession session, Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException;
 
 }

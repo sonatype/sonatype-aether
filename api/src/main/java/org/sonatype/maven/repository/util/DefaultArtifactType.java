@@ -22,42 +22,42 @@ package org.sonatype.maven.repository.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.sonatype.maven.repository.ArtifactStereotype;
+import org.sonatype.maven.repository.ArtifactType;
 
 /**
  * @author Benjamin Bentmann
  */
-public class DefaultArtifactStereotype
-    implements ArtifactStereotype
+public class DefaultArtifactType
+    implements ArtifactType
 {
 
     private final String id;
 
-    private final String type;
+    private final String extension;
 
     private final String classifier;
 
     private final Map<String, String> properties;
 
-    public DefaultArtifactStereotype( String id )
+    public DefaultArtifactType( String id )
     {
         this( id, id, "", "none", false, false );
     }
 
-    public DefaultArtifactStereotype( String id, String type, String classifier, String language )
+    public DefaultArtifactType( String id, String extension, String classifier, String language )
     {
-        this( id, type, classifier, language, true, false );
+        this( id, extension, classifier, language, true, false );
     }
 
-    public DefaultArtifactStereotype( String id, String type, String classifier, String language,
-                                      boolean constitutesBuildPath, boolean includesDependencies )
+    public DefaultArtifactType( String id, String extension, String classifier, String language,
+                                boolean constitutesBuildPath, boolean includesDependencies )
     {
         if ( id == null || id.length() < 0 )
         {
             throw new IllegalArgumentException( "no stereotype id specified" );
         }
         this.id = id;
-        this.type = ( type != null && type.length() > 0 ) ? type : id;
+        this.extension = ( extension != null && extension.length() > 0 ) ? extension : id;
         this.classifier = ( classifier != null ) ? classifier : "";
         Map<String, String> props = new HashMap<String, String>();
         props.put( "stereotype", id );
@@ -72,9 +72,9 @@ public class DefaultArtifactStereotype
         return id;
     }
 
-    public String getType()
+    public String getExtension()
     {
-        return type;
+        return extension;
     }
 
     public String getClassifier()

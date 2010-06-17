@@ -72,7 +72,7 @@ public class RemoteRepository
     public RemoteRepository( RemoteRepository repo )
     {
         setId( repo.getId() );
-        setType( repo.getType() );
+        setContentType( repo.getContentType() );
         setUrl( repo.getUrl() );
         setPolicy( true, repo.getPolicy( true ) );
         setPolicy( false, repo.getPolicy( false ) );
@@ -92,7 +92,7 @@ public class RemoteRepository
     public RemoteRepository( String id, String type, String url )
     {
         setId( id );
-        setType( type );
+        setContentType( type );
         setUrl( url );
         setPolicy( true, null );
         setPolicy( false, null );
@@ -116,7 +116,7 @@ public class RemoteRepository
         return this;
     }
 
-    public String getType()
+    public String getContentType()
     {
         return type;
     }
@@ -127,7 +127,7 @@ public class RemoteRepository
      * @param type The type of this repository, may be {@code null}.
      * @return This repository for chaining, never {@code null}.
      */
-    public RemoteRepository setType( String type )
+    public RemoteRepository setContentType( String type )
     {
         this.type = ( type != null ) ? type : "";
 
@@ -351,7 +351,7 @@ public class RemoteRepository
 
         RemoteRepository that = (RemoteRepository) obj;
 
-        return eq( this.getUrl(), that.getUrl() ) && eq( this.getType(), that.getType() )
+        return eq( this.getUrl(), that.getUrl() ) && eq( this.getContentType(), that.getContentType() )
             && eq( this.getId(), that.getId() ) && eq( this.getPolicy( true ), that.getPolicy( true ) )
             && eq( this.getPolicy( false ), that.getPolicy( false ) ) && eq( this.getProxy(), that.getProxy() )
             && eq( this.getAuthentication(), that.getAuthentication() )
@@ -369,7 +369,7 @@ public class RemoteRepository
     {
         int hash = 17;
         hash = hash * 31 + hash( getUrl() );
-        hash = hash * 31 + hash( getType() );
+        hash = hash * 31 + hash( getContentType() );
         hash = hash * 31 + hash( getId() );
         hash = hash * 31 + hash( getPolicy( true ) );
         hash = hash * 31 + hash( getPolicy( false ) );

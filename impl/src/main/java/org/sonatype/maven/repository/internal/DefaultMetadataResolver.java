@@ -46,7 +46,7 @@ import org.sonatype.maven.repository.NoRepositoryConnectorException;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryListener;
 import org.sonatype.maven.repository.RepositoryPolicy;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.MetadataDownload;
 import org.sonatype.maven.repository.spi.MetadataResolver;
@@ -100,7 +100,7 @@ public class DefaultMetadataResolver
         return this;
     }
 
-    public List<MetadataResult> resolveMetadata( RepositorySession session,
+    public List<MetadataResult> resolveMetadata( RepositorySystemSession session,
                                                  Collection<? extends MetadataRequest> requests )
     {
         List<MetadataResult> results = new ArrayList<MetadataResult>( requests.size() );
@@ -146,7 +146,7 @@ public class DefaultMetadataResolver
 
             metadataResolving( session, metadata, repository );
 
-            File metadataFile = getFile( session, metadata, repository, request.getContext() );
+            File metadataFile = getFile( session, metadata, repository, request.getRequestContext() );
 
             if ( session.isOffline() )
             {
@@ -254,14 +254,14 @@ public class DefaultMetadataResolver
         return results;
     }
 
-    private RepositoryPolicy getPolicy( RepositorySession session, RemoteRepository repository, Metadata.Nature nature )
+    private RepositoryPolicy getPolicy( RepositorySystemSession session, RemoteRepository repository, Metadata.Nature nature )
     {
         boolean releases = !Metadata.Nature.SNAPSHOT.equals( nature );
         boolean snapshots = !Metadata.Nature.RELEASE.equals( nature );
         return remoteRepositoryManager.getPolicy( session, repository, releases, snapshots );
     }
 
-    private File getFile( RepositorySession session, Metadata metadata, RemoteRepository repository, String context )
+    private File getFile( RepositorySystemSession session, Metadata metadata, RemoteRepository repository, String context )
     {
         LocalRepositoryManager lrm = session.getLocalRepositoryManager();
         String path;
@@ -276,7 +276,7 @@ public class DefaultMetadataResolver
         return new File( lrm.getRepository().getBasedir(), path );
     }
 
-    private void metadataResolving( RepositorySession session, Metadata metadata, ArtifactRepository repository )
+    private void metadataResolving( RepositorySystemSession session, Metadata metadata, ArtifactRepository repository )
     {
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
@@ -287,7 +287,7 @@ public class DefaultMetadataResolver
         }
     }
 
-    private void metadataResolved( RepositorySession session, Metadata metadata, ArtifactRepository repository,
+    private void metadataResolved( RepositorySystemSession session, Metadata metadata, ArtifactRepository repository,
                                    Exception exception )
     {
         RepositoryListener listener = session.getRepositoryListener();
@@ -331,7 +331,7 @@ public class DefaultMetadataResolver
         implements Runnable
     {
 
-        final RepositorySession session;
+        final RepositorySystemSession session;
 
         final MetadataResult result;
 
@@ -345,7 +345,7 @@ public class DefaultMetadataResolver
 
         volatile MetadataTransferException exception;
 
-        public ResolveTask( RepositorySession session, MetadataResult result,
+        public ResolveTask( RepositorySystemSession session, MetadataResult result,
                             UpdateCheck<Metadata, MetadataTransferException> check, String policy, CountDownLatch latch )
         {
             this.session = session;
@@ -361,7 +361,7 @@ public class DefaultMetadataResolver
             try
             {
                 MetadataDownload download =
-                    new MetadataDownload( request.getMetadata(), request.getContext(), check.getFile(), policy );
+                    new MetadataDownload( request.getMetadata(), request.getRequestContext(), check.getFile(), policy );
 
                 RepositoryConnector connector =
                     remoteRepositoryManager.getRepositoryConnector( session, request.getRepository() );

@@ -83,11 +83,11 @@ public interface Artifact
     String getClassifier();
 
     /**
-     * Gets the (file) type of this artifact, e.g. "jar".
+     * Gets the (file) extension of this artifact, e.g. "jar".
      * 
-     * @return The file type, never {@code null}.
+     * @return The file extension, never {@code null}.
      */
-    String getType();
+    String getExtension();
 
     /**
      * Gets the file of this artifact. Note that only resolved artifacts have a file associated with them.

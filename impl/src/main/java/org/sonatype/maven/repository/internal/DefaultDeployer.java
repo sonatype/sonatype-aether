@@ -41,7 +41,7 @@ import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryException;
 import org.sonatype.maven.repository.RepositoryListener;
 import org.sonatype.maven.repository.RepositoryPolicy;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.SubArtifact;
 import org.sonatype.maven.repository.spi.ArtifactUpload;
 import org.sonatype.maven.repository.spi.Deployer;
@@ -99,7 +99,7 @@ public class DefaultDeployer
         return this;
     }
 
-    public void deploy( RepositorySession session, DeployRequest request )
+    public void deploy( RepositorySystemSession session, DeployRequest request )
         throws DeploymentException
     {
         if ( session.isOffline() )
@@ -170,7 +170,7 @@ public class DefaultDeployer
         }
     }
 
-    private void upload( List<MetadataUpload> metadataUploads, RepositorySession session, Metadata metadata,
+    private void upload( List<MetadataUpload> metadataUploads, RepositorySystemSession session, Metadata metadata,
                          RemoteRepository repository, RepositoryConnector connector, EventCatapult catapult )
         throws DeploymentException
     {
@@ -238,7 +238,7 @@ public class DefaultDeployer
         metadataUploads.add( new MetadataUploadEx( metadata, dstFile, catapult ) );
     }
 
-    private RepositoryPolicy getPolicy( RepositorySession session, RemoteRepository repository, Metadata.Nature nature )
+    private RepositoryPolicy getPolicy( RepositorySystemSession session, RemoteRepository repository, Metadata.Nature nature )
     {
         boolean releases = !Metadata.Nature.SNAPSHOT.equals( nature );
         boolean snapshots = !Metadata.Nature.RELEASE.equals( nature );
@@ -248,11 +248,11 @@ public class DefaultDeployer
     static class EventCatapult
     {
 
-        private final RepositorySession session;
+        private final RepositorySystemSession session;
 
         private final RemoteRepository repository;
 
-        public EventCatapult( RepositorySession session, RemoteRepository repository )
+        public EventCatapult( RepositorySystemSession session, RemoteRepository repository )
         {
             this.session = session;
             this.repository = repository;

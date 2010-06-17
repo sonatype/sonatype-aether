@@ -273,7 +273,7 @@ public class CollectRequest
      * 
      * @return The context, never {@code null}.
      */
-    public String getContext()
+    public String getRequestContext()
     {
         return context;
     }
@@ -284,7 +284,7 @@ public class CollectRequest
      * @param context The context, may be {@code null}.
      * @return This request for chaining, never {@code null}.
      */
-    public CollectRequest setContext( String context )
+    public CollectRequest setRequestContext( String context )
     {
         this.context = ( context != null ) ? context : "";
         return this;

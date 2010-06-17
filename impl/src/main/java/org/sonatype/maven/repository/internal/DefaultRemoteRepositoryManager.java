@@ -33,7 +33,7 @@ import org.sonatype.maven.repository.NoRepositoryConnectorException;
 import org.sonatype.maven.repository.ProxySelector;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryPolicy;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.spi.PluggableComponent;
@@ -85,7 +85,7 @@ public class DefaultRemoteRepositoryManager
         return this;
     }
 
-    public List<RemoteRepository> aggregateRepositories( RepositorySession session,
+    public List<RemoteRepository> aggregateRepositories( RepositorySystemSession session,
                                                          List<RemoteRepository> dominantRepositories,
                                                          List<RemoteRepository> recessiveRepositories,
                                                          boolean recessiveIsRaw )
@@ -128,7 +128,7 @@ public class DefaultRemoteRepositoryManager
                         mergedRepository.setRepositoryManager( dominantRepository.isRepositoryManager() );
 
                         mergedRepository.setId( dominantRepository.getId() );
-                        mergedRepository.setType( dominantRepository.getType() );
+                        mergedRepository.setContentType( dominantRepository.getContentType() );
                         mergedRepository.setUrl( dominantRepository.getUrl() );
 
                         mergedRepository.setAuthentication( dominantRepository.getAuthentication() );
@@ -181,7 +181,7 @@ public class DefaultRemoteRepositoryManager
         return repository.getId();
     }
 
-    public RepositoryPolicy getPolicy( RepositorySession session, RemoteRepository repository, boolean releases,
+    public RepositoryPolicy getPolicy( RepositorySystemSession session, RemoteRepository repository, boolean releases,
                                        boolean snapshots )
     {
         RepositoryPolicy policy;
@@ -209,7 +209,7 @@ public class DefaultRemoteRepositoryManager
         return policy;
     }
 
-    private RepositoryPolicy merge( RepositorySession session, RepositoryPolicy policy1, RepositoryPolicy policy2 )
+    private RepositoryPolicy merge( RepositorySystemSession session, RepositoryPolicy policy1, RepositoryPolicy policy2 )
     {
         RepositoryPolicy policy = new RepositoryPolicy( policy1 );
 
@@ -245,7 +245,7 @@ public class DefaultRemoteRepositoryManager
         }
     }
 
-    public RepositoryConnector getRepositoryConnector( RepositorySession session, RemoteRepository repository )
+    public RepositoryConnector getRepositoryConnector( RepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException
     {
         List<RepositoryConnectorFactory> factories = new ArrayList<RepositoryConnectorFactory>( connectorFactories );

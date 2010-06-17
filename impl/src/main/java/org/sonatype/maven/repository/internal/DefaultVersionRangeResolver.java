@@ -41,7 +41,7 @@ import org.sonatype.maven.repository.MetadataRequest;
 import org.sonatype.maven.repository.MetadataResult;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryListener;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.Version;
 import org.sonatype.maven.repository.VersionConstraint;
 import org.sonatype.maven.repository.VersionRange;
@@ -103,7 +103,7 @@ public class DefaultVersionRangeResolver
         return this;
     }
 
-    public VersionRangeResult resolveVersionRange( RepositorySession session, VersionRangeRequest request )
+    public VersionRangeResult resolveVersionRange( RepositorySystemSession session, VersionRangeRequest request )
         throws VersionRangeResolutionException
     {
         VersionRangeResult result = new VersionRangeResult( request );
@@ -161,7 +161,7 @@ public class DefaultVersionRangeResolver
         return result;
     }
 
-    private Map<String, ArtifactRepository> getVersions( RepositorySession session, VersionRangeResult result,
+    private Map<String, ArtifactRepository> getVersions( RepositorySystemSession session, VersionRangeResult result,
                                                          VersionRangeRequest request, Metadata.Nature nature )
     {
         Map<String, ArtifactRepository> versionIndex = new HashMap<String, ArtifactRepository>();
@@ -176,7 +176,7 @@ public class DefaultVersionRangeResolver
         for ( RemoteRepository repository : request.getRepositories() )
         {
             MetadataRequest metadataRequest =
-                new MetadataRequest( new DefaultMetadata( metadata ), repository, request.getContext() );
+                new MetadataRequest( new DefaultMetadata( metadata ), repository, request.getRequestContext() );
             metadataRequest.setDeleteLocalCopyIfMissing( true );
             metadataRequests.add( metadataRequest );
         }
@@ -223,7 +223,7 @@ public class DefaultVersionRangeResolver
         return versionIndex;
     }
 
-    private Metadata.Nature getNature( RepositorySession session, Collection<VersionRange> ranges )
+    private Metadata.Nature getNature( RepositorySystemSession session, Collection<VersionRange> ranges )
     {
         for ( VersionRange range : ranges )
         {
@@ -235,7 +235,7 @@ public class DefaultVersionRangeResolver
         return Metadata.Nature.RELEASE;
     }
 
-    private Versioning readVersions( RepositorySession session, Metadata metadata, VersionRangeResult result )
+    private Versioning readVersions( RepositorySystemSession session, Metadata metadata, VersionRangeResult result )
     {
         Versioning versioning = null;
 
@@ -266,7 +266,7 @@ public class DefaultVersionRangeResolver
         return ( versioning != null ) ? versioning : new Versioning();
     }
 
-    private void invalidMetadata( RepositorySession session, Metadata metadata, Exception exception )
+    private void invalidMetadata( RepositorySystemSession session, Metadata metadata, Exception exception )
     {
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )

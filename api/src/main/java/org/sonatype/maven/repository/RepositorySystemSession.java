@@ -26,7 +26,7 @@ import java.util.Properties;
  * 
  * @author Benjamin Bentmann
  */
-public interface RepositorySession
+public interface RepositorySystemSession
 {
 
     String getId();
@@ -68,7 +68,7 @@ public interface RepositorySession
 
     AuthenticationSelector getAuthenticationSelector();
 
-    ArtifactStereotypeRegistry getArtifactStereotypeRegistry();
+    ArtifactTypeRegistry getArtifactStereotypeRegistry();
 
     DependencyTraverser getDependencyTraverser();
 

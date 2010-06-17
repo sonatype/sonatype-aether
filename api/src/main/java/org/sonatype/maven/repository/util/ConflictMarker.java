@@ -158,7 +158,7 @@ public class ConflictMarker
     private static String toKey( Artifact artifact )
     {
         return artifact.getGroupId() + ':' + artifact.getArtifactId() + ':' + artifact.getClassifier() + ':'
-            + artifact.getType();
+            + artifact.getExtension();
     }
 
     static class ConflictGroup

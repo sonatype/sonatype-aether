@@ -21,7 +21,7 @@ package org.sonatype.maven.repository.spi;
 
 import org.sonatype.maven.repository.NoRepositoryConnectorException;
 import org.sonatype.maven.repository.RemoteRepository;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 
 /**
  * @author Benjamin Bentmann
@@ -30,7 +30,7 @@ public interface RepositoryConnectorFactory
     extends PluggableComponent
 {
 
-    RepositoryConnector newInstance( RepositorySession session, RemoteRepository repository )
+    RepositoryConnector newInstance( RepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException;
 
 }

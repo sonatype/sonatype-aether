@@ -4,7 +4,7 @@ import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.ArtifactTransferException;
 import org.sonatype.maven.repository.Metadata;
 import org.sonatype.maven.repository.MetadataTransferException;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -31,14 +31,14 @@ import org.sonatype.maven.repository.RepositorySession;
 public interface UpdateCheckManager
 {
 
-    String getEffectiveUpdatePolicy( RepositorySession session, String policy1, String policy2 );
+    String getEffectiveUpdatePolicy( RepositorySystemSession session, String policy1, String policy2 );
 
-    void checkArtifact( RepositorySession session, UpdateCheck<Artifact, ArtifactTransferException> check );
+    void checkArtifact( RepositorySystemSession session, UpdateCheck<Artifact, ArtifactTransferException> check );
 
-    void touchArtifact( RepositorySession session, UpdateCheck<Artifact, ArtifactTransferException> check );
+    void touchArtifact( RepositorySystemSession session, UpdateCheck<Artifact, ArtifactTransferException> check );
 
-    void checkMetadata( RepositorySession session, UpdateCheck<Metadata, MetadataTransferException> check );
+    void checkMetadata( RepositorySystemSession session, UpdateCheck<Metadata, MetadataTransferException> check );
 
-    void touchMetadata( RepositorySession session, UpdateCheck<Metadata, MetadataTransferException> check );
+    void touchMetadata( RepositorySystemSession session, UpdateCheck<Metadata, MetadataTransferException> check );
 
 }

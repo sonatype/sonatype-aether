@@ -21,7 +21,7 @@ package org.sonatype.maven.repository.internal;
 
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.LocalRepository;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.spi.LocalRepositoryEvent;
 
 /**
@@ -31,20 +31,20 @@ public class DefaultLocalRepositoryEvent
     implements LocalRepositoryEvent
 {
 
-    private final RepositorySession session;
+    private final RepositorySystemSession session;
 
     private final LocalRepository repository;
 
     private final Artifact artifact;
 
-    public DefaultLocalRepositoryEvent( RepositorySession session, Artifact artifact )
+    public DefaultLocalRepositoryEvent( RepositorySystemSession session, Artifact artifact )
     {
         this.session = session;
         this.repository = session.getLocalRepository();
         this.artifact = artifact;
     }
 
-    public RepositorySession getSession()
+    public RepositorySystemSession getSession()
     {
         return session;
     }

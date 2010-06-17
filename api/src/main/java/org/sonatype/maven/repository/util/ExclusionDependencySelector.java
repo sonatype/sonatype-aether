@@ -83,7 +83,7 @@ public class ExclusionDependencySelector
         {
             return false;
         }
-        if ( !matches( exclusion.getType(), artifact.getType() ) )
+        if ( !matches( exclusion.getType(), artifact.getExtension() ) )
         {
             return false;
         }

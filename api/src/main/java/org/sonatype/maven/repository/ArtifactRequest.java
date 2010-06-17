@@ -60,7 +60,7 @@ public class ArtifactRequest
     {
         setArtifact( artifact );
         setRepositories( repositories );
-        setContext( context );
+        setRequestContext( context );
     }
 
     /**
@@ -74,7 +74,7 @@ public class ArtifactRequest
     {
         setDependency( dependency );
         setRepositories( repositories );
-        setContext( context );
+        setRequestContext( context );
     }
 
     /**
@@ -178,7 +178,7 @@ public class ArtifactRequest
      * 
      * @return The context, never {@code null}.
      */
-    public String getContext()
+    public String getRequestContext()
     {
         return context;
     }
@@ -189,7 +189,7 @@ public class ArtifactRequest
      * @param context The context, may be {@code null}.
      * @return This request for chaining, never {@code null}.
      */
-    public ArtifactRequest setContext( String context )
+    public ArtifactRequest setRequestContext( String context )
     {
         this.context = ( context != null ) ? context : "";
         return this;

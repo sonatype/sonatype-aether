@@ -55,7 +55,7 @@ import org.sonatype.maven.repository.Proxy;
 import org.sonatype.maven.repository.ProxySelector;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryPolicy;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.TransferEvent;
 import org.sonatype.maven.repository.TransferListener;
 import org.sonatype.maven.repository.internal.ChecksumUtils;
@@ -81,7 +81,7 @@ class WagonRepositoryConnector
 
     private final RemoteRepository repository;
 
-    private final RepositorySession session;
+    private final RepositorySystemSession session;
 
     private final WagonProvider wagonProvider;
 
@@ -104,7 +104,7 @@ class WagonRepositoryConnector
     private boolean closed;
 
     public WagonRepositoryConnector( WagonProvider wagonProvider, RemoteRepository repository,
-                                     RepositorySession session, Logger logger )
+                                     RepositorySystemSession session, Logger logger )
         throws NoRepositoryConnectorException
     {
         this.logger = logger;
@@ -113,7 +113,7 @@ class WagonRepositoryConnector
         this.session = session;
         this.listener = session.getTransferListener();
 
-        if ( !"default".equals( repository.getType() ) )
+        if ( !"default".equals( repository.getContentType() ) )
         {
             throw new NoRepositoryConnectorException( repository );
         }

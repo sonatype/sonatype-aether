@@ -22,7 +22,7 @@ package org.sonatype.maven.repository.util;
 import java.util.Properties;
 import java.util.UUID;
 
-import org.sonatype.maven.repository.ArtifactStereotypeRegistry;
+import org.sonatype.maven.repository.ArtifactTypeRegistry;
 import org.sonatype.maven.repository.AuthenticationSelector;
 import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyGraphTransformer;
@@ -34,7 +34,7 @@ import org.sonatype.maven.repository.MirrorSelector;
 import org.sonatype.maven.repository.ProxySelector;
 import org.sonatype.maven.repository.RepositoryCache;
 import org.sonatype.maven.repository.RepositoryListener;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.TransferListener;
 import org.sonatype.maven.repository.WorkspaceReader;
 
@@ -42,7 +42,7 @@ import org.sonatype.maven.repository.WorkspaceReader;
  * @author Benjamin Bentmann
  */
 public class DefaultRepositorySession
-    implements RepositorySession
+    implements RepositorySystemSession
 {
 
     private String id;
@@ -81,7 +81,7 @@ public class DefaultRepositorySession
 
     private AuthenticationSelector authenticationSelector;
 
-    private ArtifactStereotypeRegistry artifactStereotypeRegistry;
+    private ArtifactTypeRegistry artifactStereotypeRegistry;
 
     private DependencyTraverser dependencyTraverser;
 
@@ -103,10 +103,10 @@ public class DefaultRepositorySession
         setMirrorSelector( new DefaultMirrorSelector() );
         setAuthenticationSelector( new DefaultAuthenticationSelector() );
         setProxySelector( new DefaultProxySelector() );
-        setArtifactStereotypeRegistry( new DefaultArtifactStereotypeRegistry() );
+        setArtifactStereotypeRegistry( new DefaultArtifactTypeRegistry() );
     }
 
-    public DefaultRepositorySession( RepositorySession session )
+    public DefaultRepositorySession( RepositorySystemSession session )
     {
         setId( session.getId() );
         setOffline( session.isOffline() );
@@ -337,12 +337,12 @@ public class DefaultRepositorySession
         return this;
     }
 
-    public ArtifactStereotypeRegistry getArtifactStereotypeRegistry()
+    public ArtifactTypeRegistry getArtifactStereotypeRegistry()
     {
         return artifactStereotypeRegistry;
     }
 
-    public DefaultRepositorySession setArtifactStereotypeRegistry( ArtifactStereotypeRegistry artifactStereotypeRegistry )
+    public DefaultRepositorySession setArtifactStereotypeRegistry( ArtifactTypeRegistry artifactStereotypeRegistry )
     {
         this.artifactStereotypeRegistry = artifactStereotypeRegistry;
         return this;

@@ -50,7 +50,7 @@ public class WorkspaceRepository
         this.uid = ( uid != null ) ? uid : UUID.randomUUID().toString().replace( "-", "" );
     }
 
-    public String getType()
+    public String getContentType()
     {
         return type;
     }
@@ -63,7 +63,7 @@ public class WorkspaceRepository
     @Override
     public String toString()
     {
-        return "(" + getType() + ")";
+        return "(" + getContentType() + ")";
     }
 
     @Override
@@ -80,7 +80,7 @@ public class WorkspaceRepository
 
         WorkspaceRepository that = (WorkspaceRepository) obj;
 
-        return this.getType().equals( that.getType() ) && this.uid.equals( that.uid );
+        return this.getContentType().equals( that.getContentType() ) && this.uid.equals( that.uid );
     }
 
     @Override
@@ -88,7 +88,7 @@ public class WorkspaceRepository
     {
         int hash = 17;
         hash = hash * 31 + uid.hashCode();
-        hash = hash * 31 + getType().hashCode();
+        hash = hash * 31 + getContentType().hashCode();
         return hash;
     }
 

@@ -40,7 +40,7 @@ import org.sonatype.maven.repository.LocalRepositoryManager;
 import org.sonatype.maven.repository.MirrorSelector;
 import org.sonatype.maven.repository.ProxySelector;
 import org.sonatype.maven.repository.RemoteRepository;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.RepositorySystem;
 import org.sonatype.maven.repository.connector.wagon.WagonRepositoryConnectorFactory;
 import org.sonatype.maven.repository.internal.DefaultArtifactDescriptorReader;
@@ -58,8 +58,8 @@ import org.sonatype.maven.repository.util.AndDependencySelector;
 import org.sonatype.maven.repository.util.ChainedDependencyGraphTransformer;
 import org.sonatype.maven.repository.util.ClassicVersionConflictResolver;
 import org.sonatype.maven.repository.util.ConflictMarker;
-import org.sonatype.maven.repository.util.DefaultArtifactStereotype;
-import org.sonatype.maven.repository.util.DefaultArtifactStereotypeRegistry;
+import org.sonatype.maven.repository.util.DefaultArtifactType;
+import org.sonatype.maven.repository.util.DefaultArtifactTypeRegistry;
 import org.sonatype.maven.repository.util.DefaultAuthenticationSelector;
 import org.sonatype.maven.repository.util.DefaultDependencyManager;
 import org.sonatype.maven.repository.util.DefaultMirrorSelector;
@@ -81,7 +81,7 @@ public class RepoSys
         RepositorySystem repoSystem = newManagedSystem();
         //RepositorySystem repoSystem = newManualSystem();
 
-        RepositorySession session = newSession();
+        RepositorySystemSession session = newSession();
 
         CollectRequest collectRequest = new CollectRequest();
         collectRequest.setRoot( new Dependency( new DefaultArtifact( "org.apache.maven", "maven-core", "", "jar",
@@ -200,7 +200,7 @@ public class RepoSys
         return modelBuilder;
     }
 
-    private static RepositorySession newSession()
+    private static RepositorySystemSession newSession()
     {
         DefaultRepositorySession session = new DefaultRepositorySession();
 
@@ -245,19 +245,19 @@ public class RepoSys
 
         session.setSystemProperties( System.getProperties() );
 
-        DefaultArtifactStereotypeRegistry stereotypes = new DefaultArtifactStereotypeRegistry();
-        stereotypes.addStereotype( new DefaultArtifactStereotype( "pom" ) );
-        stereotypes.addStereotype( new DefaultArtifactStereotype( "maven-plugin", "jar", "", "java" ) );
-        stereotypes.addStereotype( new DefaultArtifactStereotype( "jar", "jar", "", "java" ) );
-        stereotypes.addStereotype( new DefaultArtifactStereotype( "ejb", "jar", "", "java" ) );
-        stereotypes.addStereotype( new DefaultArtifactStereotype( "ejb-client", "jar", "client", "java" ) );
-        stereotypes.addStereotype( new DefaultArtifactStereotype( "test-jar", "jar", "tests", "java" ) );
-        stereotypes.addStereotype( new DefaultArtifactStereotype( "javadoc", "jar", "javadoc", "java" ) );
-        stereotypes.addStereotype( new DefaultArtifactStereotype( "java-source", "jar", "sources", "java", false, false ) );
-        stereotypes.addStereotype( new DefaultArtifactStereotype( "war", "war", "", "java", false, true ) );
-        stereotypes.addStereotype( new DefaultArtifactStereotype( "ear", "ear", "", "java", false, true ) );
-        stereotypes.addStereotype( new DefaultArtifactStereotype( "rar", "rar", "", "java", false, true ) );
-        stereotypes.addStereotype( new DefaultArtifactStereotype( "par", "par", "", "java", false, true ) );
+        DefaultArtifactTypeRegistry stereotypes = new DefaultArtifactTypeRegistry();
+        stereotypes.add( new DefaultArtifactType( "pom" ) );
+        stereotypes.add( new DefaultArtifactType( "maven-plugin", "jar", "", "java" ) );
+        stereotypes.add( new DefaultArtifactType( "jar", "jar", "", "java" ) );
+        stereotypes.add( new DefaultArtifactType( "ejb", "jar", "", "java" ) );
+        stereotypes.add( new DefaultArtifactType( "ejb-client", "jar", "client", "java" ) );
+        stereotypes.add( new DefaultArtifactType( "test-jar", "jar", "tests", "java" ) );
+        stereotypes.add( new DefaultArtifactType( "javadoc", "jar", "javadoc", "java" ) );
+        stereotypes.add( new DefaultArtifactType( "java-source", "jar", "sources", "java", false, false ) );
+        stereotypes.add( new DefaultArtifactType( "war", "war", "", "java", false, true ) );
+        stereotypes.add( new DefaultArtifactType( "ear", "ear", "", "java", false, true ) );
+        stereotypes.add( new DefaultArtifactType( "rar", "rar", "", "java", false, true ) );
+        stereotypes.add( new DefaultArtifactType( "par", "par", "", "java", false, true ) );
         session.setArtifactStereotypeRegistry( stereotypes );
 
         return session;

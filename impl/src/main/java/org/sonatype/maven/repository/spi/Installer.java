@@ -21,7 +21,7 @@ package org.sonatype.maven.repository.spi;
 
 import org.sonatype.maven.repository.InstallRequest;
 import org.sonatype.maven.repository.InstallationException;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 
 /**
  * @author Benjamin Bentmann
@@ -29,7 +29,7 @@ import org.sonatype.maven.repository.RepositorySession;
 public interface Installer
 {
 
-    void install( RepositorySession session, InstallRequest request )
+    void install( RepositorySystemSession session, InstallRequest request )
         throws InstallationException;
 
 }

@@ -22,7 +22,7 @@ package org.sonatype.maven.repository.spi;
 import org.sonatype.maven.repository.ArtifactDescriptorException;
 import org.sonatype.maven.repository.ArtifactDescriptorRequest;
 import org.sonatype.maven.repository.ArtifactDescriptorResult;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 
 /**
  * @author Benjamin Bentmann
@@ -30,7 +30,7 @@ import org.sonatype.maven.repository.RepositorySession;
 public interface ArtifactDescriptorReader
 {
 
-    ArtifactDescriptorResult readArtifactDescriptor( RepositorySession session, ArtifactDescriptorRequest request )
+    ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session, ArtifactDescriptorRequest request )
         throws ArtifactDescriptorException;
 
 }

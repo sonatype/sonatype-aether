@@ -22,7 +22,7 @@ package org.sonatype.maven.repository.spi;
 import org.sonatype.maven.repository.CollectRequest;
 import org.sonatype.maven.repository.CollectResult;
 import org.sonatype.maven.repository.DependencyCollectionException;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 
 /**
  * @author Benjamin Bentmann
@@ -30,7 +30,7 @@ import org.sonatype.maven.repository.RepositorySession;
 public interface DependencyCollector
 {
 
-    CollectResult collectDependencies( RepositorySession session, CollectRequest request )
+    CollectResult collectDependencies( RepositorySystemSession session, CollectRequest request )
         throws DependencyCollectionException;
 
 }

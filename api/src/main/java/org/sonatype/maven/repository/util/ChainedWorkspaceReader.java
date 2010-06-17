@@ -63,7 +63,7 @@ public class ChainedWorkspaceReader
             {
                 buffer.append( '+' );
             }
-            buffer.append( reader.getRepository().getType() );
+            buffer.append( reader.getRepository().getContentType() );
         }
         this.repository = new WorkspaceRepository( buffer.toString() );
     }

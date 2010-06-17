@@ -19,7 +19,7 @@ package org.sonatype.maven.repository.spi;
  * under the License.
  */
 
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.VersionRangeRequest;
 import org.sonatype.maven.repository.VersionRangeResolutionException;
 import org.sonatype.maven.repository.VersionRangeResult;
@@ -34,7 +34,7 @@ public interface VersionRangeResolver
      * Expands a version range to a list of matching versions, in ascending order. For example, resolves "[3.8,4.0)" to
      * ["3.8", "3.8.1", "3.8.2"].
      */
-    VersionRangeResult resolveVersionRange( RepositorySession session, VersionRangeRequest request )
+    VersionRangeResult resolveVersionRange( RepositorySystemSession session, VersionRangeRequest request )
         throws VersionRangeResolutionException;
 
 }

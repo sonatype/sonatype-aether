@@ -32,7 +32,7 @@ public interface ArtifactRepository
      * 
      * @return The type of the repository, never {@code null}.
      */
-    String getType();
+    String getContentType();
 
     /**
      * Gets the identifier of this repository.

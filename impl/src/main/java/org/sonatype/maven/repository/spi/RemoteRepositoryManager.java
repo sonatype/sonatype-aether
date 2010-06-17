@@ -24,7 +24,7 @@ import java.util.List;
 import org.sonatype.maven.repository.NoRepositoryConnectorException;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryPolicy;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 
 /**
  * @author Benjamin Bentmann
@@ -32,14 +32,14 @@ import org.sonatype.maven.repository.RepositorySession;
 public interface RemoteRepositoryManager
 {
 
-    List<RemoteRepository> aggregateRepositories( RepositorySession session,
+    List<RemoteRepository> aggregateRepositories( RepositorySystemSession session,
                                                   List<RemoteRepository> dominantRepositories,
                                                   List<RemoteRepository> recessiveRepositories, boolean recessiveIsRaw );
 
-    RepositoryPolicy getPolicy( RepositorySession session, RemoteRepository repository, boolean releases,
+    RepositoryPolicy getPolicy( RepositorySystemSession session, RemoteRepository repository, boolean releases,
                                 boolean snapshots );
 
-    RepositoryConnector getRepositoryConnector( RepositorySession session, RemoteRepository repository )
+    RepositoryConnector getRepositoryConnector( RepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException;
 
 }

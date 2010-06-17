@@ -40,7 +40,7 @@ public interface RepositorySystem
      * @throws VersionRangeResolutionException If the requested range could not be parsed. Note that an empty range does
      *             not raise an exception.
      */
-    VersionRangeResult resolveVersionRange( RepositorySession session, VersionRangeRequest request )
+    VersionRangeResult resolveVersionRange( RepositorySystemSession session, VersionRangeRequest request )
         throws VersionRangeResolutionException;
 
     /**
@@ -53,7 +53,7 @@ public interface RepositorySystem
      * @return The version result, never {@code null}.
      * @throws VersionResolutionException If the metaversion could not be resolved.
      */
-    VersionResult resolveVersion( RepositorySession session, VersionRequest request )
+    VersionResult resolveVersion( RepositorySystemSession session, VersionRequest request )
         throws VersionResolutionException;
 
     /**
@@ -64,10 +64,10 @@ public interface RepositorySystem
      * @param request The descriptor request, must not be {@code null}
      * @return The descriptor result, never {@code null}.
      * @throws ArtifactDescriptorException If the artifact descritpor could not be read.
-     * @see RepositorySession#isIgnoreInvalidArtifactDescriptor()
-     * @see RepositorySession#isIgnoreMissingArtifactDescriptor()
+     * @see RepositorySystemSession#isIgnoreInvalidArtifactDescriptor()
+     * @see RepositorySystemSession#isIgnoreMissingArtifactDescriptor()
      */
-    ArtifactDescriptorResult readArtifactDescriptor( RepositorySession session, ArtifactDescriptorRequest request )
+    ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session, ArtifactDescriptorRequest request )
         throws ArtifactDescriptorException;
 
     /**
@@ -77,12 +77,12 @@ public interface RepositorySystem
      * @param request The collection request, must not be {@code null}
      * @return The collection result, never {@code null}.
      * @throws DependencyCollectionException If the dependency tree could not be built.
-     * @see RepositorySession#getDependencyTraverser()
-     * @see RepositorySession#getDependencyManager()
-     * @see RepositorySession#getDependencySelector()
-     * @see RepositorySession#getDependencyGraphTransformer()
+     * @see RepositorySystemSession#getDependencyTraverser()
+     * @see RepositorySystemSession#getDependencyManager()
+     * @see RepositorySystemSession#getDependencySelector()
+     * @see RepositorySystemSession#getDependencyGraphTransformer()
      */
-    CollectResult collectDependencies( RepositorySession session, CollectRequest request )
+    CollectResult collectDependencies( RepositorySystemSession session, CollectRequest request )
         throws DependencyCollectionException;
 
     /**
@@ -97,7 +97,7 @@ public interface RepositorySystem
      * @throws ArtifactResolutionException If any artifact could not be resolved.
      * @see Artifact#getFile()
      */
-    public List<ArtifactResult> resolveDependencies( RepositorySession session, DependencyNode node,
+    public List<ArtifactResult> resolveDependencies( RepositorySystemSession session, DependencyNode node,
                                                      DependencyFilter filter )
         throws ArtifactResolutionException;
 
@@ -111,7 +111,7 @@ public interface RepositorySystem
      * @throws ArtifactResolutionException If any artifact could not be resolved.
      * @see Artifact#getFile()
      */
-    List<ArtifactResult> resolveArtifacts( RepositorySession session, Collection<? extends ArtifactRequest> requests )
+    List<ArtifactResult> resolveArtifacts( RepositorySystemSession session, Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException;
 
     /**
@@ -122,7 +122,7 @@ public interface RepositorySystem
      * @return The resolution results, never {@code null}.
      * @see Metadata#getFile()
      */
-    List<MetadataResult> resolveMetadata( RepositorySession session, Collection<? extends MetadataRequest> requests );
+    List<MetadataResult> resolveMetadata( RepositorySystemSession session, Collection<? extends MetadataRequest> requests );
 
     /**
      * Installs a collection of artifacts and their accompanying metadata to the local repository.
@@ -131,7 +131,7 @@ public interface RepositorySystem
      * @param request The installation request, must not be {@code null}.
      * @throws InstallationException If any artifact/metadata from the request could not be installed.
      */
-    void install( RepositorySession session, InstallRequest request )
+    void install( RepositorySystemSession session, InstallRequest request )
         throws InstallationException;
 
     /**
@@ -141,7 +141,7 @@ public interface RepositorySystem
      * @param request The deployment request, must not be {@code null}.
      * @throws DeploymentException If any artifact/metadata from the request could not be deployed.
      */
-    void deploy( RepositorySession session, DeployRequest request )
+    void deploy( RepositorySystemSession session, DeployRequest request )
         throws DeploymentException;
 
     /**

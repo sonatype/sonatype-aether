@@ -36,7 +36,7 @@ import org.sonatype.maven.repository.ArtifactRequest;
 import org.sonatype.maven.repository.ArtifactResolutionException;
 import org.sonatype.maven.repository.DefaultArtifact;
 import org.sonatype.maven.repository.RemoteRepository;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.spi.ArtifactResolver;
 import org.sonatype.maven.repository.spi.RemoteRepositoryManager;
 
@@ -51,7 +51,7 @@ class DefaultModelResolver
     implements ModelResolver
 {
 
-    private final RepositorySession session;
+    private final RepositorySystemSession session;
 
     private final String context;
 
@@ -63,7 +63,7 @@ class DefaultModelResolver
 
     private final Set<String> repositoryIds;
 
-    public DefaultModelResolver( RepositorySession session, String context, ArtifactResolver resolver,
+    public DefaultModelResolver( RepositorySystemSession session, String context, ArtifactResolver resolver,
                                  RemoteRepositoryManager remoteRepositoryManager, List<RemoteRepository> repositories )
     {
         this.session = session;

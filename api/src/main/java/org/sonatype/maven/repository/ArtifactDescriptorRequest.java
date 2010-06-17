@@ -57,7 +57,7 @@ public class ArtifactDescriptorRequest
     {
         setArtifact( artifact );
         setRepositories( repositories );
-        setContext( context );
+        setRequestContext( context );
     }
 
     /**
@@ -135,7 +135,7 @@ public class ArtifactDescriptorRequest
      * 
      * @return The context, never {@code null}.
      */
-    public String getContext()
+    public String getRequestContext()
     {
         return context;
     }
@@ -146,7 +146,7 @@ public class ArtifactDescriptorRequest
      * @param context The context, may be {@code null}.
      * @return This request for chaining, never {@code null}.
      */
-    public ArtifactDescriptorRequest setContext( String context )
+    public ArtifactDescriptorRequest setRequestContext( String context )
     {
         this.context = ( context != null ) ? context : "";
         return this;

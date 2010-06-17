@@ -22,36 +22,36 @@ package org.sonatype.maven.repository;
 import java.util.Map;
 
 /**
- * An artifact stereotype describing artifact characteristics that are common for certain artifacts.
+ * An artifact type describing artifact characteristics that are common for certain artifacts.
  * 
  * @author Benjamin Bentmann
  */
-public interface ArtifactStereotype
+public interface ArtifactType
 {
 
     /**
-     * Gets the identifier of this stereotype, e.g. "maven-plugin" or "test-jar".
+     * Gets the identifier of this type, e.g. "maven-plugin" or "test-jar".
      * 
-     * @return The identifier of this stereotype, never {@code null}.
+     * @return The identifier of this type, never {@code null}.
      */
     String getId();
 
     /**
-     * Gets the file type to use for artifacts with this stereotype.
+     * Gets the file extension to use for artifacts of this type.
      * 
-     * @return The file type, never {@code null}.
+     * @return The file extension, never {@code null}.
      */
-    String getType();
+    String getExtension();
 
     /**
-     * Gets the classifier to use for artifacts with this stereotype.
+     * Gets the classifier to use for artifacts of this type.
      * 
      * @return The classifier or an empty string if none, never {@code null}.
      */
     String getClassifier();
 
     /**
-     * Gets the properties to use for artifacts with this stereotype.
+     * Gets the properties to use for artifacts of this type.
      * 
      * @return The properties, never {@code null}.
      */

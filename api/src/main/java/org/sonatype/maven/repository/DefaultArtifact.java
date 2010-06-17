@@ -46,7 +46,7 @@ public class DefaultArtifact
 
     private String classifier;
 
-    private String type;
+    private String extension;
 
     private File file;
 
@@ -55,25 +55,25 @@ public class DefaultArtifact
     public DefaultArtifact()
     {
         // enables default constructor
-        groupId = artifactId = version = classifier = type = "";
+        groupId = artifactId = version = classifier = extension = "";
     }
 
-    public DefaultArtifact( String groupId, String artifactId, String classifier, String type, String version )
+    public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version )
     {
         setGroupId( groupId );
         setArtifactId( artifactId );
         setClassifier( classifier );
-        setType( type );
+        setExtension( extension );
         setVersion( version );
     }
 
-    public DefaultArtifact( String groupId, String artifactId, String classifier, String type, String version,
-                            ArtifactStereotype stereotype )
+    public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version,
+                            ArtifactType stereotype )
     {
         setGroupId( groupId );
         setArtifactId( artifactId );
         setClassifier( ( classifier != null || stereotype == null ) ? classifier : stereotype.getClassifier() );
-        setType( ( type != null || stereotype == null ) ? type : stereotype.getType() );
+        setExtension( ( extension != null || stereotype == null ) ? extension : stereotype.getExtension() );
         setVersion( version );
         if ( stereotype != null )
         {
@@ -86,7 +86,7 @@ public class DefaultArtifact
         setGroupId( artifact.getGroupId() );
         setArtifactId( artifact.getArtifactId() );
         setClassifier( artifact.getClassifier() );
-        setType( artifact.getType() );
+        setExtension( artifact.getExtension() );
         setVersion( artifact.getVersion() );
         setFile( artifact.getFile() );
         properties.putAll( artifact.getProperties() );
@@ -167,14 +167,14 @@ public class DefaultArtifact
         return this;
     }
 
-    public String getType()
+    public String getExtension()
     {
-        return type;
+        return extension;
     }
 
-    public DefaultArtifact setType( String type )
+    public DefaultArtifact setExtension( String extension )
     {
-        this.type = ( type != null ) ? type : "";
+        this.extension = ( extension != null ) ? extension : "";
         return this;
     }
 
@@ -218,7 +218,7 @@ public class DefaultArtifact
         StringBuilder buffer = new StringBuilder( 128 );
         buffer.append( getGroupId() );
         buffer.append( ':' ).append( getArtifactId() );
-        buffer.append( ':' ).append( getType() );
+        buffer.append( ':' ).append( getExtension() );
         if ( getClassifier().length() > 0 )
         {
             buffer.append( ':' ).append( getClassifier() );

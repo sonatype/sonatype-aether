@@ -49,8 +49,8 @@ import org.sonatype.maven.repository.ArtifactNotFoundException;
 import org.sonatype.maven.repository.ArtifactRequest;
 import org.sonatype.maven.repository.ArtifactResolutionException;
 import org.sonatype.maven.repository.ArtifactResult;
-import org.sonatype.maven.repository.ArtifactStereotype;
-import org.sonatype.maven.repository.ArtifactStereotypeRegistry;
+import org.sonatype.maven.repository.ArtifactType;
+import org.sonatype.maven.repository.ArtifactTypeRegistry;
 import org.sonatype.maven.repository.DefaultArtifact;
 import org.sonatype.maven.repository.DefaultSubArtifact;
 import org.sonatype.maven.repository.Dependency;
@@ -59,7 +59,7 @@ import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryException;
 import org.sonatype.maven.repository.RepositoryListener;
 import org.sonatype.maven.repository.RepositoryPolicy;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.VersionRequest;
 import org.sonatype.maven.repository.VersionResolutionException;
 import org.sonatype.maven.repository.WorkspaceRepository;
@@ -69,7 +69,7 @@ import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.spi.RemoteRepositoryManager;
 import org.sonatype.maven.repository.spi.VersionResolver;
-import org.sonatype.maven.repository.util.DefaultArtifactStereotype;
+import org.sonatype.maven.repository.util.DefaultArtifactType;
 import org.sonatype.maven.repository.util.DefaultRepositoryEvent;
 
 /**
@@ -141,7 +141,7 @@ public class DefaultArtifactDescriptorReader
         return this;
     }
 
-    public ArtifactDescriptorResult readArtifactDescriptor( RepositorySession session, ArtifactDescriptorRequest request )
+    public ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session, ArtifactDescriptorRequest request )
         throws ArtifactDescriptorException
     {
         ArtifactDescriptorResult result = new ArtifactDescriptorResult( request );
@@ -150,7 +150,7 @@ public class DefaultArtifactDescriptorReader
 
         if ( model != null )
         {
-            ArtifactStereotypeRegistry stereotypes = session.getArtifactStereotypeRegistry();
+            ArtifactTypeRegistry stereotypes = session.getArtifactStereotypeRegistry();
 
             for ( Repository r : model.getRepositories() )
             {
@@ -190,7 +190,7 @@ public class DefaultArtifactDescriptorReader
         return result;
     }
 
-    private Model loadPom( RepositorySession session, ArtifactDescriptorRequest request, ArtifactDescriptorResult result )
+    private Model loadPom( RepositorySystemSession session, ArtifactDescriptorRequest request, ArtifactDescriptorResult result )
         throws ArtifactDescriptorException
     {
         Set<String> visited = new LinkedHashSet<String>();
@@ -199,7 +199,7 @@ public class DefaultArtifactDescriptorReader
             try
             {
                 VersionRequest versionRequest =
-                    new VersionRequest( artifact, request.getRepositories(), request.getContext() );
+                    new VersionRequest( artifact, request.getRepositories(), request.getRequestContext() );
                 versionResolver.resolveVersion( session, versionRequest );
             }
             catch ( VersionResolutionException e )
@@ -227,7 +227,7 @@ public class DefaultArtifactDescriptorReader
             try
             {
                 ArtifactRequest resolveRequest =
-                    new ArtifactRequest( pomArtifact, request.getRepositories(), request.getContext() );
+                    new ArtifactRequest( pomArtifact, request.getRepositories(), request.getRequestContext() );
                 resolveResult = artifactResolver.resolveArtifact( session, resolveRequest );
                 result.setRepository( resolveResult.getRepository() );
             }
@@ -254,7 +254,7 @@ public class DefaultArtifactDescriptorReader
                 modelRequest.setTwoPhaseBuilding( false );
                 modelRequest.setSystemProperties( session.getSystemProperties() );
                 modelRequest.setUserProperties( session.getUserProperties() );
-                modelRequest.setModelResolver( new DefaultModelResolver( session, request.getContext(),
+                modelRequest.setModelResolver( new DefaultModelResolver( session, request.getRequestContext(),
                                                                          artifactResolver, remoteRepositoryManager,
                                                                          request.getRepositories() ) );
                 if ( resolveResult.getRepository() instanceof WorkspaceRepository )
@@ -315,12 +315,12 @@ public class DefaultArtifactDescriptorReader
         return relocation;
     }
 
-    private Dependency convert( org.apache.maven.model.Dependency dependency, ArtifactStereotypeRegistry stereotypes )
+    private Dependency convert( org.apache.maven.model.Dependency dependency, ArtifactTypeRegistry stereotypes )
     {
-        ArtifactStereotype stereotype = stereotypes.get( dependency.getType() );
+        ArtifactType stereotype = stereotypes.get( dependency.getType() );
         if ( stereotype == null )
         {
-            stereotype = new DefaultArtifactStereotype( dependency.getType() );
+            stereotype = new DefaultArtifactType( dependency.getType() );
         }
 
         DefaultArtifact artifact =
@@ -374,7 +374,7 @@ public class DefaultArtifactDescriptorReader
         return result;
     }
 
-    private void missingDescriptor( RepositorySession session, Artifact artifact )
+    private void missingDescriptor( RepositorySystemSession session, Artifact artifact )
     {
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
@@ -384,7 +384,7 @@ public class DefaultArtifactDescriptorReader
         }
     }
 
-    private void invalidDescriptor( RepositorySession session, Artifact artifact, Exception exception )
+    private void invalidDescriptor( RepositorySystemSession session, Artifact artifact, Exception exception )
     {
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )

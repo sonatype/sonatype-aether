@@ -19,7 +19,7 @@ package org.sonatype.maven.repository.spi;
  * under the License.
  */
 
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.VersionRequest;
 import org.sonatype.maven.repository.VersionResolutionException;
 import org.sonatype.maven.repository.VersionResult;
@@ -34,7 +34,7 @@ public interface VersionResolver
      * Resolves a metaversion to a concrete version. For example, resolves "1.0-SNAPSHOT" to "1.0-20090208.132618-23" or
      * "RELEASE"/"LATEST" to "2.0".
      */
-    VersionResult resolveVersion( RepositorySession session, VersionRequest request )
+    VersionResult resolveVersion( RepositorySystemSession session, VersionRequest request )
         throws VersionResolutionException;
 
 }

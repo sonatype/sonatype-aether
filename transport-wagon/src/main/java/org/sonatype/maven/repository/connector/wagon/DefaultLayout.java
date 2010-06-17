@@ -45,7 +45,7 @@ class DefaultLayout
             path.append( '-' ).append( artifact.getClassifier() );
         }
 
-        path.append( '.' ).append( artifact.getType() );
+        path.append( '.' ).append( artifact.getExtension() );
 
         return path.toString();
     }

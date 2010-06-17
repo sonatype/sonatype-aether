@@ -64,11 +64,11 @@ public class DefaultMirrorSelector
 
         if ( mirror.type != null && mirror.type.length() > 0 )
         {
-            repo.setType( mirror.type );
+            repo.setContentType( mirror.type );
         }
         else
         {
-            repo.setType( repository.getType() );
+            repo.setContentType( repository.getContentType() );
         }
 
         repo.setPolicy( true, repository.getPolicy( true ) );
@@ -87,7 +87,7 @@ public class DefaultMirrorSelector
         {
             for ( MirrorDef mirror : mirrors )
             {
-                if ( repoId.equals( mirror.mirrorOfIds ) && matchesType( repository.getType(), mirror.mirrorOfTypes ) )
+                if ( repoId.equals( mirror.mirrorOfIds ) && matchesType( repository.getContentType(), mirror.mirrorOfTypes ) )
                 {
                     return mirror;
                 }
@@ -96,7 +96,7 @@ public class DefaultMirrorSelector
             for ( MirrorDef mirror : mirrors )
             {
                 if ( matchPattern( repository, mirror.mirrorOfIds )
-                    && matchesType( repository.getType(), mirror.mirrorOfTypes ) )
+                    && matchesType( repository.getContentType(), mirror.mirrorOfTypes ) )
                 {
                     return mirror;
                 }

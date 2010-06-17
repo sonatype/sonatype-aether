@@ -77,9 +77,9 @@ public abstract class DerivedArtifact
         return mainArtifact.getClassifier();
     }
 
-    public String getType()
+    public String getExtension()
     {
-        return mainArtifact.getType();
+        return mainArtifact.getExtension();
     }
 
     public File getFile()
@@ -108,7 +108,7 @@ public abstract class DerivedArtifact
         StringBuilder buffer = new StringBuilder( 128 );
         buffer.append( getGroupId() );
         buffer.append( ':' ).append( getArtifactId() );
-        buffer.append( ':' ).append( getType() );
+        buffer.append( ':' ).append( getExtension() );
         if ( getClassifier().length() > 0 )
         {
             buffer.append( ':' ).append( getClassifier() );

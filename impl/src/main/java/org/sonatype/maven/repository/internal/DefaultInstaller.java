@@ -34,7 +34,7 @@ import org.sonatype.maven.repository.LocalRepositoryManager;
 import org.sonatype.maven.repository.MergeableMetadata;
 import org.sonatype.maven.repository.Metadata;
 import org.sonatype.maven.repository.RepositoryListener;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.spi.Installer;
 import org.sonatype.maven.repository.spi.LocalRepositoryMaintainer;
 import org.sonatype.maven.repository.spi.Logger;
@@ -67,7 +67,7 @@ public class DefaultInstaller
         return this;
     }
 
-    public void install( RepositorySession session, InstallRequest request )
+    public void install( RepositorySystemSession session, InstallRequest request )
         throws InstallationException
     {
         for ( Artifact artifact : request.getArtifacts() )
@@ -81,7 +81,7 @@ public class DefaultInstaller
         }
     }
 
-    private void install( RepositorySession session, Artifact artifact )
+    private void install( RepositorySystemSession session, Artifact artifact )
         throws InstallationException
     {
         LocalRepositoryManager lrm = session.getLocalRepositoryManager();
@@ -95,7 +95,7 @@ public class DefaultInstaller
         try
         {
             boolean copy =
-                "pom".equals( artifact.getType() ) || !dstFile.exists()
+                "pom".equals( artifact.getExtension() ) || !dstFile.exists()
                     || srcFile.lastModified() != dstFile.lastModified() || srcFile.length() != dstFile.length();
 
             if ( copy )
@@ -137,7 +137,7 @@ public class DefaultInstaller
         }
     }
 
-    private void install( RepositorySession session, Metadata metadata )
+    private void install( RepositorySystemSession session, Metadata metadata )
         throws InstallationException
     {
         LocalRepositoryManager lrm = session.getLocalRepositoryManager();
@@ -182,7 +182,7 @@ public class DefaultInstaller
         return result;
     }
 
-    private void artifactInstalling( RepositorySession session, Artifact artifact, File dstFile )
+    private void artifactInstalling( RepositorySystemSession session, Artifact artifact, File dstFile )
     {
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
@@ -194,7 +194,7 @@ public class DefaultInstaller
         }
     }
 
-    private void artifactInstalled( RepositorySession session, Artifact artifact, File dstFile, Exception exception )
+    private void artifactInstalled( RepositorySystemSession session, Artifact artifact, File dstFile, Exception exception )
     {
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
@@ -207,7 +207,7 @@ public class DefaultInstaller
         }
     }
 
-    private void metadataInstalling( RepositorySession session, Metadata metadata, File dstFile )
+    private void metadataInstalling( RepositorySystemSession session, Metadata metadata, File dstFile )
     {
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
@@ -219,7 +219,7 @@ public class DefaultInstaller
         }
     }
 
-    private void metadataInstalled( RepositorySession session, Metadata metadata, File dstFile, Exception exception )
+    private void metadataInstalled( RepositorySystemSession session, Metadata metadata, File dstFile, Exception exception )
     {
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )

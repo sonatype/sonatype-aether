@@ -23,7 +23,7 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.maven.repository.NoRepositoryConnectorException;
 import org.sonatype.maven.repository.RemoteRepository;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.spi.RepositoryConnector;
@@ -68,7 +68,7 @@ public class WagonRepositoryConnectorFactory
         return this;
     }
 
-    public RepositoryConnector newInstance( RepositorySession session, RemoteRepository repository )
+    public RepositoryConnector newInstance( RepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException
     {
         return new WagonRepositoryConnector( wagonProvider, repository, session, logger );

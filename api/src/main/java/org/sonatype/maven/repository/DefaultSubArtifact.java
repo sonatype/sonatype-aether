@@ -1,8 +1,5 @@
 package org.sonatype.maven.repository;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,6 +19,9 @@ import java.util.Map;
  * under the License.
  */
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Benjamin Bentmann
  */
@@ -32,15 +32,15 @@ public class DefaultSubArtifact
 
     private final String classifier;
 
-    private final String type;
+    private final String extension;
 
     private Map<String, String> properties = new HashMap<String, String>();
 
-    public DefaultSubArtifact( Artifact mainArtifact, String classifier, String type )
+    public DefaultSubArtifact( Artifact mainArtifact, String classifier, String extension )
     {
         super( mainArtifact );
         this.classifier = classifier;
-        this.type = type;
+        this.extension = extension;
     }
 
     @Override
@@ -50,9 +50,9 @@ public class DefaultSubArtifact
     }
 
     @Override
-    public String getType()
+    public String getExtension()
     {
-        return expand( type, super.getType() );
+        return expand( extension, super.getExtension() );
     }
 
     private static String expand( String pattern, String replacement )

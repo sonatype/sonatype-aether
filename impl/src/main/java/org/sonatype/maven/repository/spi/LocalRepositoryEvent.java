@@ -21,7 +21,7 @@ package org.sonatype.maven.repository.spi;
 
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.LocalRepository;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 
 /**
  * An event describing an update to the local repository.
@@ -37,7 +37,7 @@ public interface LocalRepositoryEvent
      * 
      * @return The repository session, never {@code null}.
      */
-    RepositorySession getSession();
+    RepositorySystemSession getSession();
 
     /**
      * Gets the local repository which has been updated.

@@ -40,7 +40,7 @@ public class NoRepositoryConnectorException
         if ( repository != null )
         {
             return "No connector available to access repository '" + repository.getId() + "' (" + repository.getUrl()
-                + ") of type '" + repository.getType() + "'";
+                + ") of type '" + repository.getContentType() + "'";
         }
         else
         {

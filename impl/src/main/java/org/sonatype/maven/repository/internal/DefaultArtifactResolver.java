@@ -44,7 +44,7 @@ import org.sonatype.maven.repository.NoRepositoryConnectorException;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryListener;
 import org.sonatype.maven.repository.RepositoryPolicy;
-import org.sonatype.maven.repository.RepositorySession;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.VersionRequest;
 import org.sonatype.maven.repository.VersionResolutionException;
 import org.sonatype.maven.repository.VersionResult;
@@ -126,13 +126,13 @@ public class DefaultArtifactResolver
         return this;
     }
 
-    public ArtifactResult resolveArtifact( RepositorySession session, ArtifactRequest request )
+    public ArtifactResult resolveArtifact( RepositorySystemSession session, ArtifactRequest request )
         throws ArtifactResolutionException
     {
         return resolveArtifacts( session, Collections.singleton( request ) ).get( 0 );
     }
 
-    public List<ArtifactResult> resolveArtifacts( RepositorySession session,
+    public List<ArtifactResult> resolveArtifacts( RepositorySystemSession session,
                                                   Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException
     {
@@ -168,7 +168,7 @@ public class DefaultArtifactResolver
             VersionResult versionResult;
             try
             {
-                VersionRequest versionRequest = new VersionRequest( artifact, repos, request.getContext() );
+                VersionRequest versionRequest = new VersionRequest( artifact, repos, request.getRequestContext() );
                 versionResult = versionResolver.resolveVersion( session, versionRequest );
             }
             catch ( VersionResolutionException e )
@@ -202,7 +202,7 @@ public class DefaultArtifactResolver
                 }
             }
 
-            LocalArtifactQuery query = new LocalArtifactQuery( artifact, repos, request.getContext() );
+            LocalArtifactQuery query = new LocalArtifactQuery( artifact, repos, request.getRequestContext() );
             lrm.find( query );
             if ( query.isAvailable() )
             {
@@ -271,7 +271,7 @@ public class DefaultArtifactResolver
 
                 ArtifactDownload download = new ArtifactDownload();
                 download.setArtifact( artifact );
-                download.setContext( item.request.getContext() );
+                download.setContext( item.request.getRequestContext() );
                 if ( item.query.getFile() != null )
                 {
                     download.setFile( item.query.getFile() );
@@ -279,7 +279,7 @@ public class DefaultArtifactResolver
                 }
                 else
                 {
-                    String path = lrm.getPathForRemoteArtifact( artifact, group.repository, item.request.getContext() );
+                    String path = lrm.getPathForRemoteArtifact( artifact, group.repository, item.request.getRequestContext() );
                     download.setFile( new File( lrm.getRepository().getBasedir(), path ) );
                 }
 
@@ -358,7 +358,7 @@ public class DefaultArtifactResolver
                         item.result.addException( e );
                         continue;
                     }
-                    lrm.addRemoteArtifact( artifact, group.repository, item.request.getContext() );
+                    lrm.addRemoteArtifact( artifact, group.repository, item.request.getRequestContext() );
                     if ( maintainer != null )
                     {
                         maintainer.artifactDownloaded( new DefaultLocalRepositoryEvent( session, artifact ) );
@@ -423,7 +423,7 @@ public class DefaultArtifactResolver
         return file;
     }
 
-    private void artifactResolving( RepositorySession session, Artifact artifact )
+    private void artifactResolving( RepositorySystemSession session, Artifact artifact )
     {
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
@@ -433,7 +433,7 @@ public class DefaultArtifactResolver
         }
     }
 
-    private void artifactResolved( RepositorySession session, Artifact artifact, ArtifactRepository repository,
+    private void artifactResolved( RepositorySystemSession session, Artifact artifact, ArtifactRepository repository,
                                    List<Exception> exceptions )
     {
         RepositoryListener listener = session.getRepositoryListener();
