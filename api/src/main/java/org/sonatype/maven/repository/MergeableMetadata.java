@@ -22,7 +22,7 @@ package org.sonatype.maven.repository;
 import java.io.File;
 
 /**
- * A piece of metadata that needs to be merged with any existing metadata before installation/deployment.
+ * A piece of metadata that needs to be merged with any current metadata before installation/deployment.
  * 
  * @author Benjamin Bentmann
  */
@@ -31,13 +31,13 @@ public interface MergeableMetadata
 {
 
     /**
-     * Merges this metadata into the existing metadata.
+     * Merges this metadata into the current metadata (if any).
      * 
-     * @param existing The path to the existing metadata file, must not be {@code null}.
+     * @param current The path to the current metadata file, may not exist but must not be {@code null}.
      * @param result The path to the result file where the merged metadata should be stored, must not be {@code null}.
      * @throws RepositoryException If the metadata could not be merged.
      */
-    void merge( File existing, File result )
+    void merge( File current, File result )
         throws RepositoryException;
 
 }

@@ -34,7 +34,7 @@ public class DefaultArtifact
 
     private static final String SNAPSHOT = "SNAPSHOT";
 
-    private static final Pattern SNAPSHOT_TIMESTAMP = Pattern.compile( "^(.*-)([0-9]{8}.[0-9]{6}-[0-9]+)$" );
+    private static final Pattern SNAPSHOT_TIMESTAMP = Pattern.compile( "^(.*-)?([0-9]{8}.[0-9]{6}-[0-9]+)$" );
 
     private String groupId;
 
@@ -128,7 +128,14 @@ public class DefaultArtifact
                 Matcher m = SNAPSHOT_TIMESTAMP.matcher( version );
                 if ( m.matches() )
                 {
-                    this.baseVersion = m.group( 1 ) + SNAPSHOT;
+                    if ( m.group( 1 ) != null )
+                    {
+                        this.baseVersion = m.group( 1 ) + SNAPSHOT;
+                    }
+                    else
+                    {
+                        this.baseVersion = SNAPSHOT;
+                    }
                 }
                 else
                 {
