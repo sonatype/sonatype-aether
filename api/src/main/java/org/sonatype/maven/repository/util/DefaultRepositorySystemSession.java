@@ -41,7 +41,7 @@ import org.sonatype.maven.repository.WorkspaceReader;
 /**
  * @author Benjamin Bentmann
  */
-public class DefaultRepositorySession
+public class DefaultRepositorySystemSession
     implements RepositorySystemSession
 {
 
@@ -93,7 +93,7 @@ public class DefaultRepositorySession
 
     private RepositoryCache cache;
 
-    public DefaultRepositorySession()
+    public DefaultRepositorySystemSession()
     {
         // enables default constructor
         setId( null );
@@ -106,7 +106,7 @@ public class DefaultRepositorySession
         setArtifactStereotypeRegistry( new DefaultArtifactTypeRegistry() );
     }
 
-    public DefaultRepositorySession( RepositorySystemSession session )
+    public DefaultRepositorySystemSession( RepositorySystemSession session )
     {
         setId( session.getId() );
         setOffline( session.isOffline() );
@@ -139,7 +139,7 @@ public class DefaultRepositorySession
         return id;
     }
 
-    public DefaultRepositorySession setId( String id )
+    public DefaultRepositorySystemSession setId( String id )
     {
         this.id = ( id != null ) ? id : UUID.randomUUID().toString().replace( "-", "" );
         return this;
@@ -150,7 +150,7 @@ public class DefaultRepositorySession
         return offline;
     }
 
-    public DefaultRepositorySession setOffline( boolean offline )
+    public DefaultRepositorySystemSession setOffline( boolean offline )
     {
         this.offline = offline;
         return this;
@@ -161,7 +161,7 @@ public class DefaultRepositorySession
         return transferErrorCachingEnabled;
     }
 
-    public DefaultRepositorySession setTransferErrorCachingEnabled( boolean transferErrorCachingEnabled )
+    public DefaultRepositorySystemSession setTransferErrorCachingEnabled( boolean transferErrorCachingEnabled )
     {
         this.transferErrorCachingEnabled = transferErrorCachingEnabled;
         return this;
@@ -172,7 +172,7 @@ public class DefaultRepositorySession
         return notFoundCachingEnabled;
     }
 
-    public DefaultRepositorySession setNotFoundCachingEnabled( boolean notFoundCachingEnabled )
+    public DefaultRepositorySystemSession setNotFoundCachingEnabled( boolean notFoundCachingEnabled )
     {
         this.notFoundCachingEnabled = notFoundCachingEnabled;
         return this;
@@ -183,7 +183,7 @@ public class DefaultRepositorySession
         return ignoreMissingArtifactDescriptor;
     }
 
-    public DefaultRepositorySession setIgnoreMissingArtifactDescriptor( boolean ignoreMissingArtifactDescriptor )
+    public DefaultRepositorySystemSession setIgnoreMissingArtifactDescriptor( boolean ignoreMissingArtifactDescriptor )
     {
         this.ignoreMissingArtifactDescriptor = ignoreMissingArtifactDescriptor;
         return this;
@@ -194,7 +194,7 @@ public class DefaultRepositorySession
         return ignoreInvalidArtifactDescriptor;
     }
 
-    public DefaultRepositorySession setIgnoreInvalidArtifactDescriptor( boolean ignoreInvalidArtifactDescriptor )
+    public DefaultRepositorySystemSession setIgnoreInvalidArtifactDescriptor( boolean ignoreInvalidArtifactDescriptor )
     {
         this.ignoreInvalidArtifactDescriptor = ignoreInvalidArtifactDescriptor;
         return this;
@@ -205,7 +205,7 @@ public class DefaultRepositorySession
         return checksumPolicy;
     }
 
-    public DefaultRepositorySession setChecksumPolicy( String checksumPolicy )
+    public DefaultRepositorySystemSession setChecksumPolicy( String checksumPolicy )
     {
         this.checksumPolicy = checksumPolicy;
         return this;
@@ -216,7 +216,7 @@ public class DefaultRepositorySession
         return updatePolicy;
     }
 
-    public DefaultRepositorySession setUpdatePolicy( String updatePolicy )
+    public DefaultRepositorySystemSession setUpdatePolicy( String updatePolicy )
     {
         this.updatePolicy = updatePolicy;
         return this;
@@ -232,7 +232,7 @@ public class DefaultRepositorySession
         return localRepositoryManager;
     }
 
-    public DefaultRepositorySession setLocalRepositoryManager( LocalRepositoryManager localRepositoryManager )
+    public DefaultRepositorySystemSession setLocalRepositoryManager( LocalRepositoryManager localRepositoryManager )
     {
         this.localRepositoryManager = localRepositoryManager;
         return this;
@@ -243,7 +243,7 @@ public class DefaultRepositorySession
         return workspaceReader;
     }
 
-    public DefaultRepositorySession setWorkspaceReader( WorkspaceReader workspaceReader )
+    public DefaultRepositorySystemSession setWorkspaceReader( WorkspaceReader workspaceReader )
     {
         this.workspaceReader = workspaceReader;
         return this;
@@ -254,7 +254,7 @@ public class DefaultRepositorySession
         return repositoryListener;
     }
 
-    public DefaultRepositorySession setRepositoryListener( RepositoryListener repositoryListener )
+    public DefaultRepositorySystemSession setRepositoryListener( RepositoryListener repositoryListener )
     {
         this.repositoryListener = repositoryListener;
         return this;
@@ -265,7 +265,7 @@ public class DefaultRepositorySession
         return transferListener;
     }
 
-    public DefaultRepositorySession setTransferListener( TransferListener transferListener )
+    public DefaultRepositorySystemSession setTransferListener( TransferListener transferListener )
     {
         this.transferListener = transferListener;
         return this;
@@ -276,7 +276,7 @@ public class DefaultRepositorySession
         return systemProperties;
     }
 
-    public DefaultRepositorySession setSystemProperties( Properties systemProperties )
+    public DefaultRepositorySystemSession setSystemProperties( Properties systemProperties )
     {
         this.systemProperties = ( systemProperties != null ) ? systemProperties : new Properties();
         return this;
@@ -287,7 +287,7 @@ public class DefaultRepositorySession
         return userProperties;
     }
 
-    public DefaultRepositorySession setUserProperties( Properties userProperties )
+    public DefaultRepositorySystemSession setUserProperties( Properties userProperties )
     {
         this.userProperties = ( userProperties != null ) ? userProperties : new Properties();
         return this;
@@ -298,7 +298,7 @@ public class DefaultRepositorySession
         return configProperties;
     }
 
-    public DefaultRepositorySession setConfigProperties( Properties configProperties )
+    public DefaultRepositorySystemSession setConfigProperties( Properties configProperties )
     {
         this.configProperties = ( configProperties != null ) ? configProperties : new Properties();
         return this;
@@ -309,7 +309,7 @@ public class DefaultRepositorySession
         return mirrorSelector;
     }
 
-    public DefaultRepositorySession setMirrorSelector( MirrorSelector mirrorSelector )
+    public DefaultRepositorySystemSession setMirrorSelector( MirrorSelector mirrorSelector )
     {
         this.mirrorSelector = mirrorSelector;
         return this;
@@ -320,7 +320,7 @@ public class DefaultRepositorySession
         return proxySelector;
     }
 
-    public DefaultRepositorySession setProxySelector( ProxySelector proxySelector )
+    public DefaultRepositorySystemSession setProxySelector( ProxySelector proxySelector )
     {
         this.proxySelector = proxySelector;
         return this;
@@ -331,7 +331,7 @@ public class DefaultRepositorySession
         return authenticationSelector;
     }
 
-    public DefaultRepositorySession setAuthenticationSelector( AuthenticationSelector authenticationSelector )
+    public DefaultRepositorySystemSession setAuthenticationSelector( AuthenticationSelector authenticationSelector )
     {
         this.authenticationSelector = authenticationSelector;
         return this;
@@ -342,7 +342,7 @@ public class DefaultRepositorySession
         return artifactStereotypeRegistry;
     }
 
-    public DefaultRepositorySession setArtifactStereotypeRegistry( ArtifactTypeRegistry artifactStereotypeRegistry )
+    public DefaultRepositorySystemSession setArtifactStereotypeRegistry( ArtifactTypeRegistry artifactStereotypeRegistry )
     {
         this.artifactStereotypeRegistry = artifactStereotypeRegistry;
         return this;
@@ -353,7 +353,7 @@ public class DefaultRepositorySession
         return dependencyTraverser;
     }
 
-    public DefaultRepositorySession setDependencyTraverser( DependencyTraverser dependencyTraverser )
+    public DefaultRepositorySystemSession setDependencyTraverser( DependencyTraverser dependencyTraverser )
     {
         this.dependencyTraverser = dependencyTraverser;
         return this;
@@ -364,7 +364,7 @@ public class DefaultRepositorySession
         return dependencyManager;
     }
 
-    public DefaultRepositorySession setDependencyManager( DependencyManager dependencyManager )
+    public DefaultRepositorySystemSession setDependencyManager( DependencyManager dependencyManager )
     {
         this.dependencyManager = dependencyManager;
         return this;
@@ -375,7 +375,7 @@ public class DefaultRepositorySession
         return dependencySelector;
     }
 
-    public DefaultRepositorySession setDependencySelector( DependencySelector dependencySelector )
+    public DefaultRepositorySystemSession setDependencySelector( DependencySelector dependencySelector )
     {
         this.dependencySelector = dependencySelector;
         return this;
@@ -386,7 +386,7 @@ public class DefaultRepositorySession
         return dependencyGraphTransformer;
     }
 
-    public DefaultRepositorySession setDependencyGraphTransformer( DependencyGraphTransformer dependencyGraphTransformer )
+    public DefaultRepositorySystemSession setDependencyGraphTransformer( DependencyGraphTransformer dependencyGraphTransformer )
     {
         this.dependencyGraphTransformer = dependencyGraphTransformer;
         return this;
@@ -397,7 +397,7 @@ public class DefaultRepositorySession
         return cache;
     }
 
-    public DefaultRepositorySession setCache( RepositoryCache cache )
+    public DefaultRepositorySystemSession setCache( RepositoryCache cache )
     {
         this.cache = cache;
         return this;

@@ -64,7 +64,7 @@ import org.sonatype.maven.repository.util.DefaultAuthenticationSelector;
 import org.sonatype.maven.repository.util.DefaultDependencyManager;
 import org.sonatype.maven.repository.util.DefaultMirrorSelector;
 import org.sonatype.maven.repository.util.DefaultProxySelector;
-import org.sonatype.maven.repository.util.DefaultRepositorySession;
+import org.sonatype.maven.repository.util.DefaultRepositorySystemSession;
 import org.sonatype.maven.repository.util.ExclusionDependencySelector;
 import org.sonatype.maven.repository.util.FatArtifactTraverser;
 import org.sonatype.maven.repository.util.JavaDependencyContextRefiner;
@@ -202,7 +202,7 @@ public class RepoSys
 
     private static RepositorySystemSession newSession()
     {
-        DefaultRepositorySession session = new DefaultRepositorySession();
+        DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
 
         LocalRepositoryManager localRepoMan = new EnhancedLocalRepositoryManager( new File( "target/local-repo" ) );
         session.setLocalRepositoryManager( localRepoMan );
