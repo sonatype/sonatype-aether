@@ -59,6 +59,8 @@ public class DefaultUpdateCheckManager
 
     private static final String ERROR_KEY_SUFFIX = ".error";
 
+    private static final String NOT_FOUND = "";
+
     public DefaultUpdateCheckManager setLogger( Logger logger )
     {
         this.logger = ( logger != null ) ? logger : NullLogger.INSTANCE;
@@ -131,7 +133,7 @@ public class DefaultUpdateCheckManager
         else
         {
             String error = getError( props, key );
-            if ( error == null )
+            if ( error == null || error.length() <= 0 )
             {
                 if ( session.isNotFoundCachingEnabled() )
                 {
@@ -203,7 +205,7 @@ public class DefaultUpdateCheckManager
         else
         {
             String error = getError( props, key );
-            if ( error == null )
+            if ( error == null || error.length() <= 0 )
             {
                 check.setRequired( false );
                 check.setException( new MetadataNotFoundException( metadata, repository, "Failure to find " + metadata
@@ -337,16 +339,26 @@ public class DefaultUpdateCheckManager
     {
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
 
-        if ( check.getFile().exists() )
+        String key = getRepoKey( check.getRepository() );
+
+        Properties props = write( touchFile, key, "artifact", check.getException(), logger );
+
+        if ( check.getFile().exists() && !hasErrors( props ) )
         {
             touchFile.delete();
         }
-        else
-        {
-            String key = getRepoKey( check.getRepository() );
+    }
 
-            write( touchFile, key, "artifact", check.getException(), logger );
+    private boolean hasErrors( Properties props )
+    {
+        for ( Object key : props.keySet() )
+        {
+            if ( key.toString().endsWith( ERROR_KEY_SUFFIX ) )
+            {
+                return true;
+            }
         }
+        return false;
     }
 
     public void touchMetadata( RepositorySession session, UpdateCheck<Metadata, MetadataTransferException> check )
@@ -358,7 +370,7 @@ public class DefaultUpdateCheckManager
         write( touchFile, key, check.getFile().getName(), check.getException(), logger );
     }
 
-    private void write( File touchFile, String fullKey, String simpleKey, Exception error, Logger logger )
+    private Properties write( File touchFile, String fullKey, String simpleKey, Exception error, Logger logger )
     {
         Map<String, String> updates = new HashMap<String, String>();
 
@@ -366,9 +378,13 @@ public class DefaultUpdateCheckManager
         updates.put( fullKey + UPDATED_KEY_SUFFIX, timestamp );
         updates.put( simpleKey + UPDATED_KEY_SUFFIX, timestamp );
 
-        if ( error == null || error instanceof ArtifactNotFoundException || error instanceof MetadataNotFoundException )
+        if ( error == null )
         {
             updates.put( fullKey + ERROR_KEY_SUFFIX, null );
+        }
+        else if ( error instanceof ArtifactNotFoundException || error instanceof MetadataNotFoundException )
+        {
+            updates.put( fullKey + ERROR_KEY_SUFFIX, NOT_FOUND );
         }
         else
         {
@@ -380,7 +396,7 @@ public class DefaultUpdateCheckManager
             updates.put( fullKey + ERROR_KEY_SUFFIX, msg );
         }
 
-        new TrackingFileManager().setLogger( logger ).update( touchFile, updates );
+        return new TrackingFileManager().setLogger( logger ).update( touchFile, updates );
     }
 
 }

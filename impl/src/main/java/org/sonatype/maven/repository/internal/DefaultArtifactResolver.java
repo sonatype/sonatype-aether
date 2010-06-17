@@ -297,7 +297,7 @@ public class DefaultArtifactResolver
                     check.setPolicy( policy.getUpdatePolicy() );
                     item.updateCheck = check;
                     updateCheckManager.checkArtifact( session, check );
-                    if ( !check.isRequired() )
+                    if ( !check.isRequired() && check.getException() != null )
                     {
                         item.result.addException( check.getException() );
                         continue;
