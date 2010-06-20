@@ -38,7 +38,8 @@ import org.sonatype.maven.repository.ArtifactResolutionException;
 import org.sonatype.maven.repository.ArtifactResult;
 import org.sonatype.maven.repository.ArtifactTransferException;
 import org.sonatype.maven.repository.DerivedArtifact;
-import org.sonatype.maven.repository.LocalArtifactQuery;
+import org.sonatype.maven.repository.LocalArtifactRequest;
+import org.sonatype.maven.repository.LocalArtifactResult;
 import org.sonatype.maven.repository.LocalRepositoryManager;
 import org.sonatype.maven.repository.NoRepositoryConnectorException;
 import org.sonatype.maven.repository.RemoteRepository;
@@ -202,14 +203,14 @@ public class DefaultArtifactResolver
                 }
             }
 
-            LocalArtifactQuery query = new LocalArtifactQuery( artifact, repos, request.getRequestContext() );
-            lrm.find( query );
-            if ( query.isAvailable() )
+            LocalArtifactResult local =
+                lrm.find( new LocalArtifactRequest( artifact, repos, request.getRequestContext() ) );
+            if ( local.isAvailable() )
             {
                 result.setRepository( lrm.getRepository() );
                 try
                 {
-                    artifact.setFile( getFile( artifact, query.getFile() ) );
+                    artifact.setFile( getFile( artifact, local.getFile() ) );
                     artifactResolved( session, artifact, lrm.getRepository(), null );
                 }
                 catch ( ArtifactTransferException e )
@@ -252,7 +253,7 @@ public class DefaultArtifactResolver
                     groups.add( group );
                     groupIt = Collections.<ResolutionGroup> emptyList().iterator();
                 }
-                group.items.add( new ResolutionItem( result, query ) );
+                group.items.add( new ResolutionItem( result, local ) );
             }
         }
 
@@ -272,9 +273,9 @@ public class DefaultArtifactResolver
                 ArtifactDownload download = new ArtifactDownload();
                 download.setArtifact( artifact );
                 download.setContext( item.request.getRequestContext() );
-                if ( item.query.getFile() != null )
+                if ( item.local.getFile() != null )
                 {
-                    download.setFile( item.query.getFile() );
+                    download.setFile( item.local.getFile() );
                     download.setExistenceCheck( true );
                 }
                 else
@@ -473,17 +474,17 @@ public class DefaultArtifactResolver
 
         final ArtifactResult result;
 
-        final LocalArtifactQuery query;
+        final LocalArtifactResult local;
 
         ArtifactDownload download;
 
         UpdateCheck<Artifact, ArtifactTransferException> updateCheck;
 
-        ResolutionItem( ArtifactResult result, LocalArtifactQuery query )
+        ResolutionItem( ArtifactResult result, LocalArtifactResult local )
         {
             this.result = result;
             this.request = result.getRequest();
-            this.query = query;
+            this.local = local;
         }
 
     }

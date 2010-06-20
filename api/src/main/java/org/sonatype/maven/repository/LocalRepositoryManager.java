@@ -73,12 +73,13 @@ public interface LocalRepositoryManager
     String getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository, String context );
 
     /**
-     * Queries for the existence of an artifact in the local repository. The query could be satisfied by a locally built
-     * artifact or a previously downloaded artifact. The provided query object will be updated with its results.
+     * Queries for the existence of an artifact in the local repository. The request could be satisfied by a locally
+     * built artifact or a previously downloaded artifact.
      * 
-     * @param query The artifact query, must not be {@code null}.
+     * @param result The artifact request, must not be {@code null}.
+     * @return The result of the request, never {@code null}.
      */
-    void find( LocalArtifactQuery query );
+    LocalArtifactResult find( LocalArtifactRequest result );
 
     /**
      * Registers the specified locally built artifact with the local repository. Note that artifact registration is

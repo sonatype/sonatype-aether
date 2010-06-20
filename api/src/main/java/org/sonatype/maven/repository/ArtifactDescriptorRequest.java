@@ -49,8 +49,8 @@ public class ArtifactDescriptorRequest
     /**
      * Creates a request with the specified properties.
      * 
-     * @param artifact The artifact whose (meta-)version should be resolved, may be {@code null}.
-     * @param repositories The repositories to resolve the version from, may be {@code null}.
+     * @param artifact The artifact whose descriptor should be read, may be {@code null}.
+     * @param repositories The repositories to resolve the descriptor from, may be {@code null}.
      * @param context The context in which this request is made, may be {@code null}.
      */
     public ArtifactDescriptorRequest( Artifact artifact, List<RemoteRepository> repositories, String context )
@@ -61,7 +61,7 @@ public class ArtifactDescriptorRequest
     }
 
     /**
-     * Gets the artifact whose (meta-)version shall be resolved.
+     * Gets the artifact whose descriptor shall be read.
      * 
      * @return The artifact or {@code null} if not set.
      */
@@ -71,7 +71,7 @@ public class ArtifactDescriptorRequest
     }
 
     /**
-     * Sets the artifact whose (meta-)version shall be resolved.
+     * Sets the artifact whose descriptor shall be read.
      * 
      * @param artifact The artifact, may be {@code null}.
      * @return This request for chaining, never {@code null}.
@@ -83,7 +83,7 @@ public class ArtifactDescriptorRequest
     }
 
     /**
-     * Gets the repositories to resolve the version from.
+     * Gets the repositories to resolve the descriptor from.
      * 
      * @return The repositories, never {@code null}.
      */
@@ -112,7 +112,7 @@ public class ArtifactDescriptorRequest
     }
 
     /**
-     * Adds the specified repository for the resolution.
+     * Adds the specified repository for the resolution of the artifact descriptor.
      * 
      * @param repository The repository to add, may be {@code null}.
      * @return This request for chaining, never {@code null}.

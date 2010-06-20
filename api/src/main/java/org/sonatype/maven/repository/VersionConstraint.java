@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.HashSet;
 
 /**
+ * A constraint on versions for a dependency.
+ * 
  * @author Benjamin Bentmann
  */
 public class VersionConstraint
@@ -32,6 +34,13 @@ public class VersionConstraint
 
     private Version preferredVersion;
 
+    /**
+     * Adds the specified version range to this constraint. All versions matched by the given range satisfy this
+     * constraint.
+     * 
+     * @param range The version range to add, may be {@code null}.
+     * @return This constraint for chaining, never {@code null}.
+     */
     public VersionConstraint addRange( VersionRange range )
     {
         if ( range != null )
@@ -41,22 +50,45 @@ public class VersionConstraint
         return this;
     }
 
+    /**
+     * Gets the version ranges of this constraint.
+     * 
+     * @return The version ranges, may be empty but never {@code null}.
+     */
     public Collection<VersionRange> getRanges()
     {
         return ranges;
     }
 
+    /**
+     * Sets the preferred version to satisfy this constraint.
+     * 
+     * @param preferredVersion The preferred version for this constraint, may be {@code null} if none.
+     * @return This constraint for chaining, never {@code null}.
+     */
     public VersionConstraint setPreferredVersion( Version preferredVersion )
     {
         this.preferredVersion = preferredVersion;
         return this;
     }
 
+    /**
+     * Gets the preferred version to satisfiy this constraint.
+     * 
+     * @return The preferred version for this constraint or {@code null} if unknown.
+     */
     public Version getPreferredVersion()
     {
         return preferredVersion;
     }
 
+    /**
+     * Determines whether the specified version satisfies this constraint. In more detail, a version satisfies this
+     * constraint if it matches at least one version range or if this constraint has no version ranges at all.
+     * 
+     * @param version The version to test, must not be {@code null}.
+     * @return {@code true} if the specified version satisfies this constraint, {@code false} otherwise.
+     */
     public boolean containsVersion( Version version )
     {
         for ( VersionRange range : ranges )

@@ -19,7 +19,6 @@ package org.sonatype.maven.repository;
  * under the License.
  */
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,7 +27,7 @@ import java.util.List;
  * 
  * @author Benjamin Bentmann
  */
-public class LocalArtifactQuery
+public class LocalArtifactRequest
 {
 
     private Artifact artifact;
@@ -37,14 +36,10 @@ public class LocalArtifactQuery
 
     private List<RemoteRepository> repositories = Collections.emptyList();
 
-    private File file;
-
-    private boolean available;
-
     /**
      * Creates an uninitialized query.
      */
-    public LocalArtifactQuery()
+    public LocalArtifactRequest()
     {
         // enables default constructor
     }
@@ -57,7 +52,7 @@ public class LocalArtifactQuery
      *            be {@code null}.
      * @param context The resolution context for the artifact, may be {@code null}.
      */
-    public LocalArtifactQuery( Artifact artifact, List<RemoteRepository> repositories, String context )
+    public LocalArtifactRequest( Artifact artifact, List<RemoteRepository> repositories, String context )
     {
         setArtifact( artifact );
         setRepositories( repositories );
@@ -80,7 +75,7 @@ public class LocalArtifactQuery
      * @param artifact The artifact, may be {@code null}.
      * @return This query for chaining, never {@code null}.
      */
-    public LocalArtifactQuery setArtifact( Artifact artifact )
+    public LocalArtifactRequest setArtifact( Artifact artifact )
     {
         this.artifact = artifact;
         return this;
@@ -102,7 +97,7 @@ public class LocalArtifactQuery
      * @param context The resolution context, may be {@code null}.
      * @return This query for chaining, never {@code null}.
      */
-    public LocalArtifactQuery setContext( String context )
+    public LocalArtifactRequest setContext( String context )
     {
         this.context = ( context != null ) ? context : "";
         return this;
@@ -124,7 +119,7 @@ public class LocalArtifactQuery
      * @param repositories The remote repositories, may be {@code null}.
      * @return This query for chaining, never {@code null}.
      */
-    public LocalArtifactQuery setRepositories( List<RemoteRepository> repositories )
+    public LocalArtifactRequest setRepositories( List<RemoteRepository> repositories )
     {
         if ( repositories != null )
         {
@@ -134,54 +129,6 @@ public class LocalArtifactQuery
         {
             this.repositories = Collections.emptyList();
         }
-        return this;
-    }
-
-    /**
-     * Gets the file to the requested artifact. Note that this file must not be used unless {@link #isAvailable()}
-     * returns {@code true}. An artifact file can be found but considered unavailable if the artifact was cached from a
-     * remote repository that is not part of the list of remote repositories used for this query.
-     * 
-     * @return The file to the requested artifact.
-     */
-    public File getFile()
-    {
-        return file;
-    }
-
-    /**
-     * Sets the file to requested artifact.
-     * 
-     * @param file The artifact file, may be {@code null}.
-     * @return This query for chaining, never {@code null}.
-     */
-    public LocalArtifactQuery setFile( File file )
-    {
-        this.file = file;
-        return this;
-    }
-
-    /**
-     * Indicates whether the requested artifact is available for use. As a mininum, the file needs to be physically
-     * existent in the local repository to be available. Additionally, a local repository manager can consider the list
-     * of supplied remote repositories to determine whether the artifact is logically available.
-     * 
-     * @return {@code true} if the artifact is available, {@code false} otherwise.
-     */
-    public boolean isAvailable()
-    {
-        return available;
-    }
-
-    /**
-     * Sets whether the artifact is available.
-     * 
-     * @param available {@code true} if the artifact is available, {@code false} otherwise.
-     * @return This query for chaining, never {@code null}.
-     */
-    public LocalArtifactQuery setAvailable( boolean available )
-    {
-        this.available = available;
         return this;
     }
 

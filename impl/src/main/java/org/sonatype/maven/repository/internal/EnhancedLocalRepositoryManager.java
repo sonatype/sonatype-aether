@@ -25,7 +25,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.sonatype.maven.repository.Artifact;
-import org.sonatype.maven.repository.LocalArtifactQuery;
+import org.sonatype.maven.repository.LocalArtifactRequest;
+import org.sonatype.maven.repository.LocalArtifactResult;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.spi.Logger;
 
@@ -60,13 +61,15 @@ public class EnhancedLocalRepositoryManager
     }
 
     @Override
-    public void find( LocalArtifactQuery query )
+    public LocalArtifactResult find( LocalArtifactRequest request )
     {
-        String path = getPathForLocalArtifact( query.getArtifact() );
+        String path = getPathForLocalArtifact( request.getArtifact() );
         File file = new File( getRepository().getBasedir(), path );
+
+        LocalArtifactResult result = new LocalArtifactResult( request );
         if ( file.isFile() )
         {
-            query.setFile( file );
+            result.setFile( file );
             Properties props = readRepos( file );
             if ( props == null )
             {
@@ -74,25 +77,27 @@ public class EnhancedLocalRepositoryManager
                  * NOTE: tracking file not present at all, for inter-op with Maven 2.x, assume the artifact was locally
                  * built.
                  */
-                query.setAvailable( true );
+                result.setAvailable( true );
             }
             else if ( props.getProperty( getKey( file, LOCAL_REPO_ID ) ) != null )
             {
-                query.setAvailable( true );
+                result.setAvailable( true );
             }
             else
             {
-                String context = query.getContext();
-                for ( RemoteRepository repository : query.getRepositories() )
+                String context = request.getContext();
+                for ( RemoteRepository repository : request.getRepositories() )
                 {
                     if ( props.getProperty( getKey( file, getRepositoryKey( repository, context ) ) ) != null )
                     {
-                        query.setAvailable( true );
+                        result.setAvailable( true );
                         break;
                     }
                 }
             }
         }
+
+        return result;
     }
 
     @Override

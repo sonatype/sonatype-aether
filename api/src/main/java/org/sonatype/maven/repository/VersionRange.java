@@ -20,13 +20,26 @@ package org.sonatype.maven.repository;
  */
 
 /**
+ * A range of versions.
+ * 
  * @author Benjamin Bentmann
  */
 public interface VersionRange
 {
 
+    /**
+     * Determines whether the specified version is contained within this range.
+     * 
+     * @param version The version to test, must not be {@code null}.
+     * @return {@code true} if this range contains the specified version, {@code false} otherwise.
+     */
     boolean containsVersion( Version version );
 
+    /**
+     * Determines whether this range contains snapshot versions.
+     * 
+     * @return {@code true} if this range contains snapshot versions, {@code false} otherwise.
+     */
     boolean containsSnapshots();
 
 }

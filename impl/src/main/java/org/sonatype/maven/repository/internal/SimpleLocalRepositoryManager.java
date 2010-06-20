@@ -27,7 +27,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.sonatype.maven.repository.Artifact;
-import org.sonatype.maven.repository.LocalArtifactQuery;
+import org.sonatype.maven.repository.LocalArtifactRequest;
+import org.sonatype.maven.repository.LocalArtifactResult;
 import org.sonatype.maven.repository.LocalRepository;
 import org.sonatype.maven.repository.LocalRepositoryManager;
 import org.sonatype.maven.repository.Metadata;
@@ -190,15 +191,19 @@ public class SimpleLocalRepositoryManager
         return result;
     }
 
-    public void find( LocalArtifactQuery query )
+    public LocalArtifactResult find( LocalArtifactRequest request )
     {
-        String path = getPathForLocalArtifact( query.getArtifact() );
+        String path = getPathForLocalArtifact( request.getArtifact() );
         File file = new File( getRepository().getBasedir(), path );
+
+        LocalArtifactResult result = new LocalArtifactResult( request );
         if ( file.isFile() )
         {
-            query.setFile( file );
-            query.setAvailable( true );
+            result.setFile( file );
+            result.setAvailable( true );
         }
+
+        return result;
     }
 
     public void addLocalArtifact( Artifact artifact )
