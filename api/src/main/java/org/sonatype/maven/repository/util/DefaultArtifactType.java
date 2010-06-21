@@ -54,13 +54,13 @@ public class DefaultArtifactType
     {
         if ( id == null || id.length() < 0 )
         {
-            throw new IllegalArgumentException( "no stereotype id specified" );
+            throw new IllegalArgumentException( "no type id specified" );
         }
         this.id = id;
         this.extension = ( extension != null && extension.length() > 0 ) ? extension : id;
         this.classifier = ( classifier != null ) ? classifier : "";
         Map<String, String> props = new HashMap<String, String>();
-        props.put( "stereotype", id );
+        props.put( "type", id );
         props.put( "language", ( language != null && language.length() > 0 ) ? language : "none" );
         props.put( "includesDependencies", Boolean.toString( includesDependencies ) );
         props.put( "constitutesBuildPath", Boolean.toString( constitutesBuildPath ) );

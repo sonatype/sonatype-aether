@@ -115,7 +115,7 @@ public interface Artifact
      * Gets the properties of this artifact. While the set of available properties is undefined, the following
      * properties are considered to be common:
      * <dl>
-     * <dt>stereotype</dt>
+     * <dt>type</dt>
      * <dd>A high-level characterization of the artifact, e.g. "maven-plugin" or "test-jar".</dd>
      * <dt>language</dt>
      * <dd>The programming language this artifact is relevant for, e.g. "java" or "none".</dd>
