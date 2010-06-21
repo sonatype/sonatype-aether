@@ -41,7 +41,7 @@ public class ChainedWorkspaceReader
 
     private List<WorkspaceReader> readers = new ArrayList<WorkspaceReader>();
 
-    private WorkspaceRepository repository;
+    private String type;
 
     /**
      * Creates a new workspace reading by chaining the specified readers.
@@ -65,7 +65,7 @@ public class ChainedWorkspaceReader
             }
             buffer.append( reader.getRepository().getContentType() );
         }
-        this.repository = new WorkspaceRepository( buffer.toString() );
+        type = buffer.toString();
     }
 
     /**
@@ -119,29 +119,42 @@ public class ChainedWorkspaceReader
 
     public WorkspaceRepository getRepository()
     {
-        return repository;
+        return new WorkspaceRepository( type, new Key( readers ) );
     }
 
-    @Override
-    public boolean equals( Object obj )
+    private static class Key
     {
-        if ( this == obj )
+
+        private final List<Object> keys = new ArrayList<Object>();
+
+        public Key( List<WorkspaceReader> readers )
         {
-            return true;
-        }
-        if ( obj == null || !getClass().equals( obj.getClass() ) )
-        {
-            return false;
+            for ( WorkspaceReader reader : readers )
+            {
+                keys.add( reader.getRepository().getKey() );
+            }
         }
 
-        ChainedWorkspaceReader that = (ChainedWorkspaceReader) obj;
-        return this.readers.equals( that.readers );
-    }
+        @Override
+        public boolean equals( Object obj )
+        {
+            if ( this == obj )
+            {
+                return true;
+            }
+            if ( obj == null || !getClass().equals( obj.getClass() ) )
+            {
+                return false;
+            }
+            return keys.equals( ( (Key) obj ).keys );
+        }
 
-    @Override
-    public int hashCode()
-    {
-        return readers.hashCode();
+        @Override
+        public int hashCode()
+        {
+            return keys.hashCode();
+        }
+
     }
 
 }
