@@ -22,7 +22,9 @@ package org.sonatype.maven.repository;
 import java.io.File;
 
 /**
- * A piece of repository metadata.
+ * A piece of repository metadata, e.g. an index of available versions. In contrast to an artifact, which usually exists
+ * in only one repository, metadata usually exists in multiple repositories and each repository contains a different
+ * copy of the metadata.
  * 
  * @author Benjamin Bentmann
  */
