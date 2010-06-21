@@ -190,7 +190,10 @@ public class DefaultDeployer
             }
 
             RepositoryPolicy policy = getPolicy( session, repository, metadata.getNature() );
-            MetadataDownload download = new MetadataDownload( metadata, "", dstFile, policy.getChecksumPolicy() );
+            MetadataDownload download = new MetadataDownload();
+            download.setMetadata( metadata );
+            download.setFile( dstFile );
+            download.setChecksumPolicy( policy.getChecksumPolicy() );
             connector.get( null, Arrays.asList( download ) );
 
             if ( listener != null )

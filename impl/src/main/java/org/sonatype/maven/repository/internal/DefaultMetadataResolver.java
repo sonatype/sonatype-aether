@@ -360,8 +360,12 @@ public class DefaultMetadataResolver
         {
             try
             {
-                MetadataDownload download =
-                    new MetadataDownload( request.getMetadata(), request.getRequestContext(), check.getFile(), policy );
+                MetadataDownload download = new MetadataDownload();
+                download.setMetadata( request.getMetadata() );
+                download.setRequestContext( request.getRequestContext() );
+                download.setFile( check.getFile() );
+                download.setChecksumPolicy( policy );
+                download.setRepositories( request.getRepository().getMirroredRepositories() );
 
                 RepositoryConnector connector =
                     remoteRepositoryManager.getRepositoryConnector( session, request.getRepository() );

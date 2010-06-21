@@ -20,9 +20,12 @@ package org.sonatype.maven.repository.spi;
  */
 
 import java.io.File;
+import java.util.Collections;
+import java.util.List;
 
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.ArtifactTransferException;
+import org.sonatype.maven.repository.RemoteRepository;
 
 /**
  * A download of an artifact from a remote repository.
@@ -38,6 +41,8 @@ public class ArtifactDownload
     private String checksumPolicy = "";
 
     private String context = "";
+
+    private List<RemoteRepository> repositories = Collections.emptyList();
 
     /**
      * Creates a new uninitialized download.
@@ -58,7 +63,7 @@ public class ArtifactDownload
     public ArtifactDownload( Artifact artifact, String context, File file, String checksumPolicy )
     {
         setArtifact( artifact );
-        setContext( context );
+        setRequestContext( context );
         setFile( file );
         setChecksumPolicy( checksumPolicy );
     }
@@ -130,7 +135,7 @@ public class ArtifactDownload
      * 
      * @return The context id, never {@code null}.
      */
-    public String getContext()
+    public String getRequestContext()
     {
         return context;
     }
@@ -141,9 +146,40 @@ public class ArtifactDownload
      * @param context The context id, may be {@code null}.
      * @return This transfer for chaining, never {@code null}.
      */
-    public ArtifactDownload setContext( String context )
+    public ArtifactDownload setRequestContext( String context )
     {
         this.context = ( context != null ) ? context : "";
+        return this;
+    }
+
+    /**
+     * Gets the remote repositories that are being aggregated by the physically contacted remote repository (i.e. a
+     * repository manager).
+     * 
+     * @return The remote repositories being aggregated, never {@code null}.
+     */
+    public List<RemoteRepository> getRepositories()
+    {
+        return repositories;
+    }
+
+    /**
+     * Sets the remote repositories that are being aggregated by the physically contacted remote repository (i.e. a
+     * repository manager).
+     * 
+     * @param repositories The remote repositories being aggregated, may be {@code null}.
+     * @return This transfer for chaining, never {@code null}.
+     */
+    public ArtifactDownload setRepositories( List<RemoteRepository> repositories )
+    {
+        if ( repositories == null )
+        {
+            this.repositories = Collections.emptyList();
+        }
+        else
+        {
+            this.repositories = repositories;
+        }
         return this;
     }
 

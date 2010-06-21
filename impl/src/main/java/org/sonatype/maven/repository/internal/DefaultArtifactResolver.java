@@ -253,7 +253,7 @@ public class DefaultArtifactResolver
                     groups.add( group );
                     groupIt = Collections.<ResolutionGroup> emptyList().iterator();
                 }
-                group.items.add( new ResolutionItem( result, local ) );
+                group.items.add( new ResolutionItem( result, local, repo ) );
             }
         }
 
@@ -272,7 +272,7 @@ public class DefaultArtifactResolver
 
                 ArtifactDownload download = new ArtifactDownload();
                 download.setArtifact( artifact );
-                download.setContext( item.request.getRequestContext() );
+                download.setRequestContext( item.request.getRequestContext() );
                 if ( item.local.getFile() != null )
                 {
                     download.setFile( item.local.getFile() );
@@ -280,7 +280,8 @@ public class DefaultArtifactResolver
                 }
                 else
                 {
-                    String path = lrm.getPathForRemoteArtifact( artifact, group.repository, item.request.getRequestContext() );
+                    String path =
+                        lrm.getPathForRemoteArtifact( artifact, group.repository, item.request.getRequestContext() );
                     download.setFile( new File( lrm.getRepository().getBasedir(), path ) );
                 }
 
@@ -306,6 +307,7 @@ public class DefaultArtifactResolver
                 }
 
                 download.setChecksumPolicy( policy.getChecksumPolicy() );
+                download.setRepositories( item.repository.getMirroredRepositories() );
                 downloads.add( download );
                 item.download = download;
             }
@@ -462,7 +464,9 @@ public class DefaultArtifactResolver
 
         boolean matches( RemoteRepository repo )
         {
-            return repository.getUrl().equals( repo.getUrl() ) && repository.getId().equals( repo.getId() );
+            return repository.getUrl().equals( repo.getUrl() )
+                && repository.getContentType().equals( repo.getContentType() )
+                && repository.isRepositoryManager() == repo.isRepositoryManager();
         }
 
     }
@@ -476,15 +480,18 @@ public class DefaultArtifactResolver
 
         final LocalArtifactResult local;
 
+        final RemoteRepository repository;
+
         ArtifactDownload download;
 
         UpdateCheck<Artifact, ArtifactTransferException> updateCheck;
 
-        ResolutionItem( ArtifactResult result, LocalArtifactResult local )
+        ResolutionItem( ArtifactResult result, LocalArtifactResult local, RemoteRepository repository )
         {
             this.result = result;
             this.request = result.getRequest();
             this.local = local;
+            this.repository = repository;
         }
 
     }
