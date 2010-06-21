@@ -120,16 +120,17 @@ class WagonRepositoryConnector
 
         wagonRepo = new Repository( repository.getId(), repository.getUrl() );
         wagonHint = wagonRepo.getProtocol().toLowerCase( Locale.ENGLISH );
-        wagonAuth = getAuthenticationInfo( repository, session.getAuthenticationSelector() );
-        wagonProxy = getProxy( repository, session.getProxySelector() );
         try
         {
-            releaseWagon( lookupWagon() );
+            wagons.add( lookupWagon() );
         }
         catch ( Exception e )
         {
             throw new NoRepositoryConnectorException( repository );
         }
+
+        wagonAuth = getAuthenticationInfo( repository, session.getAuthenticationSelector() );
+        wagonProxy = getProxy( repository, session.getProxySelector() );
 
         int threads = getOption( "maven.artifact.threads", 5 );
         if ( threads <= 1 )
@@ -244,6 +245,40 @@ class WagonRepositoryConnector
         {
             // too bad
         }
+    }
+
+    Wagon pollWagon()
+        throws Exception
+    {
+        Wagon wagon = wagons.poll();
+
+        if ( wagon == null )
+        {
+            try
+            {
+                wagon = lookupWagon();
+                connectWagon( wagon );
+            }
+            catch ( Exception e )
+            {
+                releaseWagon( wagon );
+                throw e;
+            }
+        }
+        else if ( wagon.getRepository() == null )
+        {
+            try
+            {
+                connectWagon( wagon );
+            }
+            catch ( Exception e )
+            {
+                wagons.add( wagon );
+                throw e;
+            }
+        }
+
+        return wagon;
     }
 
     private <T> Collection<T> safe( Collection<T> items )
@@ -412,20 +447,7 @@ class WagonRepositoryConnector
 
                 File tmp = ( file != null ) ? new File( file.getPath() + ".tmp" + System.currentTimeMillis() ) : null;
 
-                Wagon wagon = wagons.poll();
-                if ( wagon == null )
-                {
-                    try
-                    {
-                        wagon = lookupWagon();
-                        connectWagon( wagon );
-                    }
-                    catch ( Exception e )
-                    {
-                        releaseWagon( wagon );
-                        throw e;
-                    }
-                }
+                Wagon wagon = pollWagon();
 
                 try
                 {
@@ -658,20 +680,7 @@ class WagonRepositoryConnector
                     listener.transferInitiated( event );
                 }
 
-                Wagon wagon = wagons.poll();
-                if ( wagon == null )
-                {
-                    try
-                    {
-                        wagon = lookupWagon();
-                        connectWagon( wagon );
-                    }
-                    catch ( Exception e )
-                    {
-                        releaseWagon( wagon );
-                        throw e;
-                    }
-                }
+                Wagon wagon = pollWagon();
 
                 try
                 {
