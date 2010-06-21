@@ -254,8 +254,6 @@ public class DefaultDependencyCollector
                           DependencyManager depManager, DependencyTraverser depTraverser )
         throws DependencyCollectionException
     {
-        // TODO: many dirty trees will have repetitive sub trees, optimize and don't reprocess what we already did
-
         for ( Dependency dependency : dependencies )
         {
             process( session, result, node, dependency, managedDependencies, repositories, depSelector, depManager,

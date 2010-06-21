@@ -31,8 +31,14 @@ public interface VersionResolver
 {
 
     /**
-     * Resolves a metaversion to a concrete version. For example, resolves "1.0-SNAPSHOT" to "1.0-20090208.132618-23" or
-     * "RELEASE"/"LATEST" to "2.0".
+     * Resolves an artifact's metaversion (if any) to a concrete version. For example, resolves "1.0-SNAPSHOT" to
+     * "1.0-20090208.132618-23" or "RELEASE"/"LATEST" to "2.0". The resolved version is stored both in the original
+     * artifact and the returned result which provides further details about the resolution.
+     * 
+     * @param session The repository session, must not be {@code null}.
+     * @param request The version request, must not be {@code null}
+     * @return The version result, never {@code null}.
+     * @throws VersionResolutionException If the metaversion could not be resolved.
      */
     VersionResult resolveVersion( RepositorySystemSession session, VersionRequest request )
         throws VersionResolutionException;

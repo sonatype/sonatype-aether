@@ -20,6 +20,7 @@ package org.sonatype.maven.repository.internal;
  */
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -46,6 +47,7 @@ import org.sonatype.maven.repository.ArtifactDescriptorException;
 import org.sonatype.maven.repository.ArtifactDescriptorRequest;
 import org.sonatype.maven.repository.ArtifactDescriptorResult;
 import org.sonatype.maven.repository.ArtifactNotFoundException;
+import org.sonatype.maven.repository.ArtifactRepository;
 import org.sonatype.maven.repository.ArtifactRequest;
 import org.sonatype.maven.repository.ArtifactResolutionException;
 import org.sonatype.maven.repository.ArtifactResult;
@@ -56,6 +58,7 @@ import org.sonatype.maven.repository.DefaultSubArtifact;
 import org.sonatype.maven.repository.Dependency;
 import org.sonatype.maven.repository.Exclusion;
 import org.sonatype.maven.repository.RemoteRepository;
+import org.sonatype.maven.repository.RepositoryCache;
 import org.sonatype.maven.repository.RepositoryException;
 import org.sonatype.maven.repository.RepositoryListener;
 import org.sonatype.maven.repository.RepositoryPolicy;
@@ -141,12 +144,13 @@ public class DefaultArtifactDescriptorReader
         return this;
     }
 
-    public ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session, ArtifactDescriptorRequest request )
+    public ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session,
+                                                            ArtifactDescriptorRequest request )
         throws ArtifactDescriptorException
     {
         ArtifactDescriptorResult result = new ArtifactDescriptorResult( request );
 
-        Model model = loadPom( session, request, result );
+        Model model = getPom( session, request, result );
 
         if ( model != null )
         {
@@ -190,7 +194,49 @@ public class DefaultArtifactDescriptorReader
         return result;
     }
 
-    private Model loadPom( RepositorySystemSession session, ArtifactDescriptorRequest request, ArtifactDescriptorResult result )
+    private Model getPom( RepositorySystemSession session, ArtifactDescriptorRequest request,
+                          ArtifactDescriptorResult result )
+        throws ArtifactDescriptorException
+    {
+        Key cacheKey = null;
+
+        RepositoryCache cache = session.getCache();
+        if ( cache != null )
+        {
+            cacheKey = new Key( session, request );
+
+            Object obj = cache.get( cacheKey );
+            if ( obj instanceof Record )
+            {
+                Record record = (Record) obj;
+                result.setRepository( CacheUtils.getRepository( session, request.getRepositories(), record.repoClass,
+                                                                record.repoId ) );
+                return record.model;
+            }
+        }
+
+        Model model = loadPom( session, request, result );
+
+        if ( model != null && cacheKey != null && result.getRelocations().isEmpty() )
+        {
+            // to save memory, nuke irrelevant model bits
+            model.setBuild( null );
+            model.setProfiles( null );
+            model.setParent( null );
+            model.setPrerequisites( null );
+            model.setCiManagement( null );
+            model.setIssueManagement( null );
+            model.setContributors( null );
+            model.setDevelopers( null );
+
+            cache.put( cacheKey, new Record( model, result.getRepository() ) );
+        }
+
+        return model;
+    }
+
+    private Model loadPom( RepositorySystemSession session, ArtifactDescriptorRequest request,
+                           ArtifactDescriptorResult result )
         throws ArtifactDescriptorException
     {
         Set<String> visited = new LinkedHashSet<String>();
@@ -393,6 +439,106 @@ public class DefaultArtifactDescriptorReader
             DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
             event.setException( exception );
             listener.artifactDescriptorInvalid( event );
+        }
+    }
+
+    private static class Key
+    {
+
+        private final String groupId;
+
+        private final String artifactId;
+
+        private final String version;
+
+        private final String context;
+
+        private final File localRepo;
+
+        private final WorkspaceRepository workspace;
+
+        private final List<RemoteRepository> repositories;
+
+        private final int hashCode;
+
+        public Key( RepositorySystemSession session, ArtifactDescriptorRequest request )
+        {
+            groupId = request.getArtifact().getGroupId();
+            artifactId = request.getArtifact().getArtifactId();
+            version = request.getArtifact().getVersion();
+            context = request.getRequestContext();
+            localRepo = session.getLocalRepository().getBasedir();
+            workspace = CacheUtils.getWorkspace( session );
+            repositories = new ArrayList<RemoteRepository>( request.getRepositories().size() );
+            for ( RemoteRepository repository : request.getRepositories() )
+            {
+                if ( repository.isRepositoryManager() )
+                {
+                    repositories.addAll( repository.getMirroredRepositories() );
+                }
+                else
+                {
+                    repositories.add( repository );
+                }
+            }
+
+            int hash = 17;
+            hash = hash * 31 + groupId.hashCode();
+            hash = hash * 31 + artifactId.hashCode();
+            hash = hash * 31 + version.hashCode();
+            hash = hash * 31 + localRepo.hashCode();
+            hash = hash * 31 + CacheUtils.repositoriesHashCode( repositories );
+            hashCode = hash;
+        }
+
+        @Override
+        public boolean equals( Object obj )
+        {
+            if ( obj == this )
+            {
+                return true;
+            }
+            else if ( obj == null || !getClass().equals( obj.getClass() ) )
+            {
+                return false;
+            }
+
+            Key that = (Key) obj;
+            return artifactId.equals( that.artifactId ) && groupId.equals( that.groupId )
+                && version.equals( that.version ) && context.equals( that.context )
+                && localRepo.equals( that.localRepo ) && CacheUtils.eq( workspace, that.workspace )
+                && CacheUtils.repositoriesEquals( repositories, that.repositories );
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return hashCode;
+        }
+
+    }
+
+    private static class Record
+    {
+        final Model model;
+
+        final String repoId;
+
+        final Class<?> repoClass;
+
+        public Record( Model model, ArtifactRepository repository )
+        {
+            this.model = model;
+            if ( repository != null )
+            {
+                repoId = repository.getId();
+                repoClass = repository.getClass();
+            }
+            else
+            {
+                repoId = null;
+                repoClass = null;
+            }
         }
     }
 

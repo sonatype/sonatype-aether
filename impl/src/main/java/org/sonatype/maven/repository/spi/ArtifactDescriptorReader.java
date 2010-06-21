@@ -30,6 +30,15 @@ import org.sonatype.maven.repository.RepositorySystemSession;
 public interface ArtifactDescriptorReader
 {
 
+    /**
+     * Gets information about an artifact like its direct dependencies. As a side effect, the artifact's version will be
+     * resolved if necessary.
+     * 
+     * @param session The repository session, must not be {@code null}.
+     * @param request The descriptor request, must not be {@code null}
+     * @return The descriptor result, never {@code null}.
+     * @throws ArtifactDescriptorException If the artifact descritpor could not be read.
+     */
     ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session, ArtifactDescriptorRequest request )
         throws ArtifactDescriptorException;
 

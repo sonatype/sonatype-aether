@@ -37,12 +37,14 @@ import org.sonatype.maven.repository.Metadata;
 import org.sonatype.maven.repository.MetadataRequest;
 import org.sonatype.maven.repository.MetadataResult;
 import org.sonatype.maven.repository.RemoteRepository;
+import org.sonatype.maven.repository.RepositoryCache;
 import org.sonatype.maven.repository.RepositoryListener;
 import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.VersionRequest;
 import org.sonatype.maven.repository.VersionResolutionException;
 import org.sonatype.maven.repository.VersionResult;
 import org.sonatype.maven.repository.WorkspaceReader;
+import org.sonatype.maven.repository.WorkspaceRepository;
 import org.sonatype.maven.repository.internal.metadata.Snapshot;
 import org.sonatype.maven.repository.internal.metadata.Versioning;
 import org.sonatype.maven.repository.internal.metadata.io.xpp3.MetadataXpp3Reader;
@@ -96,6 +98,27 @@ public class DefaultVersionResolver
         String version = request.getArtifact().getVersion();
 
         VersionResult result = new VersionResult( request );
+
+        Key cacheKey = null;
+        RepositoryCache cache = session.getCache();
+        if ( cache != null )
+        {
+            cacheKey = new Key( session, request );
+
+            Object obj = cache.get( cacheKey );
+            if ( obj instanceof Record )
+            {
+                Record record = (Record) obj;
+                result.setVersion( record.version );
+                result.setRepository( CacheUtils.getRepository( session, request.getRepositories(), record.repoClass,
+                                                                record.repoId ) );
+                if ( !version.equals( record.version ) )
+                {
+                    request.getArtifact().setVersion( record.version );
+                }
+                return result;
+            }
+        }
 
         DefaultMetadata metadata;
 
@@ -243,6 +266,11 @@ public class DefaultVersionResolver
             request.getArtifact().setVersion( result.getVersion() );
         }
 
+        if ( cacheKey != null && metadata != null )
+        {
+            cache.put( cacheKey, new Record( result.getVersion(), result.getRepository() ) );
+        }
+
         return result;
     }
 
@@ -313,6 +341,106 @@ public class DefaultVersionResolver
         }
 
         return true;
+    }
+
+    private static class Key
+    {
+
+        private final String groupId;
+
+        private final String artifactId;
+
+        private final String version;
+
+        private final String context;
+
+        private final File localRepo;
+
+        private final WorkspaceRepository workspace;
+
+        private final List<RemoteRepository> repositories;
+
+        private final int hashCode;
+
+        public Key( RepositorySystemSession session, VersionRequest request )
+        {
+            groupId = request.getArtifact().getGroupId();
+            artifactId = request.getArtifact().getArtifactId();
+            version = request.getArtifact().getVersion();
+            context = request.getRequestContext();
+            localRepo = session.getLocalRepository().getBasedir();
+            workspace = CacheUtils.getWorkspace( session );
+            repositories = new ArrayList<RemoteRepository>( request.getRepositories().size() );
+            for ( RemoteRepository repository : request.getRepositories() )
+            {
+                if ( repository.isRepositoryManager() )
+                {
+                    repositories.addAll( repository.getMirroredRepositories() );
+                }
+                else
+                {
+                    repositories.add( repository );
+                }
+            }
+
+            int hash = 17;
+            hash = hash * 31 + groupId.hashCode();
+            hash = hash * 31 + artifactId.hashCode();
+            hash = hash * 31 + version.hashCode();
+            hash = hash * 31 + localRepo.hashCode();
+            hash = hash * 31 + CacheUtils.repositoriesHashCode( repositories );
+            hashCode = hash;
+        }
+
+        @Override
+        public boolean equals( Object obj )
+        {
+            if ( obj == this )
+            {
+                return true;
+            }
+            else if ( obj == null || !getClass().equals( obj.getClass() ) )
+            {
+                return false;
+            }
+
+            Key that = (Key) obj;
+            return artifactId.equals( that.artifactId ) && groupId.equals( that.groupId )
+                && version.equals( that.version ) && context.equals( that.context )
+                && localRepo.equals( that.localRepo ) && CacheUtils.eq( workspace, that.workspace )
+                && CacheUtils.repositoriesEquals( repositories, that.repositories );
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return hashCode;
+        }
+
+    }
+
+    private static class Record
+    {
+        final String version;
+
+        final String repoId;
+
+        final Class<?> repoClass;
+
+        public Record( String version, ArtifactRepository repository )
+        {
+            this.version = version;
+            if ( repository != null )
+            {
+                repoId = repository.getId();
+                repoClass = repository.getClass();
+            }
+            else
+            {
+                repoId = null;
+                repoClass = null;
+            }
+        }
     }
 
 }
