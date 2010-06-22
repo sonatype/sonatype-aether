@@ -137,9 +137,9 @@ public class DefaultMetadataResolver
                 continue;
             }
 
-            RepositoryPolicy policy = getPolicy( session, repository, metadata.getNature() );
+            List<RemoteRepository> repositories = getEnabledSourceRepositories( repository, metadata.getNature() );
 
-            if ( !policy.isEnabled() )
+            if ( repositories.isEmpty() )
             {
                 continue;
             }
@@ -178,23 +178,41 @@ public class DefaultMetadataResolver
                 }
             }
 
-            UpdateCheck<Metadata, MetadataTransferException> check =
-                new UpdateCheck<Metadata, MetadataTransferException>();
-            check.setLocalLastUpdated( ( localLastUpdate != null ) ? localLastUpdate.longValue() : 0 );
-            check.setItem( metadata );
-            check.setFile( metadataFile );
-            check.setRepository( repository );
-            check.setPolicy( policy.getUpdatePolicy() );
-            updateCheckManager.checkMetadata( session, check );
-
-            if ( check.isRequired() )
+            List<UpdateCheck<Metadata, MetadataTransferException>> checks =
+                new ArrayList<UpdateCheck<Metadata, MetadataTransferException>>();
+            Exception exception = null;
+            for ( RemoteRepository repo : repositories )
             {
-                ResolveTask task = new ResolveTask( session, result, check, policy.getChecksumPolicy(), latch );
+                UpdateCheck<Metadata, MetadataTransferException> check =
+                    new UpdateCheck<Metadata, MetadataTransferException>();
+                check.setLocalLastUpdated( ( localLastUpdate != null ) ? localLastUpdate.longValue() : 0 );
+                check.setItem( metadata );
+                check.setFile( metadataFile );
+                check.setRepository( repo );
+                check.setPolicy( getPolicy( session, repo, metadata.getNature() ).getUpdatePolicy() );
+                updateCheckManager.checkMetadata( session, check );
+
+                if ( check.isRequired() )
+                {
+                    checks.add( check );
+                }
+                else if ( exception == null )
+                {
+                    exception = check.getException();
+                }
+            }
+
+            if ( !checks.isEmpty() )
+            {
+                RepositoryPolicy policy = getPolicy( session, repository, metadata.getNature() );
+
+                ResolveTask task =
+                    new ResolveTask( session, result, metadataFile, checks, policy.getChecksumPolicy(), latch );
                 tasks.add( task );
             }
             else
             {
-                result.setException( check.getException() );
+                result.setException( exception );
                 if ( metadataFile.isFile() )
                 {
                     metadata.setFile( metadataFile );
@@ -237,7 +255,7 @@ public class DefaultMetadataResolver
             }
             for ( ResolveTask task : tasks )
             {
-                File metadataFile = task.check.getFile();
+                File metadataFile = task.metadataFile;
                 if ( metadataFile.isFile() )
                 {
                     task.request.getMetadata().setFile( metadataFile );
@@ -254,14 +272,51 @@ public class DefaultMetadataResolver
         return results;
     }
 
-    private RepositoryPolicy getPolicy( RepositorySystemSession session, RemoteRepository repository, Metadata.Nature nature )
+    private List<RemoteRepository> getEnabledSourceRepositories( RemoteRepository repository, Metadata.Nature nature )
+    {
+        List<RemoteRepository> repositories = new ArrayList<RemoteRepository>();
+
+        if ( repository.isRepositoryManager() )
+        {
+            for ( RemoteRepository repo : repository.getMirroredRepositories() )
+            {
+                if ( isEnabled( repo, nature ) )
+                {
+                    repositories.add( repo );
+                }
+            }
+        }
+        else if ( isEnabled( repository, nature ) )
+        {
+            repositories.add( repository );
+        }
+
+        return repositories;
+    }
+
+    private boolean isEnabled( RemoteRepository repository, Metadata.Nature nature )
+    {
+        if ( !Metadata.Nature.SNAPSHOT.equals( nature ) && repository.getPolicy( false ).isEnabled() )
+        {
+            return true;
+        }
+        if ( !Metadata.Nature.RELEASE.equals( nature ) && repository.getPolicy( true ).isEnabled() )
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private RepositoryPolicy getPolicy( RepositorySystemSession session, RemoteRepository repository,
+                                        Metadata.Nature nature )
     {
         boolean releases = !Metadata.Nature.SNAPSHOT.equals( nature );
         boolean snapshots = !Metadata.Nature.RELEASE.equals( nature );
         return remoteRepositoryManager.getPolicy( session, repository, releases, snapshots );
     }
 
-    private File getFile( RepositorySystemSession session, Metadata metadata, RemoteRepository repository, String context )
+    private File getFile( RepositorySystemSession session, Metadata metadata, RemoteRepository repository,
+                          String context )
     {
         LocalRepositoryManager lrm = session.getLocalRepositoryManager();
         String path;
@@ -337,22 +392,26 @@ public class DefaultMetadataResolver
 
         final MetadataRequest request;
 
+        final File metadataFile;
+
         final String policy;
 
-        final UpdateCheck<Metadata, MetadataTransferException> check;
+        final List<UpdateCheck<Metadata, MetadataTransferException>> checks;
 
         final CountDownLatch latch;
 
         volatile MetadataTransferException exception;
 
-        public ResolveTask( RepositorySystemSession session, MetadataResult result,
-                            UpdateCheck<Metadata, MetadataTransferException> check, String policy, CountDownLatch latch )
+        public ResolveTask( RepositorySystemSession session, MetadataResult result, File metadataFile,
+                            List<UpdateCheck<Metadata, MetadataTransferException>> checks, String policy,
+                            CountDownLatch latch )
         {
             this.session = session;
             this.result = result;
             this.request = result.getRequest();
+            this.metadataFile = metadataFile;
             this.policy = policy;
-            this.check = check;
+            this.checks = checks;
             this.latch = latch;
         }
 
@@ -360,12 +419,18 @@ public class DefaultMetadataResolver
         {
             try
             {
+                List<RemoteRepository> repositories = new ArrayList<RemoteRepository>();
+                for ( UpdateCheck<Metadata, MetadataTransferException> check : checks )
+                {
+                    repositories.add( check.getRepository() );
+                }
+
                 MetadataDownload download = new MetadataDownload();
                 download.setMetadata( request.getMetadata() );
                 download.setRequestContext( request.getRequestContext() );
-                download.setFile( check.getFile() );
+                download.setFile( metadataFile );
                 download.setChecksumPolicy( policy );
-                download.setRepositories( request.getRepository().getMirroredRepositories() );
+                download.setRepositories( repositories );
 
                 RepositoryConnector connector =
                     remoteRepositoryManager.getRepositoryConnector( session, request.getRepository() );
@@ -394,7 +459,10 @@ public class DefaultMetadataResolver
                 latch.countDown();
             }
 
-            updateCheckManager.touchMetadata( session, check.setException( exception ) );
+            for ( UpdateCheck<Metadata, MetadataTransferException> check : checks )
+            {
+                updateCheckManager.touchMetadata( session, check.setException( exception ) );
+            }
         }
 
     }
