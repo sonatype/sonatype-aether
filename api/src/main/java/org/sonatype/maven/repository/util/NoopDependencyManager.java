@@ -46,4 +46,24 @@ public class NoopDependencyManager
         return null;
     }
 
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        else if ( null == obj || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return getClass().hashCode();
+    }
+
 }

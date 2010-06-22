@@ -54,4 +54,28 @@ public class StaticDependencySelector
         return this;
     }
 
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        else if ( null == obj || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        StaticDependencySelector that = (StaticDependencySelector) obj;
+        return select == that.select;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = getClass().hashCode();
+        hash = hash * 31 + ( select ? 1 : 0 );
+        return hash;
+    }
+
 }

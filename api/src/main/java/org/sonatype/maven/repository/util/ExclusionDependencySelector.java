@@ -19,10 +19,10 @@ package org.sonatype.maven.repository.util;
  * under the License.
  */
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.Dependency;
@@ -40,14 +40,14 @@ public class ExclusionDependencySelector
     implements DependencySelector
 {
 
-    private final List<Exclusion> exclusions;
+    private final Collection<Exclusion> exclusions;
 
     /**
      * Creates a new selector without any exclusions.
      */
     public ExclusionDependencySelector()
     {
-        this( Collections.<Exclusion> emptyList() );
+        this( Collections.<Exclusion> emptySet() );
     }
 
     /**
@@ -55,9 +55,16 @@ public class ExclusionDependencySelector
      * 
      * @param exclusions The exclusions, may be {@code null}.
      */
-    public ExclusionDependencySelector( List<Exclusion> exclusions )
+    public ExclusionDependencySelector( Set<Exclusion> exclusions )
     {
-        this.exclusions = ( exclusions != null ) ? exclusions : Collections.<Exclusion> emptyList();
+        if ( exclusions != null && !exclusions.isEmpty() )
+        {
+            this.exclusions = exclusions;
+        }
+        else
+        {
+            this.exclusions = Collections.emptySet();
+        }
     }
 
     public boolean selectDependency( DependencyNode node, Dependency dependency )
@@ -108,11 +115,35 @@ public class ExclusionDependencySelector
             return this;
         }
 
-        List<Exclusion> merged = new ArrayList<Exclusion>( this.exclusions.size() + exclusions.size() );
+        Set<Exclusion> merged = new LinkedHashSet<Exclusion>();
         merged.addAll( this.exclusions );
         merged.addAll( exclusions );
 
         return new ExclusionDependencySelector( merged );
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        else if ( null == obj || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        ExclusionDependencySelector that = (ExclusionDependencySelector) obj;
+        return exclusions.equals( that.exclusions );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = getClass().hashCode();
+        hash = hash * 31 + exclusions.hashCode();
+        return hash;
     }
 
 }

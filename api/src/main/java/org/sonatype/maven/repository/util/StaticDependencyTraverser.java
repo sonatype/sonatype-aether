@@ -54,4 +54,28 @@ public class StaticDependencyTraverser
         return this;
     }
 
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        else if ( null == obj || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        StaticDependencyTraverser that = (StaticDependencyTraverser) obj;
+        return traverse == that.traverse;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = getClass().hashCode();
+        hash = hash * 31 + ( traverse ? 1 : 0 );
+        return hash;
+    }
+
 }

@@ -90,4 +90,29 @@ public class ScopeDependencySelector
         return this;
     }
 
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        else if ( null == obj || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        ScopeDependencySelector that = (ScopeDependencySelector) obj;
+        return included.equals( that.included ) && excluded.equals( that.excluded );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 17;
+        hash = hash * 31 + included.hashCode();
+        hash = hash * 31 + excluded.hashCode();
+        return hash;
+    }
+
 }

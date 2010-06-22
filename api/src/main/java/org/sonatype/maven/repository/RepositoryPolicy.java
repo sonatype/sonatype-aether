@@ -198,17 +198,17 @@ public class RepositoryPolicy
 
         RepositoryPolicy that = (RepositoryPolicy) obj;
 
-        return this.isEnabled() == that.isEnabled() && this.getUpdatePolicy().equals( that.getUpdatePolicy() )
-            && this.getChecksumPolicy().equals( that.getChecksumPolicy() );
+        return enabled == that.enabled && updatePolicy.equals( that.updatePolicy )
+            && checksumPolicy.equals( that.checksumPolicy );
     }
 
     @Override
     public int hashCode()
     {
         int hash = 17;
-        hash = hash * 31 + ( isEnabled() ? 1 : 0 );
-        hash = hash * 31 + getUpdatePolicy().hashCode();
-        hash = hash * 31 + getChecksumPolicy().hashCode();
+        hash = hash * 31 + ( enabled ? 1 : 0 );
+        hash = hash * 31 + updatePolicy.hashCode();
+        hash = hash * 31 + checksumPolicy.hashCode();
         return hash;
     }
 

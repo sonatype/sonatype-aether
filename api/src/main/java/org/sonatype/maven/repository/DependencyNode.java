@@ -130,7 +130,7 @@ public class DependencyNode
      */
     public DependencyNode setRelocations( List<Artifact> relocations )
     {
-        if ( relocations == null )
+        if ( relocations == null || relocations.isEmpty() )
         {
             this.relocations = Collections.emptyList();
         }
@@ -161,7 +161,7 @@ public class DependencyNode
      */
     public DependencyNode setAliases( List<Artifact> aliases )
     {
-        if ( aliases == null )
+        if ( aliases == null || aliases.isEmpty() )
         {
             this.aliases = Collections.emptyList();
         }

@@ -20,6 +20,9 @@ package org.sonatype.maven.repository.util;
  */
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.sonatype.maven.repository.Dependency;
 import org.sonatype.maven.repository.DependencySelector;
@@ -34,7 +37,7 @@ public class AndDependencySelector
     implements DependencySelector
 {
 
-    private final DependencySelector[] selectors;
+    private final Collection<DependencySelector> selectors;
 
     /**
      * Creates a new selector from the specified selectors.
@@ -43,7 +46,15 @@ public class AndDependencySelector
      */
     public AndDependencySelector( DependencySelector... selectors )
     {
-        this.selectors = ( selectors != null ) ? selectors : new DependencySelector[0];
+        if ( selectors != null && selectors.length > 0 )
+        {
+            this.selectors = new LinkedHashSet<DependencySelector>();
+            Collections.addAll( this.selectors, selectors );
+        }
+        else
+        {
+            this.selectors = Collections.emptySet();
+        }
     }
 
     /**
@@ -51,15 +62,15 @@ public class AndDependencySelector
      * 
      * @param selectors The selectors to combine, may be {@code null}.
      */
-    public AndDependencySelector( Collection<DependencySelector> selectors )
+    public AndDependencySelector( Set<DependencySelector> selectors )
     {
-        if ( selectors != null )
+        if ( selectors != null && !selectors.isEmpty() )
         {
-            this.selectors = selectors.toArray( new DependencySelector[selectors.size()] );
+            this.selectors = selectors;
         }
         else
         {
-            this.selectors = new DependencySelector[0];
+            this.selectors = Collections.emptySet();
         }
     }
 
@@ -97,19 +108,38 @@ public class AndDependencySelector
 
     public DependencySelector deriveChildSelector( DependencyNode childNode )
     {
-        DependencySelector[] childSelectors = new DependencySelector[selectors.length];
+        Set<DependencySelector> childSelectors = new LinkedHashSet<DependencySelector>();
 
-        boolean changed = false;
-        for ( int i = selectors.length - 1; i >= 0; i-- )
+        for ( DependencySelector selector : selectors )
         {
-            childSelectors[i] = selectors[i].deriveChildSelector( childNode );
-            if ( childSelectors[i] != selectors[i] )
-            {
-                changed = true;
-            }
+            childSelectors.add( selector.deriveChildSelector( childNode ) );
         }
 
-        return changed ? new AndDependencySelector( childSelectors ) : this;
+        return !childSelectors.equals( selectors ) ? new AndDependencySelector( childSelectors ) : this;
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        else if ( null == obj || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        AndDependencySelector that = (AndDependencySelector) obj;
+        return selectors.equals( that.selectors );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = getClass().hashCode();
+        hash = hash * 31 + selectors.hashCode();
+        return hash;
     }
 
 }

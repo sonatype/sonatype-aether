@@ -260,9 +260,10 @@ public class DefaultDependencyCollector
         }
     }
 
-    private void process( RepositorySystemSession session, CollectResult result, DependencyNode node, Dependency dependency,
-                          List<Dependency> managedDependencies, List<RemoteRepository> repositories,
-                          DependencySelector depSelector, DependencyManager depManager, DependencyTraverser depTraverser )
+    private void process( RepositorySystemSession session, CollectResult result, DependencyNode node,
+                          Dependency dependency, List<Dependency> managedDependencies,
+                          List<RemoteRepository> repositories, DependencySelector depSelector,
+                          DependencyManager depManager, DependencyTraverser depTraverser )
         throws DependencyCollectionException
     {
         process: while ( true )
@@ -400,7 +401,7 @@ public class DefaultDependencyCollector
                              depTraverser.deriveChildTraverser( child ) );
                 }
             }
-            
+
             break;
         }
     }

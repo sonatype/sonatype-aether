@@ -187,8 +187,7 @@ public class Proxy
 
         Proxy that = (Proxy) obj;
 
-        return eq( this.getType(), that.getType() ) && eq( this.getHost(), that.getHost() )
-            && this.getPort() == that.getPort() && eq( this.getAuthentication(), that.getAuthentication() );
+        return eq( type, that.type ) && eq( host, that.host ) && port == that.port && eq( auth, that.auth );
     }
 
     private static <T> boolean eq( T s1, T s2 )
@@ -200,10 +199,10 @@ public class Proxy
     public int hashCode()
     {
         int hash = 17;
-        hash = hash * 31 + hash( getHost() );
-        hash = hash * 31 + hash( getType() );
-        hash = hash * 31 + getPort();
-        hash = hash * 31 + hash( getAuthentication() );
+        hash = hash * 31 + hash( host );
+        hash = hash * 31 + hash( type );
+        hash = hash * 31 + port;
+        hash = hash * 31 + hash( auth );
         return hash;
     }
 

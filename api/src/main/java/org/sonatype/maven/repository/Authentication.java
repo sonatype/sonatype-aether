@@ -180,9 +180,8 @@ public class Authentication
 
         Authentication that = (Authentication) obj;
 
-        return eq( this.getUsername(), that.getUsername() ) && eq( this.getPassword(), that.getPassword() )
-            && eq( this.getPrivateKeyFile(), that.getPrivateKeyFile() )
-            && eq( this.getPassphrase(), that.getPassphrase() );
+        return eq( username, that.username ) && eq( password, that.password )
+            && eq( privateKeyFile, that.privateKeyFile ) && eq( passphrase, passphrase );
     }
 
     private static <T> boolean eq( T s1, T s2 )
@@ -194,10 +193,10 @@ public class Authentication
     public int hashCode()
     {
         int hash = 17;
-        hash = hash * 31 + hash( getUsername() );
-        hash = hash * 31 + hash( getPassword() );
-        hash = hash * 31 + hash( getPrivateKeyFile() );
-        hash = hash * 31 + hash( getPassphrase() );
+        hash = hash * 31 + hash( username );
+        hash = hash * 31 + hash( password );
+        hash = hash * 31 + hash( privateKeyFile );
+        hash = hash * 31 + hash( passphrase );
         return hash;
     }
 

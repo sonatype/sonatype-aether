@@ -77,7 +77,7 @@ public class Exclusion
      */
     public Exclusion setGroupId( String groupId )
     {
-        this.groupId = ( groupId != null ) ? groupId : "";
+        this.groupId = ( groupId != null ) ? groupId.intern() : "";
         return this;
     }
 
@@ -99,7 +99,7 @@ public class Exclusion
      */
     public Exclusion setArtifactId( String artifactId )
     {
-        this.artifactId = ( artifactId != null ) ? artifactId : "";
+        this.artifactId = ( artifactId != null ) ? artifactId.intern() : "";
         return this;
     }
 
@@ -121,7 +121,7 @@ public class Exclusion
      */
     public Exclusion setClassifier( String classifier )
     {
-        this.classifier = ( classifier != null ) ? classifier : "";
+        this.classifier = ( classifier != null ) ? classifier.intern() : "";
         return this;
     }
 
@@ -143,7 +143,7 @@ public class Exclusion
      */
     public Exclusion setType( String type )
     {
-        this.type = ( type != null ) ? type : "";
+        this.type = ( type != null ) ? type.intern() : "";
         return this;
     }
 
@@ -168,18 +168,18 @@ public class Exclusion
 
         Exclusion that = (Exclusion) obj;
 
-        return getArtifactId().equals( that.getArtifactId() ) && getGroupId().equals( that.getGroupId() )
-            && getType().equals( that.getType() ) && getClassifier().equals( that.getClassifier() );
+        return artifactId.equals( that.artifactId ) && groupId.equals( that.groupId ) && type.equals( that.type )
+            && classifier.equals( that.classifier );
     }
 
     @Override
     public int hashCode()
     {
         int hash = 17;
-        hash = hash * 31 + getArtifactId().hashCode();
-        hash = hash * 31 + getGroupId().hashCode();
-        hash = hash * 31 + getClassifier().hashCode();
-        hash = hash * 31 + getType().hashCode();
+        hash = hash * 31 + artifactId.hashCode();
+        hash = hash * 31 + groupId.hashCode();
+        hash = hash * 31 + classifier.hashCode();
+        hash = hash * 31 + type.hashCode();
         return hash;
     }
 

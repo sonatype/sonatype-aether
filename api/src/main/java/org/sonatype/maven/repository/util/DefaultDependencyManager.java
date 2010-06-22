@@ -20,8 +20,10 @@ package org.sonatype.maven.repository.util;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +47,7 @@ public class DefaultDependencyManager
 
     private final Map<String, String> managedScopes;
 
-    private final Map<String, List<Exclusion>> managedExclusions;
+    private final Map<String, Collection<Exclusion>> managedExclusions;
 
     /**
      * Creates a new dependency manager without any management information.
@@ -53,11 +55,11 @@ public class DefaultDependencyManager
     public DefaultDependencyManager()
     {
         this( Collections.<String, String> emptyMap(), Collections.<String, String> emptyMap(),
-              Collections.<String, List<Exclusion>> emptyMap() );
+              Collections.<String, Collection<Exclusion>> emptyMap() );
     }
 
     private DefaultDependencyManager( Map<String, String> managedVersions, Map<String, String> managedScopes,
-                                      Map<String, List<Exclusion>> managedExclusions )
+                                      Map<String, Collection<Exclusion>> managedExclusions )
     {
         this.managedVersions = managedVersions;
         this.managedScopes = managedScopes;
@@ -74,7 +76,8 @@ public class DefaultDependencyManager
 
         Map<String, String> managedVersions = new HashMap<String, String>( this.managedVersions );
         Map<String, String> managedScopes = new HashMap<String, String>( this.managedScopes );
-        Map<String, List<Exclusion>> managedExclusions = new HashMap<String, List<Exclusion>>( this.managedExclusions );
+        Map<String, Collection<Exclusion>> managedExclusions =
+            new HashMap<String, Collection<Exclusion>>( this.managedExclusions );
 
         for ( Dependency managedDependency : managedDependencies )
         {
@@ -94,10 +97,10 @@ public class DefaultDependencyManager
             List<Exclusion> exclusions = managedDependency.getExclusions();
             if ( !exclusions.isEmpty() )
             {
-                List<Exclusion> managed = managedExclusions.get( key );
+                Collection<Exclusion> managed = managedExclusions.get( key );
                 if ( managed == null )
                 {
-                    managed = new ArrayList<Exclusion>();
+                    managed = new LinkedHashSet<Exclusion>();
                     managedExclusions.put( key, managed );
                 }
                 managed.addAll( exclusions );
@@ -133,14 +136,14 @@ public class DefaultDependencyManager
             management.setScope( scope );
         }
 
-        List<Exclusion> exclusions = managedExclusions.get( key );
+        Collection<Exclusion> exclusions = managedExclusions.get( key );
         if ( exclusions != null )
         {
             if ( management == null )
             {
                 management = new DependencyManagement();
             }
-            management.setExclusions( exclusions );
+            management.setExclusions( new ArrayList<Exclusion>( exclusions ) );
         }
 
         return management;
@@ -149,6 +152,33 @@ public class DefaultDependencyManager
     private String getKey( Artifact a )
     {
         return a.getGroupId() + ':' + a.getArtifactId() + ':' + a.getExtension() + ':' + a.getClassifier();
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        else if ( null == obj || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        DefaultDependencyManager that = (DefaultDependencyManager) obj;
+        return managedVersions.equals( that.managedVersions ) && managedScopes.equals( that.managedScopes )
+            && managedExclusions.equals( that.managedExclusions );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 17;
+        hash = hash * 31 + managedVersions.hashCode();
+        hash = hash * 31 + managedScopes.hashCode();
+        hash = hash * 31 + managedExclusions.hashCode();
+        return hash;
     }
 
 }
