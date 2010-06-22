@@ -146,7 +146,7 @@ public class ConflictMarker
         if ( dependency != null )
         {
             String key = toKey( dependency.getArtifact() );
-            node.setConflictId( groups.get( key ) );
+            node.setConflictId( groups.get( key ).keys );
         }
 
         for ( DependencyNode child : node.getChildren() )
@@ -164,7 +164,7 @@ public class ConflictMarker
     static class ConflictGroup
     {
 
-        private final Set<String> keys;
+        final Set<String> keys;
 
         public ConflictGroup( Set<String> keys )
         {
