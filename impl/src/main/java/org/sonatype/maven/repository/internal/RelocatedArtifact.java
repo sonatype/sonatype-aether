@@ -40,8 +40,8 @@ class RelocatedArtifact
         {
             setVersion( version );
         }
-        this.groupId = ( groupId != null ) ? groupId : "";
-        this.artifactId = ( artifactId != null ) ? artifactId : "";
+        this.groupId = ( groupId != null ) ? groupId.intern() : "";
+        this.artifactId = ( artifactId != null ) ? artifactId.intern() : "";
     }
 
     @Override

@@ -36,7 +36,7 @@ public class Dependency
 
     private boolean optional;
 
-    private List<Exclusion> exclusions = new ArrayList<Exclusion>( 4 );
+    private List<Exclusion> exclusions = new ArrayList<Exclusion>( 0 );
 
     /**
      * Creates an uninitialized dependency.
@@ -111,7 +111,7 @@ public class Dependency
      */
     public Dependency setScope( String scope )
     {
-        this.scope = ( scope != null ) ? scope : "";
+        this.scope = ( scope != null ) ? scope.intern() : "";
         return this;
     }
 

@@ -132,7 +132,6 @@ public class DefaultDependencyCollector
         if ( root != null )
         {
             node = new DependencyNode( root );
-            node.setRequestedVersion( root.getArtifact().getVersion() );
             node.setRepositories( request.getRepositories() );
             node.setContext( request.getRequestContext() );
 
@@ -158,7 +157,7 @@ public class DefaultDependencyCollector
             managedDependencies = mergeDeps( managedDependencies, descriptorResult.getManagedDependencies() );
 
             node.setRelocations( descriptorResult.getRelocations() );
-            node.setPropertes( descriptorResult.getProperties() );
+            node.setProperties( descriptorResult.getProperties() );
 
             VersionRangeRequest versionRequest =
                 new VersionRangeRequest( root.getArtifact(), request.getRepositories(), request.getRequestContext() );
@@ -384,11 +383,10 @@ public class DefaultDependencyCollector
                 child.setRelocations( descriptorResult.getRelocations() );
                 child.setVersionConstraint( rangeResult.getVersionConstraint() );
                 child.setVersion( version );
-                child.setRequestedVersion( dependency.getArtifact().getVersion() );
                 child.setPremanagedVersion( premanagedVersion );
                 child.setPremanagedScope( premanagedScope );
                 child.setRepositories( repos );
-                child.setPropertes( descriptorResult.getProperties() );
+                child.setProperties( descriptorResult.getProperties() );
                 child.setContext( result.getRequest().getRequestContext() );
 
                 if ( traverse )

@@ -99,7 +99,7 @@ public class DefaultArtifact
 
     public DefaultArtifact setGroupId( String groupId )
     {
-        this.groupId = ( groupId != null ) ? groupId : "";
+        this.groupId = ( groupId != null ) ? groupId.intern() : "";
         return this;
     }
 
@@ -110,7 +110,7 @@ public class DefaultArtifact
 
     public DefaultArtifact setArtifactId( String artifactId )
     {
-        this.artifactId = ( artifactId != null ) ? artifactId : "";
+        this.artifactId = ( artifactId != null ) ? artifactId.intern() : "";
         return this;
     }
 
@@ -130,18 +130,19 @@ public class DefaultArtifact
                 {
                     if ( m.group( 1 ) != null )
                     {
-                        this.baseVersion = m.group( 1 ) + SNAPSHOT;
+                        baseVersion = m.group( 1 ) + SNAPSHOT;
                     }
                     else
                     {
-                        this.baseVersion = SNAPSHOT;
+                        baseVersion = SNAPSHOT;
                     }
                 }
                 else
                 {
-                    this.baseVersion = version;
+                    baseVersion = version;
                 }
             }
+            baseVersion = baseVersion.intern();
         }
         return baseVersion;
     }
@@ -153,7 +154,7 @@ public class DefaultArtifact
 
     public void setVersion( String version )
     {
-        this.version = ( version != null ) ? version : "";
+        this.version = ( version != null ) ? version.intern() : "";
         this.baseVersion = null;
     }
 
@@ -170,7 +171,7 @@ public class DefaultArtifact
 
     public DefaultArtifact setClassifier( String classifier )
     {
-        this.classifier = ( classifier != null ) ? classifier : "";
+        this.classifier = ( classifier != null ) ? classifier.intern() : "";
         return this;
     }
 
@@ -181,7 +182,7 @@ public class DefaultArtifact
 
     public DefaultArtifact setExtension( String extension )
     {
-        this.extension = ( extension != null ) ? extension : "";
+        this.extension = ( extension != null ) ? extension.intern() : "";
         return this;
     }
 
@@ -214,7 +215,7 @@ public class DefaultArtifact
         }
         else
         {
-            properties.put( key, value );
+            properties.put( key.intern(), value.intern() );
         }
         return this;
     }

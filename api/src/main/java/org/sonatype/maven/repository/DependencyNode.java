@@ -44,13 +44,11 @@ public class DependencyNode
 
     private DependencyNode parent;
 
-    private List<DependencyNode> children = new ArrayList<DependencyNode>( 4 );
+    private List<DependencyNode> children = new ArrayList<DependencyNode>( 0 );
 
     private int depth;
 
     private Object conflictId;
-
-    private String requestedVersion;
 
     private VersionConstraint versionConstraint;
 
@@ -110,7 +108,7 @@ public class DependencyNode
      */
     public DependencyNode setContext( String context )
     {
-        this.context = ( context != null ) ? context : "";
+        this.context = ( context != null ) ? context.intern() : "";
         return this;
     }
 
@@ -191,7 +189,7 @@ public class DependencyNode
      * @param properties The artifact descriptor properties, may be {@code null}.
      * @return This dependency node for chaining, never {@code null}.
      */
-    public DependencyNode setPropertes( Map<String, Object> properties )
+    public DependencyNode setProperties( Map<String, Object> properties )
     {
         if ( properties == null )
         {
@@ -271,30 +269,6 @@ public class DependencyNode
     }
 
     /**
-     * Gets the version or version range from which this dependency node was originally resolved. Note that this version
-     * was subject to dependency management (if any), use {@link #getUnmanagedVersion()} in this case to query the
-     * version as originally declared in the artifact descriptor.
-     * 
-     * @return The originally requested dependency version, never {@code null}.
-     */
-    public String getRequestedVersion()
-    {
-        return requestedVersion;
-    }
-
-    /**
-     * Sets the version or version range from this dependency node was originally resolved.
-     * 
-     * @param requestedVersion The originally requested dependency version, may be {@code null}.
-     * @return This dependency node for chaining, never {@code null}.
-     */
-    public DependencyNode setRequestedVersion( String requestedVersion )
-    {
-        this.requestedVersion = ( requestedVersion != null ) ? requestedVersion : "";
-        return this;
-    }
-
-    /**
      * Gets the version constraint that was parsed from the dependency's version declaration.
      * 
      * @return The version constraint for this node or {@code null}.
@@ -324,7 +298,7 @@ public class DependencyNode
         }
         return this;
     }
-    
+
     /**
      * Gets the version or version range for this dependency before dependency management was applied (if any).
      * 
@@ -344,7 +318,7 @@ public class DependencyNode
      */
     public DependencyNode setPremanagedVersion( String premanagedVersion )
     {
-        this.premanagedVersion = premanagedVersion;
+        this.premanagedVersion = ( premanagedVersion != null ) ? premanagedVersion.intern() : null;
         return this;
     }
 
@@ -366,7 +340,7 @@ public class DependencyNode
      */
     public DependencyNode setPremanagedScope( String premanagedScope )
     {
-        this.premanagedScope = premanagedScope;
+        this.premanagedScope = ( premanagedScope != null ) ? premanagedScope.intern() : null;
         return this;
     }
 
