@@ -33,15 +33,13 @@ public class RemoteRepository
     implements ArtifactRepository
 {
 
+    private static Pattern URL_PATTERN = Pattern.compile( "([^:/]+(:[^:/]+)*):(//([^@/]*@)?([^/:]+))?.*" );
+
     private String id = "";
 
     private String type = "";
 
     private String url = "";
-
-    private String protocol = "";
-
-    private String host = "";
 
     private RepositoryPolicy releasePolicy;
 
@@ -129,7 +127,7 @@ public class RemoteRepository
      */
     public RemoteRepository setContentType( String type )
     {
-        this.type = ( type != null ) ? type : "";
+        this.type = ( type != null ) ? type.intern() : "";
 
         return this;
     }
@@ -154,18 +152,6 @@ public class RemoteRepository
     {
         this.url = ( url != null ) ? url : "";
 
-        Matcher m = Pattern.compile( "([^:/]+(:[^:/]+)*):(//([^@/]*@)?([^/:]+))?.*" ).matcher( this.url );
-
-        if ( m.matches() )
-        {
-            this.protocol = m.group( 1 );
-            this.host = ( m.group( 5 ) != null ) ? m.group( 5 ) : "";
-        }
-        else
-        {
-            this.host = this.protocol = "";
-        }
-
         return this;
     }
 
@@ -176,7 +162,13 @@ public class RemoteRepository
      */
     public String getProtocol()
     {
-        return protocol;
+        Matcher m = URL_PATTERN.matcher( this.url );
+
+        if ( m.matches() )
+        {
+            return m.group( 1 );
+        }
+        return "";
     }
 
     /**
@@ -186,7 +178,17 @@ public class RemoteRepository
      */
     public String getHost()
     {
-        return host;
+        Matcher m = URL_PATTERN.matcher( this.url );
+
+        if ( m.matches() )
+        {
+            String host = m.group( 5 );
+            if ( host != null )
+            {
+                return host;
+            }
+        }
+        return "";
     }
 
     /**
@@ -290,7 +292,7 @@ public class RemoteRepository
      */
     public RemoteRepository setMirroredRepositories( List<RemoteRepository> mirroredRepositories )
     {
-        if ( mirroredRepositories == null )
+        if ( mirroredRepositories == null || mirroredRepositories.isEmpty() )
         {
             this.mirroredRepositories = Collections.emptyList();
         }
@@ -351,12 +353,10 @@ public class RemoteRepository
 
         RemoteRepository that = (RemoteRepository) obj;
 
-        return eq( this.getUrl(), that.getUrl() ) && eq( this.getContentType(), that.getContentType() )
-            && eq( this.getId(), that.getId() ) && eq( this.getPolicy( true ), that.getPolicy( true ) )
-            && eq( this.getPolicy( false ), that.getPolicy( false ) ) && eq( this.getProxy(), that.getProxy() )
-            && eq( this.getAuthentication(), that.getAuthentication() )
-            && eq( this.getMirroredRepositories(), that.getMirroredRepositories() )
-            && this.isRepositoryManager() == that.isRepositoryManager();
+        return eq( url, that.url ) && eq( type, that.type ) && eq( id, that.id )
+            && eq( releasePolicy, that.releasePolicy ) && eq( snapshotPolicy, that.snapshotPolicy )
+            && eq( proxy, that.proxy ) && eq( authentication, that.authentication )
+            && eq( mirroredRepositories, that.mirroredRepositories ) && repositoryManager == that.repositoryManager;
     }
 
     private static <T> boolean eq( T s1, T s2 )
@@ -368,15 +368,15 @@ public class RemoteRepository
     public int hashCode()
     {
         int hash = 17;
-        hash = hash * 31 + hash( getUrl() );
-        hash = hash * 31 + hash( getContentType() );
-        hash = hash * 31 + hash( getId() );
-        hash = hash * 31 + hash( getPolicy( true ) );
-        hash = hash * 31 + hash( getPolicy( false ) );
-        hash = hash * 31 + hash( getProxy() );
-        hash = hash * 31 + hash( getAuthentication() );
-        hash = hash * 31 + hash( getMirroredRepositories() );
-        hash = hash * 31 + ( isRepositoryManager() ? 1 : 0 );
+        hash = hash * 31 + hash( url );
+        hash = hash * 31 + hash( type );
+        hash = hash * 31 + hash( id );
+        hash = hash * 31 + hash( releasePolicy );
+        hash = hash * 31 + hash( snapshotPolicy );
+        hash = hash * 31 + hash( proxy );
+        hash = hash * 31 + hash( authentication );
+        hash = hash * 31 + hash( mirroredRepositories );
+        hash = hash * 31 + ( repositoryManager ? 1 : 0 );
         return hash;
     }
 

@@ -144,7 +144,7 @@ public class RepositoryPolicy
      */
     public RepositoryPolicy setUpdatePolicy( String updatePolicy )
     {
-        this.updatePolicy = ( updatePolicy != null ) ? updatePolicy : "";
+        this.updatePolicy = ( updatePolicy != null ) ? updatePolicy.intern() : "";
 
         return this;
     }
@@ -168,7 +168,7 @@ public class RepositoryPolicy
      */
     public RepositoryPolicy setChecksumPolicy( String checksumPolicy )
     {
-        this.checksumPolicy = ( checksumPolicy != null ) ? checksumPolicy : "";
+        this.checksumPolicy = ( checksumPolicy != null ) ? checksumPolicy.intern() : "";
 
         return this;
     }
