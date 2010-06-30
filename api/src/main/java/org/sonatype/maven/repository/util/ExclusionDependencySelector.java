@@ -67,7 +67,7 @@ public class ExclusionDependencySelector
         }
     }
 
-    public boolean selectDependency( DependencyNode node, Dependency dependency )
+    public boolean selectDependency( Dependency dependency )
     {
         Artifact artifact = dependency.getArtifact();
         for ( Exclusion exclusion : exclusions )
@@ -106,9 +106,9 @@ public class ExclusionDependencySelector
         return "*".equals( pattern ) || pattern.equals( value );
     }
 
-    public DependencySelector deriveChildSelector( DependencyNode childNode )
+    public DependencySelector deriveChildSelector( DependencyNode node )
     {
-        Dependency dependency = childNode.getDependency();
+        Dependency dependency = node.getDependency();
         Collection<Exclusion> exclusions = ( dependency != null ) ? dependency.getExclusions() : null;
         if ( exclusions == null || exclusions.isEmpty() )
         {

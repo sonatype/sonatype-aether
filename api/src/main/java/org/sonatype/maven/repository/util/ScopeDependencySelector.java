@@ -21,6 +21,7 @@ package org.sonatype.maven.repository.util;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 
 import org.sonatype.maven.repository.Dependency;
@@ -28,8 +29,9 @@ import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyNode;
 
 /**
- * A dependency selector based on dependency scopes. <em>Note:</em> This filter does not assume any relationships
- * between the scopes. In particular, the filter is not aware of scopes that logically include other scopes.
+ * A dependency selector that filters transitive dependencies based on their scope. Direct dependencies are always
+ * included regardless of their scope. <em>Note:</em> This filter does not assume any relationships between the scopes.
+ * In particular, the filter is not aware of scopes that logically include other scopes.
  * 
  * @author Benjamin Bentmann
  * @see Dependency#getScope()
@@ -38,9 +40,11 @@ public class ScopeDependencySelector
     implements DependencySelector
 {
 
-    private final Collection<String> included = new HashSet<String>();
+    private final boolean transitive;
 
-    private final Collection<String> excluded = new HashSet<String>();
+    private final Collection<String> included;
+
+    private final Collection<String> excluded;
 
     /**
      * Creates a new selector using the specified includes and excludes.
@@ -50,13 +54,24 @@ public class ScopeDependencySelector
      */
     public ScopeDependencySelector( Collection<String> included, Collection<String> excluded )
     {
+        transitive = false;
         if ( included != null )
         {
+            this.included = new HashSet<String>();
             this.included.addAll( included );
+        }
+        else
+        {
+            this.included = Collections.emptySet();
         }
         if ( excluded != null )
         {
+            this.excluded = new HashSet<String>();
             this.excluded.addAll( excluded );
+        }
+        else
+        {
+            this.excluded = Collections.emptySet();
         }
     }
 
@@ -67,15 +82,19 @@ public class ScopeDependencySelector
      */
     public ScopeDependencySelector( String... excluded )
     {
-        if ( excluded != null )
-        {
-            this.excluded.addAll( Arrays.asList( excluded ) );
-        }
+        this( null, Arrays.asList( excluded ) );
     }
 
-    public boolean selectDependency( DependencyNode node, Dependency dependency )
+    private ScopeDependencySelector( boolean transitive, Collection<String> included, Collection<String> excluded )
     {
-        if ( node.getDependency() == null )
+        this.transitive = transitive;
+        this.included = included;
+        this.excluded = excluded;
+    }
+
+    public boolean selectDependency( Dependency dependency )
+    {
+        if ( !transitive )
         {
             return true;
         }
@@ -85,9 +104,16 @@ public class ScopeDependencySelector
             && ( excluded.isEmpty() || !excluded.contains( scope ) );
     }
 
-    public DependencySelector deriveChildSelector( DependencyNode childNode )
+    public DependencySelector deriveChildSelector( DependencyNode node )
     {
-        return this;
+        boolean transitive = node.getDependency() != null;
+
+        if ( transitive == this.transitive )
+        {
+            return this;
+        }
+
+        return new ScopeDependencySelector( transitive, included, excluded );
     }
 
     @Override
@@ -103,13 +129,14 @@ public class ScopeDependencySelector
         }
 
         ScopeDependencySelector that = (ScopeDependencySelector) obj;
-        return included.equals( that.included ) && excluded.equals( that.excluded );
+        return transitive == that.transitive && included.equals( that.included ) && excluded.equals( that.excluded );
     }
 
     @Override
     public int hashCode()
     {
         int hash = 17;
+        hash = hash * 31 + ( transitive ? 1 : 0 );
         hash = hash * 31 + included.hashCode();
         hash = hash * 31 + excluded.hashCode();
         return hash;

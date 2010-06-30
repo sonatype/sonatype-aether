@@ -156,11 +156,22 @@ public class VersionRangeResult
         return this;
     }
 
+    /**
+     * Gets the version constraint that was parsed from the artifact's version string.
+     * 
+     * @return The parsed version constraint or {@code null}.
+     */
     public VersionConstraint getVersionConstraint()
     {
         return versionConstraint;
     }
 
+    /**
+     * Sets the version constraint that was parsed from the artifact's version string.
+     * 
+     * @param versionConstraint The parsed version constraint, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public VersionRangeResult setVersionConstraint( VersionConstraint versionConstraint )
     {
         this.versionConstraint = versionConstraint;

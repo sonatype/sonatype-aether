@@ -21,6 +21,7 @@ package org.sonatype.maven.repository.internal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -28,11 +29,16 @@ import java.util.WeakHashMap;
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.ArtifactDescriptorRequest;
 import org.sonatype.maven.repository.ArtifactDescriptorResult;
+import org.sonatype.maven.repository.ArtifactRepository;
 import org.sonatype.maven.repository.Dependency;
 import org.sonatype.maven.repository.DependencyInfo;
 import org.sonatype.maven.repository.DependencyNode;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryCache;
+import org.sonatype.maven.repository.Version;
+import org.sonatype.maven.repository.VersionConstraint;
+import org.sonatype.maven.repository.VersionRangeRequest;
+import org.sonatype.maven.repository.VersionRangeResult;
 
 /**
  * @author Benjamin Bentmann
@@ -49,6 +55,8 @@ class DataPool
     private ObjectPool<Dependency> dependencies;
 
     private Map<Object, Descriptor> descriptors = new WeakHashMap<Object, Descriptor>();
+
+    private Map<Object, Constraint> constraints = new WeakHashMap<Object, Constraint>();
 
     private Map<Object, List<RemoteRepository>> repositories = new HashMap<Object, List<RemoteRepository>>();
 
@@ -122,6 +130,26 @@ class DataPool
     public void putDescriptor( Object key, ArtifactDescriptorResult result )
     {
         descriptors.put( key, new Descriptor( result ) );
+    }
+
+    public Object toKey( VersionRangeRequest request )
+    {
+        return request.getArtifact();
+    }
+
+    public VersionRangeResult getConstraint( Object key, VersionRangeRequest request )
+    {
+        Constraint constraint = constraints.get( key );
+        if ( constraint != null )
+        {
+            return constraint.toResult( request );
+        }
+        return null;
+    }
+
+    public void putConstraint( Object key, VersionRangeResult result )
+    {
+        constraints.put( key, new Constraint( result ) );
     }
 
     public Object getNodeKey( DependencyInfo info )
@@ -252,6 +280,38 @@ class DataPool
             }
             return clones;
         }
+
+    }
+
+    static class Constraint
+    {
+
+        final Map<Version, ArtifactRepository> repositories;
+
+        final VersionConstraint versionConstraint;
+
+        public Constraint( VersionRangeResult result )
+        {
+            versionConstraint = result.getVersionConstraint();
+            repositories = new LinkedHashMap<Version, ArtifactRepository>();
+            for ( Version version : result.getVersions() )
+            {
+                repositories.put( version, result.getRepository( version ) );
+            }
+        }
+
+        public VersionRangeResult toResult( VersionRangeRequest request )
+        {
+            VersionRangeResult result = new VersionRangeResult( request );
+            for ( Map.Entry<Version, ArtifactRepository> entry : repositories.entrySet() )
+            {
+                result.addVersion( entry.getKey() );
+                result.setRepository( entry.getKey(), entry.getValue() );
+            }
+            result.setVersionConstraint( versionConstraint );
+            return result;
+        }
+
     }
 
 }

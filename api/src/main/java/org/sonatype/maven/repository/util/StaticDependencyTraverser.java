@@ -44,12 +44,12 @@ public class StaticDependencyTraverser
         this.traverse = traverse;
     }
 
-    public boolean traverseDependency( DependencyNode node, Dependency dependency )
+    public boolean traverseDependency( Dependency dependency )
     {
         return traverse;
     }
 
-    public DependencyTraverser deriveChildTraverser( DependencyNode childNode )
+    public DependencyTraverser deriveChildTraverser( DependencyNode node )
     {
         return this;
     }

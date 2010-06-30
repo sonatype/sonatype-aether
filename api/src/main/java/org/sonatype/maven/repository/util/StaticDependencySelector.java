@@ -44,12 +44,12 @@ public class StaticDependencySelector
         this.select = select;
     }
 
-    public boolean selectDependency( DependencyNode node, Dependency dependency )
+    public boolean selectDependency( Dependency dependency )
     {
         return select;
     }
 
-    public DependencySelector deriveChildSelector( DependencyNode childNode )
+    public DependencySelector deriveChildSelector( DependencyNode node )
     {
         return this;
     }

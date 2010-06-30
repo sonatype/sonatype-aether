@@ -33,18 +33,36 @@ public class OptionalDependencySelector
     implements DependencySelector
 {
 
-    public boolean selectDependency( DependencyNode node, Dependency dependency )
+    private final boolean transitive;
+
+    /**
+     * Creates a new selector to exclude optional transitive dependencies.
+     */
+    public OptionalDependencySelector()
     {
-        if ( node.getDependency() != null && dependency.isOptional() )
-        {
-            return false;
-        }
-        return true;
+        transitive = false;
     }
 
-    public DependencySelector deriveChildSelector( DependencyNode childNode )
+    private OptionalDependencySelector( boolean transitive )
     {
-        return this;
+        this.transitive = transitive;
+    }
+
+    public boolean selectDependency( Dependency dependency )
+    {
+        return !dependency.isOptional();
+    }
+
+    public DependencySelector deriveChildSelector( DependencyNode node )
+    {
+        boolean transitive = node.getDependency() != null;
+
+        if ( transitive == this.transitive )
+        {
+            return this;
+        }
+
+        return new OptionalDependencySelector( transitive );
     }
 
     @Override
@@ -58,13 +76,17 @@ public class OptionalDependencySelector
         {
             return false;
         }
-        return true;
+
+        OptionalDependencySelector that = (OptionalDependencySelector) obj;
+        return transitive == that.transitive;
     }
 
     @Override
     public int hashCode()
     {
-        return getClass().hashCode();
+        int hash = getClass().hashCode();
+        hash = hash * 31 + ( transitive ? 1 : 0 );
+        return hash;
     }
 
 }

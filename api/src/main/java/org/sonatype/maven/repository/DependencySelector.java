@@ -29,22 +29,21 @@ public interface DependencySelector
 {
 
     /**
-     * Applies exclusions to the specified dependency of a dependency node.
+     * Applies exclusions to the specified dependency.
      * 
-     * @param node The node whose child dependency should be filtered, must not be {@code null}.
      * @param dependency The dependency to filter, must not be {@code null}.
-     * @return {@code false} if the dependency should be excluded from the children of the specified node, {@code true}
+     * @return {@code false} if the dependency should be excluded from the children of the current node, {@code true}
      *         otherwise.
      */
-    boolean selectDependency( DependencyNode node, Dependency dependency );
+    boolean selectDependency( Dependency dependency );
 
     /**
-     * Derives a dependency selector for the specified child node of the current node, i.e. the parent of the specified
-     * node. Implementors are expected to calculate a new dependency filter for the dependencies of the child node.
+     * Derives a dependency selector for the specified node. Implementors are expected to calculate a new dependency
+     * selector for the dependencies of the node.
      * 
-     * @param childNode The child node to derive a filter for, must not be {@code null}.
-     * @return The dependency filter for the child node, must not be {@code null}.
+     * @param node The node to derive a filter for, must not be {@code null}.
+     * @return The dependency filter for the node, must not be {@code null}.
      */
-    DependencySelector deriveChildSelector( DependencyNode childNode );
+    DependencySelector deriveChildSelector( DependencyNode node );
 
 }

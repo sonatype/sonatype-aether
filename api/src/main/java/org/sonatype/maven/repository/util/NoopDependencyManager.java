@@ -35,13 +35,12 @@ public class NoopDependencyManager
 
     public static final DependencyManager INSTANCE = new NoopDependencyManager();
 
-    public DependencyManager deriveChildManager( DependencyNode childNode,
-                                                 List<? extends Dependency> managedDependencies )
+    public DependencyManager deriveChildManager( DependencyNode node, List<? extends Dependency> managedDependencies )
     {
         return this;
     }
 
-    public DependencyManagement manageDependency( DependencyNode node, Dependency dependency )
+    public DependencyManagement manageDependency( Dependency dependency )
     {
         return null;
     }

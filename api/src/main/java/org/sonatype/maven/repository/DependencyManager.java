@@ -31,23 +31,21 @@ public interface DependencyManager
 {
 
     /**
-     * Applies dependency management to the specified dependency of a dependency node. The management information (if
-     * any) will be directly injected into the specified dependency.
+     * Applies dependency management to the specified dependency.
      * 
-     * @param node The node whose child dependency should be managed, must not be {@code null}.
      * @param dependency The dependency to manage, must not be {@code null}.
      * @return The management update to apply to the dependency or {@code null} if the dependency is not managed at all.
      */
-    DependencyManagement manageDependency( DependencyNode node, Dependency dependency );
+    DependencyManagement manageDependency( Dependency dependency );
 
     /**
-     * Derives a dependency manager for the specified child node of the current node, i.e. the parent of the specified
-     * node. Implementors are expected to calculate a new dependency manager for the dependencies of the child node.
+     * Derives a dependency manager for the specified node. Implementors are expected to calculate a new dependency
+     * manager for the dependencies of the node.
      * 
-     * @param childNode The child node to derive a manager for, must not be {@code null}.
+     * @param node The node to derive a manager for, must not be {@code null}.
      * @param managedDependencies The dependency management to consider for the child, must not be {@code null}.
-     * @return The dependency manager for the child node, must not be {@code null}.
+     * @return The dependency manager for the dependencies of the node, must not be {@code null}.
      */
-    DependencyManager deriveChildManager( DependencyNode childNode, List<? extends Dependency> managedDependencies );
+    DependencyManager deriveChildManager( DependencyNode node, List<? extends Dependency> managedDependencies );
 
 }

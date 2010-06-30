@@ -66,8 +66,7 @@ public class DefaultDependencyManager
         this.managedExclusions = managedExclusions;
     }
 
-    public DependencyManager deriveChildManager( DependencyNode childNode,
-                                                 List<? extends Dependency> managedDependencies )
+    public DependencyManager deriveChildManager( DependencyNode node, List<? extends Dependency> managedDependencies )
     {
         if ( managedDependencies == null || managedDependencies.isEmpty() )
         {
@@ -91,8 +90,7 @@ public class DefaultDependencyManager
                 }
                 managedVersions.put( key, artifact.getVersion() );
             }
-            if ( childNode.getDepth() <= 1 && managedDependency.getScope().length() > 0
-                && !managedScopes.containsKey( key ) )
+            if ( node.getDepth() <= 1 && managedDependency.getScope().length() > 0 && !managedScopes.containsKey( key ) )
             {
                 if ( managedScopes == this.managedScopes )
                 {
@@ -127,7 +125,7 @@ public class DefaultDependencyManager
         return new DefaultDependencyManager( managedVersions, managedScopes, managedExclusions );
     }
 
-    public DependencyManagement manageDependency( DependencyNode node, Dependency dependency )
+    public DependencyManagement manageDependency( Dependency dependency )
     {
         DependencyManagement management = null;
 

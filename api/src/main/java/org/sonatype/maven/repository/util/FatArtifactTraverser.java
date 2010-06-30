@@ -34,12 +34,12 @@ public class FatArtifactTraverser
     implements DependencyTraverser
 {
 
-    public boolean traverseDependency( DependencyNode node, Dependency dependency )
+    public boolean traverseDependency( Dependency dependency )
     {
         return !Boolean.valueOf( dependency.getArtifact().getProperty( "includesDependencies", "" ) );
     }
 
-    public DependencyTraverser deriveChildTraverser( DependencyNode childNode )
+    public DependencyTraverser deriveChildTraverser( DependencyNode node )
     {
         return this;
     }

@@ -94,11 +94,11 @@ public class AndDependencySelector
         return new AndDependencySelector( selector1, selector2 );
     }
 
-    public boolean selectDependency( DependencyNode node, Dependency dependency )
+    public boolean selectDependency( Dependency dependency )
     {
         for ( DependencySelector selector : selectors )
         {
-            if ( !selector.selectDependency( node, dependency ) )
+            if ( !selector.selectDependency( dependency ) )
             {
                 return false;
             }
@@ -106,13 +106,13 @@ public class AndDependencySelector
         return true;
     }
 
-    public DependencySelector deriveChildSelector( DependencyNode childNode )
+    public DependencySelector deriveChildSelector( DependencyNode node )
     {
         Set<DependencySelector> childSelectors = new LinkedHashSet<DependencySelector>();
 
         for ( DependencySelector selector : selectors )
         {
-            childSelectors.add( selector.deriveChildSelector( childNode ) );
+            childSelectors.add( selector.deriveChildSelector( node ) );
         }
 
         return !childSelectors.equals( selectors ) ? new AndDependencySelector( childSelectors ) : this;

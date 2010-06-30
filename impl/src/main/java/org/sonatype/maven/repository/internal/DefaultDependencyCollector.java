@@ -188,7 +188,7 @@ public class DefaultDependencyCollector
 
         result.setRoot( node );
 
-        boolean traverse = ( root == null ) || depTraverser.traverseDependency( null, root );
+        boolean traverse = ( root == null ) || depTraverser.traverseDependency( root );
 
         if ( traverse )
         {
@@ -292,12 +292,12 @@ public class DefaultDependencyCollector
         {
             thisDependency: while ( true )
             {
-                if ( !depSelector.selectDependency( node, dependency ) )
+                if ( !depSelector.selectDependency( dependency ) )
                 {
                     continue nextDependency;
                 }
 
-                DependencyManagement depMngt = depManager.manageDependency( node, dependency );
+                DependencyManagement depMngt = depManager.manageDependency( dependency );
                 String premanagedVersion = null;
                 String premanagedScope = null;
 
@@ -324,7 +324,7 @@ public class DefaultDependencyCollector
 
                 boolean system = dependency.getArtifact().getFile() != null;
 
-                boolean traverse = !system && depTraverser.traverseDependency( node, dependency );
+                boolean traverse = !system && depTraverser.traverseDependency( dependency );
 
                 VersionRangeResult rangeResult;
                 try
@@ -333,7 +333,14 @@ public class DefaultDependencyCollector
                     rangeRequest.setArtifact( dependency.getArtifact() );
                     rangeRequest.setRepositories( repositories );
                     rangeRequest.setRequestContext( result.getRequest().getRequestContext() );
-                    rangeResult = versionRangeResolver.resolveVersionRange( session, rangeRequest );
+
+                    Object key = pool.toKey( rangeRequest );
+                    rangeResult = pool.getConstraint( key, rangeRequest );
+                    if ( rangeResult == null )
+                    {
+                        rangeResult = versionRangeResolver.resolveVersionRange( session, rangeRequest );
+                        pool.putConstraint( key, rangeResult );
+                    }
 
                     if ( rangeResult.getVersions().isEmpty() )
                     {
@@ -370,6 +377,7 @@ public class DefaultDependencyCollector
                         descriptorRequest.setArtifact( d.getArtifact() );
                         descriptorRequest.setRepositories( repos );
                         descriptorRequest.setRequestContext( result.getRequest().getRequestContext() );
+
                         if ( system )
                         {
                             descriptorResult = new ArtifactDescriptorResult( descriptorRequest );
@@ -377,12 +385,12 @@ public class DefaultDependencyCollector
                         }
                         else
                         {
-                            Object descriptorKey = pool.toKey( descriptorRequest );
-                            descriptorResult = pool.getDescriptor( descriptorKey, descriptorRequest );
+                            Object key = pool.toKey( descriptorRequest );
+                            descriptorResult = pool.getDescriptor( key, descriptorRequest );
                             if ( descriptorResult == null )
                             {
                                 descriptorResult = descriptorReader.readArtifactDescriptor( session, descriptorRequest );
-                                pool.putDescriptor( descriptorKey, descriptorResult );
+                                pool.putDescriptor( key, descriptorResult );
                             }
                             d = d.setArtifact( descriptorResult.getArtifact() );
                         }
@@ -421,19 +429,19 @@ public class DefaultDependencyCollector
                     info.setProperties( descriptorResult.getProperties() );
                     info.setContext( result.getRequest().getRequestContext() );
 
-                    //Object key = pool.getNodeKey( info );
-                    DependencyNode pooled = null;//pool.getNode( key );
+                    // Object key = pool.getNodeKey( info );
+                    DependencyNode pooled = null;// pool.getNode( key );
 
                     if ( pooled == null )
                     {
-                        //Object artifactKey = d.getArtifact();
+                        // Object artifactKey = d.getArtifact();
 
-                        //pool.putRepositories( artifactKey, descriptorResult.getRepositories() );
+                        // pool.putRepositories( artifactKey, descriptorResult.getRepositories() );
 
-                        //DependencyNode child = node.addChild( new OverlayedDependencyInfo( info ) );
+                        // DependencyNode child = node.addChild( new OverlayedDependencyInfo( info ) );
                         DependencyNode child = node.addChild( info );
 
-                        //pool.putNode( key, child );
+                        // pool.putNode( key, child );
 
                         if ( traverse )
                         {
