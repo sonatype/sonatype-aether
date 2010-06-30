@@ -19,7 +19,6 @@ package org.sonatype.maven.repository;
  * under the License.
  */
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,83 +27,29 @@ import java.util.Map;
  * 
  * @author Benjamin Bentmann
  */
-public class DependencyNode
+public interface DependencyNode
 {
-
-    private DependencyNode parent;
-
-    private List<DependencyNode> children = new ArrayList<DependencyNode>( 0 );
-
-    private int depth;
-
-    private DependencyInfo info;
-
-    /**
-     * Creates a new root node with the specified dependency info. Use {@link #addChild} to create inner nodes.
-     * 
-     * @param info The dependency info associated with this node, may be {@code null}.
-     */
-    public DependencyNode( DependencyInfo info )
-    {
-        this.info = info;
-        this.parent = null;
-        this.depth = 0;
-    }
-
-    private DependencyNode( DependencyInfo info, DependencyNode parent )
-    {
-        this.info = info;
-        this.parent = parent;
-        this.depth = ( parent != null ) ? parent.getDepth() + 1 : 0;
-    }
 
     /**
      * Gets the parent node of this node (if any).
      * 
      * @return The parent node or {@code null} if this node denotes the root of the dependency graph.
      */
-    public DependencyNode getParent()
-    {
-        return parent;
-    }
+    DependencyNode getParent();
 
     /**
      * Gets the depth of this node within the dependency graph. The root node has depth zero.
      * 
      * @return The depth of this node within the dependency graph.
      */
-    public int getDepth()
-    {
-        return depth;
-    }
+    int getDepth();
 
     /**
      * Gets the child nodes of this node.
      * 
      * @return The child nodes of this node, never {@code null}.
      */
-    public List<DependencyNode> getChildren()
-    {
-        return children;
-    }
-
-    /**
-     * Adds a new child node for the specified dependency to this node.
-     * 
-     * @param info The dependency information associated with the new child node, must not be {@code null}.
-     * @return The new child node, never {@code null}.
-     */
-    public DependencyNode addChild( DependencyInfo info )
-    {
-        DependencyNode child = new DependencyNode( info, this );
-        children.add( child );
-        return child;
-    }
-
-    public DependencyInfo getInfo()
-    {
-        return info;
-    }
+    List<DependencyNode> getChildren();
 
     /**
      * Gets the dependency associated with this node. <em>Note:</em> For dependency graphs that have been constructed
@@ -112,20 +57,14 @@ public class DependencyNode
      * 
      * @return The dependency or {@code null} if none.
      */
-    public Dependency getDependency()
-    {
-        return info.getDependency();
-    }
+    Dependency getDependency();
 
     /**
      * Gets the context in which this dependency node was created.
      * 
      * @return The context, never {@code null}.
      */
-    public String getContext()
-    {
-        return info.getContext();
-    }
+    String getContext();
 
     /**
      * Sets the context in which this dependency node was created.
@@ -133,33 +72,14 @@ public class DependencyNode
      * @param context The context, may be {@code null}.
      * @return This dependency node for chaining, never {@code null}.
      */
-    public DependencyNode setContext( String context )
-    {
-        info.setContext( context );
-        return this;
-    }
+    DependencyNode setContext( String context );
 
     /**
      * Gets the sequence of relocations that was followed to resolve this dependency's artifact.
      * 
      * @return The sequence of relocations, never {@code null}.
      */
-    public List<Artifact> getRelocations()
-    {
-        return info.getRelocations();
-    }
-
-    /**
-     * Sets the sequence of relocations that was followed to resolve this dependency's artifact.
-     * 
-     * @param relocations The sequence of relocations, may be {@code null}.
-     * @return This dependency node for chaining, never {@code null}.
-     */
-    public DependencyNode setRelocations( List<Artifact> relocations )
-    {
-        info.setRelocations( relocations );
-        return this;
-    }
+    List<Artifact> getRelocations();
 
     /**
      * Gets the known aliases for this dependency's artifact. An alias can be used to mark a patched rebuild of some
@@ -168,22 +88,7 @@ public class DependencyNode
      * 
      * @return The known aliases, never {@code null}.
      */
-    public List<Artifact> getAliases()
-    {
-        return info.getAliases();
-    }
-
-    /**
-     * Sets the known aliases for this dependency's artifact.
-     * 
-     * @param aliases The known aliases, may be {@code null}.
-     * @return This dependency node for chaining, never {@code null}.
-     */
-    public DependencyNode setAliases( List<Artifact> aliases )
-    {
-        info.setAliases( aliases );
-        return this;
-    }
+    List<Artifact> getAliases();
 
     /**
      * Gets the properties from the artifact's descriptor.
@@ -191,22 +96,7 @@ public class DependencyNode
      * @return The artifact descriptor properties.
      * @see ArtifactDescriptorResult#getProperties()
      */
-    public Map<String, Object> getProperties()
-    {
-        return info.getProperties();
-    }
-
-    /**
-     * Sets the properties from the artifact's descriptor.
-     * 
-     * @param properties The artifact descriptor properties, may be {@code null}.
-     * @return This dependency node for chaining, never {@code null}.
-     */
-    public DependencyNode setProperties( Map<String, Object> properties )
-    {
-        info.setProperties( properties );
-        return this;
-    }
+    Map<String, Object> getProperties();
 
     /**
      * Gets the conflict identifier for this node. Nodes having equal conflict identifiers are considered a conflict
@@ -214,10 +104,7 @@ public class DependencyNode
      * 
      * @return The conflict identifier or {@code null} if none.
      */
-    public Object getConflictId()
-    {
-        return info.getConflictId();
-    }
+    Object getConflictId();
 
     /**
      * Sets the conflict identifier for this node.
@@ -225,99 +112,45 @@ public class DependencyNode
      * @param conflictId The conflict identifier, may be {@code null}.
      * @return This dependency node for chaining, never {@code null}.
      */
-    public DependencyNode setConflictId( Object conflictId )
-    {
-        info.setConflictId( conflictId );
-        return this;
-    }
+    DependencyNode setConflictId( Object conflictId );
 
     /**
      * Gets the version constraint that was parsed from the dependency's version declaration.
      * 
      * @return The version constraint for this node or {@code null}.
      */
-    public VersionConstraint getVersionConstraint()
-    {
-        return info.getVersionConstraint();
-    }
+    VersionConstraint getVersionConstraint();
 
-    public DependencyNode setVersionConstraint( VersionConstraint versionConstraint )
-    {
-        info.setVersionConstraint( versionConstraint );
-        return this;
-    }
+    DependencyNode setVersionConstraint( VersionConstraint versionConstraint );
 
-    public Version getVersion()
-    {
-        return info.getVersion();
-    }
+    Version getVersion();
 
-    public DependencyNode setVersion( Version version )
-    {
-        info.setVersion( version );
-        return this;
-    }
+    DependencyNode setVersion( Version version );
 
-    public DependencyNode setScope( String scope )
-    {
-        info.setScope( scope );
-        return this;
-    }
+    DependencyNode setScope( String scope );
+
+    DependencyNode setArtifact( Artifact artifact );
 
     /**
      * Gets the version or version range for this dependency before dependency management was applied (if any).
      * 
      * @return The dependency version before dependency management or {@code null} if the version was not managed.
      */
-    public String getPremanagedVersion()
-    {
-        return info.getPremanagedVersion();
-    }
-
-    /**
-     * Sets the version or version range for this dependency before dependency management was applied (if any).
-     * 
-     * @param premanagedVersion The originally declared dependency version or {@code null} if the version was not
-     *            managed.
-     * @return This dependency node for chaining, never {@code null}.
-     */
-    public DependencyNode setPremanagedVersion( String premanagedVersion )
-    {
-        info.setPremanagedVersion( premanagedVersion );
-        return this;
-    }
+    String getPremanagedVersion();
 
     /**
      * Gets the scope for this dependency before dependency management was applied (if any).
      * 
      * @return The dependency scope before dependency management or {@code null} if the scope was not managed.
      */
-    public String getPremanagedScope()
-    {
-        return info.getPremanagedScope();
-    }
-
-    /**
-     * Sets the scope for this dependency before dependency management was applied (if any).
-     * 
-     * @param premanagedScope The originally declared dependency scope or {@code null} if the scope was not managed.
-     * @return This dependency node for chaining, never {@code null}.
-     */
-    public DependencyNode setPremanagedScope( String premanagedScope )
-    {
-        info.setPremanagedScope( premanagedScope );
-        return this;
-    }
+    String getPremanagedScope();
 
     /**
      * Gets the remote repositories from which this node's artifact shall be resolved.
      * 
      * @return The remote repositories to use for artifact resolution, never {@code null}.
      */
-    public List<RemoteRepository> getRepositories()
-    {
-        return info.getRepositories();
-    }
+    List<RemoteRepository> getRepositories();
 
     /**
      * Sets the remote repositories from which this node's artifact shall be resolved.
@@ -325,11 +158,7 @@ public class DependencyNode
      * @param repositories The remote repositories to use for artifact resolution, may be {@code null}.
      * @return This dependency node for chaining, never {@code null}.
      */
-    public DependencyNode setRepositories( List<RemoteRepository> repositories )
-    {
-        info.setRepositories( repositories );
-        return this;
-    }
+    DependencyNode setRepositories( List<RemoteRepository> repositories );
 
     /**
      * Traverses this node and potentially its children using the specified visitor.
@@ -337,33 +166,6 @@ public class DependencyNode
      * @param visitor The visitor to call back, must not be {@code null}.
      * @return {@code true} to visit siblings nodes of this node as well, {@code false} to skip siblings.
      */
-    public boolean accept( DependencyVisitor visitor )
-    {
-        if ( visitor.visitEnter( this ) )
-        {
-            for ( DependencyNode child : getChildren() )
-            {
-                if ( !child.accept( visitor ) )
-                {
-                    break;
-                }
-            }
-        }
-
-        return visitor.visitLeave( this );
-    }
-
-    @Override
-    public String toString()
-    {
-        if ( getChildren().isEmpty() )
-        {
-            return String.valueOf( getDependency() );
-        }
-        else
-        {
-            return String.valueOf( getDependency() ) + " -> " + getChildren();
-        }
-    }
+    boolean accept( DependencyVisitor visitor );
 
 }

@@ -71,7 +71,7 @@ public class JavaEffectiveScopeCalculator
 
         for ( Map.Entry<DependencyNode, String> entry : scopes.entrySet() )
         {
-            entry.getKey().getInfo().setScope( entry.getValue() );
+            entry.getKey().setScope( entry.getValue() );
         }
 
         return node;

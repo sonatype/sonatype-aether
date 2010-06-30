@@ -241,7 +241,7 @@ public class DefaultRepositorySystem
             Artifact artifact = result.getArtifact();
             if ( artifact != null )
             {
-                result.getRequest().getDependencyNode().getInfo().setArtifact( artifact );
+                result.getRequest().getDependencyNode().setArtifact( artifact );
             }
         }
 

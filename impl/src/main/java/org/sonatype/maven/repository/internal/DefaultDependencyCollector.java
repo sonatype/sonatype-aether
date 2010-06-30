@@ -134,10 +134,10 @@ public class DefaultDependencyCollector
         List<Dependency> dependencies = request.getDependencies();
         List<Dependency> managedDependencies = request.getManagedDependencies();
 
-        DependencyNode node = null;
+        DefaultDependencyNode node = null;
         if ( root != null )
         {
-            node = new DependencyNode( new DefaultDependencyInfo( root ) );
+            node = new DefaultDependencyNode( new DefaultDependencyInfo( root ) );
             node.setRepositories( request.getRepositories() );
             node.setContext( request.getRequestContext() );
 
@@ -183,7 +183,7 @@ public class DefaultDependencyCollector
         }
         else
         {
-            node = new DependencyNode( new DefaultDependencyInfo( null ) );
+            node = new DefaultDependencyNode( new DefaultDependencyInfo( null ) );
         }
 
         result.setRoot( node );
@@ -419,7 +419,7 @@ public class DefaultDependencyCollector
 
                     d = pool.intern( d.setArtifact( pool.intern( d.getArtifact() ) ) );
 
-                    DependencyInfo info = new DefaultDependencyInfo( d );
+                    DefaultDependencyInfo info = new DefaultDependencyInfo( d );
                     info.setRelocations( descriptorResult.getRelocations() );
                     info.setVersionConstraint( rangeResult.getVersionConstraint() );
                     info.setVersion( version );
@@ -429,62 +429,22 @@ public class DefaultDependencyCollector
                     info.setProperties( descriptorResult.getProperties() );
                     info.setContext( result.getRequest().getRequestContext() );
 
-                    // Object key = pool.getNodeKey( info );
-                    DependencyNode pooled = null;// pool.getNode( key );
+                    DependencyNode child = ( (DefaultDependencyNode) node ).addChild( info );
 
-                    if ( pooled == null )
+                    if ( traverse )
                     {
-                        // Object artifactKey = d.getArtifact();
-
-                        // pool.putRepositories( artifactKey, descriptorResult.getRepositories() );
-
-                        // DependencyNode child = node.addChild( new OverlayedDependencyInfo( info ) );
-                        DependencyNode child = node.addChild( info );
-
-                        // pool.putNode( key, child );
-
-                        if ( traverse )
-                        {
-                            process( session, result, child, descriptorResult.getDependencies(),
-                                     descriptorResult.getManagedDependencies(),
-                                     remoteRepositoryManager.aggregateRepositories( session, repositories,
-                                                                                    descriptorResult.getRepositories(),
-                                                                                    true ),
-                                     depSelector.deriveChildSelector( child ),
-                                     depManager.deriveChildManager( child, managedDependencies ),
-                                     depTraverser.deriveChildTraverser( child ), pool );
-                        }
-                    }
-                    else
-                    {
-                        copy( session, node, pooled, traverse, repositories, pool );
+                        process( session, result, child, descriptorResult.getDependencies(),
+                                 descriptorResult.getManagedDependencies(),
+                                 remoteRepositoryManager.aggregateRepositories( session, repositories,
+                                                                                descriptorResult.getRepositories(),
+                                                                                true ),
+                                 depSelector.deriveChildSelector( child ),
+                                 depManager.deriveChildManager( child, managedDependencies ),
+                                 depTraverser.deriveChildTraverser( child ), pool );
                     }
                 }
 
                 break;
-            }
-        }
-    }
-
-    private void copy( RepositorySystemSession session, DependencyNode node, DependencyNode src, boolean traverse,
-                       List<RemoteRepository> repositories, DataPool pool )
-    {
-        DependencyInfo info = new OverlayedDependencyInfo( src.getInfo() );
-        info.setRepositories( repositories );
-
-        DependencyNode child = node.addChild( info );
-        if ( traverse )
-        {
-            List<RemoteRepository> repos = pool.getRepositories( src.getDependency().getArtifact() );
-
-            if ( repos != null )
-            {
-                repositories = remoteRepositoryManager.aggregateRepositories( session, repositories, repos, true );
-            }
-
-            for ( DependencyNode srcChild : src.getChildren() )
-            {
-                copy( session, child, srcChild, true, repositories, pool );
             }
         }
     }
