@@ -258,7 +258,7 @@ public class RepoSys
         stereotypes.add( new DefaultArtifactType( "ear", "ear", "", "java", false, true ) );
         stereotypes.add( new DefaultArtifactType( "rar", "rar", "", "java", false, true ) );
         stereotypes.add( new DefaultArtifactType( "par", "par", "", "java", false, true ) );
-        session.setArtifactStereotypeRegistry( stereotypes );
+        session.setArtifactTypeRegistry( stereotypes );
 
         return session;
     }

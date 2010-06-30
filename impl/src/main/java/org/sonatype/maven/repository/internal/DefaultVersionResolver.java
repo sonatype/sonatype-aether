@@ -112,10 +112,6 @@ public class DefaultVersionResolver
                 result.setVersion( record.version );
                 result.setRepository( CacheUtils.getRepository( session, request.getRepositories(), record.repoClass,
                                                                 record.repoId ) );
-                if ( !version.equals( record.version ) )
-                {
-                    request.getArtifact().setVersion( record.version );
-                }
                 return result;
             }
         }
@@ -136,6 +132,7 @@ public class DefaultVersionResolver
             metadata.setArtifactId( request.getArtifact().getArtifactId() );
             metadata.setNature( Metadata.Nature.RELEASE_OR_SNAPSHOT );
         }
+        // FIXME: Use the artifact's snapshot handler
         else if ( version.endsWith( SNAPSHOT ) )
         {
             WorkspaceReader workspace = session.getWorkspaceReader();
@@ -210,11 +207,11 @@ public class DefaultVersionResolver
                     result.setVersion( versioning.getRelease() );
                 }
 
+                // FIXME: Use the artifact's snapshot handler
                 if ( result.getVersion() != null && result.getVersion().endsWith( SNAPSHOT ) )
                 {
-                    request.getArtifact().setVersion( result.getVersion() );
                     VersionRequest subRequest = new VersionRequest();
-                    subRequest.setArtifact( request.getArtifact() );
+                    subRequest.setArtifact( request.getArtifact().setVersion( result.getVersion() ) );
                     if ( repo instanceof RemoteRepository )
                     {
                         subRequest.setRepositories( Collections.singletonList( (RemoteRepository) repo ) );
@@ -262,8 +259,6 @@ public class DefaultVersionResolver
             {
                 throw new VersionResolutionException( result );
             }
-
-            request.getArtifact().setVersion( result.getVersion() );
         }
 
         if ( cacheKey != null && metadata != null )

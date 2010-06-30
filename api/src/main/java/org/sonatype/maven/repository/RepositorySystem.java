@@ -44,9 +44,8 @@ public interface RepositorySystem
         throws VersionRangeResolutionException;
 
     /**
-     * Resolves an artifact's metaversion (if any) to a concrete version. For example, resolves "1.0-SNAPSHOT" to
-     * "1.0-20090208.132618-23" or "RELEASE"/"LATEST" to "2.0". The resolved version is stored both in the original
-     * artifact and the returned result which provides further details about the resolution.
+     * Resolves an artifact's meta version (if any) to a concrete version. For example, resolves "1.0-SNAPSHOT" to
+     * "1.0-20090208.132618-23" or "RELEASE"/"LATEST" to "2.0".
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The version request, must not be {@code null}
@@ -57,8 +56,7 @@ public interface RepositorySystem
         throws VersionResolutionException;
 
     /**
-     * Gets information about an artifact like its direct dependencies. As a side effect, the artifact's version will be
-     * resolved if necessary.
+     * Gets information about an artifact like its direct dependencies.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The descriptor request, must not be {@code null}
@@ -102,6 +100,19 @@ public interface RepositorySystem
         throws ArtifactResolutionException;
 
     /**
+     * Resolves the paths for an artifact. The Artifact will be downloaded if necessary. An artifacts that is already
+     * resolved will be skipped and is not re-resolved.
+     * 
+     * @param session The repository session, must not be {@code null}.
+     * @param request The resolution request, must not be {@code null}
+     * @return The resolution result, never {@code null}.
+     * @throws ArtifactResolutionException If any artifact could not be resolved.
+     * @see Artifact#getFile()
+     */
+    ArtifactResult resolveArtifact( RepositorySystemSession session, ArtifactRequest request )
+        throws ArtifactResolutionException;
+
+    /**
      * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary. Artifacts that are
      * already resolved will be skipped and are not re-resolved.
      * 
@@ -111,7 +122,8 @@ public interface RepositorySystem
      * @throws ArtifactResolutionException If any artifact could not be resolved.
      * @see Artifact#getFile()
      */
-    List<ArtifactResult> resolveArtifacts( RepositorySystemSession session, Collection<? extends ArtifactRequest> requests )
+    List<ArtifactResult> resolveArtifacts( RepositorySystemSession session,
+                                           Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException;
 
     /**
@@ -122,16 +134,18 @@ public interface RepositorySystem
      * @return The resolution results, never {@code null}.
      * @see Metadata#getFile()
      */
-    List<MetadataResult> resolveMetadata( RepositorySystemSession session, Collection<? extends MetadataRequest> requests );
+    List<MetadataResult> resolveMetadata( RepositorySystemSession session,
+                                          Collection<? extends MetadataRequest> requests );
 
     /**
      * Installs a collection of artifacts and their accompanying metadata to the local repository.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The installation request, must not be {@code null}.
+     * @return The installation result, never {@code null}.
      * @throws InstallationException If any artifact/metadata from the request could not be installed.
      */
-    void install( RepositorySystemSession session, InstallRequest request )
+    InstallResult install( RepositorySystemSession session, InstallRequest request )
         throws InstallationException;
 
     /**
@@ -139,9 +153,10 @@ public interface RepositorySystem
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The deployment request, must not be {@code null}.
+     * @return The deployment result, never {@code null}.
      * @throws DeploymentException If any artifact/metadata from the request could not be deployed.
      */
-    void deploy( RepositorySystemSession session, DeployRequest request )
+    DeployResult deploy( RepositorySystemSession session, DeployRequest request )
         throws DeploymentException;
 
     /**

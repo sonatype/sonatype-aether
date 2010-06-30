@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -37,7 +38,6 @@ import org.sonatype.maven.repository.ArtifactRequest;
 import org.sonatype.maven.repository.ArtifactResolutionException;
 import org.sonatype.maven.repository.ArtifactResult;
 import org.sonatype.maven.repository.ArtifactTransferException;
-import org.sonatype.maven.repository.DerivedArtifact;
 import org.sonatype.maven.repository.LocalArtifactRequest;
 import org.sonatype.maven.repository.LocalArtifactResult;
 import org.sonatype.maven.repository.LocalRepositoryManager;
@@ -157,11 +157,13 @@ public class DefaultArtifactResolver
 
             if ( artifact.getFile() != null )
             {
+                // pre-resolved (e.g. system scope), just validate file
                 if ( !artifact.getFile().isFile() )
                 {
                     failures = true;
                     result.addException( new ArtifactNotFoundException( artifact, null ) );
                 }
+                result.setArtifact( artifact );
                 artifactResolved( session, artifact, null, result.getExceptions() );
                 continue;
             }
@@ -178,6 +180,8 @@ public class DefaultArtifactResolver
                 artifactResolved( session, artifact, null, result.getExceptions() );
                 continue;
             }
+
+            artifact = artifact.setVersion( versionResult.getVersion() );
 
             if ( versionResult.getRepository() != null )
             {
@@ -196,7 +200,8 @@ public class DefaultArtifactResolver
                 File file = workspace.findArtifact( artifact );
                 if ( file != null )
                 {
-                    artifact.setFile( file );
+                    artifact = artifact.setFile( file );
+                    result.setArtifact( artifact );
                     result.setRepository( workspace.getRepository() );
                     artifactResolved( session, artifact, workspace.getRepository(), null );
                     continue;
@@ -210,7 +215,8 @@ public class DefaultArtifactResolver
                 result.setRepository( lrm.getRepository() );
                 try
                 {
-                    artifact.setFile( getFile( artifact, local.getFile() ) );
+                    artifact = artifact.setFile( getFile( artifact, local.getFile() ) );
+                    result.setArtifact( artifact );
                     artifactResolved( session, artifact, lrm.getRepository(), null );
                 }
                 catch ( ArtifactTransferException e )
@@ -230,6 +236,7 @@ public class DefaultArtifactResolver
                 continue;
             }
 
+            AtomicBoolean resolved = new AtomicBoolean( false );
             Iterator<ResolutionGroup> groupIt = groups.iterator();
             for ( RemoteRepository repo : repos )
             {
@@ -253,7 +260,7 @@ public class DefaultArtifactResolver
                     groups.add( group );
                     groupIt = Collections.<ResolutionGroup> emptyList().iterator();
                 }
-                group.items.add( new ResolutionItem( result, local, repo ) );
+                group.items.add( new ResolutionItem( artifact, resolved, result, local, repo ) );
             }
         }
 
@@ -262,9 +269,9 @@ public class DefaultArtifactResolver
             List<ArtifactDownload> downloads = new ArrayList<ArtifactDownload>();
             for ( ResolutionItem item : group.items )
             {
-                Artifact artifact = item.request.getArtifact();
+                Artifact artifact = item.artifact;
 
-                if ( artifact.getFile() != null )
+                if ( item.resolved.get() )
                 {
                     // resolved in previous resolution group
                     continue;
@@ -350,11 +357,13 @@ public class DefaultArtifactResolver
                 }
                 if ( download.getException() == null )
                 {
+                    item.resolved.set( true );
                     item.result.setRepository( group.repository );
                     Artifact artifact = download.getArtifact();
                     try
                     {
-                        artifact.setFile( getFile( artifact, download.getFile() ) );
+                        artifact = artifact.setFile( getFile( artifact, download.getFile() ) );
+                        item.result.setArtifact( artifact );
                     }
                     catch ( ArtifactTransferException e )
                     {
@@ -377,8 +386,8 @@ public class DefaultArtifactResolver
 
         for ( ArtifactResult result : results )
         {
-            Artifact artifact = result.getRequest().getArtifact();
-            if ( artifact.getFile() == null )
+            Artifact artifact = result.getArtifact();
+            if ( artifact == null || artifact.getFile() == null )
             {
                 failures = true;
                 if ( result.getExceptions().isEmpty() )
@@ -445,7 +454,10 @@ public class DefaultArtifactResolver
             DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
             event.setRepository( repository );
             event.setExceptions( exceptions );
-            event.setFile( artifact.getFile() );
+            if ( artifact != null )
+            {
+                event.setFile( artifact.getFile() );
+            }
             listener.artifactResolved( event );
         }
     }
@@ -482,33 +494,23 @@ public class DefaultArtifactResolver
 
         final RemoteRepository repository;
 
+        final Artifact artifact;
+
+        final AtomicBoolean resolved;
+
         ArtifactDownload download;
 
         UpdateCheck<Artifact, ArtifactTransferException> updateCheck;
 
-        ResolutionItem( ArtifactResult result, LocalArtifactResult local, RemoteRepository repository )
+        ResolutionItem( Artifact artifact, AtomicBoolean resolved, ArtifactResult result, LocalArtifactResult local,
+                        RemoteRepository repository )
         {
+            this.artifact = artifact;
+            this.resolved = resolved;
             this.result = result;
             this.request = result.getRequest();
             this.local = local;
             this.repository = repository;
-        }
-
-    }
-
-    static class SnapshotArtifact
-        extends DerivedArtifact
-    {
-
-        public SnapshotArtifact( Artifact artifact )
-        {
-            super( artifact );
-        }
-
-        @Override
-        public String getVersion()
-        {
-            return getBaseVersion();
         }
 
     }

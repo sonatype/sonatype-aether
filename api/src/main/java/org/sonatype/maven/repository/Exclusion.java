@@ -24,24 +24,16 @@ package org.sonatype.maven.repository;
  * 
  * @author Benjamin Bentmann
  */
-public class Exclusion
+public final class Exclusion
 {
 
-    private String groupId = "";
+    private final String groupId;
 
-    private String artifactId = "";
+    private final String artifactId;
 
-    private String classifier = "";
+    private final String classifier;
 
-    private String type = "";
-
-    /**
-     * Creates an empty exclusion
-     */
-    public Exclusion()
-    {
-        // enables default constructor
-    }
+    private final String type;
 
     /**
      * Creates an exclusion for artifacts with the specified coordinates.
@@ -53,10 +45,10 @@ public class Exclusion
      */
     public Exclusion( String groupId, String artifactId, String classifier, String type )
     {
-        setGroupId( groupId );
-        setArtifactId( artifactId );
-        setClassifier( classifier );
-        setType( type );
+        this.groupId = ( groupId != null ) ? groupId : "";
+        this.artifactId = ( artifactId != null ) ? artifactId : "";
+        this.classifier = ( classifier != null ) ? classifier : "";
+        this.type = ( type != null ) ? type : "";
     }
 
     /**
@@ -70,18 +62,6 @@ public class Exclusion
     }
 
     /**
-     * Sets the group identifier for artifacts to exclude.
-     * 
-     * @param groupId The group identifier, may be {@code null}.
-     * @return This exclusion for chaining, never {@code null}.
-     */
-    public Exclusion setGroupId( String groupId )
-    {
-        this.groupId = ( groupId != null ) ? groupId.intern() : "";
-        return this;
-    }
-
-    /**
      * Gets the artifact identifier for artifacts to exclude.
      * 
      * @return The artifact identifier, never {@code null}.
@@ -89,18 +69,6 @@ public class Exclusion
     public String getArtifactId()
     {
         return artifactId;
-    }
-
-    /**
-     * Sets the artifact identifier for artifacts to exclude.
-     * 
-     * @param artifactId The artifact identifier, may be {@code null}.
-     * @return This exclusion for chaining, never {@code null}.
-     */
-    public Exclusion setArtifactId( String artifactId )
-    {
-        this.artifactId = ( artifactId != null ) ? artifactId.intern() : "";
-        return this;
     }
 
     /**
@@ -114,18 +82,6 @@ public class Exclusion
     }
 
     /**
-     * Sets the classifier for artifacts to exclude.
-     * 
-     * @param classifier The classifier, may be {@code null}.
-     * @return This exclusion for chaining, never {@code null}.
-     */
-    public Exclusion setClassifier( String classifier )
-    {
-        this.classifier = ( classifier != null ) ? classifier.intern() : "";
-        return this;
-    }
-
-    /**
      * Gets the file type for artifacts to exclude.
      * 
      * @return The file type of artifacts to exclude, never {@code null}.
@@ -133,18 +89,6 @@ public class Exclusion
     public String getType()
     {
         return type;
-    }
-
-    /**
-     * Sets the file type for artifacts to exclude.
-     * 
-     * @param type The file type, may be {@code null}.
-     * @return This exclusion for chaining, never {@code null}.
-     */
-    public Exclusion setType( String type )
-    {
-        this.type = ( type != null ) ? type.intern() : "";
-        return this;
     }
 
     @Override

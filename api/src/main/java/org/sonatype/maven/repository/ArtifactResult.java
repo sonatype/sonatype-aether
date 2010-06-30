@@ -35,6 +35,8 @@ public class ArtifactResult
 
     private final List<Exception> exceptions;
 
+    private Artifact artifact;
+
     private ArtifactRepository repository;
 
     /**
@@ -49,7 +51,7 @@ public class ArtifactResult
             throw new IllegalArgumentException( "resolution request has not been specified" );
         }
         this.request = request;
-        this.exceptions = new ArrayList<Exception>( 4 );
+        this.exceptions = new ArrayList<Exception>( 2 );
     }
 
     /**
@@ -63,14 +65,25 @@ public class ArtifactResult
     }
 
     /**
-     * Gets the artifact whose resolution was requested. This is a convenience method for {@code
-     * getRequest().getArtifact()}.
+     * Gets the resolved artifact.
      * 
-     * @return The requested artifact, never {@code null}.
+     * @return The resolved artifact or {@code null} if the resolution failed.
      */
     public Artifact getArtifact()
     {
-        return getRequest().getArtifact();
+        return artifact;
+    }
+
+    /**
+     * Sets the resolved artifact.
+     * 
+     * @param artifact The resolved artifact, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
+    public ArtifactResult setArtifact( Artifact artifact )
+    {
+        this.artifact = artifact;
+        return this;
     }
 
     /**
@@ -130,7 +143,7 @@ public class ArtifactResult
      */
     public boolean isResolved()
     {
-        return getRequest().getArtifact().getFile() != null;
+        return getArtifact() != null && getArtifact().getFile() != null;
     }
 
     /**

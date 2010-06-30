@@ -35,7 +35,7 @@ public class ArtifactRequest
 
     private Artifact artifact;
 
-    private Dependency dependency;
+    private DependencyNode node;
 
     private List<RemoteRepository> repositories = Collections.emptyList();
 
@@ -66,13 +66,13 @@ public class ArtifactRequest
     /**
      * Creates a request with the specified properties.
      * 
-     * @param dependency The dependency to resolve, may be {@code null}.
+     * @param node The dependency node to resolve, may be {@code null}.
      * @param repositories The repositories to resolve the artifact from, may be {@code null}.
      * @param context The context in which this request is made, may be {@code null}.
      */
-    public ArtifactRequest( Dependency dependency, List<RemoteRepository> repositories, String context )
+    public ArtifactRequest( DependencyNode node, List<RemoteRepository> repositories, String context )
     {
-        setDependency( dependency );
+        setDependencyNode( node );
         setRepositories( repositories );
         setRequestContext( context );
     }
@@ -100,27 +100,27 @@ public class ArtifactRequest
     }
 
     /**
-     * Gets the dependency for which to resolve the artifact.
+     * Gets the dependency node (if any) for which to resolve the artifact.
      * 
-     * @return The dependency to resolve or {@code null} if unknown.
+     * @return The dependency node to resolve or {@code null} if unknown.
      */
-    public Dependency getDependency()
+    public DependencyNode getDependencyNode()
     {
-        return dependency;
+        return node;
     }
 
     /**
-     * Sets the dependency to resolve.
+     * Sets the dependency node to resolve.
      * 
-     * @param dependency The dependency to resolve, may be {@code null}.
+     * @param node The dependency node to resolve, may be {@code null}.
      * @return This request for chaining, never {@code null}.
      */
-    public ArtifactRequest setDependency( Dependency dependency )
+    public ArtifactRequest setDependencyNode( DependencyNode node )
     {
-        this.dependency = dependency;
-        if ( dependency != null )
+        this.node = node;
+        if ( node != null )
         {
-            setArtifact( dependency.getArtifact() );
+            setArtifact( node.getDependency().getArtifact() );
         }
         return this;
     }

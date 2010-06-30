@@ -24,7 +24,7 @@ package org.sonatype.maven.repository;
  * 
  * @author Benjamin Bentmann
  */
-public class RepositoryPolicy
+public final class RepositoryPolicy
 {
 
     /**
@@ -62,11 +62,11 @@ public class RepositoryPolicy
      */
     public static final String CHECKSUM_POLICY_IGNORE = "ignore";
 
-    private boolean enabled;
+    private final boolean enabled;
 
-    private String updatePolicy;
+    private final String updatePolicy;
 
-    private String checksumPolicy;
+    private final String checksumPolicy;
 
     /**
      * Creates a new policy with checksum warnings and daily update checks.
@@ -96,9 +96,9 @@ public class RepositoryPolicy
      */
     public RepositoryPolicy( boolean enabled, String updatePolicy, String checksumPolicy )
     {
-        setEnabled( enabled );
-        setUpdatePolicy( updatePolicy );
-        setChecksumPolicy( checksumPolicy );
+        this.enabled = enabled;
+        this.updatePolicy = ( updatePolicy != null ) ? updatePolicy : "";
+        this.checksumPolicy = ( checksumPolicy != null ) ? checksumPolicy : "";
     }
 
     /**
@@ -115,13 +115,15 @@ public class RepositoryPolicy
      * Sets the enabled flag for the associated repository.
      * 
      * @param enabled {@code true} if the repository should be contacted, {@code false} otherwise.
-     * @return This policy for chaining, never {@code null}.
+     * @return The new policy, never {@code null}.
      */
     public RepositoryPolicy setEnabled( boolean enabled )
     {
-        this.enabled = enabled;
-
-        return this;
+        if ( this.enabled == enabled )
+        {
+            return this;
+        }
+        return new RepositoryPolicy( enabled, updatePolicy, checksumPolicy );
     }
 
     /**
@@ -140,13 +142,15 @@ public class RepositoryPolicy
      * {@link #UPDATE_POLICY_INTERVAL}
      * 
      * @param updatePolicy The update policy, may be {@code null}.
-     * @return This policy for chaining, never {@code null}.
+     * @return The new policy, never {@code null}.
      */
     public RepositoryPolicy setUpdatePolicy( String updatePolicy )
     {
-        this.updatePolicy = ( updatePolicy != null ) ? updatePolicy.intern() : "";
-
-        return this;
+        if ( this.updatePolicy.equals( updatePolicy ) )
+        {
+            return this;
+        }
+        return new RepositoryPolicy( enabled, updatePolicy, checksumPolicy );
     }
 
     /**
@@ -164,13 +168,15 @@ public class RepositoryPolicy
      * {@link #CHECKSUM_POLICY_WARN} and {@link #CHECKSUM_POLICY_IGNORE}.
      * 
      * @param checksumPolicy The checksum policy, may be {@code null}.
-     * @return This policy for chaining, never {@code null}.
+     * @return The new policy, never {@code null}.
      */
     public RepositoryPolicy setChecksumPolicy( String checksumPolicy )
     {
-        this.checksumPolicy = ( checksumPolicy != null ) ? checksumPolicy.intern() : "";
-
-        return this;
+        if ( this.checksumPolicy.equals( checksumPolicy ) )
+        {
+            return this;
+        }
+        return new RepositoryPolicy( enabled, updatePolicy, checksumPolicy );
     }
 
     @Override

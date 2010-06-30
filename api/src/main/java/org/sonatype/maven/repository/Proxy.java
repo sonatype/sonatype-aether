@@ -24,24 +24,16 @@ package org.sonatype.maven.repository;
  * 
  * @author Benjamin Bentmann
  */
-public class Proxy
+public final class Proxy
 {
 
-    private String type = "";
+    private final String type;
 
-    private String host = "";
+    private final String host;
 
-    private int port;
+    private final int port;
 
-    private Authentication auth;
-
-    /**
-     * Creates a new uninitialized proxy.
-     */
-    public Proxy()
-    {
-        // enables default constructor
-    }
+    private final Authentication auth;
 
     /**
      * Creates a new proxy with the specified properties.
@@ -53,26 +45,10 @@ public class Proxy
      */
     public Proxy( String type, String host, int port, Authentication auth )
     {
-        setType( type );
-        setHost( host );
-        setPort( port );
-        setAuthentication( auth );
-    }
-
-    /**
-     * Creates a deep copy of the specified proxy.
-     * 
-     * @param proxy The proxy to copy, must not be {@code null}.
-     */
-    public Proxy( Proxy proxy )
-    {
-        setType( proxy.getType() );
-        setHost( proxy.getHost() );
-        setPort( proxy.getPort() );
-        if ( proxy.getAuthentication() != null )
-        {
-            setAuthentication( new Authentication( proxy.getAuthentication() ) );
-        }
+        this.type = ( type != null ) ? type : "";
+        this.host = ( host != null ) ? host : "";
+        this.port = port;
+        this.auth = auth;
     }
 
     /**
@@ -86,16 +62,14 @@ public class Proxy
     }
 
     /**
-     * Sets the type of this proxy.
+     * Sets the type of the proxy.
      * 
      * @param type The type of the proxy, e.g. "http", may be {@code null}.
-     * @return This proxy for chaining, never {@code null}.
+     * @return The new proxy, never {@code null}.
      */
     public Proxy setType( String type )
     {
-        this.type = ( type != null ) ? type : "";
-
-        return this;
+        return new Proxy( type, host, port, auth );
     }
 
     /**
@@ -109,16 +83,14 @@ public class Proxy
     }
 
     /**
-     * Sets the host of this proxy.
+     * Sets the host of the proxy.
      * 
-     * @param host The host of this proxy, may be {@code null}.
-     * @return This proxy for chaining, never {@code null}.
+     * @param host The host of the proxy, may be {@code null}.
+     * @return The new proxy, never {@code null}.
      */
     public Proxy setHost( String host )
     {
-        this.host = ( host != null ) ? host : "";
-
-        return this;
+        return new Proxy( type, host, port, auth );
     }
 
     /**
@@ -132,16 +104,14 @@ public class Proxy
     }
 
     /**
-     * Sets the port number for this proxy.
+     * Sets the port number for the proxy.
      * 
-     * @param port The port number for this proxy.
-     * @return This proxy for chaining, never {@code null}.
+     * @param port The port number for the proxy.
+     * @return The new proxy, never {@code null}.
      */
     public Proxy setPort( int port )
     {
-        this.port = port;
-
-        return this;
+        return new Proxy( type, host, port, auth );
     }
 
     /**
@@ -158,13 +128,11 @@ public class Proxy
      * Sets the authentication to use for the proxy connection.
      * 
      * @param auth The authentication to use, may be {@code null}.
-     * @return This proxy for chaining, never {@code null}.
+     * @return The new proxy, never {@code null}.
      */
     public Proxy setAuthentication( Authentication auth )
     {
-        this.auth = auth;
-
-        return this;
+        return new Proxy( type, host, port, auth );
     }
 
     @Override

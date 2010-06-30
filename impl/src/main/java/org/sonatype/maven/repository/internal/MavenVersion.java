@@ -329,7 +329,8 @@ class MavenVersion
 
         public String toString()
         {
-            StringBuilder buffer = new StringBuilder( "(" );
+            StringBuilder buffer = new StringBuilder( 128 );
+            buffer.append( '(' );
             for ( Iterator<Item> iter = iterator(); iter.hasNext(); )
             {
                 buffer.append( iter.next() );

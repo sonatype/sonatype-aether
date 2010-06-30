@@ -23,13 +23,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.util.FileUtils;
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.DeployRequest;
+import org.sonatype.maven.repository.DeployResult;
 import org.sonatype.maven.repository.DeploymentException;
 import org.sonatype.maven.repository.LocalRepositoryManager;
 import org.sonatype.maven.repository.MergeableMetadata;
@@ -99,9 +102,11 @@ public class DefaultDeployer
         return this;
     }
 
-    public void deploy( RepositorySystemSession session, DeployRequest request )
+    public DeployResult deploy( RepositorySystemSession session, DeployRequest request )
         throws DeploymentException
     {
+        DeployResult result = new DeployResult( request );
+
         if ( session.isOffline() )
         {
             throw new DeploymentException( "The repository system is in offline mode, artifact deployment impossible" );
@@ -126,16 +131,28 @@ public class DefaultDeployer
 
             EventCatapult catapult = new EventCatapult( session, repository );
 
+            Map<String, RemoteSnapshotMetadata> snapshots = new HashMap<String, RemoteSnapshotMetadata>();
+
             for ( Artifact artifact : request.getArtifacts() )
             {
-                upload( metadataUploads, session, new VersionsMetadata( artifact ), repository, connector, catapult );
-
-                if ( artifact.isSnapshot() && !( artifact instanceof SubArtifact ) )
+                /*
+                 * FIXME: In the case the snapshot version has been resolved before during the build, we still need to
+                 * store the resolved version in the remote repo to enable later resolution.
+                 */
+                if ( artifact.isSnapshot() && artifact.getVersion().equals( artifact.getBaseVersion() ) )
                 {
-                    RemoteSnapshotMetadata snapshotMetadata = new RemoteSnapshotMetadata( artifact );
-                    upload( metadataUploads, session, snapshotMetadata, repository, connector, catapult );
-                    artifact.setVersion( snapshotMetadata.getExpandedVersion() );
+                    String key = RemoteSnapshotMetadata.getKey( artifact );
+                    RemoteSnapshotMetadata snapshotMetadata = snapshots.get( key );
+                    if ( snapshotMetadata == null )
+                    {
+                        snapshotMetadata = new RemoteSnapshotMetadata( artifact );
+                        snapshots.put( key, snapshotMetadata );
+                        upload( metadataUploads, session, snapshotMetadata, repository, connector, catapult );
+                    }
+                    artifact = artifact.setVersion( snapshotMetadata.getExpandedVersion() );
                 }
+
+                upload( metadataUploads, session, new VersionsMetadata( artifact ), repository, connector, catapult );
 
                 artifactUploads.add( new ArtifactUploadEx( artifact, artifact.getFile(), catapult ) );
             }
@@ -151,23 +168,27 @@ public class DefaultDeployer
             {
                 if ( upload.getException() != null )
                 {
-                    throw new DeploymentException( "Failed to deploy artifacts/metadata: "
-                        + upload.getException().getMessage(), upload.getException() );
+                    throw new DeploymentException( "Failed to deploy artifacts: " + upload.getException().getMessage(),
+                                                   upload.getException() );
                 }
+                result.addArtifact( upload.getArtifact() );
             }
             for ( MetadataUpload upload : metadataUploads )
             {
                 if ( upload.getException() != null )
                 {
-                    throw new DeploymentException( "Failed to deploy artifacts/metadata: "
-                        + upload.getException().getMessage(), upload.getException() );
+                    throw new DeploymentException( "Failed to deploy metadata: " + upload.getException().getMessage(),
+                                                   upload.getException() );
                 }
+                result.addMetadata( upload.getMetadata() );
             }
         }
         finally
         {
             connector.close();
         }
+
+        return result;
     }
 
     private void upload( List<MetadataUpload> metadataUploads, RepositorySystemSession session, Metadata metadata,
@@ -241,7 +262,8 @@ public class DefaultDeployer
         metadataUploads.add( new MetadataUploadEx( metadata, dstFile, catapult ) );
     }
 
-    private RepositoryPolicy getPolicy( RepositorySystemSession session, RemoteRepository repository, Metadata.Nature nature )
+    private RepositoryPolicy getPolicy( RepositorySystemSession session, RemoteRepository repository,
+                                        Metadata.Nature nature )
     {
         boolean releases = !Metadata.Nature.SNAPSHOT.equals( nature );
         boolean snapshots = !Metadata.Nature.RELEASE.equals( nature );

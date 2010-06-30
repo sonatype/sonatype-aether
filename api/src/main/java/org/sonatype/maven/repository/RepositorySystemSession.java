@@ -68,7 +68,7 @@ public interface RepositorySystemSession
 
     AuthenticationSelector getAuthenticationSelector();
 
-    ArtifactTypeRegistry getArtifactStereotypeRegistry();
+    ArtifactTypeRegistry getArtifactTypeRegistry();
 
     DependencyTraverser getDependencyTraverser();
 

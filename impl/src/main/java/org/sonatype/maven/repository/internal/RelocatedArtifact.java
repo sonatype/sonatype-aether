@@ -19,32 +19,40 @@ package org.sonatype.maven.repository.internal;
  * under the License.
  */
 
+import java.io.File;
+import java.util.Map;
+
+import org.sonatype.maven.repository.AbstractArtifact;
 import org.sonatype.maven.repository.Artifact;
-import org.sonatype.maven.repository.DerivedArtifact;
+import org.sonatype.maven.repository.SnapshotHandler;
 
 /**
  * @author Benjamin Bentmann
  */
-class RelocatedArtifact
-    extends DerivedArtifact
+final class RelocatedArtifact
+    extends AbstractArtifact
 {
+
+    private final Artifact artifact;
 
     private final String groupId;
 
     private final String artifactId;
 
+    private final String version;
+
     public RelocatedArtifact( Artifact artifact, String groupId, String artifactId, String version )
     {
-        super( artifact.clone() );
-        if ( version != null )
+        if ( artifact == null )
         {
-            setVersion( version );
+            throw new IllegalArgumentException( "no artifact specified" );
         }
-        this.groupId = ( groupId != null ) ? groupId.intern() : "";
-        this.artifactId = ( artifactId != null ) ? artifactId.intern() : "";
+        this.artifact = artifact;
+        this.groupId = ( groupId != null ) ? groupId : "";
+        this.artifactId = ( artifactId != null ) ? artifactId : "";
+        this.version = ( version != null ) ? version : "";
     }
 
-    @Override
     public String getGroupId()
     {
         if ( groupId.length() > 0 )
@@ -53,11 +61,10 @@ class RelocatedArtifact
         }
         else
         {
-            return super.getGroupId();
+            return artifact.getGroupId();
         }
     }
 
-    @Override
     public String getArtifactId()
     {
         if ( artifactId.length() > 0 )
@@ -66,8 +73,60 @@ class RelocatedArtifact
         }
         else
         {
-            return super.getArtifactId();
+            return artifact.getArtifactId();
         }
+    }
+
+    public String getVersion()
+    {
+        if ( version.length() > 0 )
+        {
+            return version;
+        }
+        else
+        {
+            return artifact.getVersion();
+        }
+    }
+
+    public String getBaseVersion()
+    {
+        return artifact.getSnapshotHandler().toBaseVersion( getVersion() );
+    }
+
+    public boolean isSnapshot()
+    {
+        return artifact.getSnapshotHandler().isSnapshot( getVersion() );
+    }
+
+    public SnapshotHandler getSnapshotHandler()
+    {
+        return artifact.getSnapshotHandler();
+    }
+
+    public String getClassifier()
+    {
+        return artifact.getClassifier();
+    }
+
+    public String getExtension()
+    {
+        return artifact.getExtension();
+    }
+
+    public File getFile()
+    {
+        return artifact.getFile();
+    }
+
+    public String getProperty( String key, String defaultValue )
+    {
+        return artifact.getProperty( key, defaultValue );
+    }
+
+    public Map<String, String> getProperties()
+    {
+        return artifact.getProperties();
     }
 
 }

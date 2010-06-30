@@ -119,7 +119,7 @@ public class LocalRepository
 
         LocalRepository that = (LocalRepository) obj;
 
-        return eq( this.getBasedir(), that.getBasedir() ) && eq( this.getContentType(), that.getContentType() );
+        return eq( basedir, that.basedir ) && eq( type, that.type );
     }
 
     private static <T> boolean eq( T s1, T s2 )
@@ -131,8 +131,8 @@ public class LocalRepository
     public int hashCode()
     {
         int hash = 17;
-        hash = hash * 31 + hash( getBasedir() );
-        hash = hash * 31 + hash( getContentType() );
+        hash = hash * 31 + hash( basedir );
+        hash = hash * 31 + hash( type );
         return hash;
     }
 

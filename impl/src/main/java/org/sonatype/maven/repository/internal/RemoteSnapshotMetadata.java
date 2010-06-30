@@ -61,13 +61,18 @@ class RemoteSnapshotMetadata
         this.metadata = metadata;
     }
 
+    public static String getKey( Artifact artifact )
+    {
+        return artifact.getGroupId() + ':' + artifact.getArtifactId() + ':' + artifact.getBaseVersion();
+    }
+
     public String getExpandedVersion()
     {
         String version = metadata.getVersion();
 
         Snapshot snapshot = metadata.getVersioning().getSnapshot();
-        String qualifier = snapshot.getTimestamp() + "-" + snapshot.getBuildNumber();
-        version = version.substring( 0, version.length() - "SNAPSHOT".length() ) + qualifier;
+        version =
+            artifact.getSnapshotHandler().toFullVersion( version, snapshot.getTimestamp(), snapshot.getBuildNumber() );
 
         return version;
     }

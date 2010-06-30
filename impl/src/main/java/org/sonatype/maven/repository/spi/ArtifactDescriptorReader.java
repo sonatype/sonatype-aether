@@ -31,8 +31,7 @@ public interface ArtifactDescriptorReader
 {
 
     /**
-     * Gets information about an artifact like its direct dependencies. As a side effect, the artifact's version will be
-     * resolved if necessary.
+     * Gets information about an artifact like its direct dependencies.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The descriptor request, must not be {@code null}

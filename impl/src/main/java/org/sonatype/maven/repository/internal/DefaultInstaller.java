@@ -29,6 +29,7 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.util.FileUtils;
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.InstallRequest;
+import org.sonatype.maven.repository.InstallResult;
 import org.sonatype.maven.repository.InstallationException;
 import org.sonatype.maven.repository.LocalRepositoryManager;
 import org.sonatype.maven.repository.MergeableMetadata;
@@ -67,18 +68,24 @@ public class DefaultInstaller
         return this;
     }
 
-    public void install( RepositorySystemSession session, InstallRequest request )
+    public InstallResult install( RepositorySystemSession session, InstallRequest request )
         throws InstallationException
     {
+        InstallResult result = new InstallResult( request );
+
         for ( Artifact artifact : request.getArtifacts() )
         {
             install( session, artifact );
+            result.addArtifact( artifact );
         }
 
         for ( Metadata metadata : request.getMetadata() )
         {
             install( session, metadata );
+            result.addMetadata( metadata );
         }
+
+        return result;
     }
 
     private void install( RepositorySystemSession session, Artifact artifact )
@@ -95,8 +102,8 @@ public class DefaultInstaller
         try
         {
             boolean copy =
-                "pom".equals( artifact.getExtension() ) || !dstFile.exists()
-                    || srcFile.lastModified() != dstFile.lastModified() || srcFile.length() != dstFile.length();
+                "pom".equals( artifact.getExtension() ) || srcFile.lastModified() != dstFile.lastModified()
+                    || srcFile.length() != dstFile.length();
 
             if ( copy )
             {
@@ -194,7 +201,8 @@ public class DefaultInstaller
         }
     }
 
-    private void artifactInstalled( RepositorySystemSession session, Artifact artifact, File dstFile, Exception exception )
+    private void artifactInstalled( RepositorySystemSession session, Artifact artifact, File dstFile,
+                                    Exception exception )
     {
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
@@ -219,7 +227,8 @@ public class DefaultInstaller
         }
     }
 
-    private void metadataInstalled( RepositorySystemSession session, Metadata metadata, File dstFile, Exception exception )
+    private void metadataInstalled( RepositorySystemSession session, Metadata metadata, File dstFile,
+                                    Exception exception )
     {
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )

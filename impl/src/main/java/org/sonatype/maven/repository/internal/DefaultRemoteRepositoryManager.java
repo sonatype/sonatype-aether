@@ -193,17 +193,17 @@ public class DefaultRemoteRepositoryManager
         }
         else
         {
-            policy = new RepositoryPolicy( repository.getPolicy( snapshots ) );
+            policy = repository.getPolicy( snapshots );
         }
 
         // superimpose global policy
         if ( StringUtils.isNotEmpty( session.getChecksumPolicy() ) )
         {
-            policy.setChecksumPolicy( session.getChecksumPolicy() );
+            policy = policy.setChecksumPolicy( session.getChecksumPolicy() );
         }
         if ( StringUtils.isNotEmpty( session.getUpdatePolicy() ) )
         {
-            policy.setUpdatePolicy( session.getUpdatePolicy() );
+            policy = policy.setUpdatePolicy( session.getUpdatePolicy() );
         }
 
         return policy;
@@ -211,19 +211,33 @@ public class DefaultRemoteRepositoryManager
 
     private RepositoryPolicy merge( RepositorySystemSession session, RepositoryPolicy policy1, RepositoryPolicy policy2 )
     {
-        RepositoryPolicy policy = new RepositoryPolicy( policy1 );
+        RepositoryPolicy policy;
 
-        if ( policy2.isEnabled() )
+        if ( policy1.isEnabled() && policy2.isEnabled() )
         {
-            policy.setEnabled( true );
-
-            if ( ordinalOfChecksumPolicy( policy2.getChecksumPolicy() ) < ordinalOfChecksumPolicy( policy.getChecksumPolicy() ) )
+            String checksums;
+            if ( ordinalOfChecksumPolicy( policy2.getChecksumPolicy() ) < ordinalOfChecksumPolicy( policy1.getChecksumPolicy() ) )
             {
-                policy.setChecksumPolicy( policy2.getChecksumPolicy() );
+                checksums = policy2.getChecksumPolicy();
+            }
+            else
+            {
+                checksums = policy1.getChecksumPolicy();
             }
 
-            policy.setChecksumPolicy( updateCheckManager.getEffectiveUpdatePolicy( session, policy.getChecksumPolicy(),
-                                                                                   policy2.getChecksumPolicy() ) );
+            String updates =
+                updateCheckManager.getEffectiveUpdatePolicy( session, policy1.getChecksumPolicy(),
+                                                             policy2.getChecksumPolicy() );
+
+            policy = new RepositoryPolicy( true, updates, checksums );
+        }
+        else if ( policy2.isEnabled() )
+        {
+            policy = policy2;
+        }
+        else
+        {
+            policy = policy1;
         }
 
         return policy;

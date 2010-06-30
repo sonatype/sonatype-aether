@@ -65,19 +65,19 @@ public class RemoteRepository
     /**
      * Creates a shallow copy of the specified repository.
      * 
-     * @param repo The repository to copy, must not be {@code null}.
+     * @param repository The repository to copy, must not be {@code null}.
      */
-    public RemoteRepository( RemoteRepository repo )
+    public RemoteRepository( RemoteRepository repository )
     {
-        setId( repo.getId() );
-        setContentType( repo.getContentType() );
-        setUrl( repo.getUrl() );
-        setPolicy( true, repo.getPolicy( true ) );
-        setPolicy( false, repo.getPolicy( false ) );
-        setAuthentication( repo.getAuthentication() );
-        setProxy( repo.getProxy() );
-        setMirroredRepositories( repo.getMirroredRepositories() );
-        setRepositoryManager( repo.isRepositoryManager() );
+        setId( repository.getId() );
+        setContentType( repository.getContentType() );
+        setUrl( repository.getUrl() );
+        setPolicy( true, repository.getPolicy( true ) );
+        setPolicy( false, repository.getPolicy( false ) );
+        setAuthentication( repository.getAuthentication() );
+        setProxy( repository.getProxy() );
+        setMirroredRepositories( repository.getMirroredRepositories() );
+        setRepositoryManager( repository.isRepositoryManager() );
     }
 
     /**
@@ -127,7 +127,7 @@ public class RemoteRepository
      */
     public RemoteRepository setContentType( String type )
     {
-        this.type = ( type != null ) ? type.intern() : "";
+        this.type = ( type != null ) ? type : "";
 
         return this;
     }

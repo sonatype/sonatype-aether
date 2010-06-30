@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.ArtifactDescriptorException;
 import org.sonatype.maven.repository.ArtifactDescriptorRequest;
 import org.sonatype.maven.repository.ArtifactDescriptorResult;
@@ -39,8 +40,10 @@ import org.sonatype.maven.repository.DependencyCollectionException;
 import org.sonatype.maven.repository.DependencyFilter;
 import org.sonatype.maven.repository.DependencyNode;
 import org.sonatype.maven.repository.DeployRequest;
+import org.sonatype.maven.repository.DeployResult;
 import org.sonatype.maven.repository.DeploymentException;
 import org.sonatype.maven.repository.InstallRequest;
+import org.sonatype.maven.repository.InstallResult;
 import org.sonatype.maven.repository.InstallationException;
 import org.sonatype.maven.repository.LocalRepository;
 import org.sonatype.maven.repository.LocalRepositoryManager;
@@ -192,10 +195,17 @@ public class DefaultRepositorySystem
         return versionRangeResolver.resolveVersionRange( session, request );
     }
 
-    public ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session, ArtifactDescriptorRequest request )
+    public ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session,
+                                                            ArtifactDescriptorRequest request )
         throws ArtifactDescriptorException
     {
         return artifactDescriptorReader.readArtifactDescriptor( session, request );
+    }
+
+    public ArtifactResult resolveArtifact( RepositorySystemSession session, ArtifactRequest request )
+        throws ArtifactResolutionException
+    {
+        return artifactResolver.resolveArtifact( session, request );
     }
 
     public List<ArtifactResult> resolveArtifacts( RepositorySystemSession session,
@@ -224,7 +234,18 @@ public class DefaultRepositorySystem
         List<ArtifactRequest> requests = new ArrayList<ArtifactRequest>();
         toArtifactRequest( requests, node, filter );
 
-        return resolveArtifacts( session, requests );
+        List<ArtifactResult> results = resolveArtifacts( session, requests );
+
+        for ( ArtifactResult result : results )
+        {
+            Artifact artifact = result.getArtifact();
+            if ( artifact != null )
+            {
+                result.getRequest().getDependencyNode().getInfo().setArtifact( artifact );
+            }
+        }
+
+        return results;
     }
 
     private void toArtifactRequest( List<ArtifactRequest> requests, DependencyNode node, DependencyFilter filter )
@@ -232,7 +253,7 @@ public class DefaultRepositorySystem
         Dependency dependency = node.getDependency();
         if ( dependency != null && ( filter == null || filter.filterDependency( node ) ) )
         {
-            ArtifactRequest request = new ArtifactRequest( dependency, node.getRepositories(), node.getContext() );
+            ArtifactRequest request = new ArtifactRequest( node, node.getRepositories(), node.getContext() );
             requests.add( request );
         }
 
@@ -242,16 +263,16 @@ public class DefaultRepositorySystem
         }
     }
 
-    public void install( RepositorySystemSession session, InstallRequest request )
+    public InstallResult install( RepositorySystemSession session, InstallRequest request )
         throws InstallationException
     {
-        installer.install( session, request );
+        return installer.install( session, request );
     }
 
-    public void deploy( RepositorySystemSession session, DeployRequest request )
+    public DeployResult deploy( RepositorySystemSession session, DeployRequest request )
         throws DeploymentException
     {
-        deployer.deploy( session, request );
+        return deployer.deploy( session, request );
     }
 
     public LocalRepositoryManager newLocalRepositoryManager( LocalRepository localRepository )

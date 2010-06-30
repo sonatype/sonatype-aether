@@ -19,38 +19,35 @@ package org.sonatype.maven.repository;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 
 /**
  * A dependency to some artifact.
  * 
  * @author Benjamin Bentmann
  */
-public class Dependency
+public final class Dependency
 {
 
-    private Artifact artifact;
+    private static final Exclusion[] NO_EXCLUSIONS = new Exclusion[0];
 
-    private String scope = "";
+    private final Artifact artifact;
 
-    private boolean optional;
+    private final String scope;
 
-    private List<Exclusion> exclusions = new ArrayList<Exclusion>( 0 );
+    private final boolean optional;
 
-    /**
-     * Creates an uninitialized dependency.
-     */
-    public Dependency()
-    {
-        // enables default constructor
-    }
+    private final Exclusion[] exclusions;
 
     /**
-     * Creates a dependency on the specified artifact with the given scope.
+     * Creates a mandatory dependency on the specified artifact with the given scope.
      * 
      * @param artifact The artifact being depended on, may be {@code null}.
      * @param scope The scope of the dependency, may be {@code null}.
+     * @param optional A flag whether the dependency is optional or mandatory.
      */
     public Dependency( Artifact artifact, String scope )
     {
@@ -66,15 +63,47 @@ public class Dependency
      */
     public Dependency( Artifact artifact, String scope, boolean optional )
     {
-        setArtifact( artifact );
-        setScope( scope );
-        setOptional( optional );
+        this( artifact, scope, optional, NO_EXCLUSIONS );
+    }
+
+    /**
+     * Creates a dependency on the specified artifact with the given scope and exclusions.
+     * 
+     * @param artifact The artifact being depended on, may be {@code null}.
+     * @param scope The scope of the dependency, may be {@code null}.
+     * @param optional A flag whether the dependency is optional or mandatory.
+     * @param exclusions The exclusions that apply to transitive dependencies, may be {@code null} if none.
+     */
+    public Dependency( Artifact artifact, String scope, boolean optional, Collection<Exclusion> exclusions )
+    {
+        this( artifact, scope, optional, toArray( exclusions ) );
+    }
+
+    private static Exclusion[] toArray( Collection<Exclusion> exclusions )
+    {
+        if ( exclusions != null && !exclusions.isEmpty() )
+        {
+            return exclusions.toArray( new Exclusion[exclusions.size()] );
+        }
+        return NO_EXCLUSIONS;
+    }
+
+    private Dependency( Artifact artifact, String scope, boolean optional, Exclusion[] exclusions )
+    {
+        if ( artifact == null )
+        {
+            throw new IllegalArgumentException( "no artifact specified for dependency" );
+        }
+        this.artifact = artifact;
+        this.scope = ( scope != null ) ? scope : "";
+        this.optional = optional;
+        this.exclusions = exclusions;
     }
 
     /**
      * Gets the artifact being depended on.
      * 
-     * @return The artifact or {@code null} if not set.
+     * @return The artifact, never {@code null}.
      */
     public Artifact getArtifact()
     {
@@ -84,17 +113,20 @@ public class Dependency
     /**
      * Sets the artifact being depended on.
      * 
-     * @param artifact The artifact, may be {@code null}.
-     * @return This dependency for chaining, never {@code null}.
+     * @param artifact The artifact, must not be {@code null}.
+     * @return The new dependency, never {@code null}.
      */
     public Dependency setArtifact( Artifact artifact )
     {
-        this.artifact = artifact;
-        return this;
+        if ( this.artifact.equals( artifact ) )
+        {
+            return this;
+        }
+        return new Dependency( artifact, scope, optional, exclusions );
     }
 
     /**
-     * Gets the scope of this dependency. The scope defines in which context this dependency is relevant.
+     * Gets the scope of the dependency. The scope defines in which context this dependency is relevant.
      * 
      * @return The scope or an empty string if not set, never {@code null}.
      */
@@ -104,15 +136,18 @@ public class Dependency
     }
 
     /**
-     * Sets the scope of this dependency, e.g. "compile".
+     * Sets the scope of the dependency, e.g. "compile".
      * 
-     * @param scope The scope of this dependency, may be {@code null}.
-     * @return This dependency for chaining, never {@code null}.
+     * @param scope The scope of the dependency, may be {@code null}.
+     * @return The new dependency, never {@code null}.
      */
     public Dependency setScope( String scope )
     {
-        this.scope = ( scope != null ) ? scope.intern() : "";
-        return this;
+        if ( this.scope.equals( scope ) || ( scope == null && this.scope.length() <= 0 ) )
+        {
+            return this;
+        }
+        return new Dependency( artifact, scope, optional, exclusions );
     }
 
     /**
@@ -127,59 +162,82 @@ public class Dependency
     }
 
     /**
-     * Sets the optional flag for this dependency.
+     * Sets the optional flag for the dependency.
      * 
      * @param optional {@code true} if the dependency is optional, {@code false} if the dependency is mandatory.
-     * @return This dependency for chaining, never {@code null}.
+     * @return The new dependency, never {@code null}.
      */
     public Dependency setOptional( boolean optional )
     {
-        this.optional = optional;
-        return this;
+        if ( this.optional == optional )
+        {
+            return this;
+        }
+        return new Dependency( artifact, scope, optional, exclusions );
     }
 
     /**
      * Gets the exclusions for this dependency. Exclusions can be used to remove transitive dependencies during
      * resolution.
      * 
-     * @return The exclusions, never {@code null}.
+     * @return The (read-only) exclusions, never {@code null}.
      */
-    public List<Exclusion> getExclusions()
+    public Collection<Exclusion> getExclusions()
     {
-        return exclusions;
+        return Collections.unmodifiableCollection( Arrays.asList( exclusions ) );
     }
 
     /**
-     * Sets the exclusions for this dependency.
+     * Sets the exclusions for the dependency.
      * 
      * @param exclusions The exclusions, may be {@code null}.
-     * @return This dependency for chaining, never {@code null}.
+     * @return The new dependency, never {@code null}.
      */
-    public Dependency setExclusions( List<Exclusion> exclusions )
+    public Dependency setExclusions( Collection<Exclusion> exclusions )
     {
-        this.exclusions = ( exclusions != null ) ? exclusions : new ArrayList<Exclusion>( 4 );
-        return this;
-    }
-
-    /**
-     * Adds the specified exclusion to this dependency.
-     * 
-     * @param exclusion The exclusion to add, may be {@code null}.
-     * @return This dependency for chaining, never {@code null}.
-     */
-    public Dependency addExclusion( Exclusion exclusion )
-    {
-        if ( exclusion != null )
+        if ( getExclusions().equals( exclusions ) || ( exclusions == null && this.exclusions.length <= 0 ) )
         {
-            this.exclusions.add( exclusion );
+            return this;
         }
-        return this;
+        return new Dependency( artifact, scope, optional, exclusions );
     }
 
     @Override
     public String toString()
     {
         return String.valueOf( getArtifact() ) + " (" + getScope() + ( isOptional() ? "?" : "" ) + ")";
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( obj == this )
+        {
+            return true;
+        }
+        else if ( obj == null || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        Dependency that = (Dependency) obj;
+
+        return artifact.equals( that.artifact )
+            && scope.equals( that.scope )
+            && optional == that.optional
+            && new HashSet<Object>( Arrays.asList( exclusions ) ).equals( new HashSet<Object>(
+                                                                                               Arrays.asList( that.exclusions ) ) );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 17;
+        hash = hash * 31 + artifact.hashCode();
+        hash = hash * 31 + scope.hashCode();
+        hash = hash * 31 + ( optional ? 1 : 0 );
+        hash = hash * 31 + exclusions.length;
+        return hash;
     }
 
 }

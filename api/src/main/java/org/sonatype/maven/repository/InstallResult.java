@@ -23,24 +23,48 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * A request to deploy artifacts and their accompanying metadata into the a remote repository.
+ * The result of installing artifacts and their accompanying metadata into the a remote repository.
  * 
  * @author Benjamin Bentmann
- * @see RepositorySystem#deploy(RepositorySession, DeployRequest)
+ * @see RepositorySystem#install(RepositorySession, InstallRequest)
  */
-public class DeployRequest
+public class InstallResult
 {
+
+    private final InstallRequest request;
 
     private Collection<Artifact> artifacts = new ArrayList<Artifact>();
 
     private Collection<Metadata> metadata = new ArrayList<Metadata>();
 
-    private RemoteRepository repository;
+    /**
+     * Creates a new result for the specified request.
+     * 
+     * @param request The installation request, must not be {@code null}.
+     */
+    public InstallResult( InstallRequest request )
+    {
+        if ( request == null )
+        {
+            throw new IllegalArgumentException( "install request has not been specified" );
+        }
+        this.request = request;
+    }
 
     /**
-     * Gets the artifact to deploy.
+     * Gets the install request that was made.
      * 
-     * @return The artifacts to deploy, never {@code null}.
+     * @return The install request, never {@code null}.
+     */
+    public InstallRequest getRequest()
+    {
+        return request;
+    }
+
+    /**
+     * Gets the artifact that got installed.
+     * 
+     * @return The artifacts to install, never {@code null}.
      */
     public Collection<Artifact> getArtifacts()
     {
@@ -48,12 +72,12 @@ public class DeployRequest
     }
 
     /**
-     * Sets the artifacts to deploy.
+     * Sets the artifacts that got installed.
      * 
-     * @param artifacts The artifacts to deploy, may be {@code null}.
-     * @return This request for chaining, never {@code null}.
+     * @param artifacts The installed artifacts, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
      */
-    public DeployRequest setArtifacts( Collection<Artifact> artifacts )
+    public InstallResult setArtifacts( Collection<Artifact> artifacts )
     {
         if ( artifacts == null )
         {
@@ -67,12 +91,12 @@ public class DeployRequest
     }
 
     /**
-     * Adds the specified artifacts for deployment.
+     * Adds the specified artifacts to the result.
      * 
-     * @param artifact The artifact to add, may be {@code null}.
-     * @return This request for chaining, never {@code null}.
+     * @param artifact The installed artifact to add, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
      */
-    public DeployRequest addArtifact( Artifact artifact )
+    public InstallResult addArtifact( Artifact artifact )
     {
         if ( artifact != null )
         {
@@ -82,9 +106,9 @@ public class DeployRequest
     }
 
     /**
-     * Gets the metadata to deploy.
+     * Gets the metadata that got installed.
      * 
-     * @return The metadata to deploy, never {@code null}.
+     * @return The installed metadata, never {@code null}.
      */
     public Collection<Metadata> getMetadata()
     {
@@ -92,12 +116,12 @@ public class DeployRequest
     }
 
     /**
-     * Sets the metadata to deploy.
+     * Sets the metadata that got installed.
      * 
-     * @param metadata The metadata to deploy, may be {@code null}.
-     * @return This request for chaining, never {@code null}.
+     * @param metadata The installed metadata, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
      */
-    public DeployRequest setMetadata( Collection<Metadata> metadata )
+    public InstallResult setMetadata( Collection<Metadata> metadata )
     {
         if ( metadata == null )
         {
@@ -111,39 +135,17 @@ public class DeployRequest
     }
 
     /**
-     * Adds the specified metadata for deployment.
+     * Adds the specified metadata to this result.
      * 
-     * @param metadata The metadata to add, may be {@code null}.
-     * @return This request for chaining, never {@code null}.
+     * @param metadata The installed metadata to add, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
      */
-    public DeployRequest addMetadata( Metadata metadata )
+    public InstallResult addMetadata( Metadata metadata )
     {
         if ( metadata != null )
         {
             this.metadata.add( metadata );
         }
-        return this;
-    }
-
-    /**
-     * Gets the repository to deploy to.
-     * 
-     * @return The repository to deploy to or {@code null} if not set.
-     */
-    public RemoteRepository getRepository()
-    {
-        return repository;
-    }
-
-    /**
-     * Sets the repository to deploy to.
-     * 
-     * @param repository The repository to deploy to, may be {@code null}.
-     * @return This request for chaining, never {@code null}.
-     */
-    public DeployRequest setRepository( RemoteRepository repository )
-    {
-        this.repository = repository;
         return this;
     }
 

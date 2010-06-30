@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository.spi;
+package org.sonatype.maven.repository.internal;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,26 +19,34 @@ package org.sonatype.maven.repository.spi;
  * under the License.
  */
 
-import org.sonatype.maven.repository.DeployRequest;
-import org.sonatype.maven.repository.DeployResult;
-import org.sonatype.maven.repository.DeploymentException;
-import org.sonatype.maven.repository.RepositorySystemSession;
+import java.lang.ref.WeakReference;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
+ * Pool of immutable object instances, used to avoid excessive memory consumption of dependency graph.
+ * 
  * @author Benjamin Bentmann
  */
-public interface Deployer
+class ObjectPool<T>
 {
 
-    /**
-     * Uploads a collection of artifacts and their accompanying metadata to a remote repository.
-     * 
-     * @param session The repository session, must not be {@code null}.
-     * @param request The deployment request, must not be {@code null}.
-     * @return The deployment result, never {@code null}.
-     * @throws DeploymentException If any artifact/metadata from the request could not be deployed.
-     */
-    DeployResult deploy( RepositorySystemSession session, DeployRequest request )
-        throws DeploymentException;
+    private final Map<Object, WeakReference<T>> objects = new WeakHashMap<Object, WeakReference<T>>();
+
+    public synchronized T intern( T object )
+    {
+        WeakReference<T> pooledRef = objects.get( object );
+        if ( pooledRef != null )
+        {
+            T pooled = pooledRef.get();
+            if ( pooled != null )
+            {
+                return pooled;
+            }
+        }
+
+        objects.put( object, new WeakReference<T>( object ) );
+        return object;
+    }
 
 }

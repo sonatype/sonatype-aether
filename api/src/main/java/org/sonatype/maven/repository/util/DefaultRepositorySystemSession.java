@@ -81,7 +81,7 @@ public class DefaultRepositorySystemSession
 
     private AuthenticationSelector authenticationSelector;
 
-    private ArtifactTypeRegistry artifactStereotypeRegistry;
+    private ArtifactTypeRegistry artifactTypeRegistry;
 
     private DependencyTraverser dependencyTraverser;
 
@@ -103,7 +103,7 @@ public class DefaultRepositorySystemSession
         setMirrorSelector( new DefaultMirrorSelector() );
         setAuthenticationSelector( new DefaultAuthenticationSelector() );
         setProxySelector( new DefaultProxySelector() );
-        setArtifactStereotypeRegistry( new DefaultArtifactTypeRegistry() );
+        setArtifactTypeRegistry( new DefaultArtifactTypeRegistry() );
     }
 
     public DefaultRepositorySystemSession( RepositorySystemSession session )
@@ -126,7 +126,7 @@ public class DefaultRepositorySystemSession
         setMirrorSelector( session.getMirrorSelector() );
         setProxySelector( session.getProxySelector() );
         setAuthenticationSelector( session.getAuthenticationSelector() );
-        setArtifactStereotypeRegistry( session.getArtifactStereotypeRegistry() );
+        setArtifactTypeRegistry( session.getArtifactTypeRegistry() );
         setDependencyTraverser( session.getDependencyTraverser() );
         setDependencyManager( session.getDependencyManager() );
         setDependencySelector( session.getDependencySelector() );
@@ -337,14 +337,14 @@ public class DefaultRepositorySystemSession
         return this;
     }
 
-    public ArtifactTypeRegistry getArtifactStereotypeRegistry()
+    public ArtifactTypeRegistry getArtifactTypeRegistry()
     {
-        return artifactStereotypeRegistry;
+        return artifactTypeRegistry;
     }
 
-    public DefaultRepositorySystemSession setArtifactStereotypeRegistry( ArtifactTypeRegistry artifactStereotypeRegistry )
+    public DefaultRepositorySystemSession setArtifactTypeRegistry( ArtifactTypeRegistry artifactTypeRegistry )
     {
-        this.artifactStereotypeRegistry = artifactStereotypeRegistry;
+        this.artifactTypeRegistry = artifactTypeRegistry;
         return this;
     }
 

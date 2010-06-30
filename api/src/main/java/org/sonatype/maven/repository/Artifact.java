@@ -23,7 +23,9 @@ import java.io.File;
 import java.util.Map;
 
 /**
- * A specific artifact.
+ * A specific artifact. <em>Note:</em> Artifact instances are supposed to be immutable, e.g. any exposed mutator method
+ * returns a new artifact instance and leaves the original instance unchanged. Implementors are strongly advised to obey
+ * this contract.
  * 
  * @author Benjamin Bentmann
  */
@@ -45,17 +47,9 @@ public interface Artifact
     String getArtifactId();
 
     /**
-     * Gets the base version of this artifact, e.g. "1.0-SNAPSHOT". In contrast to the {@link #getVersion()}, the base
-     * version will always refer to the unresolved metaversion, e.g. "1.0-SNAPSHOT".
-     * 
-     * @return The base version, never {@code null}.
-     */
-    String getBaseVersion();
-
-    /**
-     * Gets the version of this artifact, e.g. "1.0-20100529-1213". Note that in case of metaversions like
+     * Gets the version of this artifact, e.g. "1.0-20100529-1213". Note that in case of meta versions like
      * "1.0-SNAPSHOT", the artifact's version depends on the state of the artifact. Artifacts that have been resolved or
-     * deployed will have the metaversion expanded.
+     * deployed will have the meta version expanded.
      * 
      * @return The version, never {@code null}.
      */
@@ -65,15 +59,31 @@ public interface Artifact
      * Sets the version of this artifact.
      * 
      * @param version The version of this artifact, may be {@code null}.
+     * @return The new artifact, never {@code null}.
      */
-    void setVersion( String version );
+    Artifact setVersion( String version );
 
     /**
-     * Determines whether this artifact uses a SNAPSHOT version.
+     * Gets the base version of this artifact, e.g. "1.0-SNAPSHOT". In contrast to the {@link #getVersion()}, the base
+     * version will always refer to the unresolved meta version, e.g. "1.0-SNAPSHOT".
+     * 
+     * @return The base version, never {@code null}.
+     */
+    String getBaseVersion();
+
+    /**
+     * Determines whether this artifact uses a snapshot version.
      * 
      * @return {@code true} if the artifact is a snapshot, {@code false} otherwise.
      */
     boolean isSnapshot();
+
+    /**
+     * Gets the handler for snapshot versioning.
+     * 
+     * @return The snapshot handler, never {@code null}.
+     */
+    SnapshotHandler getSnapshotHandler();
 
     /**
      * Gets the classifier of this artifact, e.g. "sources".
@@ -100,8 +110,9 @@ public interface Artifact
      * Sets the file of the artifact.
      * 
      * @param file The file of the artifact, may be {@code null}
+     * @return The new artifact, never {@code null}.
      */
-    void setFile( File file );
+    Artifact setFile( File file );
 
     /**
      * Gets the specified property.
@@ -127,15 +138,8 @@ public interface Artifact
      * project.</dd>
      * </dl>
      * 
-     * @return The properties, never {@code null}.
+     * @return The (read-only) properties, never {@code null}.
      */
     Map<String, String> getProperties();
-
-    /**
-     * Creates a deep copy of this artifact.
-     * 
-     * @return The clone of this artifact, never {@code null}.
-     */
-    Artifact clone();
 
 }

@@ -20,6 +20,7 @@ package org.sonatype.maven.repository.spi;
  */
 
 import org.sonatype.maven.repository.InstallRequest;
+import org.sonatype.maven.repository.InstallResult;
 import org.sonatype.maven.repository.InstallationException;
 import org.sonatype.maven.repository.RepositorySystemSession;
 
@@ -29,7 +30,15 @@ import org.sonatype.maven.repository.RepositorySystemSession;
 public interface Installer
 {
 
-    void install( RepositorySystemSession session, InstallRequest request )
+    /**
+     * Installs a collection of artifacts and their accompanying metadata to the local repository.
+     * 
+     * @param session The repository session, must not be {@code null}.
+     * @param request The installation request, must not be {@code null}.
+     * @return The installation result, never {@code null}.
+     * @throws InstallationException If any artifact/metadata from the request could not be installed.
+     */
+    InstallResult install( RepositorySystemSession session, InstallRequest request )
         throws InstallationException;
 
 }

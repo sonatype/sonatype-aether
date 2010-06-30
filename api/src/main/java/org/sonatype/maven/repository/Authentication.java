@@ -24,36 +24,31 @@ package org.sonatype.maven.repository;
  * 
  * @author Benjamin Bentmann
  */
-public class Authentication
+public final class Authentication
 {
 
-    private String username;
+    private final String username;
 
-    private String password;
+    private final String password;
 
-    private String privateKeyFile;
+    private final String privateKeyFile;
 
-    private String passphrase;
-
-    /**
-     * Creates an uninitialized authentication.
-     */
-    public Authentication()
-    {
-        // enables default constructor
-    }
+    private final String passphrase;
 
     /**
-     * Creates a copy of the specified authentication.
+     * Creates a new authentication with the specified properties
      * 
-     * @param auth The authentication to copy, must not be {@code null}.
+     * @param username The username, may be {@code null}.
+     * @param password The password, may be {@code null}.
+     * @param privateKeyFile The path to the private key file, may be {@code null}.
+     * @param passphrase The passphrase for the private key file, may be {@code null}.
      */
-    public Authentication( Authentication auth )
+    public Authentication( String username, String password, String privateKeyFile, String passphrase )
     {
-        setUsername( auth.getUsername() );
-        setPassword( auth.getPassword() );
-        setPrivateKeyFile( auth.getPrivateKeyFile() );
-        setPassphrase( auth.getPassphrase() );
+        this.username = username;
+        this.password = password;
+        this.privateKeyFile = privateKeyFile;
+        this.passphrase = passphrase;
     }
 
     /**
@@ -64,8 +59,7 @@ public class Authentication
      */
     public Authentication( String username, String password )
     {
-        setUsername( username );
-        setPassword( password );
+        this( username, password, null, null );
     }
 
     /**
@@ -82,13 +76,11 @@ public class Authentication
      * Sets the username to use for authentication.
      * 
      * @param username The username, may be {@code null}.
-     * @return This authentication for chaining, never {@code null}.
+     * @return The new authentication, never {@code null}.
      */
     public Authentication setUsername( String username )
     {
-        this.username = username;
-
-        return this;
+        return new Authentication( username, password, privateKeyFile, passphrase );
     }
 
     /**
@@ -105,13 +97,11 @@ public class Authentication
      * Sets the password to use for authentication.
      * 
      * @param password The password, may be {@code null}.
-     * @return This authentication for chaining, never {@code null}.
+     * @return The new authentication, never {@code null}.
      */
     public Authentication setPassword( String password )
     {
-        this.password = password;
-
-        return this;
+        return new Authentication( username, password, privateKeyFile, passphrase );
     }
 
     /**
@@ -128,13 +118,11 @@ public class Authentication
      * Sets the path to the private key file to use for authentication.
      * 
      * @param privateKeyFile The path to the private key file, may be {@code null}.
-     * @return This authentication for chaining, never {@code null}.
+     * @return The new authentication, never {@code null}.
      */
     public Authentication setPrivateKeyFile( String privateKeyFile )
     {
-        this.privateKeyFile = privateKeyFile;
-
-        return this;
+        return new Authentication( username, password, privateKeyFile, passphrase );
     }
 
     /**
@@ -151,13 +139,11 @@ public class Authentication
      * Sets the passphrase for the private key file.
      * 
      * @param passphrase The passphrase for the private key file, may be {@code null}.
-     * @return This authentication for chaining, never {@code null}.
+     * @return The new authentication, never {@code null}.
      */
     public Authentication setPassphrase( String passphrase )
     {
-        this.passphrase = passphrase;
-
-        return this;
+        return new Authentication( username, password, privateKeyFile, passphrase );
     }
 
     @Override
@@ -196,7 +182,6 @@ public class Authentication
         hash = hash * 31 + hash( username );
         hash = hash * 31 + hash( password );
         hash = hash * 31 + hash( privateKeyFile );
-        hash = hash * 31 + hash( passphrase );
         return hash;
     }
 

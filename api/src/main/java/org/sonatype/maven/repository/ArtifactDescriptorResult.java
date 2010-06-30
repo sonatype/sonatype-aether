@@ -32,9 +32,9 @@ public class ArtifactDescriptorResult
 
     private final ArtifactDescriptorRequest request;
 
-    private final List<Exception> exceptions;
+    private List<Exception> exceptions;
 
-    private final List<Artifact> relocations;
+    private List<Artifact> relocations;
 
     private Artifact artifact;
 
@@ -74,6 +74,19 @@ public class ArtifactDescriptorResult
         return exceptions;
     }
 
+    public ArtifactDescriptorResult setExceptions( List<Exception> exceptions )
+    {
+        if ( exceptions == null )
+        {
+            this.exceptions = new ArrayList<Exception>( 2 );
+        }
+        else
+        {
+            this.exceptions = exceptions;
+        }
+        return this;
+    }
+
     public ArtifactDescriptorResult addException( Exception exception )
     {
         if ( exception != null )
@@ -86,6 +99,19 @@ public class ArtifactDescriptorResult
     public List<Artifact> getRelocations()
     {
         return relocations;
+    }
+
+    public ArtifactDescriptorResult setRelocations( List<Artifact> relocations )
+    {
+        if ( relocations == null )
+        {
+            this.relocations = new ArrayList<Artifact>( 2 );
+        }
+        else
+        {
+            this.relocations = relocations;
+        }
+        return this;
     }
 
     public ArtifactDescriptorResult addRelocation( Artifact artifact )
@@ -124,6 +150,19 @@ public class ArtifactDescriptorResult
         return dependencies;
     }
 
+    public ArtifactDescriptorResult setDependencies( List<Dependency> dependencies )
+    {
+        if ( dependencies == null )
+        {
+            this.dependencies = new ArrayList<Dependency>();
+        }
+        else
+        {
+            this.dependencies = dependencies;
+        }
+        return this;
+    }
+
     public ArtifactDescriptorResult addDependency( Dependency dependency )
     {
         if ( dependency == null )
@@ -139,6 +178,19 @@ public class ArtifactDescriptorResult
         return managedDependencies;
     }
 
+    public ArtifactDescriptorResult setManagedDependencies( List<Dependency> dependencies )
+    {
+        if ( dependencies == null )
+        {
+            this.managedDependencies = new ArrayList<Dependency>();
+        }
+        else
+        {
+            this.managedDependencies = dependencies;
+        }
+        return this;
+    }
+
     public ArtifactDescriptorResult addManagedDependency( Dependency dependency )
     {
         if ( dependency == null )
@@ -152,6 +204,19 @@ public class ArtifactDescriptorResult
     public List<RemoteRepository> getRepositories()
     {
         return repositories;
+    }
+
+    public ArtifactDescriptorResult setRepositories( List<RemoteRepository> repositories )
+    {
+        if ( repositories == null )
+        {
+            this.repositories = new ArrayList<RemoteRepository>( 2 );
+        }
+        else
+        {
+            this.repositories = repositories;
+        }
+        return this;
     }
 
     public ArtifactDescriptorResult addRepository( RemoteRepository repository )

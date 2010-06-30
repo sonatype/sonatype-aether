@@ -20,76 +20,119 @@ package org.sonatype.maven.repository;
  */
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Benjamin Bentmann
  */
-public class DefaultArtifact
-    implements Artifact, Cloneable
+public final class DefaultArtifact
+    extends AbstractArtifact
 {
 
-    private static final String SNAPSHOT = "SNAPSHOT";
+    private final String groupId;
 
-    private static final Pattern SNAPSHOT_TIMESTAMP = Pattern.compile( "^(.*-)?([0-9]{8}.[0-9]{6}-[0-9]+)$" );
+    private final String artifactId;
 
-    private String groupId;
+    private final String version;
 
-    private String artifactId;
+    private final String classifier;
+
+    private final String extension;
+
+    private final File file;
+
+    private final Map<String, String> properties;
+
+    private final SnapshotHandler snapshotHandler = DefaultSnapshotHandler.INSTANCE;
 
     private String baseVersion;
 
-    private String version;
-
-    private String classifier;
-
-    private String extension;
-
-    private File file;
-
-    private Map<String, String> properties = new HashMap<String, String>();
-
-    public DefaultArtifact()
+    public DefaultArtifact( String groupId, String artifactId, String extension, String version )
     {
-        // enables default constructor
-        groupId = artifactId = version = classifier = extension = "";
+        this( groupId, artifactId, "", extension, version );
     }
 
     public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version )
     {
-        setGroupId( groupId );
-        setArtifactId( artifactId );
-        setClassifier( classifier );
-        setExtension( extension );
-        setVersion( version );
+        this.groupId = emptify( groupId );
+        this.artifactId = emptify( artifactId );
+        this.classifier = emptify( classifier );
+        this.extension = emptify( extension );
+        this.version = emptify( version );
+        this.file = null;
+        this.properties = Collections.emptyMap();
     }
 
     public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version,
-                            ArtifactType stereotype )
+                            ArtifactType type )
     {
-        setGroupId( groupId );
-        setArtifactId( artifactId );
-        setClassifier( ( classifier != null || stereotype == null ) ? classifier : stereotype.getClassifier() );
-        setExtension( ( extension != null || stereotype == null ) ? extension : stereotype.getExtension() );
-        setVersion( version );
-        if ( stereotype != null )
+        this.groupId = emptify( groupId );
+        this.artifactId = emptify( artifactId );
+        if ( classifier != null || type == null )
         {
-            properties.putAll( stereotype.getProperties() );
+            this.classifier = emptify( classifier );
+        }
+        else
+        {
+            this.classifier = emptify( type.getClassifier() );
+        }
+        if ( extension != null || type == null )
+        {
+            this.extension = emptify( extension );
+        }
+        else
+        {
+            this.extension = emptify( type.getExtension() );
+        }
+        this.version = emptify( version );
+        this.file = null;
+        if ( type != null )
+        {
+            properties = new HashMap<String, String>( type.getProperties() );
+        }
+        else
+        {
+            properties = Collections.emptyMap();
         }
     }
 
-    public DefaultArtifact( Artifact artifact )
+    public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version,
+                            Map<String, String> properties, File file )
     {
-        setGroupId( artifact.getGroupId() );
-        setArtifactId( artifact.getArtifactId() );
-        setClassifier( artifact.getClassifier() );
-        setExtension( artifact.getExtension() );
-        setVersion( artifact.getVersion() );
-        setFile( artifact.getFile() );
-        properties.putAll( artifact.getProperties() );
+        this.groupId = emptify( groupId );
+        this.artifactId = emptify( artifactId );
+        this.classifier = emptify( classifier );
+        this.extension = emptify( extension );
+        this.version = emptify( version );
+        this.file = file;
+        if ( properties != null && !properties.isEmpty() )
+        {
+            this.properties = new HashMap<String, String>( properties );
+        }
+        else
+        {
+            this.properties = Collections.emptyMap();
+        }
+    }
+
+    DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version, File file,
+                     Map<String, String> properties )
+    {
+        // NOTE: This constructor assumes immutability of the provided properties, for internal use only
+        this.groupId = emptify( groupId );
+        this.artifactId = emptify( artifactId );
+        this.classifier = emptify( classifier );
+        this.extension = emptify( extension );
+        this.version = emptify( version );
+        this.file = file;
+        this.properties = properties;
+    }
+
+    private static String emptify( String str )
+    {
+        return ( str == null ) ? "" : str;
     }
 
     public String getGroupId()
@@ -97,52 +140,16 @@ public class DefaultArtifact
         return groupId;
     }
 
-    public DefaultArtifact setGroupId( String groupId )
-    {
-        this.groupId = ( groupId != null ) ? groupId.intern() : "";
-        return this;
-    }
-
     public String getArtifactId()
     {
         return artifactId;
-    }
-
-    public DefaultArtifact setArtifactId( String artifactId )
-    {
-        this.artifactId = ( artifactId != null ) ? artifactId.intern() : "";
-        return this;
     }
 
     public String getBaseVersion()
     {
         if ( baseVersion == null )
         {
-            String version = getVersion();
-            if ( version.startsWith( "[" ) || version.startsWith( "(" ) )
-            {
-                baseVersion = "";
-            }
-            else
-            {
-                Matcher m = SNAPSHOT_TIMESTAMP.matcher( version );
-                if ( m.matches() )
-                {
-                    if ( m.group( 1 ) != null )
-                    {
-                        baseVersion = m.group( 1 ) + SNAPSHOT;
-                    }
-                    else
-                    {
-                        baseVersion = SNAPSHOT;
-                    }
-                }
-                else
-                {
-                    baseVersion = version;
-                }
-            }
-            baseVersion = baseVersion.intern();
+            baseVersion = snapshotHandler.toBaseVersion( getVersion() );
         }
         return baseVersion;
     }
@@ -152,16 +159,23 @@ public class DefaultArtifact
         return version;
     }
 
-    public void setVersion( String version )
+    public Artifact setVersion( String version )
     {
-        this.version = ( version != null ) ? version.intern() : "";
-        this.baseVersion = null;
+        if ( this.version.equals( version ) )
+        {
+            return this;
+        }
+        return new DefaultArtifact( groupId, artifactId, classifier, extension, version, file, properties );
     }
 
     public boolean isSnapshot()
     {
-        String bv = getBaseVersion();
-        return bv != null && bv.endsWith( SNAPSHOT );
+        return snapshotHandler.isSnapshot( getVersion() );
+    }
+
+    public SnapshotHandler getSnapshotHandler()
+    {
+        return snapshotHandler;
     }
 
     public String getClassifier()
@@ -169,21 +183,9 @@ public class DefaultArtifact
         return classifier;
     }
 
-    public DefaultArtifact setClassifier( String classifier )
-    {
-        this.classifier = ( classifier != null ) ? classifier.intern() : "";
-        return this;
-    }
-
     public String getExtension()
     {
         return extension;
-    }
-
-    public DefaultArtifact setExtension( String extension )
-    {
-        this.extension = ( extension != null ) ? extension.intern() : "";
-        return this;
     }
 
     public File getFile()
@@ -191,9 +193,13 @@ public class DefaultArtifact
         return file;
     }
 
-    public void setFile( File file )
+    public Artifact setFile( File file )
     {
-        this.file = file;
+        if ( ( this.file == null ) ? file == null : this.file.equals( file ) )
+        {
+            return this;
+        }
+        return new DefaultArtifact( groupId, artifactId, classifier, extension, version, file, properties );
     }
 
     public String getProperty( String key, String defaultValue )
@@ -204,52 +210,7 @@ public class DefaultArtifact
 
     public Map<String, String> getProperties()
     {
-        return properties;
-    }
-
-    public DefaultArtifact setProperty( String key, String value )
-    {
-        if ( value == null )
-        {
-            properties.remove( key );
-        }
-        else
-        {
-            properties.put( key.intern(), value.intern() );
-        }
-        return this;
-    }
-
-    @Override
-    public String toString()
-    {
-        StringBuilder buffer = new StringBuilder( 128 );
-        buffer.append( getGroupId() );
-        buffer.append( ':' ).append( getArtifactId() );
-        buffer.append( ':' ).append( getExtension() );
-        if ( getClassifier().length() > 0 )
-        {
-            buffer.append( ':' ).append( getClassifier() );
-        }
-        buffer.append( ':' ).append( getVersion() );
-        return buffer.toString();
-    }
-
-    @Override
-    public DefaultArtifact clone()
-    {
-        try
-        {
-            DefaultArtifact clone = (DefaultArtifact) super.clone();
-
-            clone.properties = new HashMap<String, String>( clone.properties );
-
-            return clone;
-        }
-        catch ( CloneNotSupportedException e )
-        {
-            throw new UnsupportedOperationException( e );
-        }
+        return Collections.unmodifiableMap( properties );
     }
 
 }

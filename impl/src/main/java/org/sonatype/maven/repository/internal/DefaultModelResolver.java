@@ -112,7 +112,7 @@ class DefaultModelResolver
         try
         {
             ArtifactRequest request = new ArtifactRequest( pomArtifact, repositories, context );
-            resolver.resolveArtifact( session, request );
+            pomArtifact = resolver.resolveArtifact( session, request ).getArtifact();
         }
         catch ( ArtifactResolutionException e )
         {

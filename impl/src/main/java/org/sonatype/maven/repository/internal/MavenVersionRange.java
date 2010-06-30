@@ -38,7 +38,7 @@ class MavenVersionRange
     private final boolean upperBoundInclusive;
 
     public MavenVersionRange( Version lowerBound, boolean lowerBoundInclusive, Version upperBound,
-                               boolean upperBoundInclusive )
+                              boolean upperBoundInclusive )
     {
         this.lowerBound = lowerBound;
         this.lowerBoundInclusive = lowerBoundInclusive;
@@ -104,6 +104,45 @@ class MavenVersionRange
     private boolean isSnapshot( Version version )
     {
         return version != null && version.toString().endsWith( "SNAPSHOT" );
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if ( obj == this )
+        {
+            return true;
+        }
+        else if ( obj == null || !getClass().equals( obj.getClass() ) )
+        {
+            return false;
+        }
+
+        MavenVersionRange that = (MavenVersionRange) obj;
+
+        return upperBoundInclusive == that.upperBoundInclusive && lowerBoundInclusive == that.lowerBoundInclusive
+            && eq( upperBound, that.upperBound ) && eq( lowerBound, that.lowerBound );
+    }
+
+    private static <T> boolean eq( T s1, T s2 )
+    {
+        return s1 != null ? s1.equals( s2 ) : s2 == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 17;
+        hash = hash * 31 + hash( upperBound );
+        hash = hash * 31 + ( upperBoundInclusive ? 1 : 0 );
+        hash = hash * 31 + hash( lowerBound );
+        hash = hash * 31 + ( lowerBoundInclusive ? 1 : 0 );
+        return hash;
+    }
+
+    private static int hash( Object obj )
+    {
+        return obj != null ? obj.hashCode() : 0;
     }
 
     @Override
