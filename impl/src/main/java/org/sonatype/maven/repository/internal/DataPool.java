@@ -20,7 +20,9 @@ package org.sonatype.maven.repository.internal;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -134,7 +136,7 @@ class DataPool
 
     public Object toKey( VersionRangeRequest request )
     {
-        return request.getArtifact();
+        return new ConstraintKey( request );
     }
 
     public VersionRangeResult getConstraint( Object key, VersionRangeRequest request )
@@ -310,6 +312,82 @@ class DataPool
             }
             result.setVersionConstraint( versionConstraint );
             return result;
+        }
+
+    }
+
+    static class ConstraintKey
+    {
+
+        private final Artifact artifact;
+
+        private final List<RemoteRepository> repositories;
+
+        private final int hashCode;
+
+        public ConstraintKey( VersionRangeRequest request )
+        {
+            artifact = request.getArtifact();
+            repositories = request.getRepositories();
+            hashCode = artifact.hashCode();
+        }
+
+        @Override
+        public boolean equals( Object obj )
+        {
+            if ( obj == this )
+            {
+                return true;
+            }
+            else if ( !( obj instanceof ConstraintKey ) )
+            {
+                return false;
+            }
+            ConstraintKey that = (ConstraintKey) obj;
+            return artifact.equals( that.artifact ) && equals( repositories, that.repositories );
+        }
+
+        private static boolean equals( Collection<RemoteRepository> repos1, Collection<RemoteRepository> repos2 )
+        {
+            if ( repos1.size() != repos2.size() )
+            {
+                return false;
+            }
+            for ( Iterator<RemoteRepository> it1 = repos1.iterator(), it2 = repos2.iterator(); it1.hasNext(); )
+            {
+                RemoteRepository repo1 = it1.next();
+                RemoteRepository repo2 = it2.next();
+                if ( repo1.isRepositoryManager() != repo2.isRepositoryManager() )
+                {
+                    return false;
+                }
+                if ( repo1.isRepositoryManager() )
+                {
+                    if ( !equals( repo1.getMirroredRepositories(), repo2.getMirroredRepositories() ) )
+                    {
+                        return false;
+                    }
+                }
+                else if ( !repo1.getUrl().equals( repo2.getUrl() ) )
+                {
+                    return false;
+                }
+                else if ( repo1.getPolicy( true ).isEnabled() != repo2.getPolicy( true ).isEnabled() )
+                {
+                    return false;
+                }
+                else if ( repo1.getPolicy( false ).isEnabled() != repo2.getPolicy( false ).isEnabled() )
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return hashCode;
         }
 
     }
