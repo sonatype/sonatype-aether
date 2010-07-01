@@ -20,12 +20,12 @@ package org.sonatype.maven.repository.internal;
  */
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.Dependency;
-import org.sonatype.maven.repository.DependencyInfo;
 import org.sonatype.maven.repository.DependencyNode;
 import org.sonatype.maven.repository.DependencyVisitor;
 import org.sonatype.maven.repository.RemoteRepository;
@@ -47,23 +47,49 @@ public class DefaultDependencyNode
 
     private int depth;
 
-    private DependencyInfo info;
+    private Dependency dependency;
+
+    private String context = "";
+
+    private List<Artifact> relocations = Collections.emptyList();
+
+    private List<Artifact> aliases = Collections.emptyList();
+
+    private Map<String, Object> properties = Collections.emptyMap();
+
+    private Object conflictId;
+
+    private VersionConstraint versionConstraint;
+
+    private Version version;
+
+    private String premanagedVersion;
+
+    private String premanagedScope;
+
+    private List<RemoteRepository> repositories = Collections.emptyList();
 
     /**
-     * Creates a new root node with the specified dependency info. Use {@link #addChild} to create inner nodes.
+     * Creates a new root node with the specified dependency.
      * 
-     * @param info The dependency info associated with this node, may be {@code null}.
+     * @param dependency The dependency associated with this node, may be {@code null}.
      */
-    public DefaultDependencyNode( DependencyInfo info )
+    public DefaultDependencyNode( Dependency dependency )
     {
-        this.info = info;
+        this.dependency = dependency;
         this.parent = null;
         this.depth = 0;
     }
 
-    public DefaultDependencyNode( DependencyInfo info, DependencyNode parent )
+    /**
+     * Creates a new node with the specified dependency and parent.
+     * 
+     * @param dependency The dependency associated with this node, may be {@code null}.
+     * @param parent The parent node, may be {@code null}.
+     */
+    public DefaultDependencyNode( Dependency dependency, DependencyNode parent )
     {
-        this.info = info;
+        this.dependency = dependency;
         this.parent = parent;
         this.depth = ( parent != null ) ? parent.getDepth() + 1 : 0;
     }
@@ -99,29 +125,6 @@ public class DefaultDependencyNode
     }
 
     /**
-     * Adds a new child node for the specified dependency to this node.
-     * 
-     * @param info The dependency information associated with the new child node, must not be {@code null}.
-     * @return The new child node, never {@code null}.
-     */
-    public DefaultDependencyNode addChild( DependencyInfo info )
-    {
-        DefaultDependencyNode child = new DefaultDependencyNode( info, this );
-        children.add( child );
-        return child;
-    }
-
-    public void addChild( DependencyNode child )
-    {
-        children.add( child );
-    }
-
-    public DependencyInfo getInfo()
-    {
-        return info;
-    }
-
-    /**
      * Gets the dependency associated with this node. <em>Note:</em> For dependency graphs that have been constructed
      * without a root dependency, the root node will not have a dependency associated with it.
      * 
@@ -129,7 +132,7 @@ public class DefaultDependencyNode
      */
     public Dependency getDependency()
     {
-        return info.getDependency();
+        return dependency;
     }
 
     /**
@@ -139,7 +142,7 @@ public class DefaultDependencyNode
      */
     public String getContext()
     {
-        return info.getContext();
+        return context;
     }
 
     /**
@@ -150,7 +153,7 @@ public class DefaultDependencyNode
      */
     public DefaultDependencyNode setContext( String context )
     {
-        info.setContext( context );
+        this.context = ( context != null ) ? context : "";
         return this;
     }
 
@@ -161,7 +164,7 @@ public class DefaultDependencyNode
      */
     public List<Artifact> getRelocations()
     {
-        return info.getRelocations();
+        return relocations;
     }
 
     /**
@@ -172,7 +175,14 @@ public class DefaultDependencyNode
      */
     public DefaultDependencyNode setRelocations( List<Artifact> relocations )
     {
-        info.setRelocations( relocations );
+        if ( relocations == null || relocations.isEmpty() )
+        {
+            this.relocations = Collections.emptyList();
+        }
+        else
+        {
+            this.relocations = relocations;
+        }
         return this;
     }
 
@@ -185,7 +195,7 @@ public class DefaultDependencyNode
      */
     public List<Artifact> getAliases()
     {
-        return info.getAliases();
+        return aliases;
     }
 
     /**
@@ -196,7 +206,14 @@ public class DefaultDependencyNode
      */
     public DefaultDependencyNode setAliases( List<Artifact> aliases )
     {
-        info.setAliases( aliases );
+        if ( aliases == null || aliases.isEmpty() )
+        {
+            this.aliases = Collections.emptyList();
+        }
+        else
+        {
+            this.aliases = aliases;
+        }
         return this;
     }
 
@@ -208,7 +225,7 @@ public class DefaultDependencyNode
      */
     public Map<String, Object> getProperties()
     {
-        return info.getProperties();
+        return properties;
     }
 
     /**
@@ -219,7 +236,14 @@ public class DefaultDependencyNode
      */
     public DefaultDependencyNode setProperties( Map<String, Object> properties )
     {
-        info.setProperties( properties );
+        if ( properties == null || properties.isEmpty() )
+        {
+            this.properties = Collections.emptyMap();
+        }
+        else
+        {
+            this.properties = properties;
+        }
         return this;
     }
 
@@ -231,7 +255,7 @@ public class DefaultDependencyNode
      */
     public Object getConflictId()
     {
-        return info.getConflictId();
+        return conflictId;
     }
 
     /**
@@ -242,7 +266,7 @@ public class DefaultDependencyNode
      */
     public DefaultDependencyNode setConflictId( Object conflictId )
     {
-        info.setConflictId( conflictId );
+        this.conflictId = conflictId;
         return this;
     }
 
@@ -253,35 +277,35 @@ public class DefaultDependencyNode
      */
     public VersionConstraint getVersionConstraint()
     {
-        return info.getVersionConstraint();
+        return versionConstraint;
     }
 
     public DefaultDependencyNode setVersionConstraint( VersionConstraint versionConstraint )
     {
-        info.setVersionConstraint( versionConstraint );
+        this.versionConstraint = versionConstraint;
         return this;
     }
 
     public Version getVersion()
     {
-        return info.getVersion();
+        return version;
     }
 
     public DefaultDependencyNode setVersion( Version version )
     {
-        info.setVersion( version );
+        this.version = version;
         return this;
     }
 
     public DefaultDependencyNode setScope( String scope )
     {
-        info.setScope( scope );
+        dependency = dependency.setScope( scope );
         return this;
     }
 
     public DependencyNode setArtifact( Artifact artifact )
     {
-        info.setArtifact( artifact );
+        dependency = dependency.setArtifact( artifact );
         return this;
     }
 
@@ -292,7 +316,7 @@ public class DefaultDependencyNode
      */
     public String getPremanagedVersion()
     {
-        return info.getPremanagedVersion();
+        return premanagedVersion;
     }
 
     /**
@@ -304,7 +328,7 @@ public class DefaultDependencyNode
      */
     public DefaultDependencyNode setPremanagedVersion( String premanagedVersion )
     {
-        info.setPremanagedVersion( premanagedVersion );
+        this.premanagedVersion = premanagedVersion;
         return this;
     }
 
@@ -315,7 +339,7 @@ public class DefaultDependencyNode
      */
     public String getPremanagedScope()
     {
-        return info.getPremanagedScope();
+        return premanagedScope;
     }
 
     /**
@@ -326,7 +350,7 @@ public class DefaultDependencyNode
      */
     public DefaultDependencyNode setPremanagedScope( String premanagedScope )
     {
-        info.setPremanagedScope( premanagedScope );
+        this.premanagedScope = premanagedScope;
         return this;
     }
 
@@ -337,7 +361,7 @@ public class DefaultDependencyNode
      */
     public List<RemoteRepository> getRepositories()
     {
-        return info.getRepositories();
+        return repositories;
     }
 
     /**
@@ -348,7 +372,14 @@ public class DefaultDependencyNode
      */
     public DefaultDependencyNode setRepositories( List<RemoteRepository> repositories )
     {
-        info.setRepositories( repositories );
+        if ( repositories == null || repositories.isEmpty() )
+        {
+            this.repositories = Collections.emptyList();
+        }
+        else
+        {
+            this.repositories = repositories;
+        }
         return this;
     }
 
@@ -377,14 +408,7 @@ public class DefaultDependencyNode
     @Override
     public String toString()
     {
-        if ( getChildren().isEmpty() )
-        {
-            return String.valueOf( getDependency() );
-        }
-        else
-        {
-            return String.valueOf( getDependency() ) + " -> " + getChildren();
-        }
+        return String.valueOf( getDependency() );
     }
 
 }

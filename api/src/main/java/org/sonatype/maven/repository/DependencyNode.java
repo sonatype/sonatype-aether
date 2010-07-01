@@ -125,8 +125,6 @@ public interface DependencyNode
 
     Version getVersion();
 
-    DependencyNode setVersion( Version version );
-
     DependencyNode setScope( String scope );
 
     DependencyNode setArtifact( Artifact artifact );

@@ -33,8 +33,10 @@ import org.sonatype.maven.repository.ArtifactDescriptorRequest;
 import org.sonatype.maven.repository.ArtifactDescriptorResult;
 import org.sonatype.maven.repository.ArtifactRepository;
 import org.sonatype.maven.repository.Dependency;
-import org.sonatype.maven.repository.DependencyInfo;
+import org.sonatype.maven.repository.DependencyManager;
 import org.sonatype.maven.repository.DependencyNode;
+import org.sonatype.maven.repository.DependencySelector;
+import org.sonatype.maven.repository.DependencyTraverser;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryCache;
 import org.sonatype.maven.repository.Version;
@@ -64,8 +66,7 @@ class DataPool
 
     private Map<Object, DependencyNode> nodes = new HashMap<Object, DependencyNode>();
 
-    private Map<Object, List<RemoteRepository>> repos = new HashMap<Object, List<RemoteRepository>>();
-
+    @SuppressWarnings( "unchecked" )
     public DataPool( RepositoryCache cache )
     {
         if ( cache != null )
@@ -154,9 +155,10 @@ class DataPool
         constraints.put( key, new Constraint( result ) );
     }
 
-    public Object getNodeKey( DependencyInfo info )
+    public Object toKey( Dependency dependency, List<RemoteRepository> repositories, DependencySelector selector,
+                         DependencyManager manager, DependencyTraverser traverser )
     {
-        return new InfoKey( info );
+        return new NodeKey( dependency, repositories, selector, manager, traverser );
     }
 
     public DependencyNode getNode( Object key )
@@ -167,71 +169,6 @@ class DataPool
     public void putNode( Object key, DependencyNode node )
     {
         nodes.put( key, node );
-    }
-
-    public List<RemoteRepository> getRepositories( Object key )
-    {
-        return repos.get( key );
-    }
-
-    public void putRepositories( Object key, List<RemoteRepository> repositories )
-    {
-        if ( !this.repos.containsKey( key ) )
-        {
-            this.repos.put( key, repositories );
-        }
-    }
-
-    static class InfoKey
-    {
-        private final DependencyInfo info;
-
-        private final int hashCode;
-
-        public InfoKey( DependencyInfo info )
-        {
-            this.info = info;
-
-            int hash = info.getDependency().getArtifact().hashCode();
-            hash = hash * 31 + info.getDependency().getScope().hashCode();
-            hash = hash * 31 + info.getVersionConstraint().hashCode();
-            hashCode = hash;
-        }
-
-        @Override
-        public boolean equals( Object obj )
-        {
-            if ( obj == this )
-            {
-                return true;
-            }
-            else if ( obj == null || !getClass().equals( obj.getClass() ) )
-            {
-                return false;
-            }
-
-            InfoKey that = (InfoKey) obj;
-            return eq( info.getDependency().getArtifact(), that.info.getDependency().getArtifact() )
-                && info.getDependency().getScope().equals( that.info.getDependency().getScope() )
-                && info.getDependency().isOptional() == that.info.getDependency().isOptional()
-                && info.getDependency().getExclusions().equals( that.info.getDependency().getExclusions() )
-                && eq( info.getVersionConstraint(), that.info.getVersionConstraint() )
-                && eq( info.getPremanagedScope(), that.info.getPremanagedScope() )
-                && eq( info.getPremanagedVersion(), that.info.getPremanagedVersion() )
-                && info.getRelocations().equals( that.info.getRelocations() );
-        }
-
-        private static <T> boolean eq( T s1, T s2 )
-        {
-            return s1 != null ? s1.equals( s2 ) : s2 == null;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return hashCode;
-        }
-
     }
 
     static class Descriptor
@@ -382,6 +319,64 @@ class DataPool
                 }
             }
             return true;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return hashCode;
+        }
+
+    }
+
+    static class NodeKey
+    {
+
+        private final Dependency dependency;
+
+        private final List<RemoteRepository> repositories;
+
+        private final DependencySelector selector;
+
+        private final DependencyManager manager;
+
+        private final DependencyTraverser traverser;
+
+        private final int hashCode;
+
+        public NodeKey( Dependency dependency, List<RemoteRepository> repositories, DependencySelector selector,
+                        DependencyManager manager, DependencyTraverser traverser )
+        {
+            this.dependency = dependency;
+            this.repositories = repositories;
+            this.selector = selector;
+            this.manager = manager;
+            this.traverser = traverser;
+
+            int hash = 17;
+            hash = hash * 31 + dependency.hashCode();
+            hash = hash * 31 + repositories.hashCode();
+            hash = hash * 31 + selector.hashCode();
+            hash = hash * 31 + manager.hashCode();
+            hash = hash * 31 + traverser.hashCode();
+            hashCode = hash;
+        }
+
+        @Override
+        public boolean equals( Object obj )
+        {
+            if ( obj == this )
+            {
+                return true;
+            }
+            else if ( !( obj instanceof NodeKey ) )
+            {
+                return false;
+            }
+            NodeKey that = (NodeKey) obj;
+            return dependency.equals( that.dependency ) && repositories.equals( that.repositories )
+                && selector.equals( that.selector ) && manager.equals( that.manager )
+                && traverser.equals( that.traverser );
         }
 
         @Override

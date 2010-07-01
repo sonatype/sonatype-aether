@@ -37,7 +37,6 @@ import org.sonatype.maven.repository.CollectRequest;
 import org.sonatype.maven.repository.CollectResult;
 import org.sonatype.maven.repository.Dependency;
 import org.sonatype.maven.repository.DependencyCollectionException;
-import org.sonatype.maven.repository.DependencyInfo;
 import org.sonatype.maven.repository.DependencyManagement;
 import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyGraphTransformer;
@@ -137,7 +136,7 @@ public class DefaultDependencyCollector
         DefaultDependencyNode node = null;
         if ( root != null )
         {
-            node = new DefaultDependencyNode( new DefaultDependencyInfo( root ) );
+            node = new DefaultDependencyNode( root );
             node.setRepositories( request.getRepositories() );
             node.setContext( request.getRequestContext() );
 
@@ -183,7 +182,7 @@ public class DefaultDependencyCollector
         }
         else
         {
-            node = new DefaultDependencyNode( new DefaultDependencyInfo( null ) );
+            node = new DefaultDependencyNode( null );
         }
 
         result.setRoot( node );
@@ -359,6 +358,15 @@ public class DefaultDependencyCollector
                 {
                     Dependency d = dependency.setArtifact( dependency.getArtifact().setVersion( version.toString() ) );
 
+                    Object nodeKey = pool.toKey( d, repositories, depSelector, depManager, depTraverser );
+
+                    DependencyNode existingNode = pool.getNode( nodeKey );
+                    if ( existingNode != null )
+                    {
+                        copyNodes( node, existingNode );
+                        continue;
+                    }
+
                     List<RemoteRepository> repos = null;
                     ArtifactRepository repo = rangeResult.getRepository( version );
                     if ( repo instanceof RemoteRepository )
@@ -418,18 +426,19 @@ public class DefaultDependencyCollector
                     }
 
                     d = pool.intern( d.setArtifact( pool.intern( d.getArtifact() ) ) );
+                    nodeKey = pool.toKey( d, repositories, depSelector, depManager, depTraverser );
 
-                    DefaultDependencyInfo info = new DefaultDependencyInfo( d );
-                    info.setRelocations( descriptorResult.getRelocations() );
-                    info.setVersionConstraint( rangeResult.getVersionConstraint() );
-                    info.setVersion( version );
-                    info.setPremanagedVersion( premanagedVersion );
-                    info.setPremanagedScope( premanagedScope );
-                    info.setRepositories( repos );
-                    info.setProperties( descriptorResult.getProperties() );
-                    info.setContext( result.getRequest().getRequestContext() );
+                    DefaultDependencyNode child = new DefaultDependencyNode( d, node );
+                    child.setRelocations( descriptorResult.getRelocations() );
+                    child.setVersionConstraint( rangeResult.getVersionConstraint() );
+                    child.setVersion( version );
+                    child.setPremanagedVersion( premanagedVersion );
+                    child.setPremanagedScope( premanagedScope );
+                    child.setRepositories( repos );
+                    child.setProperties( descriptorResult.getProperties() );
+                    child.setContext( result.getRequest().getRequestContext() );
 
-                    DependencyNode child = ( (DefaultDependencyNode) node ).addChild( info );
+                    node.getChildren().add( child );
 
                     if ( traverse )
                     {
@@ -442,10 +451,33 @@ public class DefaultDependencyCollector
                                  depManager.deriveChildManager( child, managedDependencies ),
                                  depTraverser.deriveChildTraverser( child ), pool );
                     }
+
+                    pool.putNode( nodeKey, child );
                 }
 
                 break;
             }
+        }
+    }
+
+    private void copyNodes( DependencyNode parent, DependencyNode child )
+    {
+        DefaultDependencyNode clone = new DefaultDependencyNode( child.getDependency(), parent );
+        clone.setVersionConstraint( child.getVersionConstraint() );
+        clone.setVersion( child.getVersion() );
+        clone.setContext( child.getContext() );
+        clone.setRepositories( child.getRepositories() );
+        clone.setRelocations( child.getRelocations() );
+        clone.setAliases( child.getAliases() );
+        clone.setProperties( child.getProperties() );
+        clone.setPremanagedScope( child.getPremanagedScope() );
+        clone.setPremanagedVersion( child.getPremanagedVersion() );
+
+        parent.getChildren().add( clone );
+
+        for ( DependencyNode c : child.getChildren() )
+        {
+            copyNodes( clone, c );
         }
     }
 
