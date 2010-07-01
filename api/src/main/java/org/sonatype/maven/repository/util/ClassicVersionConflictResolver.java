@@ -20,13 +20,12 @@ package org.sonatype.maven.repository.util;
  */
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.Map;
-import java.util.TreeSet;
 
 import org.sonatype.maven.repository.DependencyGraphTransformer;
 import org.sonatype.maven.repository.DependencyNode;
@@ -69,11 +68,11 @@ public class ClassicVersionConflictResolver
                 return;
             }
 
+            group.versions.add( node.getVersion() );
             if ( !node.getVersionConstraint().getRanges().isEmpty() )
             {
                 group.constraints.add( node.getVersionConstraint() );
             }
-            group.versions.add( node.getVersion() );
 
             if ( node.getDepth() < group.depth )
             {
@@ -89,12 +88,16 @@ public class ClassicVersionConflictResolver
             if ( !group.isAcceptable( group.version ) )
             {
                 group.version = null;
-                for ( Version version : group.versions )
+                for ( Iterator<Version> it = group.versions.iterator(); it.hasNext(); )
                 {
-                    if ( group.isAcceptable( version ) )
+                    Version version = it.next();
+                    if ( !group.isAcceptable( version ) )
+                    {
+                        it.remove();
+                    }
+                    else if ( group.version == null || version.compareTo( group.version ) > 0 )
                     {
                         group.version = version;
-                        break;
                     }
                 }
                 if ( group.version == null )
@@ -144,7 +147,7 @@ public class ClassicVersionConflictResolver
 
         Collection<VersionConstraint> constraints = new HashSet<VersionConstraint>();
 
-        Collection<Version> versions = new TreeSet<Version>( Collections.reverseOrder() );
+        Collection<Version> versions = new LinkedList<Version>();
 
         Version version;
 

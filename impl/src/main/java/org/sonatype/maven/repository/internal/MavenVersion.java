@@ -151,13 +151,18 @@ class MavenVersion
     private static class StringItem
         implements Item
     {
-        private final static List<String> QUALIFIERS =
-            Arrays.asList( "alpha", "beta", "milestone", "rc", "snapshot", "", "sp" );
+        private final static Map<String, String> QUALIFIERS = new HashMap<String, String>();
 
         private final static Map<String, String> ALIASES = new HashMap<String, String>();
 
         static
         {
+            String[] qualifiers = { "alpha", "beta", "milestone", "rc", "snapshot", "", "sp" };
+            for ( int i = 0; i < qualifiers.length; i++ )
+            {
+                QUALIFIERS.put( qualifiers[i], String.valueOf( i ) );
+            }
+
             ALIASES.put( "ga", "" );
             ALIASES.put( "final", "" );
             ALIASES.put( "cr", "rc" );
@@ -167,7 +172,9 @@ class MavenVersion
          * A comparable value for the empty-string qualifier. This one is used to determine if a given qualifier makes
          * the version older than one without a qualifier, or more recent.
          */
-        private static String RELEASE_VERSION_INDEX = String.valueOf( QUALIFIERS.indexOf( "" ) );
+        private static final String RELEASE_VERSION_INDEX = QUALIFIERS.get( "" );
+
+        private static final String LEXICAL_PREFIX = String.valueOf( QUALIFIERS.size() );
 
         private final String value;
 
@@ -200,7 +207,7 @@ class MavenVersion
 
         public boolean isNull()
         {
-            return ( comparableQualifier( value ).compareTo( RELEASE_VERSION_INDEX ) == 0 );
+            return value.length() <= 0;
         }
 
         /**
@@ -213,11 +220,11 @@ class MavenVersion
          * @param qualifier
          * @return an equivalent value that can be used with lexical comparison
          */
-        public static String comparableQualifier( String qualifier )
+        private static String comparableQualifier( String qualifier )
         {
-            int i = QUALIFIERS.indexOf( qualifier );
+            String i = QUALIFIERS.get( qualifier );
 
-            return i == -1 ? QUALIFIERS.size() + "-" + qualifier : String.valueOf( i );
+            return i != null ? i : LEXICAL_PREFIX + qualifier;
         }
 
         public int compareTo( Item item )
@@ -308,11 +315,11 @@ class MavenVersion
 
                     while ( left.hasNext() || right.hasNext() )
                     {
-                        Item l = left.hasNext() ? (Item) left.next() : null;
-                        Item r = right.hasNext() ? (Item) right.next() : null;
+                        Item l = left.hasNext() ? left.next() : null;
+                        Item r = right.hasNext() ? right.next() : null;
 
                         // if this is shorter, then invert the compare and mul with -1
-                        int result = l == null ? -1 * r.compareTo( l ) : l.compareTo( r );
+                        int result = l == null ? -r.compareTo( l ) : l.compareTo( r );
 
                         if ( result != 0 )
                         {

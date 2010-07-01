@@ -1,11 +1,5 @@
 package org.sonatype.maven.repository.spi;
 
-import org.sonatype.maven.repository.Artifact;
-import org.sonatype.maven.repository.ArtifactTransferException;
-import org.sonatype.maven.repository.Metadata;
-import org.sonatype.maven.repository.MetadataTransferException;
-import org.sonatype.maven.repository.RepositorySystemSession;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -24,6 +18,12 @@ import org.sonatype.maven.repository.RepositorySystemSession;
  * specific language governing permissions and limitations
  * under the License.
  */
+
+import org.sonatype.maven.repository.Artifact;
+import org.sonatype.maven.repository.ArtifactTransferException;
+import org.sonatype.maven.repository.Metadata;
+import org.sonatype.maven.repository.MetadataTransferException;
+import org.sonatype.maven.repository.RepositorySystemSession;
 
 /**
  * @author Benjamin Bentmann
