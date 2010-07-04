@@ -239,7 +239,7 @@ public class DefaultRepositorySystem
         for ( ArtifactResult result : results )
         {
             Artifact artifact = result.getArtifact();
-            if ( artifact != null )
+            if ( artifact != null && artifact.getFile() != null )
             {
                 result.getRequest().getDependencyNode().setArtifact( artifact );
             }

@@ -21,6 +21,7 @@ package org.sonatype.maven.repository.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -34,7 +35,6 @@ import org.sonatype.maven.repository.ArtifactDescriptorResult;
 import org.sonatype.maven.repository.ArtifactRepository;
 import org.sonatype.maven.repository.Dependency;
 import org.sonatype.maven.repository.DependencyManager;
-import org.sonatype.maven.repository.DependencyNode;
 import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyTraverser;
 import org.sonatype.maven.repository.RemoteRepository;
@@ -47,24 +47,26 @@ import org.sonatype.maven.repository.VersionRangeResult;
 /**
  * @author Benjamin Bentmann
  */
-class DataPool
+final class DataPool
 {
 
     private static final String ARTIFACT_POOL = DataPool.class.getName() + "$Artifact";
 
     private static final String DEPENDENCY_POOL = DataPool.class.getName() + "$Dependency";
 
+    private static final String DESCRIPTORS = DataPool.class.getName() + "$Descriptors";
+
     private ObjectPool<Artifact> artifacts;
 
     private ObjectPool<Dependency> dependencies;
 
-    private Map<Object, Descriptor> descriptors = new WeakHashMap<Object, Descriptor>();
+    private Map<Object, Descriptor> descriptors;// = new WeakHashMap<Object, Descriptor>();
 
     private Map<Object, Constraint> constraints = new WeakHashMap<Object, Constraint>();
 
     private Map<Object, List<RemoteRepository>> repositories = new HashMap<Object, List<RemoteRepository>>();
 
-    private Map<Object, DependencyNode> nodes = new HashMap<Object, DependencyNode>();
+    private Map<Object, LightDependencyNode> nodes = new HashMap<Object, LightDependencyNode>();
 
     @SuppressWarnings( "unchecked" )
     public DataPool( RepositoryCache cache )
@@ -73,6 +75,7 @@ class DataPool
         {
             artifacts = (ObjectPool<Artifact>) cache.get( ARTIFACT_POOL );
             dependencies = (ObjectPool<Dependency>) cache.get( DEPENDENCY_POOL );
+            descriptors = (Map<Object, Descriptor>) cache.get( DESCRIPTORS );
         }
 
         if ( artifacts == null )
@@ -90,6 +93,15 @@ class DataPool
             if ( cache != null )
             {
                 cache.put( DEPENDENCY_POOL, dependencies );
+            }
+        }
+
+        if ( descriptors == null )
+        {
+            descriptors = Collections.synchronizedMap( new WeakHashMap<Object, Descriptor>( 256 ) );
+            if ( cache != null )
+            {
+                cache.put( DESCRIPTORS, descriptors );
             }
         }
     }
@@ -161,12 +173,12 @@ class DataPool
         return new NodeKey( dependency, repositories, selector, manager, traverser );
     }
 
-    public DependencyNode getNode( Object key )
+    public LightDependencyNode getNode( Object key )
     {
         return nodes.get( key );
     }
 
-    public void putNode( Object key, DependencyNode node )
+    public void putNode( Object key, LightDependencyNode node )
     {
         nodes.put( key, node );
     }

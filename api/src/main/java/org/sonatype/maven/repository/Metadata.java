@@ -24,7 +24,9 @@ import java.io.File;
 /**
  * A piece of repository metadata, e.g. an index of available versions. In contrast to an artifact, which usually exists
  * in only one repository, metadata usually exists in multiple repositories and each repository contains a different
- * copy of the metadata.
+ * copy of the metadata. <em>Note:</em> Metadata instances are supposed to be immutable, e.g. any exposed mutator method
+ * returns a new metadata instance and leaves the original instance unchanged. Implementors are strongly advised to obey
+ * this contract.
  * 
  * @author Benjamin Bentmann
  */
@@ -95,14 +97,15 @@ public interface Metadata
      * 
      * @return The file or {@code null} if none.
      */
-    public File getFile();
+    File getFile();
 
     /**
      * Sets the file of the metadata.
      * 
      * @param file The file of the metadata, may be {@code null}
+     * @return The new metadata, never {@code null}.
      */
-    void setFile( File file );
+    Metadata setFile( File file );
 
     /*
      * <metadata> <versioning> <snapshot> <timestamp>20100419.164221</timestamp> <buildNumber>46</buildNumber>

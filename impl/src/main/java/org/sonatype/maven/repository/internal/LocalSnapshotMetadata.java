@@ -19,6 +19,8 @@ package org.sonatype.maven.repository.internal;
  * under the License.
  */
 
+import java.io.File;
+
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.internal.metadata.Metadata;
 import org.sonatype.maven.repository.internal.metadata.Snapshot;
@@ -27,7 +29,7 @@ import org.sonatype.maven.repository.internal.metadata.Versioning;
 /**
  * @author Benjamin Bentmann
  */
-class LocalSnapshotMetadata
+final class LocalSnapshotMetadata
     extends MavenMetadata
 {
 
@@ -35,8 +37,18 @@ class LocalSnapshotMetadata
 
     public LocalSnapshotMetadata( Artifact artifact )
     {
+        super( createMetadata( artifact ), null );
         this.artifact = artifact;
+    }
 
+    public LocalSnapshotMetadata( Artifact artifact, File file )
+    {
+        super( createMetadata( artifact ), file );
+        this.artifact = artifact;
+    }
+
+    private static Metadata createMetadata( Artifact artifact )
+    {
         Snapshot snapshot = new Snapshot();
         snapshot.setLocalCopy( true );
         Versioning versioning = new Versioning();
@@ -48,7 +60,12 @@ class LocalSnapshotMetadata
         metadata.setArtifactId( artifact.getArtifactId() );
         metadata.setVersion( artifact.getBaseVersion() );
 
-        this.metadata = metadata;
+        return metadata;
+    }
+
+    public MavenMetadata setFile( File file )
+    {
+        return new LocalSnapshotMetadata( artifact, file );
     }
 
     public String getGroupId()

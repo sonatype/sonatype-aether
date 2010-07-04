@@ -30,6 +30,7 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
+import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.ArtifactRepository;
 import org.sonatype.maven.repository.DefaultMetadata;
 import org.sonatype.maven.repository.LocalRepositoryManager;
@@ -95,7 +96,9 @@ public class DefaultVersionResolver
     public VersionResult resolveVersion( RepositorySystemSession session, VersionRequest request )
         throws VersionResolutionException
     {
-        String version = request.getArtifact().getVersion();
+        Artifact artifact = request.getArtifact();
+
+        String version = artifact.getVersion();
 
         VersionResult result = new VersionResult( request );
 
@@ -116,38 +119,34 @@ public class DefaultVersionResolver
             }
         }
 
-        DefaultMetadata metadata;
+        Metadata metadata;
 
         if ( RELEASE.equals( version ) )
         {
-            metadata = new DefaultMetadata();
-            metadata.setGroupId( request.getArtifact().getGroupId() );
-            metadata.setArtifactId( request.getArtifact().getArtifactId() );
-            metadata.setNature( Metadata.Nature.RELEASE );
+            metadata =
+                new DefaultMetadata( artifact.getGroupId(), artifact.getArtifactId(), MAVEN_METADATA_XML,
+                                     Metadata.Nature.RELEASE );
         }
         else if ( LATEST.equals( version ) )
         {
-            metadata = new DefaultMetadata();
-            metadata.setGroupId( request.getArtifact().getGroupId() );
-            metadata.setArtifactId( request.getArtifact().getArtifactId() );
-            metadata.setNature( Metadata.Nature.RELEASE_OR_SNAPSHOT );
+            metadata =
+                new DefaultMetadata( artifact.getGroupId(), artifact.getArtifactId(), MAVEN_METADATA_XML,
+                                     Metadata.Nature.RELEASE_OR_SNAPSHOT );
         }
         // FIXME: Use the artifact's snapshot handler
         else if ( version.endsWith( SNAPSHOT ) )
         {
             WorkspaceReader workspace = session.getWorkspaceReader();
-            if ( workspace != null && workspace.findVersions( request.getArtifact() ).contains( version ) )
+            if ( workspace != null && workspace.findVersions( artifact ).contains( version ) )
             {
                 metadata = null;
                 result.setRepository( workspace.getRepository() );
             }
             else
             {
-                metadata = new DefaultMetadata();
-                metadata.setGroupId( request.getArtifact().getGroupId() );
-                metadata.setArtifactId( request.getArtifact().getArtifactId() );
-                metadata.setVersion( version );
-                metadata.setNature( Metadata.Nature.SNAPSHOT );
+                metadata =
+                    new DefaultMetadata( artifact.getGroupId(), artifact.getArtifactId(), version, MAVEN_METADATA_XML,
+                                         Metadata.Nature.SNAPSHOT );
             }
         }
         else
@@ -161,13 +160,11 @@ public class DefaultVersionResolver
         }
         else
         {
-            metadata.setType( MAVEN_METADATA_XML );
-
             List<MetadataRequest> metadataRequests = new ArrayList<MetadataRequest>( request.getRepositories().size() );
             for ( RemoteRepository repository : request.getRepositories() )
             {
                 MetadataRequest metadataRequest =
-                    new MetadataRequest( new DefaultMetadata( metadata ), repository, request.getRequestContext() );
+                    new MetadataRequest( metadata, repository, request.getRequestContext() );
                 metadataRequest.setDeleteLocalCopyIfMissing( true );
                 metadataRequest.setFavorLocalRepository( true );
                 metadataRequests.add( metadataRequest );
@@ -179,7 +176,7 @@ public class DefaultVersionResolver
                 new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalMetadata( metadata ) );
             if ( localMetadataFile.isFile() )
             {
-                metadata.setFile( localMetadataFile );
+                metadata = metadata.setFile( localMetadataFile );
             }
 
             Versioning versioning = readVersions( session, metadata, result );
@@ -188,7 +185,7 @@ public class DefaultVersionResolver
             for ( MetadataResult metadataResult : metadataResults )
             {
                 result.addException( metadataResult.getException() );
-                Versioning v = readVersions( session, metadataResult.getRequest().getMetadata(), result );
+                Versioning v = readVersions( session, metadataResult.getMetadata(), result );
                 if ( mergeVersions( versioning, v ) )
                 {
                     repo = metadataResult.getRequest().getRepository();
@@ -211,7 +208,7 @@ public class DefaultVersionResolver
                 if ( result.getVersion() != null && result.getVersion().endsWith( SNAPSHOT ) )
                 {
                     VersionRequest subRequest = new VersionRequest();
-                    subRequest.setArtifact( request.getArtifact().setVersion( result.getVersion() ) );
+                    subRequest.setArtifact( artifact.setVersion( result.getVersion() ) );
                     if ( repo instanceof RemoteRepository )
                     {
                         subRequest.setRepositories( Collections.singletonList( (RemoteRepository) repo ) );

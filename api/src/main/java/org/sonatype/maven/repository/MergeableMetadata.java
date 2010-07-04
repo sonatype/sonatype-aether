@@ -31,7 +31,8 @@ public interface MergeableMetadata
 {
 
     /**
-     * Merges this metadata into the current metadata (if any).
+     * Merges this metadata into the current metadata (if any). Note that this method will be invoked regardless whether
+     * metadata currently exists or not.
      * 
      * @param current The path to the current metadata file, may not exist but must not be {@code null}.
      * @param result The path to the result file where the merged metadata should be stored, must not be {@code null}.

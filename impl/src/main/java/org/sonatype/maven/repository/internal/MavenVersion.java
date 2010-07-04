@@ -90,7 +90,6 @@ class MavenVersion
     private static class IntegerItem
         implements Item
     {
-        private static final BigInteger BigInteger_ZERO = new BigInteger( "0" );
 
         private final BigInteger value;
 
@@ -98,7 +97,7 @@ class MavenVersion
 
         private IntegerItem()
         {
-            this.value = BigInteger_ZERO;
+            this.value = BigInteger.ZERO;
         }
 
         public IntegerItem( String str )
@@ -113,14 +112,14 @@ class MavenVersion
 
         public boolean isNull()
         {
-            return BigInteger_ZERO.equals( value );
+            return BigInteger.ZERO.equals( value );
         }
 
         public int compareTo( Item item )
         {
             if ( item == null )
             {
-                return BigInteger_ZERO.equals( value ) ? 0 : 1; // 1.0 == 1, 1.1 > 1
+                return BigInteger.ZERO.equals( value ) ? 0 : 1; // 1.0 == 1, 1.1 > 1
             }
 
             switch ( item.getType() )

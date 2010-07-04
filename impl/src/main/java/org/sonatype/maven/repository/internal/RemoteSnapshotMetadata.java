@@ -19,6 +19,7 @@ package org.sonatype.maven.repository.internal;
  * under the License.
  */
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -32,7 +33,7 @@ import org.sonatype.maven.repository.internal.metadata.Versioning;
 /**
  * @author Benjamin Bentmann
  */
-class RemoteSnapshotMetadata
+final class RemoteSnapshotMetadata
     extends MavenMetadata
 {
 
@@ -40,8 +41,18 @@ class RemoteSnapshotMetadata
 
     public RemoteSnapshotMetadata( Artifact artifact )
     {
+        super( createMetadata( artifact ), null );
         this.artifact = artifact;
+    }
 
+    public RemoteSnapshotMetadata( Artifact artifact, File file )
+    {
+        super( createMetadata( artifact ), file );
+        this.artifact = artifact;
+    }
+
+    private static Metadata createMetadata( Artifact artifact )
+    {
         DateFormat utcDateFormatter = new SimpleDateFormat( "yyyyMMdd.HHmmss" );
         utcDateFormatter.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
 
@@ -58,7 +69,12 @@ class RemoteSnapshotMetadata
         metadata.setArtifactId( artifact.getArtifactId() );
         metadata.setVersion( artifact.getBaseVersion() );
 
-        this.metadata = metadata;
+        return metadata;
+    }
+
+    public MavenMetadata setFile( File file )
+    {
+        return new RemoteSnapshotMetadata( artifact, file );
     }
 
     public static String getKey( Artifact artifact )

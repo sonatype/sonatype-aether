@@ -198,6 +198,15 @@ public class DefaultDependencyCollector
                      pool );
         }
 
+//        StatCollector stats = new StatCollector();
+//        node.accept( stats );
+//        if ( stats.totalNodes > 200000 )
+//        {
+//            System.out.println( ">>>>>>>> BIG" );
+//        }
+//        System.out.println( "depth = " + stats.maxDepth + ", nodes = " + stats.totalNodes + ", infos = "
+//            + stats.uniqueInfos.size() + ", artifacts = " + stats.uniqueArtifacts.size() );
+
         DependencyGraphTransformer transformer = session.getDependencyGraphTransformer();
         if ( transformer != null )
         {
@@ -289,6 +298,8 @@ public class DefaultDependencyCollector
     {
         nextDependency: for ( Dependency dependency : dependencies )
         {
+            boolean disableVersionManagement = false;
+
             thisDependency: while ( true )
             {
                 if ( !depSelector.selectDependency( dependency ) )
@@ -302,7 +313,7 @@ public class DefaultDependencyCollector
 
                 if ( depMngt != null )
                 {
-                    if ( depMngt.getVersion() != null )
+                    if ( depMngt.getVersion() != null && !disableVersionManagement )
                     {
                         Artifact artifact = dependency.getArtifact();
                         premanagedVersion = artifact.getVersion();
@@ -320,6 +331,7 @@ public class DefaultDependencyCollector
                                                                        depMngt.getExclusions() ) );
                     }
                 }
+                disableVersionManagement = false;
 
                 boolean system = dependency.getArtifact().getFile() != null;
 
@@ -356,14 +368,18 @@ public class DefaultDependencyCollector
                 List<Version> versions = rangeResult.getVersions();
                 for ( Version version : versions )
                 {
-                    Dependency d = dependency.setArtifact( dependency.getArtifact().setVersion( version.toString() ) );
+                    Artifact originalArtifact = dependency.getArtifact().setVersion( version.toString() );
+                    Dependency d = dependency.setArtifact( originalArtifact );
 
                     Object nodeKey = pool.toKey( d, repositories, depSelector, depManager, depTraverser );
 
-                    DependencyNode existingNode = pool.getNode( nodeKey );
+                    LightDependencyNode existingNode = pool.getNode( nodeKey );
                     if ( existingNode != null )
                     {
-                        copyNodes( node, existingNode );
+                        //if ( existingNode.getDepth() > node.getDepth() + 1 )
+                        {
+                            copyNodes( node, existingNode );
+                        }
                         continue;
                     }
 
@@ -421,6 +437,10 @@ public class DefaultDependencyCollector
 
                     if ( !descriptorResult.getRelocations().isEmpty() )
                     {
+                        disableVersionManagement =
+                            originalArtifact.getGroupId().equals( d.getArtifact().getGroupId() )
+                                && originalArtifact.getArtifactId().equals( d.getArtifact().getArtifactId() );
+
                         dependency = d;
                         continue thisDependency;
                     }
@@ -428,19 +448,21 @@ public class DefaultDependencyCollector
                     d = pool.intern( d.setArtifact( pool.intern( d.getArtifact() ) ) );
                     nodeKey = pool.toKey( d, repositories, depSelector, depManager, depTraverser );
 
-                    DefaultDependencyNode child = new DefaultDependencyNode( d, node );
-                    child.setRelocations( descriptorResult.getRelocations() );
-                    child.setVersionConstraint( rangeResult.getVersionConstraint() );
-                    child.setVersion( version );
-                    child.setPremanagedVersion( premanagedVersion );
-                    child.setPremanagedScope( premanagedScope );
-                    child.setRepositories( repos );
-                    child.setProperties( descriptorResult.getProperties() );
-                    child.setContext( result.getRequest().getRequestContext() );
+                    DependencyNodeInfo info = new DependencyNodeInfo( d );
+                    info.setRelocations( descriptorResult.getRelocations() );
+                    info.setVersionConstraint( rangeResult.getVersionConstraint() );
+                    info.setVersion( version );
+                    info.setPremanagedVersion( premanagedVersion );
+                    info.setPremanagedScope( premanagedScope );
+                    info.setRepositories( repos );
+                    info.setProperties( descriptorResult.getProperties() );
+                    info.setContext( result.getRequest().getRequestContext() );
+
+                    LightDependencyNode child = new LightDependencyNode( info, node );
 
                     node.getChildren().add( child );
 
-                    if ( traverse )
+                    if ( traverse && !descriptorResult.getDependencies().isEmpty() )
                     {
                         process( session, result, child, descriptorResult.getDependencies(),
                                  descriptorResult.getManagedDependencies(),
@@ -462,16 +484,8 @@ public class DefaultDependencyCollector
 
     private void copyNodes( DependencyNode parent, DependencyNode child )
     {
-        DefaultDependencyNode clone = new DefaultDependencyNode( child.getDependency(), parent );
-        clone.setVersionConstraint( child.getVersionConstraint() );
-        clone.setVersion( child.getVersion() );
-        clone.setContext( child.getContext() );
-        clone.setRepositories( child.getRepositories() );
-        clone.setRelocations( child.getRelocations() );
-        clone.setAliases( child.getAliases() );
-        clone.setProperties( child.getProperties() );
-        clone.setPremanagedScope( child.getPremanagedScope() );
-        clone.setPremanagedVersion( child.getPremanagedVersion() );
+        DependencyNodeInfo info = ( (LightDependencyNode) child ).getInfo();
+        LightDependencyNode clone = new LightDependencyNode( info, parent );
 
         parent.getChildren().add( clone );
 

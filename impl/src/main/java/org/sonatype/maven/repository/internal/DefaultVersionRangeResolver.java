@@ -152,17 +152,14 @@ public class DefaultVersionRangeResolver
     {
         Map<String, ArtifactRepository> versionIndex = new HashMap<String, ArtifactRepository>();
 
-        DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setGroupId( request.getArtifact().getGroupId() );
-        metadata.setArtifactId( request.getArtifact().getArtifactId() );
-        metadata.setType( MAVEN_METADATA_XML );
-        metadata.setNature( nature );
+        Metadata metadata =
+            new DefaultMetadata( request.getArtifact().getGroupId(), request.getArtifact().getArtifactId(),
+                                 MAVEN_METADATA_XML, nature );
 
         List<MetadataRequest> metadataRequests = new ArrayList<MetadataRequest>( request.getRepositories().size() );
         for ( RemoteRepository repository : request.getRepositories() )
         {
-            MetadataRequest metadataRequest =
-                new MetadataRequest( new DefaultMetadata( metadata ), repository, request.getRequestContext() );
+            MetadataRequest metadataRequest = new MetadataRequest( metadata, repository, request.getRequestContext() );
             metadataRequest.setDeleteLocalCopyIfMissing( true );
             metadataRequests.add( metadataRequest );
         }
@@ -182,7 +179,7 @@ public class DefaultVersionRangeResolver
         File localMetadataFile = new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalMetadata( metadata ) );
         if ( localMetadataFile.isFile() )
         {
-            metadata.setFile( localMetadataFile );
+            metadata = metadata.setFile( localMetadataFile );
             Versioning versioning = readVersions( session, metadata, result );
             for ( String version : versioning.getVersions() )
             {
@@ -196,7 +193,7 @@ public class DefaultVersionRangeResolver
         for ( MetadataResult metadataResult : metadataResults )
         {
             result.addException( metadataResult.getException() );
-            Versioning versioning = readVersions( session, metadataResult.getRequest().getMetadata(), result );
+            Versioning versioning = readVersions( session, metadataResult.getMetadata(), result );
             for ( String version : versioning.getVersions() )
             {
                 if ( !versionIndex.containsKey( version ) )

@@ -19,6 +19,8 @@ package org.sonatype.maven.repository.internal;
  * under the License.
  */
 
+import java.io.File;
+
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.internal.metadata.Metadata;
 import org.sonatype.maven.repository.internal.metadata.Versioning;
@@ -26,7 +28,7 @@ import org.sonatype.maven.repository.internal.metadata.Versioning;
 /**
  * @author Benjamin Bentmann
  */
-class VersionsMetadata
+final class VersionsMetadata
     extends MavenMetadata
 {
 
@@ -34,8 +36,18 @@ class VersionsMetadata
 
     public VersionsMetadata( Artifact artifact )
     {
+        super( createMetadata( artifact ), null );
         this.artifact = artifact;
+    }
 
+    public VersionsMetadata( Artifact artifact, File file )
+    {
+        super( createMetadata( artifact ), file );
+        this.artifact = artifact;
+    }
+
+    private static Metadata createMetadata( Artifact artifact )
+    {
         Versioning versioning = new Versioning();
         versioning.addVersion( artifact.getBaseVersion() );
         if ( !artifact.isSnapshot() )
@@ -48,7 +60,12 @@ class VersionsMetadata
         metadata.setGroupId( artifact.getGroupId() );
         metadata.setArtifactId( artifact.getArtifactId() );
 
-        this.metadata = metadata;
+        return metadata;
+    }
+
+    public MavenMetadata setFile( File file )
+    {
+        return new VersionsMetadata( artifact, file );
     }
 
     public String getGroupId()

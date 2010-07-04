@@ -44,7 +44,7 @@ public class ClassicVersionConflictResolver
     public DependencyNode transformGraph( DependencyNode node )
         throws RepositoryException
     {
-        Map<Object, ConflictGroup> groups = new HashMap<Object, ConflictGroup>();
+        Map<Object, ConflictGroup> groups = new HashMap<Object, ConflictGroup>( 1024 );
         analyze( node, groups );
         prune( node, groups );
         return node;

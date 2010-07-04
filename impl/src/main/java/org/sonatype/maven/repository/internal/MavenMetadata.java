@@ -42,9 +42,15 @@ abstract class MavenMetadata
     implements MergeableMetadata
 {
 
-    private File file;
+    private final File file;
 
-    protected Metadata metadata;
+    protected final Metadata metadata;
+
+    protected MavenMetadata( Metadata metadata, File file )
+    {
+        this.metadata = metadata;
+        this.file = file;
+    }
 
     public String getType()
     {
@@ -54,11 +60,6 @@ abstract class MavenMetadata
     public File getFile()
     {
         return file;
-    }
-
-    public void setFile( File file )
-    {
-        this.file = file;
     }
 
     public void merge( File existing, File result )

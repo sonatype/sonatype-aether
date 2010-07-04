@@ -125,7 +125,8 @@ public class DefaultMetadataResolver
                 File localFile = getFile( session, metadata, null, null );
                 if ( localFile.isFile() )
                 {
-                    metadata.setFile( localFile );
+                    metadata = metadata.setFile( localFile );
+                    result.setMetadata( metadata );
                 }
                 else
                 {
@@ -152,7 +153,8 @@ public class DefaultMetadataResolver
             {
                 if ( metadataFile.isFile() )
                 {
-                    metadata.setFile( metadataFile );
+                    metadata = metadata.setFile( metadataFile );
+                    result.setMetadata( metadata );
                     metadataResolved( session, metadata, repository, null );
                 }
                 else
@@ -215,7 +217,8 @@ public class DefaultMetadataResolver
                 result.setException( exception );
                 if ( metadataFile.isFile() )
                 {
-                    metadata.setFile( metadataFile );
+                    metadata = metadata.setFile( metadataFile );
+                    result.setMetadata( metadata );
                 }
                 metadataResolved( session, metadata, repository, result.getException() );
             }
@@ -258,13 +261,13 @@ public class DefaultMetadataResolver
                 File metadataFile = task.metadataFile;
                 if ( metadataFile.isFile() )
                 {
-                    task.request.getMetadata().setFile( metadataFile );
+                    task.result.setMetadata( task.request.getMetadata().setFile( metadataFile ) );
                 }
                 if ( task.result.getException() == null )
                 {
                     task.result.setUpdated( true );
                 }
-                metadataResolved( session, task.request.getMetadata(), task.request.getRepository(),
+                metadataResolved( session, task.result.getMetadata(), task.request.getRepository(),
                                   task.result.getException() );
             }
         }

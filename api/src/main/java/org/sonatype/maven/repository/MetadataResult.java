@@ -34,6 +34,8 @@ public class MetadataResult
 
     private boolean updated;
 
+    private Metadata metadata;
+
     /**
      * Creates a new result for the specified request.
      * 
@@ -46,6 +48,7 @@ public class MetadataResult
             throw new IllegalArgumentException( "metadata request has not been specified" );
         }
         this.request = request;
+        this.metadata = request.getMetadata();
     }
 
     /**
@@ -59,14 +62,25 @@ public class MetadataResult
     }
 
     /**
-     * Gets the metadata whose resolution was requested. This is a convenience method for {@code
-     * getRequest().getMetadata()}.
+     * Gets the resolved metadata or the originally requested metadata if the resolution failed.
      * 
-     * @return The requested metadata, never {@code null}.
+     * @return The processed metadata, never {@code null}.
      */
     public Metadata getMetadata()
     {
-        return getRequest().getMetadata();
+        return metadata;
+    }
+
+    /**
+     * Sets the resolved metadata.
+     * 
+     * @param metadata The resolved metadata, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
+    public MetadataResult setMetadata( Metadata metadata )
+    {
+        this.metadata = metadata;
+        return this;
     }
 
     /**
@@ -127,7 +141,7 @@ public class MetadataResult
      */
     public boolean isResolved()
     {
-        return getRequest().getMetadata().getFile() != null;
+        return getMetadata() != null && getMetadata().getFile() != null;
     }
 
     /**

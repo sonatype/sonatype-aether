@@ -52,6 +52,7 @@ public class ArtifactResult
         }
         this.request = request;
         this.exceptions = new ArrayList<Exception>( 2 );
+        this.artifact = request.getArtifact();
     }
 
     /**
@@ -65,9 +66,9 @@ public class ArtifactResult
     }
 
     /**
-     * Gets the resolved artifact.
+     * Gets the resolved artifact or the originally requested artifact if the resolution failed.
      * 
-     * @return The resolved artifact or {@code null} if the resolution failed.
+     * @return The processed artifact, never {@code null}.
      */
     public Artifact getArtifact()
     {

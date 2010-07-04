@@ -1,10 +1,11 @@
 package org.sonatype.maven.repository.internal;
 
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.sonatype.maven.repository.Artifact;
-import org.sonatype.maven.repository.Dependency;
 import org.sonatype.maven.repository.DependencyNode;
 import org.sonatype.maven.repository.DependencyVisitor;
 
@@ -20,6 +21,8 @@ class StatCollector
 
     Set<String> uniqueDeps = new HashSet<String>();
 
+    Map<Object, Object> uniqueInfos = new IdentityHashMap<Object, Object>();
+
     public boolean visitEnter( DependencyNode node )
     {
         maxDepth = Math.max( maxDepth, node.getDepth() );
@@ -32,12 +35,17 @@ class StatCollector
             uniqueDeps.add( getHash( node ) );
         }
 
+        if ( node instanceof LightDependencyNode )
+        {
+            uniqueInfos.put( ( (LightDependencyNode) node ).getInfo(), Boolean.TRUE );
+        }
+
         return true;
     }
 
     private String getHash( DependencyNode n )
     {
-        String hash = getKey(n.getDependency().getArtifact());
+        String hash = getKey( n.getDependency().getArtifact() );
         hash += n.getDependency().getScope();
         hash += n.getDependency().isOptional();
         hash += n.getDependency().getExclusions().size();

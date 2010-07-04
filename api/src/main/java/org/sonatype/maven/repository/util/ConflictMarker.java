@@ -41,7 +41,7 @@ public class ConflictMarker
     public DependencyNode transformGraph( DependencyNode node )
         throws RepositoryException
     {
-        Map<Object, ConflictGroup> groups = new HashMap<Object, ConflictGroup>();
+        Map<Object, ConflictGroup> groups = new HashMap<Object, ConflictGroup>( 1024 );
         analyze( node, groups );
         mark( node, groups );
         return node;

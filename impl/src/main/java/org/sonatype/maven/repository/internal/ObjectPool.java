@@ -31,7 +31,7 @@ import java.util.WeakHashMap;
 class ObjectPool<T>
 {
 
-    private final Map<Object, WeakReference<T>> objects = new WeakHashMap<Object, WeakReference<T>>();
+    private final Map<Object, WeakReference<T>> objects = new WeakHashMap<Object, WeakReference<T>>( 256 );
 
     public synchronized T intern( T object )
     {

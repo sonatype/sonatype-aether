@@ -22,39 +22,91 @@ package org.sonatype.maven.repository;
 import java.io.File;
 
 /**
+ * A basic metadata instance.
+ * 
  * @author Benjamin Bentmann
  */
-public class DefaultMetadata
+public final class DefaultMetadata
     implements Metadata
 {
 
-    private String groupId = "";
+    private final String groupId;
 
-    private String artifactId = "";
+    private final String artifactId;
 
-    private String version = "";
+    private final String version;
 
-    // e.g. "maven-metadata.xml", "archetype-catalog.xml" or "nexus-maven-repository-index.properties", i.e the simple
-    // file name used by classical URL-based repos
-    private String type = "";
+    private final String type;
 
-    private Nature nature = Nature.RELEASE;
+    private final Nature nature;
 
-    private File file;
+    private final File file;
 
-    public DefaultMetadata()
+    public DefaultMetadata( String type, Nature nature )
     {
-        // enables default constructor
+        groupId = artifactId = version = "";
+        this.type = ( type != null ) ? type : "";
+        if ( nature == null )
+        {
+            throw new IllegalArgumentException( "metadata nature was not specified" );
+        }
+        this.nature = nature;
+        this.file = null;
     }
 
-    public DefaultMetadata( Metadata original )
+    public DefaultMetadata( String groupId, String type, Nature nature )
     {
-        setGroupId( original.getGroupId() );
-        setArtifactId( original.getArtifactId() );
-        setVersion( original.getVersion() );
-        setType( original.getType() );
-        setNature( original.getNature() );
-        setFile( original.getFile() );
+        this.groupId = ( groupId != null ) ? groupId : "";
+        artifactId = version = "";
+        this.type = ( type != null ) ? type : "";
+        if ( nature == null )
+        {
+            throw new IllegalArgumentException( "metadata nature was not specified" );
+        }
+        this.nature = nature;
+        this.file = null;
+    }
+
+    public DefaultMetadata( String groupId, String artifactId, String type, Nature nature )
+    {
+        this.groupId = ( groupId != null ) ? groupId : "";
+        this.artifactId = ( artifactId != null ) ? artifactId : "";
+        version = "";
+        this.type = ( type != null ) ? type : "";
+        if ( nature == null )
+        {
+            throw new IllegalArgumentException( "metadata nature was not specified" );
+        }
+        this.nature = nature;
+        this.file = null;
+    }
+
+    public DefaultMetadata( String groupId, String artifactId, String version, String type, Nature nature )
+    {
+        this.groupId = ( groupId != null ) ? groupId : "";
+        this.artifactId = ( artifactId != null ) ? artifactId : "";
+        this.version = ( version != null ) ? version : "";
+        this.type = ( type != null ) ? type : "";
+        if ( nature == null )
+        {
+            throw new IllegalArgumentException( "metadata nature was not specified" );
+        }
+        this.nature = nature;
+        this.file = null;
+    }
+
+    public DefaultMetadata( String groupId, String artifactId, String version, String type, Nature nature, File file )
+    {
+        this.groupId = ( groupId != null ) ? groupId : "";
+        this.artifactId = ( artifactId != null ) ? artifactId : "";
+        this.version = ( version != null ) ? version : "";
+        this.type = ( type != null ) ? type : "";
+        if ( nature == null )
+        {
+            throw new IllegalArgumentException( "metadata nature was not specified" );
+        }
+        this.nature = nature;
+        this.file = file;
     }
 
     public String getGroupId()
@@ -62,21 +114,9 @@ public class DefaultMetadata
         return groupId;
     }
 
-    public DefaultMetadata setGroupId( String groupId )
-    {
-        this.groupId = ( groupId != null ) ? groupId : "";
-        return this;
-    }
-
     public String getArtifactId()
     {
         return artifactId;
-    }
-
-    public DefaultMetadata setArtifactId( String artifactId )
-    {
-        this.artifactId = ( artifactId != null ) ? artifactId : "";
-        return this;
     }
 
     public String getVersion()
@@ -84,21 +124,9 @@ public class DefaultMetadata
         return version;
     }
 
-    public DefaultMetadata setVersion( String version )
-    {
-        this.version = ( version != null ) ? version : "";
-        return this;
-    }
-
     public String getType()
     {
         return type;
-    }
-
-    public DefaultMetadata setType( String type )
-    {
-        this.type = ( type != null ) ? type : "";
-        return this;
     }
 
     public Nature getNature()
@@ -106,24 +134,14 @@ public class DefaultMetadata
         return nature;
     }
 
-    public DefaultMetadata setNature( Nature nature )
-    {
-        if ( nature == null )
-        {
-            throw new IllegalArgumentException( "metadata nature was not specified" );
-        }
-        this.nature = nature;
-        return this;
-    }
-
     public File getFile()
     {
         return file;
     }
 
-    public void setFile( File file )
+    public Metadata setFile( File file )
     {
-        this.file = file;
+        return new DefaultMetadata( groupId, artifactId, version, type, nature, file );
     }
 
     @Override

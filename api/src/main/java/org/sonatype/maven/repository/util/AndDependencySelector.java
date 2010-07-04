@@ -108,14 +108,39 @@ public class AndDependencySelector
 
     public DependencySelector deriveChildSelector( DependencyNode node )
     {
-        Set<DependencySelector> childSelectors = new LinkedHashSet<DependencySelector>();
+        int seen = 0;
+        Set<DependencySelector> childSelectors = null;
 
         for ( DependencySelector selector : selectors )
         {
-            childSelectors.add( selector.deriveChildSelector( node ) );
+            DependencySelector childSelector = selector.deriveChildSelector( node );
+            if ( childSelectors != null )
+            {
+                childSelectors.add( childSelector );
+            }
+            else if ( !selector.equals( childSelector ) )
+            {
+                childSelectors = new LinkedHashSet<DependencySelector>();
+                if ( seen > 0 )
+                {
+                    for ( DependencySelector s : selectors )
+                    {
+                        if ( childSelectors.size() >= seen )
+                        {
+                            break;
+                        }
+                        childSelectors.add( s );
+                    }
+                }
+                childSelectors.add( childSelector );
+            }
+            else
+            {
+                seen++;
+            }
         }
 
-        return !childSelectors.equals( selectors ) ? new AndDependencySelector( childSelectors ) : this;
+        return childSelectors != null ? new AndDependencySelector( childSelectors ) : this;
     }
 
     @Override

@@ -51,8 +51,8 @@ public class JavaEffectiveScopeCalculator
 
     public DependencyNode transformGraph( DependencyNode node )
     {
-        Map<DependencyNode, String> scopes = new IdentityHashMap<DependencyNode, String>();
-        Map<Object, DependencyGroup> groups = new HashMap<Object, DependencyGroup>();
+        Map<DependencyNode, String> scopes = new IdentityHashMap<DependencyNode, String>( 16 * 1024 );
+        Map<Object, DependencyGroup> groups = new HashMap<Object, DependencyGroup>( 1024 );
 
         Dependency parent = node.getDependency();
         String parentScope = ( parent != null ) ? parent.getScope() : "";
