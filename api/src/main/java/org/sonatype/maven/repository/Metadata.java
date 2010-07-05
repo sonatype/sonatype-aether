@@ -107,10 +107,4 @@ public interface Metadata
      */
     Metadata setFile( File file );
 
-    /*
-     * <metadata> <versioning> <snapshot> <timestamp>20100419.164221</timestamp> <buildNumber>46</buildNumber>
-     * </snapshot> <!-- beware MODELLO-237 --> <snapshotVersions> <snapshotVersion> <classifier>win</classifier>
-     * <format>${timeStamp}-${buildNo}</format> <timeStamp>20100419.164221</timeStamp> <buildNo>46</buildNo>
-     * </snapshotVersion> </snapshotVersions> <lastUpdated>20100419164659</lastUpdated> </versioning> </metadata>
-     */
 }

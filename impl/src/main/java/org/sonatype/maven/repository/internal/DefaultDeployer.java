@@ -23,7 +23,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +47,6 @@ import org.sonatype.maven.repository.RepositoryException;
 import org.sonatype.maven.repository.RepositoryListener;
 import org.sonatype.maven.repository.RepositoryPolicy;
 import org.sonatype.maven.repository.RepositorySystemSession;
-import org.sonatype.maven.repository.SubArtifact;
 import org.sonatype.maven.repository.spi.ArtifactUpload;
 import org.sonatype.maven.repository.spi.Deployer;
 import org.sonatype.maven.repository.spi.Logger;
@@ -131,35 +132,68 @@ public class DefaultDeployer
 
             EventCatapult catapult = new EventCatapult( session, repository );
 
-            Map<String, RemoteSnapshotMetadata> snapshots = new HashMap<String, RemoteSnapshotMetadata>();
+            Map<Object, RemoteSnapshotMetadata> snapshots = new LinkedHashMap<Object, RemoteSnapshotMetadata>();
+            Collection<Object> versions = new HashSet<Object>();
+
+            /*
+             * NOTE: This should be considered a quirk to support interop with Maven's ArtifactDeployer which processes
+             * one artifact at a time and hence cannot associate the artifacts from the same project to use the same
+             * timestamp+buildno for the snapshot versions. Allowing the caller to pass in RemoteSnapshotMetadata from a
+             * previous deployment allows to re-establish the association between the artifacts of the same project.
+             */
+            for ( Metadata metadata : request.getMetadata() )
+            {
+                if ( metadata instanceof RemoteSnapshotMetadata )
+                {
+                    RemoteSnapshotMetadata snapshotMetadata = (RemoteSnapshotMetadata) metadata;
+                    snapshots.put( snapshotMetadata.getKey(), snapshotMetadata );
+                }
+            }
 
             for ( Artifact artifact : request.getArtifacts() )
             {
-                /*
-                 * FIXME: In the case the snapshot version has been resolved before during the build, we still need to
-                 * store the resolved version in the remote repo to enable later resolution.
-                 */
-                if ( artifact.isSnapshot() && artifact.getVersion().equals( artifact.getBaseVersion() ) )
+                if ( artifact.isSnapshot() )
                 {
-                    String key = RemoteSnapshotMetadata.getKey( artifact );
+                    Object key = RemoteSnapshotMetadata.getKey( artifact );
                     RemoteSnapshotMetadata snapshotMetadata = snapshots.get( key );
                     if ( snapshotMetadata == null )
                     {
                         snapshotMetadata = new RemoteSnapshotMetadata( artifact );
                         snapshots.put( key, snapshotMetadata );
-                        upload( metadataUploads, session, snapshotMetadata, repository, connector, catapult );
                     }
-                    artifact = artifact.setVersion( snapshotMetadata.getExpandedVersion() );
+                    snapshotMetadata.bind( artifact );
+                }
+            }
+
+            for ( RemoteSnapshotMetadata metadata : snapshots.values() )
+            {
+                upload( metadataUploads, session, metadata, repository, connector, catapult );
+            }
+
+            for ( Artifact artifact : request.getArtifacts() )
+            {
+                if ( artifact.isSnapshot() && artifact.getVersion().equals( artifact.getBaseVersion() ) )
+                {
+                    Object key = RemoteSnapshotMetadata.getKey( artifact );
+                    RemoteSnapshotMetadata snapshotMetadata = snapshots.get( key );
+                    artifact = artifact.setVersion( snapshotMetadata.getExpandedVersion( artifact ) );
                 }
 
-                upload( metadataUploads, session, new VersionsMetadata( artifact ), repository, connector, catapult );
+                Object key = VersionsMetadata.getKey( artifact );
+                if ( versions.add( key ) )
+                {
+                    upload( metadataUploads, session, new VersionsMetadata( artifact ), repository, connector, catapult );
+                }
 
                 artifactUploads.add( new ArtifactUploadEx( artifact, artifact.getFile(), catapult ) );
             }
 
             for ( Metadata metadata : request.getMetadata() )
             {
-                upload( metadataUploads, session, metadata, repository, connector, catapult );
+                if ( !( metadata instanceof RemoteSnapshotMetadata ) )
+                {
+                    upload( metadataUploads, session, metadata, repository, connector, catapult );
+                }
             }
 
             connector.put( artifactUploads, metadataUploads );
@@ -200,7 +234,22 @@ public class DefaultDeployer
 
         File dstFile = new File( basedir, lrm.getPathForRemoteMetadata( metadata, repository, "" ) );
 
-        if ( metadata instanceof MergeableMetadata )
+        if ( metadata instanceof RemoteSnapshotMetadata && ( (RemoteSnapshotMetadata) metadata ).isResolved() )
+        {
+            /*
+             * NOTE: Continued quirk mode to allow reuse of already initialized metadata from previous deployment, no
+             * need to refetch remote copy.
+             */
+            try
+            {
+                ( (MergeableMetadata) metadata ).merge( dstFile, dstFile );
+            }
+            catch ( RepositoryException e )
+            {
+                throw new DeploymentException( "Failed to update metadata " + metadata + ": " + e.getMessage(), e );
+            }
+        }
+        else if ( metadata instanceof MergeableMetadata )
         {
             RepositoryListener listener = session.getRepositoryListener();
             if ( listener != null )

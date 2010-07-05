@@ -56,11 +56,17 @@ final class VersionsMetadata
         }
 
         Metadata metadata = new Metadata();
+        metadata.setModelVersion( "1.0.0" );
         metadata.setVersioning( versioning );
         metadata.setGroupId( artifact.getGroupId() );
         metadata.setArtifactId( artifact.getArtifactId() );
 
         return metadata;
+    }
+
+    public static Object getKey( Artifact artifact )
+    {
+        return artifact.getGroupId() + ':' + artifact.getArtifactId();
     }
 
     public MavenMetadata setFile( File file )

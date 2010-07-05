@@ -22,12 +22,17 @@ package org.sonatype.maven.repository.internal;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.internal.metadata.Metadata;
 import org.sonatype.maven.repository.internal.metadata.Snapshot;
+import org.sonatype.maven.repository.internal.metadata.SnapshotVersion;
 import org.sonatype.maven.repository.internal.metadata.Versioning;
 
 /**
@@ -37,34 +42,24 @@ final class RemoteSnapshotMetadata
     extends MavenMetadata
 {
 
-    private final Artifact artifact;
+    private final Collection<Artifact> artifacts = new ArrayList<Artifact>();
+
+    private final Map<String, SnapshotVersion> versions = new LinkedHashMap<String, SnapshotVersion>();
 
     public RemoteSnapshotMetadata( Artifact artifact )
     {
         super( createMetadata( artifact ), null );
-        this.artifact = artifact;
     }
 
-    public RemoteSnapshotMetadata( Artifact artifact, File file )
+    private RemoteSnapshotMetadata( Metadata metadata, File file )
     {
-        super( createMetadata( artifact ), file );
-        this.artifact = artifact;
+        super( metadata, file );
     }
 
     private static Metadata createMetadata( Artifact artifact )
     {
-        DateFormat utcDateFormatter = new SimpleDateFormat( "yyyyMMdd.HHmmss" );
-        utcDateFormatter.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
-
-        Snapshot snapshot = new Snapshot();
-        snapshot.setBuildNumber( 1 );
-        snapshot.setTimestamp( utcDateFormatter.format( new Date() ) );
-
-        Versioning versioning = new Versioning();
-        versioning.setSnapshot( snapshot );
-
         Metadata metadata = new Metadata();
-        metadata.setVersioning( versioning );
+        metadata.setModelVersion( "1.1.0" );
         metadata.setGroupId( artifact.getGroupId() );
         metadata.setArtifactId( artifact.getArtifactId() );
         metadata.setVersion( artifact.getBaseVersion() );
@@ -72,57 +67,129 @@ final class RemoteSnapshotMetadata
         return metadata;
     }
 
-    public MavenMetadata setFile( File file )
+    public void bind( Artifact artifact )
     {
-        return new RemoteSnapshotMetadata( artifact, file );
+        artifacts.add( artifact );
     }
 
-    public static String getKey( Artifact artifact )
+    public MavenMetadata setFile( File file )
+    {
+        return new RemoteSnapshotMetadata( metadata, file );
+    }
+
+    public Object getKey()
+    {
+        return getGroupId() + ':' + getArtifactId() + ':' + getVersion();
+    }
+
+    public static Object getKey( Artifact artifact )
     {
         return artifact.getGroupId() + ':' + artifact.getArtifactId() + ':' + artifact.getBaseVersion();
     }
 
-    public String getExpandedVersion()
+    public String getExpandedVersion( Artifact artifact )
     {
-        String version = metadata.getVersion();
+        return versions.get( artifact.getClassifier() ).getVersion();
+    }
 
-        Snapshot snapshot = metadata.getVersioning().getSnapshot();
-        version =
-            artifact.getSnapshotHandler().toFullVersion( version, snapshot.getTimestamp(), snapshot.getBuildNumber() );
-
-        return version;
+    boolean isResolved()
+    {
+        return metadata.getVersioning() != null;
     }
 
     @Override
     protected void merge( Metadata recessive )
     {
+        Snapshot snapshot;
+        String lastUpdated = "";
+
+        if ( metadata.getVersioning() == null )
+        {
+            DateFormat utcDateFormatter = new SimpleDateFormat( "yyyyMMdd.HHmmss" );
+            utcDateFormatter.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
+
+            snapshot = new Snapshot();
+            snapshot.setBuildNumber( getBuildNumber( recessive ) + 1 );
+            snapshot.setTimestamp( utcDateFormatter.format( new Date() ) );
+
+            Versioning versioning = new Versioning();
+            versioning.setSnapshot( snapshot );
+            versioning.setLastUpdated( snapshot.getTimestamp().replace( ".", "" ) );
+            lastUpdated = versioning.getLastUpdated();
+
+            metadata.setVersioning( versioning );
+        }
+        else
+        {
+            snapshot = metadata.getVersioning().getSnapshot();
+            lastUpdated = metadata.getVersioning().getLastUpdated();
+        }
+
+        for ( Artifact artifact : artifacts )
+        {
+            String version = artifact.getVersion();
+
+            if ( version.equals( artifact.getBaseVersion() ) )
+            {
+                version =
+                    artifact.getSnapshotHandler().toFullVersion( version, snapshot.getTimestamp(),
+                                                                 snapshot.getBuildNumber() );
+            }
+
+            SnapshotVersion sv = new SnapshotVersion();
+            sv.setClassifier( artifact.getClassifier() );
+            sv.setVersion( version );
+            sv.setUpdated( lastUpdated );
+            versions.put( sv.getClassifier(), sv );
+        }
+
+        artifacts.clear();
+
         Versioning versioning = recessive.getVersioning();
         if ( versioning != null )
         {
-            Snapshot snapshot = versioning.getSnapshot();
-            if ( snapshot != null )
+            for ( SnapshotVersion sv : versioning.getSnapshotVersions() )
             {
-                metadata.getVersioning().getSnapshot().setBuildNumber( snapshot.getBuildNumber() + 1 );
-                versioning.setSnapshot( null );
+                if ( !versions.containsKey( sv.getClassifier() ) )
+                {
+                    versions.put( sv.getClassifier(), sv );
+                }
             }
         }
 
-        super.merge( recessive );
+        metadata.getVersioning().setSnapshotVersions( new ArrayList<SnapshotVersion>( versions.values() ) );
+    }
+
+    private static int getBuildNumber( Metadata metadata )
+    {
+        int number = 0;
+
+        Versioning versioning = metadata.getVersioning();
+        if ( versioning != null )
+        {
+            Snapshot snapshot = versioning.getSnapshot();
+            if ( snapshot != null && snapshot.getBuildNumber() > 0 )
+            {
+                number = snapshot.getBuildNumber();
+            }
+        }
+
+        return number;
     }
 
     public String getGroupId()
     {
-        return artifact.getGroupId();
+        return metadata.getGroupId();
     }
 
     public String getArtifactId()
     {
-        return artifact.getArtifactId();
+        return metadata.getArtifactId();
     }
 
     public String getVersion()
     {
-        return artifact.getBaseVersion();
+        return metadata.getVersion();
     }
 
     public Nature getNature()

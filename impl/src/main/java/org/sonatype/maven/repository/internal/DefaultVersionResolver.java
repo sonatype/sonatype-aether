@@ -24,7 +24,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -47,6 +49,7 @@ import org.sonatype.maven.repository.VersionResult;
 import org.sonatype.maven.repository.WorkspaceReader;
 import org.sonatype.maven.repository.WorkspaceRepository;
 import org.sonatype.maven.repository.internal.metadata.Snapshot;
+import org.sonatype.maven.repository.internal.metadata.SnapshotVersion;
 import org.sonatype.maven.repository.internal.metadata.Versioning;
 import org.sonatype.maven.repository.internal.metadata.io.xpp3.MetadataXpp3Reader;
 import org.sonatype.maven.repository.spi.Logger;
@@ -179,29 +182,26 @@ public class DefaultVersionResolver
                 metadata = metadata.setFile( localMetadataFile );
             }
 
-            Versioning versioning = readVersions( session, metadata, result );
-            ArtifactRepository repo = session.getLocalRepositoryManager().getRepository();
+            Map<String, VersionInfo> infos = new HashMap<String, VersionInfo>();
+            merge( artifact, infos, readVersions( session, metadata, result ),
+                   session.getLocalRepositoryManager().getRepository() );
 
             for ( MetadataResult metadataResult : metadataResults )
             {
                 result.addException( metadataResult.getException() );
-                Versioning v = readVersions( session, metadataResult.getMetadata(), result );
-                if ( mergeVersions( versioning, v ) )
-                {
-                    repo = metadataResult.getRequest().getRepository();
-                }
+                merge( artifact, infos, readVersions( session, metadataResult.getMetadata(), result ),
+                       metadataResult.getRequest().getRepository() );
             }
 
             if ( RELEASE.equals( version ) )
             {
-                result.setVersion( versioning.getRelease() );
+                resolve( result, infos, RELEASE );
             }
             else if ( LATEST.equals( version ) )
             {
-                result.setVersion( versioning.getLatest() );
-                if ( StringUtils.isEmpty( versioning.getLatest() ) )
+                if ( !resolve( result, infos, LATEST ) )
                 {
-                    result.setVersion( versioning.getRelease() );
+                    resolve( result, infos, RELEASE );
                 }
 
                 // FIXME: Use the artifact's snapshot handler
@@ -209,9 +209,9 @@ public class DefaultVersionResolver
                 {
                     VersionRequest subRequest = new VersionRequest();
                     subRequest.setArtifact( artifact.setVersion( result.getVersion() ) );
-                    if ( repo instanceof RemoteRepository )
+                    if ( result.getRepository() instanceof RemoteRepository )
                     {
-                        subRequest.setRepositories( Collections.singletonList( (RemoteRepository) repo ) );
+                        subRequest.setRepositories( Collections.singletonList( (RemoteRepository) result.getRepository() ) );
                     }
                     else
                     {
@@ -219,7 +219,7 @@ public class DefaultVersionResolver
                     }
                     VersionResult subResult = resolveVersion( session, subRequest );
                     result.setVersion( subResult.getVersion() );
-                    repo = subResult.getRepository();
+                    result.setRepository( subResult.getRepository() );
                     for ( Exception exception : subResult.getExceptions() )
                     {
                         result.addException( exception );
@@ -228,31 +228,14 @@ public class DefaultVersionResolver
             }
             else
             {
-                Snapshot snapshot = versioning.getSnapshot();
-                if ( snapshot != null )
-                {
-                    if ( snapshot.getTimestamp() != null && snapshot.getBuildNumber() > 0 )
-                    {
-                        String qualifier = snapshot.getTimestamp() + "-" + snapshot.getBuildNumber();
-                        result.setVersion( version.substring( 0, version.length() - SNAPSHOT.length() ) + qualifier );
-                    }
-                    else
-                    {
-                        result.setVersion( version );
-                    }
-                }
-                else
+                if ( !resolve( result, infos, SNAPSHOT + artifact.getClassifier() )
+                    && !resolve( result, infos, SNAPSHOT ) )
                 {
                     result.setVersion( version );
-                    repo = null;
                 }
             }
 
-            if ( StringUtils.isNotEmpty( result.getVersion() ) )
-            {
-                result.setRepository( repo );
-            }
-            else
+            if ( StringUtils.isEmpty( result.getVersion() ) )
             {
                 throw new VersionResolutionException( result );
             }
@@ -264,6 +247,17 @@ public class DefaultVersionResolver
         }
 
         return result;
+    }
+
+    private boolean resolve( VersionResult result, Map<String, VersionInfo> infos, String key )
+    {
+        VersionInfo info = infos.get( key );
+        if ( info != null )
+        {
+            result.setVersion( info.version );
+            result.setRepository( info.repository );
+        }
+        return info != null;
     }
 
     private Versioning readVersions( RepositorySystemSession session, Metadata metadata, VersionResult result )
@@ -308,31 +302,79 @@ public class DefaultVersionResolver
         }
     }
 
-    private boolean mergeVersions( Versioning target, Versioning source )
+    private void merge( Artifact artifact, Map<String, VersionInfo> infos, Versioning versioning,
+                        ArtifactRepository repository )
     {
-        String targetTimestamp = StringUtils.clean( target.getLastUpdated() );
-        String sourceTimestamp = StringUtils.clean( source.getLastUpdated() );
-        if ( targetTimestamp.compareTo( sourceTimestamp ) >= 0 )
+        if ( StringUtils.isNotEmpty( versioning.getRelease() ) )
         {
-            return false;
+            merge( RELEASE, infos, versioning.getLastUpdated(), versioning.getRelease(), repository );
         }
 
-        target.setLastUpdated( sourceTimestamp );
-
-        if ( source.getRelease() != null )
+        if ( StringUtils.isNotEmpty( versioning.getLatest() ) )
         {
-            target.setRelease( source.getRelease() );
-        }
-        if ( source.getLatest() != null )
-        {
-            target.setLatest( source.getLatest() );
-        }
-        if ( source.getSnapshot() != null )
-        {
-            target.setSnapshot( source.getSnapshot() );
+            merge( LATEST, infos, versioning.getLastUpdated(), versioning.getLatest(), repository );
         }
 
-        return true;
+        boolean mainSnapshot = false;
+        for ( SnapshotVersion sv : versioning.getSnapshotVersions() )
+        {
+            if ( StringUtils.isNotEmpty( sv.getVersion() ) )
+            {
+                mainSnapshot |= sv.getClassifier().length() <= 0;
+                merge( SNAPSHOT + sv.getClassifier(), infos, sv.getUpdated(), sv.getVersion(), repository );
+            }
+        }
+
+        Snapshot snapshot = versioning.getSnapshot();
+        if ( !mainSnapshot && snapshot != null )
+        {
+            String version = artifact.getVersion();
+            if ( snapshot.getTimestamp() != null && snapshot.getBuildNumber() > 0 )
+            {
+                String qualifier = snapshot.getTimestamp() + '-' + snapshot.getBuildNumber();
+                version = version.substring( 0, version.length() - SNAPSHOT.length() ) + qualifier;
+            }
+            merge( SNAPSHOT, infos, versioning.getLastUpdated(), version, repository );
+        }
+    }
+
+    private void merge( String key, Map<String, VersionInfo> infos, String timestamp, String version,
+                        ArtifactRepository repository )
+    {
+        VersionInfo info = infos.get( key );
+        if ( info == null )
+        {
+            info = new VersionInfo( timestamp, version, repository );
+            infos.put( key, info );
+        }
+        else if ( info.isOutdated( timestamp ) )
+        {
+            info.version = version;
+            info.repository = repository;
+        }
+    }
+
+    private static class VersionInfo
+    {
+
+        String timestamp;
+
+        String version;
+
+        ArtifactRepository repository;
+
+        public VersionInfo( String timestamp, String version, ArtifactRepository repository )
+        {
+            this.timestamp = ( timestamp != null ) ? timestamp : "";
+            this.version = version;
+            this.repository = repository;
+        }
+
+        public boolean isOutdated( String timestamp )
+        {
+            return timestamp != null && timestamp.compareTo( this.timestamp ) > 0;
+        }
+
     }
 
     private static class Key
