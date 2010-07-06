@@ -20,7 +20,6 @@ package org.sonatype.maven.repository;
  */
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * A node within a dependency graph.
@@ -89,14 +88,6 @@ public interface DependencyNode
      * @return The known aliases, never {@code null}.
      */
     List<Artifact> getAliases();
-
-    /**
-     * Gets the properties from the artifact's descriptor.
-     * 
-     * @return The artifact descriptor properties.
-     * @see ArtifactDescriptorResult#getProperties()
-     */
-    Map<String, Object> getProperties();
 
     /**
      * Gets the conflict identifier for this node. Nodes having equal conflict identifiers are considered a conflict

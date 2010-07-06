@@ -22,7 +22,6 @@ package org.sonatype.maven.repository.internal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.Dependency;
@@ -54,8 +53,6 @@ public class DefaultDependencyNode
     private List<Artifact> relocations = Collections.emptyList();
 
     private List<Artifact> aliases = Collections.emptyList();
-
-    private Map<String, Object> properties = Collections.emptyMap();
 
     private Object conflictId;
 
@@ -213,36 +210,6 @@ public class DefaultDependencyNode
         else
         {
             this.aliases = aliases;
-        }
-        return this;
-    }
-
-    /**
-     * Gets the properties from the artifact's descriptor.
-     * 
-     * @return The artifact descriptor properties.
-     * @see ArtifactDescriptorResult#getProperties()
-     */
-    public Map<String, Object> getProperties()
-    {
-        return properties;
-    }
-
-    /**
-     * Sets the properties from the artifact's descriptor.
-     * 
-     * @param properties The artifact descriptor properties, may be {@code null}.
-     * @return This dependency node for chaining, never {@code null}.
-     */
-    public DefaultDependencyNode setProperties( Map<String, Object> properties )
-    {
-        if ( properties == null || properties.isEmpty() )
-        {
-            this.properties = Collections.emptyMap();
-        }
-        else
-        {
-            this.properties = properties;
         }
         return this;
     }

@@ -162,7 +162,6 @@ public class DefaultDependencyCollector
             managedDependencies = mergeDeps( managedDependencies, descriptorResult.getManagedDependencies() );
 
             node.setRelocations( descriptorResult.getRelocations() );
-            node.setProperties( descriptorResult.getProperties() );
 
             VersionRangeRequest versionRequest =
                 new VersionRangeRequest( root.getArtifact(), request.getRepositories(), request.getRequestContext() );
@@ -455,7 +454,6 @@ public class DefaultDependencyCollector
                     info.setPremanagedVersion( premanagedVersion );
                     info.setPremanagedScope( premanagedScope );
                     info.setRepositories( repos );
-                    info.setProperties( descriptorResult.getProperties() );
                     info.setContext( result.getRequest().getRequestContext() );
 
                     LightDependencyNode child = new LightDependencyNode( info, node );

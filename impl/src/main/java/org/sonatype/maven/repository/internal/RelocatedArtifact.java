@@ -48,14 +48,14 @@ final class RelocatedArtifact
             throw new IllegalArgumentException( "no artifact specified" );
         }
         this.artifact = artifact;
-        this.groupId = ( groupId != null ) ? groupId : "";
-        this.artifactId = ( artifactId != null ) ? artifactId : "";
-        this.version = ( version != null ) ? version : "";
+        this.groupId = ( groupId != null && groupId.length() > 0 ) ? groupId : null;
+        this.artifactId = ( artifactId != null && artifactId.length() > 0 ) ? artifactId : null;
+        this.version = ( version != null && version.length() > 0 ) ? version : null;
     }
 
     public String getGroupId()
     {
-        if ( groupId.length() > 0 )
+        if ( groupId != null )
         {
             return groupId;
         }
@@ -67,7 +67,7 @@ final class RelocatedArtifact
 
     public String getArtifactId()
     {
-        if ( artifactId.length() > 0 )
+        if ( artifactId != null )
         {
             return artifactId;
         }
@@ -79,7 +79,7 @@ final class RelocatedArtifact
 
     public String getVersion()
     {
-        if ( version.length() > 0 )
+        if ( version != null )
         {
             return version;
         }

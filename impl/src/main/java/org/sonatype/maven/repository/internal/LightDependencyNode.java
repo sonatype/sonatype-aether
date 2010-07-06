@@ -18,9 +18,9 @@ package org.sonatype.maven.repository.internal;
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.Dependency;
@@ -104,11 +104,6 @@ final class LightDependencyNode
     public String getPremanagedVersion()
     {
         return info.getPremanagedVersion();
-    }
-
-    public Map<String, Object> getProperties()
-    {
-        return info.getProperties();
     }
 
     public List<Artifact> getRelocations()

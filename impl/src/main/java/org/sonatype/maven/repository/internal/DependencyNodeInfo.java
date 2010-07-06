@@ -21,7 +21,6 @@ package org.sonatype.maven.repository.internal;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.Dependency;
@@ -42,8 +41,6 @@ final class DependencyNodeInfo
     private List<Artifact> relocations = Collections.emptyList();
 
     private List<Artifact> aliases = Collections.emptyList();
-
-    private Map<String, Object> properties = Collections.emptyMap();
 
     private VersionConstraint versionConstraint;
 
@@ -67,7 +64,6 @@ final class DependencyNodeInfo
         aliases = info.aliases;
         relocations = info.relocations;
         repositories = info.repositories;
-        properties = info.properties;
         version = info.version;
         versionConstraint = info.versionConstraint;
         premanagedScope = info.premanagedScope;
@@ -120,23 +116,6 @@ final class DependencyNodeInfo
         else
         {
             this.aliases = aliases;
-        }
-    }
-
-    public Map<String, Object> getProperties()
-    {
-        return properties;
-    }
-
-    public void setProperties( Map<String, Object> properties )
-    {
-        if ( properties == null || properties.isEmpty() )
-        {
-            this.properties = Collections.emptyMap();
-        }
-        else
-        {
-            this.properties = properties;
         }
     }
 
