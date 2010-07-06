@@ -233,15 +233,6 @@ under the License.
           <description>The current snapshot data in use for this version</description>
         </field>
         <field>
-          <name>snapshotVersions</name>
-          <version>1.1.0+</version>
-          <description>The snapshot versions available for the artifact.</description>
-          <association>
-            <type>SnapshotVersion</type>
-            <multiplicity>*</multiplicity>
-          </association>
-        </field>
-        <field>
           <name>versions</name>
           <version>1.0.0+</version>
           <description>Versions available for the artifact</description>
@@ -255,6 +246,15 @@ under the License.
           <version>1.0.0+</version>
           <type>String</type>
           <description>When the metadata was last updated</description>
+        </field>
+        <field>
+          <name>snapshotVersions</name>
+          <version>1.1.0+</version>
+          <description>The snapshot versions available for the artifact.</description>
+          <association>
+            <type>SnapshotVersion</type>
+            <multiplicity>*</multiplicity>
+          </association>
         </field>
       </fields>
       <codeSegments>
@@ -315,7 +315,7 @@ under the License.
           <description>The classifier of the snapshot artifact this version information belongs to.</description>
           <defaultValue></defaultValue>
         </field>
-        <field>
+        <field xml.tagName="value">
           <name>version</name>
           <version>1.1.0+</version>
           <type>String</type>

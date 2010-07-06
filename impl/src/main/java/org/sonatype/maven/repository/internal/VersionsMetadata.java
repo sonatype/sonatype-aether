@@ -64,6 +64,11 @@ final class VersionsMetadata
         return metadata;
     }
 
+    public Object getKey()
+    {
+        return getGroupId() + ':' + getArtifactId();
+    }
+
     public static Object getKey( Artifact artifact )
     {
         return artifact.getGroupId() + ':' + artifact.getArtifactId();

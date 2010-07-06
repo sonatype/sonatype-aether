@@ -138,8 +138,8 @@ public class DefaultDeployer
             /*
              * NOTE: This should be considered a quirk to support interop with Maven's ArtifactDeployer which processes
              * one artifact at a time and hence cannot associate the artifacts from the same project to use the same
-             * timestamp+buildno for the snapshot versions. Allowing the caller to pass in RemoteSnapshotMetadata from a
-             * previous deployment allows to re-establish the association between the artifacts of the same project.
+             * timestamp+buildno for the snapshot versions. Allowing the caller to pass in metadata from a previous
+             * deployment allows to re-establish the association between the artifacts of the same project.
              */
             for ( Metadata metadata : request.getMetadata() )
             {
@@ -147,6 +147,11 @@ public class DefaultDeployer
                 {
                     RemoteSnapshotMetadata snapshotMetadata = (RemoteSnapshotMetadata) metadata;
                     snapshots.put( snapshotMetadata.getKey(), snapshotMetadata );
+                }
+                else if ( metadata instanceof VersionsMetadata )
+                {
+                    VersionsMetadata versionsMetadata = (VersionsMetadata) metadata;
+                    versions.add( versionsMetadata.getKey() );
                 }
             }
 
@@ -190,7 +195,7 @@ public class DefaultDeployer
 
             for ( Metadata metadata : request.getMetadata() )
             {
-                if ( !( metadata instanceof RemoteSnapshotMetadata ) )
+                if ( !( metadata instanceof MavenMetadata ) )
                 {
                     upload( metadataUploads, session, metadata, repository, connector, catapult );
                 }
