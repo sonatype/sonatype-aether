@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.sonatype.maven.repository.AbstractArtifact;
 import org.sonatype.maven.repository.Artifact;
-import org.sonatype.maven.repository.SnapshotHandler;
 
 /**
  * @author Benjamin Bentmann
@@ -91,17 +90,12 @@ final class RelocatedArtifact
 
     public String getBaseVersion()
     {
-        return artifact.getSnapshotHandler().toBaseVersion( getVersion() );
+        return toBaseVersion( getVersion() );
     }
 
     public boolean isSnapshot()
     {
-        return artifact.getSnapshotHandler().isSnapshot( getVersion() );
-    }
-
-    public SnapshotHandler getSnapshotHandler()
-    {
-        return artifact.getSnapshotHandler();
+        return isSnapshot( getVersion() );
     }
 
     public String getClassifier()

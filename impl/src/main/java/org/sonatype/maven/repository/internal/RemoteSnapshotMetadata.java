@@ -42,6 +42,8 @@ final class RemoteSnapshotMetadata
     extends MavenMetadata
 {
 
+    private static final String SNAPSHOT = "SNAPSHOT";
+
     private final Collection<Artifact> artifacts = new ArrayList<Artifact>();
 
     private final Map<String, SnapshotVersion> versions = new LinkedHashMap<String, SnapshotVersion>();
@@ -129,11 +131,10 @@ final class RemoteSnapshotMetadata
         {
             String version = artifact.getVersion();
 
-            if ( version.equals( artifact.getBaseVersion() ) )
+            if ( version.endsWith( SNAPSHOT ) )
             {
-                version =
-                    artifact.getSnapshotHandler().toFullVersion( version, snapshot.getTimestamp(),
-                                                                 snapshot.getBuildNumber() );
+                String qualifier = snapshot.getTimestamp() + "-" + snapshot.getBuildNumber();
+                version = version.substring( 0, version.length() - SNAPSHOT.length() ) + qualifier;
             }
 
             SnapshotVersion sv = new SnapshotVersion();

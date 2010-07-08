@@ -20,6 +20,8 @@ package org.sonatype.maven.repository;
  */
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Benjamin Bentmann
@@ -27,6 +29,50 @@ import java.io.File;
 public abstract class AbstractArtifact
     implements Artifact
 {
+
+    private static final String SNAPSHOT = "SNAPSHOT";
+
+    private static final Pattern SNAPSHOT_TIMESTAMP = Pattern.compile( "^(.*-)?([0-9]{8}.[0-9]{6}-[0-9]+)$" );
+
+    protected static boolean isSnapshot( String version )
+    {
+        return version.endsWith( SNAPSHOT ) || SNAPSHOT_TIMESTAMP.matcher( version ).matches();
+    }
+
+    protected static String toBaseVersion( String version )
+    {
+        String baseVersion;
+
+        if ( version == null )
+        {
+            baseVersion = version;
+        }
+        else if ( version.startsWith( "[" ) || version.startsWith( "(" ) )
+        {
+            baseVersion = version;
+        }
+        else
+        {
+            Matcher m = SNAPSHOT_TIMESTAMP.matcher( version );
+            if ( m.matches() )
+            {
+                if ( m.group( 1 ) != null )
+                {
+                    baseVersion = m.group( 1 ) + SNAPSHOT;
+                }
+                else
+                {
+                    baseVersion = SNAPSHOT;
+                }
+            }
+            else
+            {
+                baseVersion = version;
+            }
+        }
+
+        return baseVersion;
+    }
 
     public Artifact setVersion( String version )
     {
@@ -80,8 +126,7 @@ public abstract class AbstractArtifact
         return getArtifactId().equals( that.getArtifactId() ) && getGroupId().equals( that.getGroupId() )
             && getVersion().equals( that.getVersion() ) && getExtension().equals( that.getExtension() )
             && getClassifier().equals( that.getClassifier() ) && eq( getFile(), that.getFile() )
-            && getProperties().equals( that.getProperties() )
-            && getSnapshotHandler().equals( that.getSnapshotHandler() );
+            && getProperties().equals( that.getProperties() );
     }
 
     private static <T> boolean eq( T s1, T s2 )

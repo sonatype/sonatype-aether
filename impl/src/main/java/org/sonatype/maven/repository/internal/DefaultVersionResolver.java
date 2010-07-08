@@ -136,7 +136,6 @@ public class DefaultVersionResolver
                 new DefaultMetadata( artifact.getGroupId(), artifact.getArtifactId(), MAVEN_METADATA_XML,
                                      Metadata.Nature.RELEASE_OR_SNAPSHOT );
         }
-        // FIXME: Use the artifact's snapshot handler
         else if ( version.endsWith( SNAPSHOT ) )
         {
             WorkspaceReader workspace = session.getWorkspaceReader();
@@ -204,7 +203,6 @@ public class DefaultVersionResolver
                     resolve( result, infos, RELEASE );
                 }
 
-                // FIXME: Use the artifact's snapshot handler
                 if ( result.getVersion() != null && result.getVersion().endsWith( SNAPSHOT ) )
                 {
                     VersionRequest subRequest = new VersionRequest();

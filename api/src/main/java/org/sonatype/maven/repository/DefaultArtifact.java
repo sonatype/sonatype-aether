@@ -45,8 +45,6 @@ public final class DefaultArtifact
 
     private final Map<String, String> properties;
 
-    private final SnapshotHandler snapshotHandler = DefaultSnapshotHandler.INSTANCE;
-
     private String baseVersion;
 
     public DefaultArtifact( String groupId, String artifactId, String extension, String version )
@@ -149,7 +147,7 @@ public final class DefaultArtifact
     {
         if ( baseVersion == null )
         {
-            baseVersion = snapshotHandler.toBaseVersion( getVersion() );
+            baseVersion = toBaseVersion( getVersion() );
         }
         return baseVersion;
     }
@@ -170,12 +168,7 @@ public final class DefaultArtifact
 
     public boolean isSnapshot()
     {
-        return snapshotHandler.isSnapshot( getVersion() );
-    }
-
-    public SnapshotHandler getSnapshotHandler()
-    {
-        return snapshotHandler;
+        return isSnapshot( getVersion() );
     }
 
     public String getClassifier()

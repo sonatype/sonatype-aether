@@ -79,13 +79,6 @@ public interface Artifact
     boolean isSnapshot();
 
     /**
-     * Gets the handler for snapshot versioning.
-     * 
-     * @return The snapshot handler, never {@code null}.
-     */
-    SnapshotHandler getSnapshotHandler();
-
-    /**
      * Gets the classifier of this artifact, e.g. "sources".
      * 
      * @return The classifier or an empty string if none, never {@code null}.

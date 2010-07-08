@@ -67,11 +67,6 @@ public final class SubArtifact
                                     getProperties() );
     }
 
-    public SnapshotHandler getSnapshotHandler()
-    {
-        return mainArtifact.getSnapshotHandler();
-    }
-
     public String getBaseVersion()
     {
         return mainArtifact.getBaseVersion();
