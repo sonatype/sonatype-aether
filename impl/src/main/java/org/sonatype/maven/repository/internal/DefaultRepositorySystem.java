@@ -253,7 +253,7 @@ public class DefaultRepositorySystem
         Dependency dependency = node.getDependency();
         if ( dependency != null && ( filter == null || filter.filterDependency( node ) ) )
         {
-            ArtifactRequest request = new ArtifactRequest( node, node.getRepositories(), node.getContext() );
+            ArtifactRequest request = new ArtifactRequest( node );
             requests.add( request );
         }
 

@@ -64,17 +64,15 @@ public class ArtifactRequest
     }
 
     /**
-     * Creates a request with the specified properties.
+     * Creates a request from the specified dependency node.
      * 
      * @param node The dependency node to resolve, may be {@code null}.
-     * @param repositories The repositories to resolve the artifact from, may be {@code null}.
-     * @param context The context in which this request is made, may be {@code null}.
      */
-    public ArtifactRequest( DependencyNode node, List<RemoteRepository> repositories, String context )
+    public ArtifactRequest( DependencyNode node )
     {
         setDependencyNode( node );
-        setRepositories( repositories );
-        setRequestContext( context );
+        setRepositories( node.getRepositories() );
+        setRequestContext( node.getContext() );
     }
 
     /**
