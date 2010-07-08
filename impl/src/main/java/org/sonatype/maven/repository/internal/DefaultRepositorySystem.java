@@ -263,6 +263,14 @@ public class DefaultRepositorySystem
         }
     }
 
+    public List<ArtifactResult> resolveDependencies( RepositorySystemSession session, CollectRequest request,
+                                                     DependencyFilter filter )
+        throws DependencyCollectionException, ArtifactResolutionException
+    {
+        CollectResult result = collectDependencies( session, request );
+        return resolveDependencies( session, result.getRoot(), filter );
+    }
+
     public InstallResult install( RepositorySystemSession session, InstallRequest request )
         throws InstallationException
     {

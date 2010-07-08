@@ -95,9 +95,27 @@ public interface RepositorySystem
      * @throws ArtifactResolutionException If any artifact could not be resolved.
      * @see Artifact#getFile()
      */
-    public List<ArtifactResult> resolveDependencies( RepositorySystemSession session, DependencyNode node,
-                                                     DependencyFilter filter )
+    List<ArtifactResult> resolveDependencies( RepositorySystemSession session, DependencyNode node,
+                                              DependencyFilter filter )
         throws ArtifactResolutionException;
+
+    /**
+     * Collects the transitive dependencies of an artifact and resolves the paths for the artifacts referenced by the
+     * specified dependency graph. This is a convenience method that combines
+     * {@link #collectDependencies(RepositorySystemSession, CollectRequest)} and
+     * {@link #resolveDependencies(RepositorySystemSession, DependencyNode, DependencyFilter)}.
+     * 
+     * @param session The repository session, must not be {@code null}.
+     * @param request The collection request, must not be {@code null}
+     * @param filter The node filter to use to select the actual nodes to resolve, may be {@code null} to resolve all
+     *            nodes.
+     * @return The resolution results, never {@code null}.
+     * @throws DependencyCollectionException If the dependency tree could not be built.
+     * @throws ArtifactResolutionException If any artifact could not be resolved.
+     */
+    List<ArtifactResult> resolveDependencies( RepositorySystemSession session, CollectRequest request,
+                                              DependencyFilter filter )
+        throws DependencyCollectionException, ArtifactResolutionException;
 
     /**
      * Resolves the paths for an artifact. The Artifact will be downloaded if necessary. An artifacts that is already
