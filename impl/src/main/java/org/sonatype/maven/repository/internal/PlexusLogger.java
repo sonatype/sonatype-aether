@@ -24,6 +24,8 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.maven.repository.spi.Logger;
 
 /**
+ * A logger that delegates to Plexus logging.
+ * 
  * @author Benjamin Bentmann
  */
 @Component( role = Logger.class )
