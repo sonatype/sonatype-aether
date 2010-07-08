@@ -32,6 +32,8 @@ import org.sonatype.maven.repository.util.DefaultTransferEvent;
 import org.sonatype.maven.repository.util.DefaultTransferResource;
 
 /**
+ * An adapter to transform transfer events from Wagon into events for the repository system.
+ * 
  * @author Benjamin Bentmann
  */
 class WagonTransferListenerAdapter

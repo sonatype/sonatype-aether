@@ -25,6 +25,8 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 
 /**
+ * A wagon provider backed by a Plexus container and the wagons registered with this container.
+ * 
  * @author Benjamin Bentmann
  */
 @Component( role = WagonProvider.class )

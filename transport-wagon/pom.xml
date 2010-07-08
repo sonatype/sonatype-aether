@@ -33,8 +33,16 @@ under the License.
   <artifactId>sonatype-repository-transport-wagon</artifactId>
 
   <name>Repository System :: Wagon Bridge</name>
+  <description>
+    A repository connector implementation based on Maven Wagon.
+  </description>
 
   <dependencies>
+    <dependency>
+      <groupId>org.sonatype.maven.repository</groupId>
+      <artifactId>sonatype-repository-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.sonatype.maven.repository</groupId>
       <artifactId>sonatype-repository-impl</artifactId>

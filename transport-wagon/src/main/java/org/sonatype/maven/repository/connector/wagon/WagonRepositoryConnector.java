@@ -71,6 +71,8 @@ import org.sonatype.maven.repository.spi.Transfer;
 import org.sonatype.maven.repository.util.DefaultTransferEvent;
 
 /**
+ * A repository connector that uses Maven Wagon for the transfer.
+ * 
  * @author Benjamin Bentmann
  */
 class WagonRepositoryConnector

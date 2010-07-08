@@ -1,7 +1,5 @@
 package org.sonatype.maven.repository.spi;
 
-import java.util.Comparator;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,14 +19,26 @@ import java.util.Comparator;
  * under the License.
  */
 
+import java.util.Comparator;
+
 /**
+ * A component that can be plugged into the repository system.
+ * 
  * @author Benjamin Bentmann
  */
 public interface PluggableComponent
 {
 
+    /**
+     * The priority of this component. Components with higher priority are preferred over those with lower priority.
+     * 
+     * @return The priority of this component.
+     */
     int getPriority();
 
+    /**
+     * A comparator that sorts components in descending order of their priority.
+     */
     static final Comparator<PluggableComponent> COMPARATOR = new Comparator<PluggableComponent>()
     {
 
