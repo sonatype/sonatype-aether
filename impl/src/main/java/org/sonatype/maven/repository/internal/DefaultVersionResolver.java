@@ -265,7 +265,7 @@ public class DefaultVersionResolver
         FileInputStream fis = null;
         try
         {
-            if ( metadata.getFile() != null )
+            if ( metadata != null && metadata.getFile() != null )
             {
                 fis = new FileInputStream( metadata.getFile() );
                 org.sonatype.maven.repository.internal.metadata.Metadata m = new MetadataXpp3Reader().read( fis, false );

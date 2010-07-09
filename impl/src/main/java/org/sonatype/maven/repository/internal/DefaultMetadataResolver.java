@@ -258,17 +258,18 @@ public class DefaultMetadataResolver
             }
             for ( ResolveTask task : tasks )
             {
+                Metadata metadata = task.request.getMetadata();
                 File metadataFile = task.metadataFile;
                 if ( metadataFile.isFile() )
                 {
-                    task.result.setMetadata( task.request.getMetadata().setFile( metadataFile ) );
+                    metadata = metadata.setFile( metadataFile );
+                    task.result.setMetadata( metadata );
                 }
                 if ( task.result.getException() == null )
                 {
                     task.result.setUpdated( true );
                 }
-                metadataResolved( session, task.result.getMetadata(), task.request.getRepository(),
-                                  task.result.getException() );
+                metadataResolved( session, metadata, task.request.getRepository(), task.result.getException() );
             }
         }
 

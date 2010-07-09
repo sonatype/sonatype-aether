@@ -51,11 +51,10 @@ public class ArtifactResolutionException
         String sep = "";
         for ( ArtifactResult result : results )
         {
-            Artifact artifact = result.getRequest().getArtifact();
-            if ( artifact.getFile() == null )
+            if ( !result.isResolved() )
             {
                 buffer.append( sep );
-                buffer.append( artifact );
+                buffer.append( result.getRequest().getArtifact() );
                 sep = ", ";
             }
         }

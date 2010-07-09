@@ -163,7 +163,10 @@ public class DefaultArtifactResolver
                     failures = true;
                     result.addException( new ArtifactNotFoundException( artifact, null ) );
                 }
-                result.setArtifact( artifact );
+                else
+                {
+                    result.setArtifact( artifact );
+                }
                 artifactResolved( session, artifact, null, result.getExceptions() );
                 continue;
             }
@@ -392,10 +395,10 @@ public class DefaultArtifactResolver
                 failures = true;
                 if ( result.getExceptions().isEmpty() )
                 {
-                    Exception exception = new ArtifactNotFoundException( artifact, null );
+                    Exception exception = new ArtifactNotFoundException( result.getRequest().getArtifact(), null );
                     result.addException( exception );
                 }
-                artifactResolved( session, artifact, null, result.getExceptions() );
+                artifactResolved( session, result.getRequest().getArtifact(), null, result.getExceptions() );
             }
         }
 

@@ -48,7 +48,6 @@ public class MetadataResult
             throw new IllegalArgumentException( "metadata request has not been specified" );
         }
         this.request = request;
-        this.metadata = request.getMetadata();
     }
 
     /**
@@ -62,9 +61,9 @@ public class MetadataResult
     }
 
     /**
-     * Gets the resolved metadata or the originally requested metadata if the resolution failed.
+     * Gets the resolved metadata (if any).
      * 
-     * @return The processed metadata, never {@code null}.
+     * @return The resolved metadata or {@code null} if the resolution failed.
      */
     public Metadata getMetadata()
     {
@@ -74,7 +73,7 @@ public class MetadataResult
     /**
      * Sets the resolved metadata.
      * 
-     * @param metadata The resolved metadata, may be {@code null}.
+     * @param metadata The resolved metadata, may be {@code null} if the resolution failed.
      * @return This result for chaining, never {@code null}.
      */
     public MetadataResult setMetadata( Metadata metadata )
