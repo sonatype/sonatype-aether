@@ -19,7 +19,6 @@ package org.sonatype.maven.repository.util;
  * under the License.
  */
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,13 +34,15 @@ import org.sonatype.maven.repository.DependencyNode;
 import org.sonatype.maven.repository.Exclusion;
 
 /**
- * A dependency manager that overrides dependency version and scope for managed dependencies.
+ * A dependency manager that mimics the way Maven 2.x works.
  * 
  * @author Benjamin Bentmann
  */
-public class DefaultDependencyManager
+public class ClassicDependencyManager
     implements DependencyManager
 {
+
+    private final int depth;
 
     private final Map<Object, String> managedVersions;
 
@@ -52,15 +53,17 @@ public class DefaultDependencyManager
     /**
      * Creates a new dependency manager without any management information.
      */
-    public DefaultDependencyManager()
+    public ClassicDependencyManager()
     {
-        this( Collections.<Object, String> emptyMap(), Collections.<Object, String> emptyMap(),
+        this( 0, Collections.<Object, String> emptyMap(), Collections.<Object, String> emptyMap(),
               Collections.<Object, Collection<Exclusion>> emptyMap() );
     }
 
-    private DefaultDependencyManager( Map<Object, String> managedVersions, Map<Object, String> managedScopes,
+    private ClassicDependencyManager( int depth, Map<Object, String> managedVersions,
+                                      Map<Object, String> managedScopes,
                                       Map<Object, Collection<Exclusion>> managedExclusions )
     {
+        this.depth = depth;
         this.managedVersions = managedVersions;
         this.managedScopes = managedScopes;
         this.managedExclusions = managedExclusions;
@@ -68,9 +71,13 @@ public class DefaultDependencyManager
 
     public DependencyManager deriveChildManager( DependencyNode node, List<? extends Dependency> managedDependencies )
     {
-        if ( managedDependencies == null || managedDependencies.isEmpty() )
+        if ( depth >= 2 )
         {
             return this;
+        }
+        else if ( depth == 1 )
+        {
+            return new ClassicDependencyManager( depth + 1, managedVersions, managedScopes, managedExclusions );
         }
 
         Map<Object, String> managedVersions = this.managedVersions;
@@ -82,21 +89,24 @@ public class DefaultDependencyManager
             Artifact artifact = managedDependency.getArtifact();
             Object key = getKey( artifact );
 
-            if ( artifact.getVersion().length() > 0 && !managedVersions.containsKey( key ) )
+            String version = artifact.getVersion();
+            if ( version.length() > 0 && !managedVersions.containsKey( key ) )
             {
                 if ( managedVersions == this.managedVersions )
                 {
                     managedVersions = new HashMap<Object, String>( this.managedVersions );
                 }
-                managedVersions.put( key, artifact.getVersion() );
+                managedVersions.put( key, version );
             }
-            if ( node.getDepth() <= 1 && managedDependency.getScope().length() > 0 && !managedScopes.containsKey( key ) )
+
+            String scope = managedDependency.getScope();
+            if ( scope.length() > 0 && !managedScopes.containsKey( key ) )
             {
                 if ( managedScopes == this.managedScopes )
                 {
                     managedScopes = new HashMap<Object, String>( this.managedScopes );
                 }
-                managedScopes.put( key, managedDependency.getScope() );
+                managedScopes.put( key, scope );
             }
 
             Collection<Exclusion> exclusions = managedDependency.getExclusions();
@@ -116,13 +126,7 @@ public class DefaultDependencyManager
             }
         }
 
-        if ( managedVersions == this.managedVersions && managedScopes == this.managedScopes
-            && managedExclusions == this.managedExclusions )
-        {
-            return this;
-        }
-
-        return new DefaultDependencyManager( managedVersions, managedScopes, managedExclusions );
+        return new ClassicDependencyManager( depth + 1, managedVersions, managedScopes, managedExclusions );
     }
 
     public DependencyManagement manageDependency( Dependency dependency )
@@ -131,24 +135,27 @@ public class DefaultDependencyManager
 
         Object key = getKey( dependency.getArtifact() );
 
-        String version = managedVersions.get( key );
-        if ( version != null )
+        if ( depth >= 2 )
         {
-            if ( management == null )
+            String version = managedVersions.get( key );
+            if ( version != null )
             {
-                management = new DependencyManagement();
+                if ( management == null )
+                {
+                    management = new DependencyManagement();
+                }
+                management.setVersion( version );
             }
-            management.setVersion( version );
-        }
 
-        String scope = managedScopes.get( key );
-        if ( scope != null )
-        {
-            if ( management == null )
+            String scope = managedScopes.get( key );
+            if ( scope != null )
             {
-                management = new DependencyManagement();
+                if ( management == null )
+                {
+                    management = new DependencyManagement();
+                }
+                management.setScope( scope );
             }
-            management.setScope( scope );
         }
 
         Collection<Exclusion> exclusions = managedExclusions.get( key );
@@ -158,7 +165,9 @@ public class DefaultDependencyManager
             {
                 management = new DependencyManagement();
             }
-            management.setExclusions( new ArrayList<Exclusion>( exclusions ) );
+            Collection<Exclusion> result = new LinkedHashSet<Exclusion>( dependency.getExclusions() );
+            result.addAll( exclusions );
+            management.setExclusions( result );
         }
 
         return management;
@@ -181,15 +190,16 @@ public class DefaultDependencyManager
             return false;
         }
 
-        DefaultDependencyManager that = (DefaultDependencyManager) obj;
-        return managedVersions.equals( that.managedVersions ) && managedScopes.equals( that.managedScopes )
-            && managedExclusions.equals( that.managedExclusions );
+        ClassicDependencyManager that = (ClassicDependencyManager) obj;
+        return depth == that.depth && managedVersions.equals( that.managedVersions )
+            && managedScopes.equals( that.managedScopes ) && managedExclusions.equals( that.managedExclusions );
     }
 
     @Override
     public int hashCode()
     {
         int hash = 17;
+        hash = hash * 31 + depth;
         hash = hash * 31 + managedVersions.hashCode();
         hash = hash * 31 + managedScopes.hashCode();
         hash = hash * 31 + managedExclusions.hashCode();

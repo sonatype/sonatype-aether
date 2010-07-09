@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
@@ -43,7 +42,6 @@ import org.sonatype.maven.repository.DependencyGraphTransformer;
 import org.sonatype.maven.repository.DependencyManager;
 import org.sonatype.maven.repository.DependencyNode;
 import org.sonatype.maven.repository.DependencyTraverser;
-import org.sonatype.maven.repository.Exclusion;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryException;
 import org.sonatype.maven.repository.RepositoryListener;
@@ -192,9 +190,9 @@ public class DefaultDependencyCollector
         {
             DataPool pool = new DataPool( session.getCache() );
 
-            process( session, result, node, dependencies, managedDependencies, repositories,
-                     depSelector.deriveChildSelector( node ), depManager, depTraverser.deriveChildTraverser( node ),
-                     pool );
+            process( session, result, node, dependencies, repositories, depSelector.deriveChildSelector( node ),
+                     depManager.deriveChildManager( node, managedDependencies ),
+                     depTraverser.deriveChildTraverser( node ), pool );
         }
 
 //        StatCollector stats = new StatCollector();
@@ -234,25 +232,6 @@ public class DefaultDependencyCollector
         return optimized;
     }
 
-    private Collection<Exclusion> mergeExclusions( Collection<Exclusion> e1, Collection<Exclusion> e2 )
-    {
-        if ( e2 == null || e2.isEmpty() )
-        {
-            return e1;
-        }
-        else if ( e1 == null || e1.isEmpty() )
-        {
-            return e2;
-        }
-        else
-        {
-            Collection<Exclusion> result = new LinkedHashSet<Exclusion>();
-            result.addAll( e1 );
-            result.addAll( e2 );
-            return result;
-        }
-    }
-
     private List<Dependency> mergeDeps( List<Dependency> dominant, List<Dependency> recessive )
     {
         List<Dependency> result;
@@ -290,7 +269,7 @@ public class DefaultDependencyCollector
     }
 
     private void process( RepositorySystemSession session, CollectResult result, DependencyNode node,
-                          List<Dependency> dependencies, List<Dependency> managedDependencies,
+                          List<Dependency> dependencies,
                           List<RemoteRepository> repositories, DependencySelector depSelector,
                           DependencyManager depManager, DependencyTraverser depTraverser, DataPool pool )
         throws DependencyCollectionException
@@ -325,9 +304,7 @@ public class DefaultDependencyCollector
                     }
                     if ( depMngt.getExclusions() != null )
                     {
-                        dependency =
-                            dependency.setExclusions( mergeExclusions( dependency.getExclusions(),
-                                                                       depMngt.getExclusions() ) );
+                        dependency = dependency.setExclusions( depMngt.getExclusions() );
                     }
                 }
                 disableVersionManagement = false;
@@ -463,12 +440,11 @@ public class DefaultDependencyCollector
                     if ( traverse && !descriptorResult.getDependencies().isEmpty() )
                     {
                         process( session, result, child, descriptorResult.getDependencies(),
-                                 descriptorResult.getManagedDependencies(),
                                  remoteRepositoryManager.aggregateRepositories( session, repositories,
                                                                                 descriptorResult.getRepositories(),
                                                                                 true ),
                                  depSelector.deriveChildSelector( child ),
-                                 depManager.deriveChildManager( child, managedDependencies ),
+                                 depManager.deriveChildManager( child, descriptorResult.getManagedDependencies() ),
                                  depTraverser.deriveChildTraverser( child ), pool );
                     }
 

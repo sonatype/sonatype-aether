@@ -98,7 +98,7 @@ public class DefaultRepositorySystemSession
         // enables default constructor
         setId( null );
         setDependencySelector( new StaticDependencySelector( true ) );
-        setDependencyManager( new DefaultDependencyManager() );
+        setDependencyManager( new ClassicDependencyManager() );
         setDependencyTraverser( new StaticDependencyTraverser( true ) );
         setMirrorSelector( new DefaultMirrorSelector() );
         setAuthenticationSelector( new DefaultAuthenticationSelector() );

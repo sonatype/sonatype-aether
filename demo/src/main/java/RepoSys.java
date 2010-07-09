@@ -56,12 +56,12 @@ import org.sonatype.maven.repository.internal.DefaultVersionResolver;
 import org.sonatype.maven.repository.internal.EnhancedLocalRepositoryManager;
 import org.sonatype.maven.repository.util.AndDependencySelector;
 import org.sonatype.maven.repository.util.ChainedDependencyGraphTransformer;
+import org.sonatype.maven.repository.util.ClassicDependencyManager;
 import org.sonatype.maven.repository.util.ClassicVersionConflictResolver;
 import org.sonatype.maven.repository.util.ConflictMarker;
 import org.sonatype.maven.repository.util.DefaultArtifactType;
 import org.sonatype.maven.repository.util.DefaultArtifactTypeRegistry;
 import org.sonatype.maven.repository.util.DefaultAuthenticationSelector;
-import org.sonatype.maven.repository.util.DefaultDependencyManager;
 import org.sonatype.maven.repository.util.DefaultMirrorSelector;
 import org.sonatype.maven.repository.util.DefaultProxySelector;
 import org.sonatype.maven.repository.util.DefaultRepositorySystemSession;
@@ -222,7 +222,7 @@ public class RepoSys
         DependencyTraverser depTraverser = new FatArtifactTraverser();
         session.setDependencyTraverser( depTraverser );
 
-        DependencyManager depManager = new DefaultDependencyManager();
+        DependencyManager depManager = new ClassicDependencyManager();
         session.setDependencyManager( depManager );
 
         DependencySelector depFilter =
