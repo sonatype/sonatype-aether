@@ -50,7 +50,7 @@ public class OptionalDependencySelector
 
     public boolean selectDependency( Dependency dependency )
     {
-        return !dependency.isOptional();
+        return !transitive || !dependency.isOptional();
     }
 
     public DependencySelector deriveChildSelector( DependencyNode node )
