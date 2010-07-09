@@ -24,7 +24,7 @@ import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyNode;
 
 /**
- * A dependency selector that excludes optional transitive dependencies.
+ * A dependency selector that excludes optional dependencies which occur beyond level one of the dependency graph.
  * 
  * @author Benjamin Bentmann
  * @see Dependency#isOptional()
@@ -55,7 +55,7 @@ public class OptionalDependencySelector
 
     public DependencySelector deriveChildSelector( DependencyNode node )
     {
-        boolean transitive = node.getDependency() != null;
+        boolean transitive = node.getDepth() > 0;
 
         if ( transitive == this.transitive )
         {
