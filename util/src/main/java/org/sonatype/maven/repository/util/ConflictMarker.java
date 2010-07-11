@@ -21,9 +21,9 @@ package org.sonatype.maven.repository.util;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.Dependency;
@@ -120,7 +120,7 @@ public class ConflictMarker
             }
             else
             {
-                keys = new TreeSet<Object>();
+                keys = new LinkedHashSet<Object>();
                 keys.add( key );
 
                 for ( Artifact relocation : node.getRelocations() )

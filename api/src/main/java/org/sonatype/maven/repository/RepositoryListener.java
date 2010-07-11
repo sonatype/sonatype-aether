@@ -34,8 +34,6 @@ public interface RepositoryListener
 
     void artifactDescriptorMissing( RepositoryEvent event );
 
-    void artifactRelocated( RepositoryEvent event );
-
     void metadataInvalid( RepositoryEvent event );
 
     void artifactResolving( RepositoryEvent event );

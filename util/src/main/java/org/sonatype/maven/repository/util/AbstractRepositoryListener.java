@@ -55,10 +55,6 @@ public abstract class AbstractRepositoryListener
     {
     }
 
-    public void artifactRelocated( RepositoryEvent event )
-    {
-    }
-
     public void artifactResolved( RepositoryEvent event )
     {
     }

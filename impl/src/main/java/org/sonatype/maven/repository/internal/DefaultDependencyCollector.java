@@ -44,7 +44,6 @@ import org.sonatype.maven.repository.DependencyNode;
 import org.sonatype.maven.repository.DependencyTraverser;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryException;
-import org.sonatype.maven.repository.RepositoryListener;
 import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.Version;
 import org.sonatype.maven.repository.VersionRangeRequest;
@@ -56,7 +55,6 @@ import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.spi.RemoteRepositoryManager;
 import org.sonatype.maven.repository.spi.VersionRangeResolver;
-import org.sonatype.maven.repository.util.DefaultRepositoryEvent;
 import org.sonatype.maven.repository.util.DefaultRepositorySystemSession;
 
 /**
@@ -174,8 +172,6 @@ public class DefaultDependencyCollector
                 result.addException( e );
                 throw new DependencyCollectionException( result );
             }
-
-            artifactRelocated( session, descriptorResult );
         }
         else
         {
@@ -277,6 +273,8 @@ public class DefaultDependencyCollector
         nextDependency: for ( Dependency dependency : dependencies )
         {
             boolean disableVersionManagement = false;
+
+            List<Artifact> relocations = Collections.emptyList();
 
             thisDependency: while ( true )
             {
@@ -401,11 +399,6 @@ public class DefaultDependencyCollector
                         continue;
                     }
 
-                    if ( node.getDependency() == null )
-                    {
-                        artifactRelocated( session, descriptorResult );
-                    }
-
                     if ( findDuplicate( node, d.getArtifact() ) != null )
                     {
                         continue;
@@ -413,6 +406,8 @@ public class DefaultDependencyCollector
 
                     if ( !descriptorResult.getRelocations().isEmpty() )
                     {
+                        relocations = descriptorResult.getRelocations();
+
                         disableVersionManagement =
                             originalArtifact.getGroupId().equals( d.getArtifact().getGroupId() )
                                 && originalArtifact.getArtifactId().equals( d.getArtifact().getArtifactId() );
@@ -425,7 +420,7 @@ public class DefaultDependencyCollector
                     nodeKey = pool.toKey( d, repositories, depSelector, depManager, depTraverser );
 
                     DependencyNodeInfo info = new DependencyNodeInfo( d );
-                    info.setRelocations( descriptorResult.getRelocations() );
+                    info.setRelocations( relocations );
                     info.setVersionConstraint( rangeResult.getVersionConstraint() );
                     info.setVersion( version );
                     info.setPremanagedVersion( premanagedVersion );
@@ -505,17 +500,6 @@ public class DefaultDependencyCollector
         }
 
         return null;
-    }
-
-    private void artifactRelocated( RepositorySystemSession session, ArtifactDescriptorResult result )
-    {
-        RepositoryListener listener = session.getRepositoryListener();
-        if ( listener != null && !result.getRelocations().isEmpty() )
-        {
-            DefaultRepositoryEvent event =
-                new DefaultRepositoryEvent( session, result.getArtifact(), result.getRelocations().get( 0 ) );
-            listener.artifactRelocated( event );
-        }
     }
 
 }

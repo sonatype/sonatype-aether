@@ -23,7 +23,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * An event describing an action performed by repository system.
+ * An event describing an action performed by the repository system.
  * 
  * @author Benjamin Bentmann
  * @see RepositoryListener
@@ -34,8 +34,6 @@ public interface RepositoryEvent
     RepositorySystemSession getSession();
 
     Artifact getArtifact();
-
-    Artifact getRelocatedArtifact();
 
     Metadata getMetadata();
 

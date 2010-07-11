@@ -40,8 +40,6 @@ public class DefaultRepositoryEvent
 
     private Artifact artifact;
 
-    private Artifact relocatedArtifact;
-
     private Metadata metadata;
 
     private ArtifactRepository repository;
@@ -54,13 +52,6 @@ public class DefaultRepositoryEvent
     {
         this.session = session;
         this.artifact = artifact;
-    }
-
-    public DefaultRepositoryEvent( RepositorySystemSession session, Artifact artifact, Artifact relocatedArtifact )
-    {
-        this.session = session;
-        this.artifact = artifact;
-        this.relocatedArtifact = relocatedArtifact;
     }
 
     public DefaultRepositoryEvent( RepositorySystemSession session, Metadata metadata )
@@ -77,11 +68,6 @@ public class DefaultRepositoryEvent
     public Artifact getArtifact()
     {
         return artifact;
-    }
-
-    public Artifact getRelocatedArtifact()
-    {
-        return relocatedArtifact;
     }
 
     public Metadata getMetadata()

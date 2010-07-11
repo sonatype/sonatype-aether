@@ -1,9 +1,7 @@
 import java.io.File;
 import java.util.Arrays;
 
-import org.apache.maven.model.building.DefaultModelBuilderFactory;
-import org.apache.maven.model.building.ModelBuilder;
-import org.apache.maven.repository.internal.DefaultArtifactDescriptorReader;
+import org.apache.maven.repository.internal.MavenRepositorySystemFactory;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.AuthenticationSelector;
@@ -24,15 +22,6 @@ import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.RepositorySystem;
 import org.sonatype.maven.repository.connector.wagon.WagonRepositoryConnectorFactory;
-import org.sonatype.maven.repository.internal.DefaultArtifactResolver;
-import org.sonatype.maven.repository.internal.DefaultDependencyCollector;
-import org.sonatype.maven.repository.internal.DefaultDeployer;
-import org.sonatype.maven.repository.internal.DefaultMetadataResolver;
-import org.sonatype.maven.repository.internal.DefaultRemoteRepositoryManager;
-import org.sonatype.maven.repository.internal.DefaultRepositorySystem;
-import org.sonatype.maven.repository.internal.DefaultUpdateCheckManager;
-import org.sonatype.maven.repository.internal.DefaultVersionRangeResolver;
-import org.sonatype.maven.repository.internal.DefaultVersionResolver;
 import org.sonatype.maven.repository.internal.EnhancedLocalRepositoryManager;
 import org.sonatype.maven.repository.util.AndDependencySelector;
 import org.sonatype.maven.repository.util.ChainedDependencyGraphTransformer;
@@ -97,60 +86,13 @@ public class RepoSys
 
     private static RepositorySystem newManualSystem()
     {
-        DefaultUpdateCheckManager updateCheckMan = new DefaultUpdateCheckManager();
-
         WagonRepositoryConnectorFactory connectorFactory = new WagonRepositoryConnectorFactory();
         connectorFactory.setWagonProvider( new ManualWagonProvider() );
         
-        DefaultRemoteRepositoryManager remoteRepoMan = new DefaultRemoteRepositoryManager();
-        remoteRepoMan.setUpdateCheckManager( updateCheckMan );
-        remoteRepoMan.addRepositoryConnectorFactory( connectorFactory );
-
-        DefaultMetadataResolver metadataResolver = new DefaultMetadataResolver();
-        metadataResolver.setRemoteRepositoryManager( remoteRepoMan );
-        metadataResolver.setUpdateCheckManager( updateCheckMan );
-
-        DefaultVersionResolver versionResolver = new DefaultVersionResolver();
-        versionResolver.setMetadataResolver( metadataResolver );
-
-        DefaultVersionRangeResolver versionRangeResolver = new DefaultVersionRangeResolver();
-        versionRangeResolver.setMetadataResolver( metadataResolver );
-
-        DefaultArtifactResolver artifactResolver = new DefaultArtifactResolver();
-        artifactResolver.setRemoteRepositoryManager( remoteRepoMan );
-        artifactResolver.setUpdateCheckManager( updateCheckMan );
-        artifactResolver.setVersionResolver( versionResolver );
-
-        DefaultArtifactDescriptorReader pomReader = new DefaultArtifactDescriptorReader();
-        pomReader.setVersionResolver( versionResolver );
-        pomReader.setArtifactResolver( artifactResolver );
-        pomReader.setRemoteRepositoryManager( remoteRepoMan );
-        pomReader.setModelBuilder( newModelBuilder() );
-
-        DefaultDependencyCollector collector = new DefaultDependencyCollector();
-        collector.setRemoteRepositoryManager( remoteRepoMan );
-        collector.setArtifactDescriptorReader( pomReader );
-        collector.setVersionRangeResolver( versionRangeResolver );
-
-        DefaultDeployer deployer = new DefaultDeployer();
-        deployer.setRemoteRepositoryManager( remoteRepoMan );
-        deployer.setUpdateCheckManager( updateCheckMan );
-
-        DefaultRepositorySystem repoSys = new DefaultRepositorySystem();
-        repoSys.setArtifactDescriptorReader( pomReader );
-        repoSys.setArtifactResolver( artifactResolver );
-        repoSys.setMetadataResolver( metadataResolver );
-        repoSys.setVersionResolver( versionResolver );
-        repoSys.setVersionRangeResolver( versionRangeResolver );
-        repoSys.setDependencyCollector( collector );
-        repoSys.setDeployer( deployer );
-
-        return repoSys;
-    }
-
-    private static ModelBuilder newModelBuilder()
-    {
-        return new DefaultModelBuilderFactory().newInstance();
+        MavenRepositorySystemFactory systemFactory = new MavenRepositorySystemFactory();
+        systemFactory.addRepositoryConnectorFactory( connectorFactory );
+        
+        return systemFactory.newInstance();
     }
 
     private static RepositorySystemSession newSession()
