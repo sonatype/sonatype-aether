@@ -1,28 +1,9 @@
 import java.io.File;
 import java.util.Arrays;
 
-import org.apache.maven.model.building.DefaultModelBuilder;
-import org.apache.maven.model.building.DefaultModelProcessor;
+import org.apache.maven.model.building.DefaultModelBuilderFactory;
 import org.apache.maven.model.building.ModelBuilder;
-import org.apache.maven.model.composition.DefaultDependencyManagementImporter;
-import org.apache.maven.model.inheritance.DefaultInheritanceAssembler;
-import org.apache.maven.model.interpolation.StringSearchModelInterpolator;
-import org.apache.maven.model.io.DefaultModelReader;
-import org.apache.maven.model.locator.DefaultModelLocator;
-import org.apache.maven.model.management.DefaultDependencyManagementInjector;
-import org.apache.maven.model.management.DefaultPluginManagementInjector;
-import org.apache.maven.model.normalization.DefaultModelNormalizer;
-import org.apache.maven.model.path.DefaultModelPathTranslator;
-import org.apache.maven.model.path.DefaultModelUrlNormalizer;
-import org.apache.maven.model.path.DefaultPathTranslator;
-import org.apache.maven.model.path.DefaultUrlNormalizer;
-import org.apache.maven.model.profile.DefaultProfileInjector;
-import org.apache.maven.model.profile.DefaultProfileSelector;
-import org.apache.maven.model.profile.activation.JdkVersionProfileActivator;
-import org.apache.maven.model.profile.activation.OperatingSystemProfileActivator;
-import org.apache.maven.model.profile.activation.PropertyProfileActivator;
-import org.apache.maven.model.superpom.DefaultSuperPomProvider;
-import org.apache.maven.model.validation.DefaultModelValidator;
+import org.apache.maven.repository.internal.DefaultArtifactDescriptorReader;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.AuthenticationSelector;
@@ -43,7 +24,6 @@ import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.RepositorySystem;
 import org.sonatype.maven.repository.connector.wagon.WagonRepositoryConnectorFactory;
-import org.sonatype.maven.repository.internal.DefaultArtifactDescriptorReader;
 import org.sonatype.maven.repository.internal.DefaultArtifactResolver;
 import org.sonatype.maven.repository.internal.DefaultDependencyCollector;
 import org.sonatype.maven.repository.internal.DefaultDeployer;
@@ -170,34 +150,7 @@ public class RepoSys
 
     private static ModelBuilder newModelBuilder()
     {
-        DefaultModelProcessor processor = new DefaultModelProcessor();
-        processor.setModelLocator( new DefaultModelLocator() );
-        processor.setModelReader( new DefaultModelReader() );
-
-        DefaultProfileSelector profileSelector = new DefaultProfileSelector();
-        profileSelector.addProfileActivator( new JdkVersionProfileActivator() );
-        profileSelector.addProfileActivator( new OperatingSystemProfileActivator() );
-        profileSelector.addProfileActivator( new PropertyProfileActivator() );
-
-        DefaultUrlNormalizer urlNormalizer = new DefaultUrlNormalizer();
-        DefaultPathTranslator pathTranslator = new DefaultPathTranslator();
-        
-        DefaultModelBuilder modelBuilder = new DefaultModelBuilder();
-        modelBuilder.setModelProcessor( processor );
-        modelBuilder.setModelValidator( new DefaultModelValidator() );
-        modelBuilder.setModelNormalizer( new DefaultModelNormalizer() );
-        modelBuilder.setModelPathTranslator( new DefaultModelPathTranslator().setPathTranslator( pathTranslator ) );
-        modelBuilder.setModelUrlNormalizer( new DefaultModelUrlNormalizer().setUrlNormalizer( urlNormalizer ) );
-        modelBuilder.setModelInterpolator( new StringSearchModelInterpolator().setPathTranslator( pathTranslator ).setUrlNormalizer( urlNormalizer ) );
-        modelBuilder.setInheritanceAssembler( new DefaultInheritanceAssembler() );
-        modelBuilder.setProfileInjector( new DefaultProfileInjector() );
-        modelBuilder.setProfileSelector( profileSelector );
-        modelBuilder.setSuperPomProvider( new DefaultSuperPomProvider().setModelProcessor( processor ) );
-        modelBuilder.setDependencyManagementImporter( new DefaultDependencyManagementImporter() );
-        modelBuilder.setDependencyManagementInjector( new DefaultDependencyManagementInjector() );
-        modelBuilder.setPluginManagementInjector( new DefaultPluginManagementInjector() );
-
-        return modelBuilder;
+        return new DefaultModelBuilderFactory().newInstance();
     }
 
     private static RepositorySystemSession newSession()
