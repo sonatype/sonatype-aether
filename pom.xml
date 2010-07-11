@@ -33,6 +33,7 @@ under the License.
 
   <modules>
     <module>api</module>
+    <module>util</module>
     <module>impl</module>
     <module>transport-wagon</module>
   </modules>
