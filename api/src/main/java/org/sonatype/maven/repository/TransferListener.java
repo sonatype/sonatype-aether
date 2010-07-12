@@ -40,7 +40,8 @@ public interface TransferListener
         throws TransferCancelledException;
 
     /**
-     * Notifies the listener about the start of a data transfer.
+     * Notifies the listener about the start of a data transfer, i.e. the successful connection to the remote
+     * repository.
      * 
      * @param event The event details, must not be {@code null}.
      * @throws TransferCancelledException If the transfer should be aborted.
