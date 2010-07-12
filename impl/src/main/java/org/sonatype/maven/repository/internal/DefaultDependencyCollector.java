@@ -184,21 +184,12 @@ public class DefaultDependencyCollector
 
         if ( traverse )
         {
-            DataPool pool = new DataPool( session.getCache() );
+            DataPool pool = new DataPool( session );
 
             process( session, result, node, dependencies, repositories, depSelector.deriveChildSelector( node ),
                      depManager.deriveChildManager( node, managedDependencies ),
                      depTraverser.deriveChildTraverser( node ), pool );
         }
-
-//        StatCollector stats = new StatCollector();
-//        node.accept( stats );
-//        if ( stats.totalNodes > 200000 )
-//        {
-//            System.out.println( ">>>>>>>> BIG" );
-//        }
-//        System.out.println( "depth = " + stats.maxDepth + ", nodes = " + stats.totalNodes + ", infos = "
-//            + stats.uniqueInfos.size() + ", artifacts = " + stats.uniqueArtifacts.size() );
 
         DependencyGraphTransformer transformer = session.getDependencyGraphTransformer();
         if ( transformer != null )

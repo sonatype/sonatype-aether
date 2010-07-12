@@ -26,7 +26,7 @@ import java.util.UUID;
  * 
  * @author Benjamin Bentmann
  */
-public class WorkspaceRepository
+public final class WorkspaceRepository
     implements ArtifactRepository
 {
 

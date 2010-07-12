@@ -27,13 +27,13 @@ import java.io.File;
  * 
  * @author Benjamin Bentmann
  */
-public class LocalRepository
+public final class LocalRepository
     implements ArtifactRepository
 {
 
-    private File basedir;
+    private final File basedir;
 
-    private String type = "";
+    private final String type;
 
     /**
      * Creates a new local repository with the specified base directory and unknown type.
@@ -63,19 +63,13 @@ public class LocalRepository
      */
     public LocalRepository( File basedir, String type )
     {
-        setBasedir( basedir );
-        setType( type );
+        this.basedir = basedir;
+        this.type = ( type != null ) ? type : "";
     }
 
     public String getContentType()
     {
         return type;
-    }
-
-    private LocalRepository setType( String type )
-    {
-        this.type = ( type != null ) ? type : "";
-        return this;
     }
 
     public String getId()
@@ -91,12 +85,6 @@ public class LocalRepository
     public File getBasedir()
     {
         return basedir;
-    }
-
-    private LocalRepository setBasedir( File basedir )
-    {
-        this.basedir = basedir;
-        return this;
     }
 
     @Override

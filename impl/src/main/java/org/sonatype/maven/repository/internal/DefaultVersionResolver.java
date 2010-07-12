@@ -111,7 +111,7 @@ public class DefaultVersionResolver
         {
             cacheKey = new Key( session, request );
 
-            Object obj = cache.get( cacheKey );
+            Object obj = cache.get( session, cacheKey );
             if ( obj instanceof Record )
             {
                 Record record = (Record) obj;
@@ -241,7 +241,7 @@ public class DefaultVersionResolver
 
         if ( cacheKey != null && metadata != null )
         {
-            cache.put( cacheKey, new Record( result.getVersion(), result.getRepository() ) );
+            cache.put( session, cacheKey, new Record( result.getVersion(), result.getRepository() ) );
         }
 
         return result;

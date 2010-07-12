@@ -41,7 +41,7 @@ public class ChainedWorkspaceReader
 
     private List<WorkspaceReader> readers = new ArrayList<WorkspaceReader>();
 
-    private String type;
+    private WorkspaceRepository repository;
 
     /**
      * Creates a new workspace reading by chaining the specified readers.
@@ -65,7 +65,8 @@ public class ChainedWorkspaceReader
             }
             buffer.append( reader.getRepository().getContentType() );
         }
-        type = buffer.toString();
+
+        repository = new WorkspaceRepository( buffer.toString(), new Key( this.readers ) );
     }
 
     /**
@@ -119,7 +120,12 @@ public class ChainedWorkspaceReader
 
     public WorkspaceRepository getRepository()
     {
-        return new WorkspaceRepository( type, new Key( readers ) );
+        Key key = new Key( readers );
+        if ( !key.equals( repository.getKey() ) )
+        {
+            repository = new WorkspaceRepository( repository.getContentType(), key );
+        }
+        return repository;
     }
 
     private static class Key

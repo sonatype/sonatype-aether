@@ -39,6 +39,7 @@ import org.sonatype.maven.repository.DependencySelector;
 import org.sonatype.maven.repository.DependencyTraverser;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositoryCache;
+import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.Version;
 import org.sonatype.maven.repository.VersionConstraint;
 import org.sonatype.maven.repository.VersionRangeRequest;
@@ -60,22 +61,22 @@ final class DataPool
 
     private ObjectPool<Dependency> dependencies;
 
-    private Map<Object, Descriptor> descriptors;// = new WeakHashMap<Object, Descriptor>();
+    private Map<Object, Descriptor> descriptors;
 
     private Map<Object, Constraint> constraints = new WeakHashMap<Object, Constraint>();
-
-    private Map<Object, List<RemoteRepository>> repositories = new HashMap<Object, List<RemoteRepository>>();
 
     private Map<Object, LightDependencyNode> nodes = new HashMap<Object, LightDependencyNode>();
 
     @SuppressWarnings( "unchecked" )
-    public DataPool( RepositoryCache cache )
+    public DataPool( RepositorySystemSession session )
     {
+        RepositoryCache cache = session.getCache();
+
         if ( cache != null )
         {
-            artifacts = (ObjectPool<Artifact>) cache.get( ARTIFACT_POOL );
-            dependencies = (ObjectPool<Dependency>) cache.get( DEPENDENCY_POOL );
-            descriptors = (Map<Object, Descriptor>) cache.get( DESCRIPTORS );
+            artifacts = (ObjectPool<Artifact>) cache.get( session, ARTIFACT_POOL );
+            dependencies = (ObjectPool<Dependency>) cache.get( session, DEPENDENCY_POOL );
+            descriptors = (Map<Object, Descriptor>) cache.get( session, DESCRIPTORS );
         }
 
         if ( artifacts == null )
@@ -83,7 +84,7 @@ final class DataPool
             artifacts = new ObjectPool<Artifact>();
             if ( cache != null )
             {
-                cache.put( ARTIFACT_POOL, artifacts );
+                cache.put( session, ARTIFACT_POOL, artifacts );
             }
         }
 
@@ -92,7 +93,7 @@ final class DataPool
             dependencies = new ObjectPool<Dependency>();
             if ( cache != null )
             {
-                cache.put( DEPENDENCY_POOL, dependencies );
+                cache.put( session, DEPENDENCY_POOL, dependencies );
             }
         }
 
@@ -101,7 +102,7 @@ final class DataPool
             descriptors = Collections.synchronizedMap( new WeakHashMap<Object, Descriptor>( 256 ) );
             if ( cache != null )
             {
-                cache.put( DESCRIPTORS, descriptors );
+                cache.put( session, DESCRIPTORS, descriptors );
             }
         }
     }
@@ -114,17 +115,6 @@ final class DataPool
     public Dependency intern( Dependency dependency )
     {
         return dependencies.intern( dependency );
-    }
-
-    public List<RemoteRepository> intern( List<RemoteRepository> repositories )
-    {
-        List<RemoteRepository> interned = this.repositories.get( repositories );
-        if ( interned != null )
-        {
-            return interned;
-        }
-        this.repositories.put( repositories, repositories );
-        return repositories;
     }
 
     public Object toKey( ArtifactDescriptorRequest request )

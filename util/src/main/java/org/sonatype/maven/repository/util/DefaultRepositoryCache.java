@@ -23,11 +23,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.sonatype.maven.repository.RepositoryCache;
+import org.sonatype.maven.repository.RepositorySystemSession;
 
 /**
- * A simplistic repository cache backed by a {@link ConcurrentHashMap}.
+ * A simplistic repository cache backed by a {@link ConcurrentHashMap}. The simplistic nature of this cache makes it
+ * only suitable for use with short-lived repository system sessions.
  * 
- * @author Benjamin
+ * @author Benjamin Bentmann
  */
 public class DefaultRepositoryCache
     implements RepositoryCache
@@ -35,12 +37,12 @@ public class DefaultRepositoryCache
 
     private Map<Object, Object> cache = new ConcurrentHashMap<Object, Object>( 256 );
 
-    public Object get( Object key )
+    public Object get( RepositorySystemSession session, Object key )
     {
         return cache.get( key );
     }
 
-    public void put( Object key, Object data )
+    public void put( RepositorySystemSession session, Object key, Object data )
     {
         if ( data != null )
         {
