@@ -25,7 +25,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * The result from reading an artifact descriptor.
+ * 
  * @author Benjamin Bentmann
+ * @see RepositorySystem#readArtifactDescriptor(RepositorySystemSession, ArtifactDescriptorRequest)
  */
 public class ArtifactDescriptorResult
 {
@@ -48,6 +51,11 @@ public class ArtifactDescriptorResult
 
     private Map<String, Object> properties;
 
+    /**
+     * Creates a new result for the specified request.
+     * 
+     * @param request The descriptor request, must not be {@code null}.
+     */
     public ArtifactDescriptorResult( ArtifactDescriptorRequest request )
     {
         if ( request == null )
@@ -64,16 +72,32 @@ public class ArtifactDescriptorResult
         this.properties = Collections.emptyMap();
     }
 
+    /**
+     * Gets the descriptor request that was made.
+     * 
+     * @return The descriptor request, never {@code null}.
+     */
     public ArtifactDescriptorRequest getRequest()
     {
         return request;
     }
 
+    /**
+     * Gets the exceptions that occurred while reading the artifact descriptor.
+     * 
+     * @return The exceptions that occurred, never {@code null}.
+     */
     public List<Exception> getExceptions()
     {
         return exceptions;
     }
 
+    /**
+     * Sets the exceptions that occurred while reading the artifact descriptor.
+     * 
+     * @param exceptions The exceptions that occurred, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public ArtifactDescriptorResult setExceptions( List<Exception> exceptions )
     {
         if ( exceptions == null )
@@ -87,6 +111,12 @@ public class ArtifactDescriptorResult
         return this;
     }
 
+    /**
+     * Records the specified exception while reading the artifact descriptor.
+     * 
+     * @param exception The exception to record, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public ArtifactDescriptorResult addException( Exception exception )
     {
         if ( exception != null )
@@ -96,11 +126,23 @@ public class ArtifactDescriptorResult
         return this;
     }
 
+    /**
+     * Gets the relocations that were processed to read the artifact descriptor. The returned list denotes the hops that
+     * lead to the final artifact coordinates as given by {@link #getArtifact()}.
+     * 
+     * @return The relocations that were processed, never {@code null}.
+     */
     public List<Artifact> getRelocations()
     {
         return relocations;
     }
 
+    /**
+     * Sets the relocations that were processed to read the artifact descriptor.
+     * 
+     * @param relocations The relocations that were processed, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public ArtifactDescriptorResult setRelocations( List<Artifact> relocations )
     {
         if ( relocations == null )
@@ -114,6 +156,12 @@ public class ArtifactDescriptorResult
         return this;
     }
 
+    /**
+     * Records the specified relocation hop while location the artifact descriptor.
+     * 
+     * @param artifact The artifact that got relocated, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public ArtifactDescriptorResult addRelocation( Artifact artifact )
     {
         if ( artifact != null )
@@ -123,33 +171,67 @@ public class ArtifactDescriptorResult
         return this;
     }
 
+    /**
+     * Gets the artifact whose descriptor was read. This can be a different artifact than originally requested in case
+     * relocations were encountered.
+     * 
+     * @return The artifact after following any relocations, never {@code null}.
+     */
     public Artifact getArtifact()
     {
         return artifact;
     }
 
+    /**
+     * Sets the artifact whose descriptor was read.
+     * 
+     * @param artifact The artifact whose descriptor was read, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public ArtifactDescriptorResult setArtifact( Artifact artifact )
     {
         this.artifact = artifact;
         return this;
     }
 
+    /**
+     * Gets the repository from which the descriptor was eventually resolved.
+     * 
+     * @return The repository from which the descriptor was resolved or {@code null} if unknown.
+     */
     public ArtifactRepository getRepository()
     {
         return repository;
     }
 
+    /**
+     * Sets the repository from which the descriptor was resolved.
+     * 
+     * @param repository The repository from which the descriptor was resolved, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public ArtifactDescriptorResult setRepository( ArtifactRepository repository )
     {
         this.repository = repository;
         return this;
     }
 
+    /**
+     * Gets the list of direct dependencies of the artifact.
+     * 
+     * @return The list of direct dependencies, never {@code null}
+     */
     public List<Dependency> getDependencies()
     {
         return dependencies;
     }
 
+    /**
+     * Sets the list of direct dependencies of the artifact.
+     * 
+     * @param dependencies The list of direct dependencies, may be {@code null}
+     * @return This result for chaining, never {@code null}.
+     */
     public ArtifactDescriptorResult setDependencies( List<Dependency> dependencies )
     {
         if ( dependencies == null )
@@ -163,6 +245,12 @@ public class ArtifactDescriptorResult
         return this;
     }
 
+    /**
+     * Adds the specified direct dependency.
+     * 
+     * @param dependency The direct dependency to add, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public ArtifactDescriptorResult addDependency( Dependency dependency )
     {
         if ( dependency == null )
@@ -173,11 +261,22 @@ public class ArtifactDescriptorResult
         return this;
     }
 
+    /**
+     * Gets the dependency management information.
+     * 
+     * @return The dependency management information.
+     */
     public List<Dependency> getManagedDependencies()
     {
         return managedDependencies;
     }
 
+    /**
+     * Sets the dependency management information.
+     * 
+     * @param dependencies The dependency management information, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public ArtifactDescriptorResult setManagedDependencies( List<Dependency> dependencies )
     {
         if ( dependencies == null )
@@ -191,6 +290,12 @@ public class ArtifactDescriptorResult
         return this;
     }
 
+    /**
+     * Adds the specified managed dependency.
+     * 
+     * @param dependency The managed dependency to add, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public ArtifactDescriptorResult addManagedDependency( Dependency dependency )
     {
         if ( dependency == null )
@@ -201,11 +306,22 @@ public class ArtifactDescriptorResult
         return this;
     }
 
+    /**
+     * Gets the remote repositories listed in the artifact descriptor.
+     * 
+     * @return The remote repositories listed in the artifact descriptor, never {@code null}.
+     */
     public List<RemoteRepository> getRepositories()
     {
         return repositories;
     }
 
+    /**
+     * Sets the remote repositories listed in the artifact descriptor.
+     * 
+     * @param repositories The remote repositories listed in the artifact descriptor, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public ArtifactDescriptorResult setRepositories( List<RemoteRepository> repositories )
     {
         if ( repositories == null )
@@ -219,6 +335,12 @@ public class ArtifactDescriptorResult
         return this;
     }
 
+    /**
+     * Adds the specified remote repository.
+     * 
+     * @param repository The remote repository to add, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public ArtifactDescriptorResult addRepository( RemoteRepository repository )
     {
         if ( repository == null )
@@ -229,11 +351,22 @@ public class ArtifactDescriptorResult
         return this;
     }
 
+    /**
+     * Gets any additional information about the artifact in form of key-value pairs.
+     * 
+     * @return The additional information about the artifact, never {@code null}.
+     */
     public Map<String, Object> getProperties()
     {
         return properties;
     }
 
+    /**
+     * Sets any additional information about the artifact in form of key-value pairs.
+     * 
+     * @param properties The additional information about the artifact, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
     public ArtifactDescriptorResult setProperties( Map<String, Object> properties )
     {
         if ( properties == null )
