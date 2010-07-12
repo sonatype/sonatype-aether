@@ -20,11 +20,19 @@ package org.sonatype.maven.repository;
  */
 
 /**
+ * Selects authentication for a given remote repository.
+ * 
  * @author Benjamin Bentmann
  */
 public interface AuthenticationSelector
 {
 
+    /**
+     * Selects authentication for the specified remote repository.
+     * 
+     * @param repository The repository for which to select authentication, must not be {@code null}.
+     * @return The selected authentication or {@code null} if none.
+     */
     Authentication getAuthentication( RemoteRepository repository );
 
 }
