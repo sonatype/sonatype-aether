@@ -102,7 +102,6 @@ public class DefaultRepositorySystemSession
 
     public DefaultRepositorySystemSession( RepositorySystemSession session )
     {
-        setId( session.getId() );
         setOffline( session.isOffline() );
         setTransferErrorCachingEnabled( session.isTransferErrorCachingEnabled() );
         setNotFoundCachingEnabled( session.isNotFoundCachingEnabled() );
