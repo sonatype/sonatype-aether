@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository.internal;
+package org.sonatype.maven.repository.util;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.

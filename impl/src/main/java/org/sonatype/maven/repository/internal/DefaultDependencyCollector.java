@@ -49,6 +49,7 @@ import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.spi.RemoteRepositoryManager;
 import org.sonatype.maven.repository.spi.VersionRangeResolver;
+import org.sonatype.maven.repository.util.DefaultDependencyNode;
 import org.sonatype.maven.repository.util.DefaultRepositorySystemSession;
 
 /**

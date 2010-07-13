@@ -223,13 +223,13 @@ public class DefaultMetadataResolver
             Executor executor = getExecutor( Math.min( tasks.size(), 4 ) );
             try
             {
+                while ( latch.getCount() > tasks.size() )
+                {
+                    latch.countDown();
+                }
                 for ( ResolveTask task : tasks )
                 {
                     executor.execute( task );
-                }
-                for ( int i = requests.size() - tasks.size(); i > 0; i-- )
-                {
-                    latch.countDown();
                 }
                 latch.await();
                 for ( ResolveTask task : tasks )

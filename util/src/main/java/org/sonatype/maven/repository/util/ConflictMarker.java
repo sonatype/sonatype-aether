@@ -15,7 +15,7 @@ package org.sonatype.maven.repository.util;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,42 +47,58 @@ public class ConflictMarker
         if ( !keys.isEmpty() )
         {
             ConflictGroup group = null;
+            boolean fixMappings = false;
 
             for ( Object key : keys )
             {
                 ConflictGroup g = groups.get( key );
 
-                if ( group == null )
+                if ( group != g )
                 {
-                    group = g;
-                }
-                else if ( group != g )
-                {
-                    ConflictGroup bigger, smaller;
-
-                    if ( group.keys.size() < g.keys.size() )
+                    if ( group == null )
                     {
-                        bigger = g;
-                        smaller = group;
+                        Set<Object> newKeys = merge( g.keys, keys );
+                        if ( newKeys == g.keys )
+                        {
+                            group = g;
+                            break;
+                        }
+                        else
+                        {
+                            group = new ConflictGroup( newKeys );
+                            fixMappings = true;
+                        }
+                    }
+                    else if ( g == null )
+                    {
+                        fixMappings = true;
                     }
                     else
                     {
-                        bigger = group;
-                        smaller = g;
+                        Set<Object> newKeys = merge( g.keys, group.keys );
+                        if ( newKeys == g.keys )
+                        {
+                            group = g;
+                            fixMappings = false;
+                            break;
+                        }
+                        else if ( newKeys != group.keys )
+                        {
+                            group = new ConflictGroup( newKeys );
+                            fixMappings = true;
+                        }
                     }
-
-                    for ( Object k : smaller.keys )
-                    {
-                        groups.put( k, bigger );
-                    }
-                    bigger.keys.addAll( smaller.keys );
                 }
             }
 
             if ( group == null )
             {
                 group = new ConflictGroup( keys );
-                for ( Object key : keys )
+                fixMappings = true;
+            }
+            if ( fixMappings )
+            {
+                for ( Object key : group.keys )
                 {
                     groups.put( key, group );
                 }
@@ -93,6 +109,32 @@ public class ConflictMarker
         {
             analyze( child, groups );
         }
+    }
+
+    private Set<Object> merge( Set<Object> keys1, Set<Object> keys2 )
+    {
+        int size1 = keys1.size();
+        int size2 = keys2.size();
+
+        if ( size1 < size2 )
+        {
+            if ( keys2.containsAll( keys1 ) )
+            {
+                return keys2;
+            }
+        }
+        else
+        {
+            if ( keys1.containsAll( keys2 ) )
+            {
+                return keys1;
+            }
+        }
+
+        Set<Object> keys = new HashSet<Object>();
+        keys.addAll( keys1 );
+        keys.addAll( keys2 );
+        return keys;
     }
 
     private Set<Object> getKeys( DependencyNode node )
@@ -114,7 +156,7 @@ public class ConflictMarker
             }
             else
             {
-                keys = new LinkedHashSet<Object>();
+                keys = new HashSet<Object>();
                 keys.add( key );
 
                 for ( Artifact relocation : node.getRelocations() )
