@@ -41,6 +41,8 @@ public class DefaultRepositorySystemSession
 
     private String id;
 
+    private String userAgent;
+
     private boolean offline;
 
     private boolean transferErrorCachingEnabled;
@@ -102,6 +104,7 @@ public class DefaultRepositorySystemSession
 
     public DefaultRepositorySystemSession( RepositorySystemSession session )
     {
+        setUserAgent( session.getUserAgent() );
         setOffline( session.isOffline() );
         setTransferErrorCachingEnabled( session.isTransferErrorCachingEnabled() );
         setNotFoundCachingEnabled( session.isNotFoundCachingEnabled() );
@@ -135,6 +138,17 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession setId( String id )
     {
         this.id = ( id != null ) ? id : UUID.randomUUID().toString().replace( "-", "" );
+        return this;
+    }
+
+    public String getUserAgent()
+    {
+        return userAgent;
+    }
+
+    public DefaultRepositorySystemSession setUserAgent( String userAgent )
+    {
+        this.userAgent = userAgent;
         return this;
     }
 
@@ -379,7 +393,8 @@ public class DefaultRepositorySystemSession
         return dependencyGraphTransformer;
     }
 
-    public DefaultRepositorySystemSession setDependencyGraphTransformer( DependencyGraphTransformer dependencyGraphTransformer )
+    public DefaultRepositorySystemSession setDependencyGraphTransformer(
+                                                                         DependencyGraphTransformer dependencyGraphTransformer )
     {
         this.dependencyGraphTransformer = dependencyGraphTransformer;
         return this;

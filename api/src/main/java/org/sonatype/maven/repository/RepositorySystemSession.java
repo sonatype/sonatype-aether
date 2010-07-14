@@ -24,6 +24,13 @@ public interface RepositorySystemSession
 {
 
     /**
+     * Gets the user agent that repository connectors should report to servers.
+     * 
+     * @return The user agent to use or {@code null}/empty if undefined.
+     */
+    String getUserAgent();
+
+    /**
      * Indicates whether the repository system operates in offline mode and avoids/refuses any access to remote
      * repositories.
      * 
