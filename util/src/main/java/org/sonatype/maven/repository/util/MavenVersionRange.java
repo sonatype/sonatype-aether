@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository.internal;
+package org.sonatype.maven.repository.util;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -19,7 +19,7 @@ import org.sonatype.maven.repository.VersionRange;
 /**
  * @author Benjamin Bentmann
  */
-class MavenVersionRange
+public final class MavenVersionRange
     implements VersionRange
 {
 
@@ -38,6 +38,26 @@ class MavenVersionRange
         this.lowerBoundInclusive = lowerBoundInclusive;
         this.upperBound = upperBound;
         this.upperBoundInclusive = upperBoundInclusive;
+    }
+
+    public Version getLowerBound()
+    {
+        return lowerBound;
+    }
+
+    public boolean isLowerBoundInclusive()
+    {
+        return lowerBoundInclusive;
+    }
+
+    public Version getUpperBound()
+    {
+        return upperBound;
+    }
+
+    public boolean isUpperBoundInclusive()
+    {
+        return upperBoundInclusive;
     }
 
     public boolean containsSnapshots()

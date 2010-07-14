@@ -1,3 +1,4 @@
+package demo;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.

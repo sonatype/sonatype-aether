@@ -14,7 +14,8 @@ package org.sonatype.maven.repository;
  */
 
 /**
- * The authentication to use for accessing a protected resource.
+ * The authentication to use for accessing a protected resource. <em>Note:</em> Instances of this class are immutable
+ * and the exposed mutators return new objects rather than changing the current instance.
  * 
  * @author Benjamin Bentmann
  */
@@ -74,6 +75,10 @@ public final class Authentication
      */
     public Authentication setUsername( String username )
     {
+        if ( eq( this.username, username ) )
+        {
+            return this;
+        }
         return new Authentication( username, password, privateKeyFile, passphrase );
     }
 
@@ -95,6 +100,10 @@ public final class Authentication
      */
     public Authentication setPassword( String password )
     {
+        if ( eq( this.password, password ) )
+        {
+            return this;
+        }
         return new Authentication( username, password, privateKeyFile, passphrase );
     }
 
@@ -116,6 +125,10 @@ public final class Authentication
      */
     public Authentication setPrivateKeyFile( String privateKeyFile )
     {
+        if ( eq( this.privateKeyFile, privateKeyFile ) )
+        {
+            return this;
+        }
         return new Authentication( username, password, privateKeyFile, passphrase );
     }
 
@@ -137,6 +150,10 @@ public final class Authentication
      */
     public Authentication setPassphrase( String passphrase )
     {
+        if ( eq( this.passphrase, passphrase ) )
+        {
+            return this;
+        }
         return new Authentication( username, password, privateKeyFile, passphrase );
     }
 

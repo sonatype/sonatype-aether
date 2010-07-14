@@ -17,6 +17,8 @@ import java.io.File;
 import java.util.Map;
 
 /**
+ * An artifact whose identitiy is derived from another artifact.
+ * 
  * @author Benjamin Bentmann
  */
 public final class SubArtifact
@@ -29,6 +31,16 @@ public final class SubArtifact
 
     private final String extension;
 
+    /**
+     * Creates a new sub artifact. The classifier and extension specified for this artifact may use the asterisk
+     * character "*" to refer to the corresponding property of the main artifact. For instance, the classifier
+     * "*-sources" can be used to refer to the source attachment of an artifact. Likewise, the extension "*.asc" can be
+     * used to refer to the GPG signature of an artifact.
+     * 
+     * @param mainArtifact The artifact from which to derive the identity, must not be {@code null}.
+     * @param classifier The classifier for this artifact, may be {@code null}.
+     * @param extension The extension for this artifact, may be {@code null}.
+     */
     public SubArtifact( Artifact mainArtifact, String classifier, String extension )
     {
         if ( mainArtifact == null )

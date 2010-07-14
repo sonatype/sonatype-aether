@@ -19,6 +19,8 @@ import java.util.Map;
 import org.sonatype.maven.repository.ArtifactType;
 
 /**
+ * A simple artifact type.
+ * 
  * @author Benjamin Bentmann
  */
 public class DefaultArtifactType

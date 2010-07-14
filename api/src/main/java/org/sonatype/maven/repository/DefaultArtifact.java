@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * A simple artifact.
+ * 
  * @author Benjamin Bentmann
  */
 public final class DefaultArtifact

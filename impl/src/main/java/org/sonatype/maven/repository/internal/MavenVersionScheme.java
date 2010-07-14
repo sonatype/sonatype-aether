@@ -14,6 +14,7 @@ package org.sonatype.maven.repository.internal;
  */
 
 import org.sonatype.maven.repository.InvalidVersionException;
+import org.sonatype.maven.repository.util.MavenVersion;
 
 /**
  * @author Benjamin Bentmann

@@ -16,7 +16,9 @@ package org.sonatype.maven.repository;
 import java.util.Map;
 
 /**
- * An artifact type describing artifact characteristics that are common for certain artifacts.
+ * An artifact type describing artifact characteristics that are common for certain artifacts. Artifact types are a
+ * means to simplify the description of an artifact by referring to an artifact type instead of specifying the various
+ * properties individually.
  * 
  * @author Benjamin Bentmann
  */
@@ -31,21 +33,21 @@ public interface ArtifactType
     String getId();
 
     /**
-     * Gets the file extension to use for artifacts of this type.
+     * Gets the file extension to use for artifacts of this type (unless explicitly overridden by the artifact).
      * 
      * @return The file extension, never {@code null}.
      */
     String getExtension();
 
     /**
-     * Gets the classifier to use for artifacts of this type.
+     * Gets the classifier to use for artifacts of this type (unless explicitly overridden by the artifact).
      * 
      * @return The classifier or an empty string if none, never {@code null}.
      */
     String getClassifier();
 
     /**
-     * Gets the properties to use for artifacts of this type.
+     * Gets the properties to use for artifacts of this type (unless explicitly overridden by the artifact).
      * 
      * @return The properties, never {@code null}.
      */

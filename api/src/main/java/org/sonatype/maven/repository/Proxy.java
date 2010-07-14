@@ -14,7 +14,8 @@ package org.sonatype.maven.repository;
  */
 
 /**
- * A proxy to use for connections to a repository.
+ * A proxy to use for connections to a repository. <em>Note:</em> Instances of this class are immutable and the exposed
+ * mutators return new objects rather than changing the current instance.
  * 
  * @author Benjamin Bentmann
  */
@@ -63,6 +64,10 @@ public final class Proxy
      */
     public Proxy setType( String type )
     {
+        if ( this.type.equals( type ) || ( type == null && this.type.length() <= 0 ) )
+        {
+            return this;
+        }
         return new Proxy( type, host, port, auth );
     }
 
@@ -84,6 +89,10 @@ public final class Proxy
      */
     public Proxy setHost( String host )
     {
+        if ( this.host.equals( host ) || ( host == null && this.host.length() <= 0 ) )
+        {
+            return this;
+        }
         return new Proxy( type, host, port, auth );
     }
 
@@ -105,6 +114,10 @@ public final class Proxy
      */
     public Proxy setPort( int port )
     {
+        if ( this.port == port )
+        {
+            return this;
+        }
         return new Proxy( type, host, port, auth );
     }
 
@@ -126,6 +139,10 @@ public final class Proxy
      */
     public Proxy setAuthentication( Authentication auth )
     {
+        if ( eq( this.auth, auth ) )
+        {
+            return this;
+        }
         return new Proxy( type, host, port, auth );
     }
 

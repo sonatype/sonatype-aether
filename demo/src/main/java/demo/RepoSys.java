@@ -1,3 +1,4 @@
+package demo;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -76,7 +77,7 @@ public class RepoSys
         repoSystem.resolveDependencies( session, root, null );
 
         Artifact projectOutput = new DefaultArtifact( "test", "test", "", "jar", "0.1-SNAPSHOT" );
-        projectOutput.setFile( new File( "pom.xml" ) );
+        projectOutput = projectOutput.setFile( new File( "pom.xml" ) );
 
         InstallRequest installRequest = new InstallRequest();
         installRequest.addArtifact( projectOutput );

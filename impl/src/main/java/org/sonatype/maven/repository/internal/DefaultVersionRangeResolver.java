@@ -50,6 +50,7 @@ import org.sonatype.maven.repository.spi.MetadataResolver;
 import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.spi.VersionRangeResolver;
 import org.sonatype.maven.repository.util.DefaultRepositoryEvent;
+import org.sonatype.maven.repository.util.MavenVersionRange;
 
 /**
  * @author Benjamin Bentmann

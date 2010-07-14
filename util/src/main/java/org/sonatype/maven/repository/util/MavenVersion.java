@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository.internal;
+package org.sonatype.maven.repository.util;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -15,10 +15,8 @@ package org.sonatype.maven.repository.internal;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
@@ -53,7 +51,7 @@ import org.sonatype.maven.repository.Version;
  * @author <a href="mailto:kenney@apache.org">Kenney Westerhof</a>
  * @author <a href="mailto:hboutemy@apache.org">Hervé Boutemy</a>
  */
-class MavenVersion
+public final class MavenVersion
     implements Version
 {
 

@@ -19,7 +19,8 @@ import java.util.Collections;
 import java.util.HashSet;
 
 /**
- * A dependency to some artifact.
+ * A dependency to some artifact. <em>Note:</em> Instances of this class are immutable and the exposed mutators return
+ * new objects rather than changing the current instance.
  * 
  * @author Benjamin Bentmann
  */

@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository.internal;
+package org.sonatype.maven.repository.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,6 +20,8 @@ package org.sonatype.maven.repository.internal;
  */
 
 import java.util.Locale;
+
+import org.sonatype.maven.repository.util.MavenVersion;
 
 import junit.framework.TestCase;
 

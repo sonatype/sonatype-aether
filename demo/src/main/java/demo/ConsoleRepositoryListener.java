@@ -1,3 +1,4 @@
+package demo;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -17,7 +18,7 @@ import java.io.PrintStream;
 import org.sonatype.maven.repository.RepositoryEvent;
 import org.sonatype.maven.repository.util.AbstractRepositoryListener;
 
-public class ConsoleRepositoryListener
+class ConsoleRepositoryListener
     extends AbstractRepositoryListener
 {
 
@@ -56,11 +57,6 @@ public class ConsoleRepositoryListener
     public void artifactInstalling( RepositoryEvent event )
     {
         out.println( "Installing " + event.getArtifact() + " to " + event.getFile() );
-    }
-
-    public void artifactRelocated( RepositoryEvent event )
-    {
-        out.println( "Artifact " + event.getRelocatedArtifact() + " relocated to " + event.getArtifact() );
     }
 
     public void artifactResolved( RepositoryEvent event )
