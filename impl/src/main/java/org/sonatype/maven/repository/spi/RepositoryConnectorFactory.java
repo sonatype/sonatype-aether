@@ -18,12 +18,25 @@ import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositorySystemSession;
 
 /**
+ * A factory to create repository connectors. A repository connector is responsible for uploads/downloads to/from a
+ * remote repository. The registered factories will be tried in descending order of their priority when the repository
+ * system needs a repository connector.
+ * 
  * @author Benjamin Bentmann
  */
 public interface RepositoryConnectorFactory
     extends PluggableComponent
 {
 
+    /**
+     * Tries to create a repository connector for the specified remote repository.
+     * 
+     * @param session The repository system session, must not be {@code null}.
+     * @param repository The remote repository to create a connector for, must not be {@code null}.
+     * @return The connector for the given repository, never {@code null}.
+     * @throws NoRepositoryConnectorException If the factory cannot create a connector for the specified remote
+     *             repository.
+     */
     RepositoryConnector newInstance( RepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException;
 
