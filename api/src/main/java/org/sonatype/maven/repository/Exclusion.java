@@ -28,7 +28,7 @@ public final class Exclusion
 
     private final String classifier;
 
-    private final String type;
+    private final String extension;
 
     /**
      * Creates an exclusion for artifacts with the specified coordinates.
@@ -36,14 +36,14 @@ public final class Exclusion
      * @param groupId The group identifier, may be {@code null}.
      * @param artifactId The artifact identifier, may be {@code null}.
      * @param classifier The classifier, may be {@code null}.
-     * @param type The file type, may be {@code null}.
+     * @param extension The file extension, may be {@code null}.
      */
-    public Exclusion( String groupId, String artifactId, String classifier, String type )
+    public Exclusion( String groupId, String artifactId, String classifier, String extension )
     {
         this.groupId = ( groupId != null ) ? groupId : "";
         this.artifactId = ( artifactId != null ) ? artifactId : "";
         this.classifier = ( classifier != null ) ? classifier : "";
-        this.type = ( type != null ) ? type : "";
+        this.extension = ( extension != null ) ? extension : "";
     }
 
     /**
@@ -77,19 +77,19 @@ public final class Exclusion
     }
 
     /**
-     * Gets the file type for artifacts to exclude.
+     * Gets the file extension for artifacts to exclude.
      * 
-     * @return The file type of artifacts to exclude, never {@code null}.
+     * @return The file extension of artifacts to exclude, never {@code null}.
      */
-    public String getType()
+    public String getExtension()
     {
-        return type;
+        return extension;
     }
 
     @Override
     public String toString()
     {
-        return getGroupId() + ':' + getArtifactId() + ':' + getType()
+        return getGroupId() + ':' + getArtifactId() + ':' + getExtension()
             + ( getClassifier().length() > 0 ? ':' + getClassifier() : "" );
     }
 
@@ -107,8 +107,8 @@ public final class Exclusion
 
         Exclusion that = (Exclusion) obj;
 
-        return artifactId.equals( that.artifactId ) && groupId.equals( that.groupId ) && type.equals( that.type )
-            && classifier.equals( that.classifier );
+        return artifactId.equals( that.artifactId ) && groupId.equals( that.groupId )
+            && extension.equals( that.extension ) && classifier.equals( that.classifier );
     }
 
     @Override
@@ -118,7 +118,7 @@ public final class Exclusion
         hash = hash * 31 + artifactId.hashCode();
         hash = hash * 31 + groupId.hashCode();
         hash = hash * 31 + classifier.hashCode();
-        hash = hash * 31 + type.hashCode();
+        hash = hash * 31 + extension.hashCode();
         return hash;
     }
 
