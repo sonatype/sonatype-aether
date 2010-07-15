@@ -135,7 +135,7 @@ public class DefaultRepositorySystemSession
         session.setIgnoreInvalidArtifactDescriptor( true );
         session.setIgnoreMissingArtifactDescriptor( true );
 
-        session.setSystemProperties( (Map<String, String>) (Map) System.getProperties() );
+        session.setSystemProps( System.getProperties() );
 
         return session;
     }
@@ -322,7 +322,7 @@ public class DefaultRepositorySystemSession
         return this;
     }
 
-    private Map<String, String> toMap( Hashtable<?, ?> table )
+    private Map<String, String> toSafeMap( Map<?, ?> table )
     {
         Map<String, String> map;
         if ( table == null || table.isEmpty() )
@@ -366,9 +366,9 @@ public class DefaultRepositorySystemSession
         return this;
     }
 
-    public DefaultRepositorySystemSession setSystemProperties( Hashtable<?, ?> systemProperties )
+    public DefaultRepositorySystemSession setSystemProps( Hashtable<?, ?> systemProperties )
     {
-        this.systemProperties = toMap( systemProperties );
+        this.systemProperties = toSafeMap( systemProperties );
         return this;
     }
 
@@ -390,9 +390,9 @@ public class DefaultRepositorySystemSession
         return this;
     }
 
-    public DefaultRepositorySystemSession setUserProperties( Hashtable<?, ?> userProperties )
+    public DefaultRepositorySystemSession setUserProps( Map<?, ?> userProperties )
     {
-        this.userProperties = toMap( userProperties );
+        this.userProperties = toSafeMap( userProperties );
         return this;
     }
 
@@ -414,9 +414,9 @@ public class DefaultRepositorySystemSession
         return this;
     }
 
-    public DefaultRepositorySystemSession setConfigProperties( Hashtable<?, ?> configProperties )
+    public DefaultRepositorySystemSession setConfigProps( Map<?, ?> configProperties )
     {
-        this.configProperties = toMap( configProperties );
+        this.configProperties = toSafeMap( configProperties );
         return this;
     }
 
