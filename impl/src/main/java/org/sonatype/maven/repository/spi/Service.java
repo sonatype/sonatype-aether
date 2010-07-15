@@ -15,8 +15,8 @@ package org.sonatype.maven.repository.spi;
 
 /**
  * A stateless component of the repository system. The primary purpose of this interface is to provide a convenient
- * means to programmatically wire the several components of the repository system togethter when it is used outside of
- * an IoC container.
+ * means to programmatically wire the several components of the repository system together when it is used outside of an
+ * IoC container.
  * 
  * @author Benjamin Bentmann
  */

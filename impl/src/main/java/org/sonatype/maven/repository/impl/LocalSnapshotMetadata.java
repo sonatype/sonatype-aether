@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository.internal;
+package org.sonatype.maven.repository.impl;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -17,24 +17,25 @@ import java.io.File;
 
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.internal.metadata.Metadata;
+import org.sonatype.maven.repository.internal.metadata.Snapshot;
 import org.sonatype.maven.repository.internal.metadata.Versioning;
 
 /**
  * @author Benjamin Bentmann
  */
-final class VersionsMetadata
+final class LocalSnapshotMetadata
     extends MavenMetadata
 {
 
     private final Artifact artifact;
 
-    public VersionsMetadata( Artifact artifact )
+    public LocalSnapshotMetadata( Artifact artifact )
     {
         super( createMetadata( artifact ), null );
         this.artifact = artifact;
     }
 
-    public VersionsMetadata( Artifact artifact, File file )
+    public LocalSnapshotMetadata( Artifact artifact, File file )
     {
         super( createMetadata( artifact ), file );
         this.artifact = artifact;
@@ -42,35 +43,24 @@ final class VersionsMetadata
 
     private static Metadata createMetadata( Artifact artifact )
     {
+        Snapshot snapshot = new Snapshot();
+        snapshot.setLocalCopy( true );
         Versioning versioning = new Versioning();
-        versioning.addVersion( artifact.getBaseVersion() );
-        if ( !artifact.isSnapshot() )
-        {
-            versioning.setRelease( artifact.getVersion() );
-        }
+        versioning.setSnapshot( snapshot );
 
         Metadata metadata = new Metadata();
         metadata.setModelVersion( "1.0.0" );
         metadata.setVersioning( versioning );
         metadata.setGroupId( artifact.getGroupId() );
         metadata.setArtifactId( artifact.getArtifactId() );
+        metadata.setVersion( artifact.getBaseVersion() );
 
         return metadata;
     }
 
-    public Object getKey()
-    {
-        return getGroupId() + ':' + getArtifactId();
-    }
-
-    public static Object getKey( Artifact artifact )
-    {
-        return artifact.getGroupId() + ':' + artifact.getArtifactId();
-    }
-
     public MavenMetadata setFile( File file )
     {
-        return new VersionsMetadata( artifact, file );
+        return new LocalSnapshotMetadata( artifact, file );
     }
 
     public String getGroupId()
@@ -85,12 +75,12 @@ final class VersionsMetadata
 
     public String getVersion()
     {
-        return "";
+        return artifact.getBaseVersion();
     }
 
     public Nature getNature()
     {
-        return artifact.isSnapshot() ? Nature.RELEASE_OR_SNAPSHOT : Nature.RELEASE;
+        return Nature.SNAPSHOT;
     }
 
 }

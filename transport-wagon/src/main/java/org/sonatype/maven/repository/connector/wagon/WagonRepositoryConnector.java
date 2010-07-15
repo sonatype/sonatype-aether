@@ -52,7 +52,7 @@ import org.sonatype.maven.repository.RepositoryPolicy;
 import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.TransferEvent;
 import org.sonatype.maven.repository.TransferListener;
-import org.sonatype.maven.repository.internal.ChecksumUtils;
+import org.sonatype.maven.repository.impl.ChecksumUtils;
 import org.sonatype.maven.repository.spi.ArtifactDownload;
 import org.sonatype.maven.repository.spi.ArtifactTransfer;
 import org.sonatype.maven.repository.spi.ArtifactUpload;

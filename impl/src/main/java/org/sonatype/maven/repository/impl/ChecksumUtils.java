@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository.internal;
+package org.sonatype.maven.repository.impl;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one

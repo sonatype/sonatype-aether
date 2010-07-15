@@ -21,6 +21,7 @@ import org.sonatype.maven.repository.ArtifactDescriptorRequest;
 import org.sonatype.maven.repository.ArtifactDescriptorResult;
 import org.sonatype.maven.repository.RepositorySystem;
 import org.sonatype.maven.repository.RepositorySystemSession;
+import org.sonatype.maven.repository.impl.DefaultServiceLocator;
 import org.sonatype.maven.repository.spi.ArtifactDescriptorReader;
 
 /**

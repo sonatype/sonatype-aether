@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository.internal;
+package org.sonatype.maven.repository.impl;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -13,36 +13,20 @@ package org.sonatype.maven.repository.internal;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.maven.repository.spi.Logger;
+import org.sonatype.maven.repository.InvalidVersionException;
+import org.sonatype.maven.repository.util.MavenVersion;
 
 /**
- * A logger that delegates to Plexus logging.
- * 
  * @author Benjamin Bentmann
  */
-@Component( role = Logger.class )
-public class PlexusLogger
-    implements Logger
+class MavenVersionScheme
+    implements VersionScheme
 {
 
-    @Requirement
-    private org.codehaus.plexus.logging.Logger logger;
-
-    public boolean isDebugEnabled()
+    public MavenVersion parseVersion( String version )
+        throws InvalidVersionException
     {
-        return logger.isDebugEnabled();
-    }
-
-    public void debug( String msg )
-    {
-        logger.debug( msg );
-    }
-
-    public void debug( String msg, Throwable error )
-    {
-        logger.debug( msg, error );
+        return new MavenVersion( version );
     }
 
 }

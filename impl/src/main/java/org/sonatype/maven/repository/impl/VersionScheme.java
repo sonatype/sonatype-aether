@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository.internal;
+package org.sonatype.maven.repository.impl;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -14,19 +14,15 @@ package org.sonatype.maven.repository.internal;
  */
 
 import org.sonatype.maven.repository.InvalidVersionException;
-import org.sonatype.maven.repository.util.MavenVersion;
+import org.sonatype.maven.repository.Version;
 
 /**
  * @author Benjamin Bentmann
  */
-class MavenVersionScheme
-    implements VersionScheme
+interface VersionScheme
 {
 
-    public MavenVersion parseVersion( String version )
-        throws InvalidVersionException
-    {
-        return new MavenVersion( version );
-    }
+    Version parseVersion( String version )
+        throws InvalidVersionException;
 
 }
