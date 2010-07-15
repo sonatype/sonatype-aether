@@ -34,6 +34,8 @@ import org.sonatype.maven.repository.spi.PluggableComponent;
 import org.sonatype.maven.repository.spi.RemoteRepositoryManager;
 import org.sonatype.maven.repository.spi.RepositoryConnector;
 import org.sonatype.maven.repository.spi.RepositoryConnectorFactory;
+import org.sonatype.maven.repository.spi.Service;
+import org.sonatype.maven.repository.spi.ServiceLocator;
 import org.sonatype.maven.repository.spi.UpdateCheckManager;
 
 /**
@@ -41,7 +43,7 @@ import org.sonatype.maven.repository.spi.UpdateCheckManager;
  */
 @Component( role = RemoteRepositoryManager.class, hint = "default" )
 public class DefaultRemoteRepositoryManager
-    implements RemoteRepositoryManager
+    implements RemoteRepositoryManager, Service
 {
 
     @Requirement
@@ -52,6 +54,13 @@ public class DefaultRemoteRepositoryManager
 
     @Requirement( role = RepositoryConnectorFactory.class )
     private List<RepositoryConnectorFactory> connectorFactories = new ArrayList<RepositoryConnectorFactory>();
+
+    public void initService( ServiceLocator locator )
+    {
+        setLogger( locator.getService( Logger.class ) );
+        setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
+        connectorFactories = locator.getServices( RepositoryConnectorFactory.class );
+    }
 
     public DefaultRemoteRepositoryManager setLogger( Logger logger )
     {

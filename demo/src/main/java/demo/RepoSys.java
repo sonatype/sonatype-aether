@@ -16,7 +16,7 @@ package demo;
 import java.io.File;
 import java.util.Arrays;
 
-import org.apache.maven.repository.internal.MavenRepositorySystemFactory;
+import org.apache.maven.repository.internal.DefaultArtifactDescriptorReader;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.sonatype.maven.repository.Artifact;
 import org.sonatype.maven.repository.AuthenticationSelector;
@@ -36,8 +36,12 @@ import org.sonatype.maven.repository.ProxySelector;
 import org.sonatype.maven.repository.RemoteRepository;
 import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.RepositorySystem;
+import org.sonatype.maven.repository.connector.wagon.WagonProvider;
 import org.sonatype.maven.repository.connector.wagon.WagonRepositoryConnectorFactory;
+import org.sonatype.maven.repository.internal.DefaultServiceLocator;
 import org.sonatype.maven.repository.internal.EnhancedLocalRepositoryManager;
+import org.sonatype.maven.repository.spi.ArtifactDescriptorReader;
+import org.sonatype.maven.repository.spi.RepositoryConnectorFactory;
 import org.sonatype.maven.repository.util.AndDependencySelector;
 import org.sonatype.maven.repository.util.ChainedDependencyGraphTransformer;
 import org.sonatype.maven.repository.util.ClassicDependencyManager;
@@ -62,8 +66,8 @@ public class RepoSys
     public static void main( String[] args )
         throws Exception
     {
-        RepositorySystem repoSystem = newManagedSystem();
-        //RepositorySystem repoSystem = newManualSystem();
+        // RepositorySystem repoSystem = newManagedSystem();
+        RepositorySystem repoSystem = newManualSystem();
 
         RepositorySystemSession session = newSession();
 
@@ -89,7 +93,7 @@ public class RepoSys
                                                            new File( "target/dist-repo" ).toURI().toString() ) );
         repoSystem.deploy( session, deployRequest );
 
-        System.out.println("============================================================");
+        System.out.println( "============================================================" );
         dump( root, "" );
     }
 
@@ -101,13 +105,12 @@ public class RepoSys
 
     private static RepositorySystem newManualSystem()
     {
-        WagonRepositoryConnectorFactory connectorFactory = new WagonRepositoryConnectorFactory();
-        connectorFactory.setWagonProvider( new ManualWagonProvider() );
-        
-        MavenRepositorySystemFactory systemFactory = new MavenRepositorySystemFactory();
-        systemFactory.addRepositoryConnectorFactory( connectorFactory );
-        
-        return systemFactory.newInstance();
+        DefaultServiceLocator locator = new DefaultServiceLocator();
+        locator.setServices( WagonProvider.class, new ManualWagonProvider() );
+        locator.addService( RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class );
+        locator.addService( ArtifactDescriptorReader.class, DefaultArtifactDescriptorReader.class );
+
+        return locator.getService( RepositorySystem.class );
     }
 
     private static RepositorySystemSession newSession()
@@ -136,17 +139,14 @@ public class RepoSys
         session.setDependencyManager( depManager );
 
         DependencySelector depFilter =
-            new AndDependencySelector( new ScopeDependencySelector( "test", "provided" ), new OptionalDependencySelector(),
-                                     new ExclusionDependencySelector() );
+            new AndDependencySelector( new ScopeDependencySelector( "test", "provided" ),
+                                       new OptionalDependencySelector(), new ExclusionDependencySelector() );
         session.setDependencySelector( depFilter );
 
         DependencyGraphTransformer transformer =
-            new ChainedDependencyGraphTransformer( 
-                                                   new ConflictMarker(), 
-                                                   new JavaEffectiveScopeCalculator(),
+            new ChainedDependencyGraphTransformer( new ConflictMarker(), new JavaEffectiveScopeCalculator(),
                                                    new ClassicVersionConflictResolver(),
-                                                   new JavaDependencyContextRefiner() 
-                                                   );
+                                                   new JavaDependencyContextRefiner() );
         transformer = null;
         session.setDependencyGraphTransformer( transformer );
 

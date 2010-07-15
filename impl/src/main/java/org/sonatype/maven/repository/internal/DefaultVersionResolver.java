@@ -49,6 +49,8 @@ import org.sonatype.maven.repository.internal.metadata.io.xpp3.MetadataXpp3Reade
 import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.MetadataResolver;
 import org.sonatype.maven.repository.spi.NullLogger;
+import org.sonatype.maven.repository.spi.Service;
+import org.sonatype.maven.repository.spi.ServiceLocator;
 import org.sonatype.maven.repository.spi.VersionResolver;
 import org.sonatype.maven.repository.util.DefaultRepositoryEvent;
 
@@ -57,7 +59,7 @@ import org.sonatype.maven.repository.util.DefaultRepositoryEvent;
  */
 @Component( role = VersionResolver.class )
 public class DefaultVersionResolver
-    implements VersionResolver
+    implements VersionResolver, Service
 {
 
     private static final String MAVEN_METADATA_XML = "maven-metadata.xml";
@@ -73,6 +75,12 @@ public class DefaultVersionResolver
 
     @Requirement
     private MetadataResolver metadataResolver;
+
+    public void initService( ServiceLocator locator )
+    {
+        setLogger( locator.getService( Logger.class ) );
+        setMetadataResolver( locator.getService( MetadataResolver.class ) );
+    }
 
     public DefaultVersionResolver setLogger( Logger logger )
     {

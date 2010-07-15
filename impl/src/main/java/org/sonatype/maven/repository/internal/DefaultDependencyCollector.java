@@ -48,6 +48,8 @@ import org.sonatype.maven.repository.spi.DependencyCollector;
 import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.spi.RemoteRepositoryManager;
+import org.sonatype.maven.repository.spi.Service;
+import org.sonatype.maven.repository.spi.ServiceLocator;
 import org.sonatype.maven.repository.spi.VersionRangeResolver;
 import org.sonatype.maven.repository.util.DefaultDependencyNode;
 import org.sonatype.maven.repository.util.DefaultRepositorySystemSession;
@@ -57,7 +59,7 @@ import org.sonatype.maven.repository.util.DefaultRepositorySystemSession;
  */
 @Component( role = DependencyCollector.class )
 public class DefaultDependencyCollector
-    implements DependencyCollector
+    implements DependencyCollector, Service
 {
 
     @Requirement
@@ -71,6 +73,14 @@ public class DefaultDependencyCollector
 
     @Requirement
     private VersionRangeResolver versionRangeResolver;
+
+    public void initService( ServiceLocator locator )
+    {
+        setLogger( locator.getService( Logger.class ) );
+        setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
+        setArtifactDescriptorReader( locator.getService( ArtifactDescriptorReader.class ) );
+        setVersionRangeResolver( locator.getService( VersionRangeResolver.class ) );
+    }
 
     public DefaultDependencyCollector setLogger( Logger logger )
     {
@@ -251,9 +261,9 @@ public class DefaultDependencyCollector
     }
 
     private void process( RepositorySystemSession session, CollectResult result, DependencyNode node,
-                          List<Dependency> dependencies,
-                          List<RemoteRepository> repositories, DependencySelector depSelector,
-                          DependencyManager depManager, DependencyTraverser depTraverser, DataPool pool )
+                          List<Dependency> dependencies, List<RemoteRepository> repositories,
+                          DependencySelector depSelector, DependencyManager depManager,
+                          DependencyTraverser depTraverser, DataPool pool )
         throws DependencyCollectionException
     {
         nextDependency: for ( Dependency dependency : dependencies )
@@ -336,7 +346,7 @@ public class DefaultDependencyCollector
                     LightDependencyNode existingNode = pool.getNode( nodeKey );
                     if ( existingNode != null )
                     {
-                        //if ( existingNode.getDepth() > node.getDepth() + 1 )
+                        // if ( existingNode.getDepth() > node.getDepth() + 1 )
                         {
                             copyNodes( node, existingNode );
                         }

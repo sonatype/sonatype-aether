@@ -49,6 +49,8 @@ import org.sonatype.maven.repository.spi.MetadataUpload;
 import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.spi.RemoteRepositoryManager;
 import org.sonatype.maven.repository.spi.RepositoryConnector;
+import org.sonatype.maven.repository.spi.Service;
+import org.sonatype.maven.repository.spi.ServiceLocator;
 import org.sonatype.maven.repository.spi.Transfer;
 import org.sonatype.maven.repository.spi.UpdateCheck;
 import org.sonatype.maven.repository.spi.UpdateCheckManager;
@@ -59,7 +61,7 @@ import org.sonatype.maven.repository.util.DefaultRepositoryEvent;
  */
 @Component( role = Deployer.class )
 public class DefaultDeployer
-    implements Deployer
+    implements Deployer, Service
 {
 
     @Requirement
@@ -70,6 +72,13 @@ public class DefaultDeployer
 
     @Requirement
     private UpdateCheckManager updateCheckManager;
+
+    public void initService( ServiceLocator locator )
+    {
+        setLogger( locator.getService( Logger.class ) );
+        setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
+        setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
+    }
 
     public DefaultDeployer setLogger( Logger logger )
     {

@@ -51,6 +51,8 @@ import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.spi.RemoteRepositoryManager;
 import org.sonatype.maven.repository.spi.RepositoryConnector;
+import org.sonatype.maven.repository.spi.Service;
+import org.sonatype.maven.repository.spi.ServiceLocator;
 import org.sonatype.maven.repository.spi.UpdateCheck;
 import org.sonatype.maven.repository.spi.UpdateCheckManager;
 import org.sonatype.maven.repository.spi.VersionResolver;
@@ -61,7 +63,7 @@ import org.sonatype.maven.repository.util.DefaultRepositoryEvent;
  */
 @Component( role = ArtifactResolver.class )
 public class DefaultArtifactResolver
-    implements ArtifactResolver
+    implements ArtifactResolver, Service
 {
 
     @Requirement
@@ -78,6 +80,14 @@ public class DefaultArtifactResolver
 
     @Requirement( optional = true )
     private LocalRepositoryMaintainer maintainer;
+
+    public void initService( ServiceLocator locator )
+    {
+        setLogger( locator.getService( Logger.class ) );
+        setVersionResolver( locator.getService( VersionResolver.class ) );
+        setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
+        setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
+    }
 
     public DefaultArtifactResolver setLogger( Logger logger )
     {

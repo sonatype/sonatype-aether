@@ -35,6 +35,8 @@ import org.sonatype.maven.repository.RepositoryPolicy;
 import org.sonatype.maven.repository.RepositorySystemSession;
 import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.NullLogger;
+import org.sonatype.maven.repository.spi.Service;
+import org.sonatype.maven.repository.spi.ServiceLocator;
 import org.sonatype.maven.repository.spi.UpdateCheck;
 import org.sonatype.maven.repository.spi.UpdateCheckManager;
 
@@ -43,7 +45,7 @@ import org.sonatype.maven.repository.spi.UpdateCheckManager;
  */
 @Component( role = UpdateCheckManager.class )
 public class DefaultUpdateCheckManager
-    implements UpdateCheckManager
+    implements UpdateCheckManager, Service
 {
 
     @Requirement
@@ -54,6 +56,11 @@ public class DefaultUpdateCheckManager
     private static final String ERROR_KEY_SUFFIX = ".error";
 
     private static final String NOT_FOUND = "";
+
+    public void initService( ServiceLocator locator )
+    {
+        setLogger( locator.getService( Logger.class ) );
+    }
 
     public DefaultUpdateCheckManager setLogger( Logger logger )
     {

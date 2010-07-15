@@ -59,6 +59,8 @@ import org.sonatype.maven.repository.spi.Installer;
 import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.MetadataResolver;
 import org.sonatype.maven.repository.spi.NullLogger;
+import org.sonatype.maven.repository.spi.Service;
+import org.sonatype.maven.repository.spi.ServiceLocator;
 import org.sonatype.maven.repository.spi.VersionRangeResolver;
 import org.sonatype.maven.repository.spi.VersionResolver;
 
@@ -67,7 +69,7 @@ import org.sonatype.maven.repository.spi.VersionResolver;
  */
 @Component( role = RepositorySystem.class )
 public class DefaultRepositorySystem
-    implements RepositorySystem
+    implements RepositorySystem, Service
 {
 
     @Requirement
@@ -96,6 +98,25 @@ public class DefaultRepositorySystem
 
     @Requirement
     private Deployer deployer;
+
+    public void initService( ServiceLocator locator )
+    {
+        setLogger( locator.getService( Logger.class ) );
+        setVersionResolver( locator.getService( VersionResolver.class ) );
+        setVersionRangeResolver( locator.getService( VersionRangeResolver.class ) );
+        setArtifactResolver( locator.getService( ArtifactResolver.class ) );
+        setMetadataResolver( locator.getService( MetadataResolver.class ) );
+        setArtifactDescriptorReader( locator.getService( ArtifactDescriptorReader.class ) );
+        setDependencyCollector( locator.getService( DependencyCollector.class ) );
+        setInstaller( locator.getService( Installer.class ) );
+        setDeployer( locator.getService( Deployer.class ) );
+    }
+
+    public DefaultRepositorySystem setLogger( Logger logger )
+    {
+        this.logger = ( logger != null ) ? logger : NullLogger.INSTANCE;
+        return this;
+    }
 
     public DefaultRepositorySystem setVersionResolver( VersionResolver versionResolver )
     {

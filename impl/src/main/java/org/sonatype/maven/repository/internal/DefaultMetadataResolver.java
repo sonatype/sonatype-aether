@@ -47,6 +47,8 @@ import org.sonatype.maven.repository.spi.MetadataResolver;
 import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.spi.RemoteRepositoryManager;
 import org.sonatype.maven.repository.spi.RepositoryConnector;
+import org.sonatype.maven.repository.spi.Service;
+import org.sonatype.maven.repository.spi.ServiceLocator;
 import org.sonatype.maven.repository.spi.UpdateCheck;
 import org.sonatype.maven.repository.spi.UpdateCheckManager;
 import org.sonatype.maven.repository.util.DefaultRepositoryEvent;
@@ -56,7 +58,7 @@ import org.sonatype.maven.repository.util.DefaultRepositoryEvent;
  */
 @Component( role = MetadataResolver.class )
 public class DefaultMetadataResolver
-    implements MetadataResolver
+    implements MetadataResolver, Service
 {
 
     @Requirement
@@ -67,6 +69,13 @@ public class DefaultMetadataResolver
 
     @Requirement
     private RemoteRepositoryManager remoteRepositoryManager;
+
+    public void initService( ServiceLocator locator )
+    {
+        setLogger( locator.getService( Logger.class ) );
+        setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
+        setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
+    }
 
     public DefaultMetadataResolver setLogger( Logger logger )
     {

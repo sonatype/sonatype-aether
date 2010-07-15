@@ -22,6 +22,8 @@ import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.NullLogger;
 import org.sonatype.maven.repository.spi.RepositoryConnector;
 import org.sonatype.maven.repository.spi.RepositoryConnectorFactory;
+import org.sonatype.maven.repository.spi.Service;
+import org.sonatype.maven.repository.spi.ServiceLocator;
 
 /**
  * A repository connector factory that uses Maven Wagon for the transfers.
@@ -30,7 +32,7 @@ import org.sonatype.maven.repository.spi.RepositoryConnectorFactory;
  */
 @Component( role = RepositoryConnectorFactory.class, hint = "wagon" )
 public class WagonRepositoryConnectorFactory
-    implements RepositoryConnectorFactory
+    implements RepositoryConnectorFactory, Service
 {
 
     @Requirement
@@ -40,6 +42,12 @@ public class WagonRepositoryConnectorFactory
     private WagonProvider wagonProvider;
 
     private int priority;
+
+    public void initService( ServiceLocator locator )
+    {
+        setLogger( locator.getService( Logger.class ) );
+        setWagonProvider( locator.getService( WagonProvider.class ) );
+    }
 
     /**
      * Sets the logger to use for this component.

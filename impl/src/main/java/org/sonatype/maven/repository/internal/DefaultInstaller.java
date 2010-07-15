@@ -34,6 +34,8 @@ import org.sonatype.maven.repository.spi.Installer;
 import org.sonatype.maven.repository.spi.LocalRepositoryMaintainer;
 import org.sonatype.maven.repository.spi.Logger;
 import org.sonatype.maven.repository.spi.NullLogger;
+import org.sonatype.maven.repository.spi.Service;
+import org.sonatype.maven.repository.spi.ServiceLocator;
 import org.sonatype.maven.repository.util.DefaultRepositoryEvent;
 
 /**
@@ -41,7 +43,7 @@ import org.sonatype.maven.repository.util.DefaultRepositoryEvent;
  */
 @Component( role = Installer.class )
 public class DefaultInstaller
-    implements Installer
+    implements Installer, Service
 {
 
     @Requirement
@@ -49,6 +51,12 @@ public class DefaultInstaller
 
     @Requirement( optional = true )
     private LocalRepositoryMaintainer maintainer;
+
+    public void initService( ServiceLocator locator )
+    {
+        setLogger( locator.getService( Logger.class ) );
+        setLocalRepositoryMaintainer( locator.getService( LocalRepositoryMaintainer.class ) );
+    }
 
     public DefaultInstaller setLogger( Logger logger )
     {
