@@ -13,7 +13,10 @@ package org.sonatype.maven.repository.util;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import java.util.Properties;
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.sonatype.maven.repository.ArtifactTypeRegistry;
@@ -65,11 +68,11 @@ public class DefaultRepositorySystemSession
 
     private TransferListener transferListener;
 
-    private Properties systemProperties = new Properties();
+    private Map<String, String> systemProperties = Collections.emptyMap();
 
-    private Properties userProperties = new Properties();
+    private Map<String, String> userProperties = Collections.emptyMap();
 
-    private Properties configProperties = new Properties();
+    private Map<String, String> configProperties = Collections.emptyMap();
 
     private MirrorSelector mirrorSelector;
 
@@ -132,7 +135,7 @@ public class DefaultRepositorySystemSession
         session.setIgnoreInvalidArtifactDescriptor( true );
         session.setIgnoreMissingArtifactDescriptor( true );
 
-        session.setSystemProperties( System.getProperties() );
+        session.setSystemProperties( (Map<String, String>) (Map) System.getProperties() );
 
         return session;
     }
@@ -319,36 +322,101 @@ public class DefaultRepositorySystemSession
         return this;
     }
 
-    public Properties getSystemProperties()
+    private Map<String, String> toMap( Hashtable<?, ?> table )
+    {
+        Map<String, String> map;
+        if ( table == null || table.isEmpty() )
+        {
+            map = Collections.emptyMap();
+        }
+        else
+        {
+            map = new LinkedHashMap<String, String>();
+            for ( Object key : table.keySet() )
+            {
+                if ( key instanceof String )
+                {
+                    Object value = table.get( key );
+                    if ( value instanceof String )
+                    {
+                        map.put( key.toString(), value.toString() );
+                    }
+                }
+            }
+            map = Collections.unmodifiableMap( map );
+        }
+        return map;
+    }
+
+    public Map<String, String> getSystemProperties()
     {
         return systemProperties;
     }
 
-    public DefaultRepositorySystemSession setSystemProperties( Properties systemProperties )
+    public DefaultRepositorySystemSession setSystemProperties( Map<String, String> systemProperties )
     {
-        this.systemProperties = ( systemProperties != null ) ? systemProperties : new Properties();
+        if ( systemProperties == null )
+        {
+            this.systemProperties = Collections.emptyMap();
+        }
+        else
+        {
+            this.systemProperties = Collections.unmodifiableMap( systemProperties );
+        }
         return this;
     }
 
-    public Properties getUserProperties()
+    public DefaultRepositorySystemSession setSystemProperties( Hashtable<?, ?> systemProperties )
+    {
+        this.systemProperties = toMap( systemProperties );
+        return this;
+    }
+
+    public Map<String, String> getUserProperties()
     {
         return userProperties;
     }
 
-    public DefaultRepositorySystemSession setUserProperties( Properties userProperties )
+    public DefaultRepositorySystemSession setUserProperties( Map<String, String> userProperties )
     {
-        this.userProperties = ( userProperties != null ) ? userProperties : new Properties();
+        if ( userProperties == null )
+        {
+            this.userProperties = Collections.emptyMap();
+        }
+        else
+        {
+            this.userProperties = Collections.unmodifiableMap( userProperties );
+        }
         return this;
     }
 
-    public Properties getConfigProperties()
+    public DefaultRepositorySystemSession setUserProperties( Hashtable<?, ?> userProperties )
+    {
+        this.userProperties = toMap( userProperties );
+        return this;
+    }
+
+    public Map<String, String> getConfigProperties()
     {
         return configProperties;
     }
 
-    public DefaultRepositorySystemSession setConfigProperties( Properties configProperties )
+    public DefaultRepositorySystemSession setConfigProperties( Map<String, String> configProperties )
     {
-        this.configProperties = ( configProperties != null ) ? configProperties : new Properties();
+        if ( configProperties == null )
+        {
+            this.configProperties = Collections.emptyMap();
+        }
+        else
+        {
+            this.configProperties = Collections.unmodifiableMap( configProperties );
+        }
+        return this;
+    }
+
+    public DefaultRepositorySystemSession setConfigProperties( Hashtable<?, ?> configProperties )
+    {
+        this.configProperties = toMap( configProperties );
         return this;
     }
 

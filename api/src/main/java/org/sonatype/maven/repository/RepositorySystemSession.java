@@ -13,7 +13,7 @@ package org.sonatype.maven.repository;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import java.util.Properties;
+import java.util.Map;
 
 /**
  * Defines settings and components that control the repository system.
@@ -131,26 +131,26 @@ public interface RepositorySystemSession
      * Gets the system properties to use, e.g. for processing of artifact descriptors. System properties are usually
      * collected from the runtime environment like {@link System#getProperties()} and environment variables.
      * 
-     * @return The system properties, never {@code null}.
+     * @return The (read-only) system properties, never {@code null}.
      */
-    Properties getSystemProperties();
+    Map<String, String> getSystemProperties();
 
     /**
      * Gets the user properties to use, e.g. for processing of artifact descriptors. User properties are similar to
      * system properties but are set on the discretion of the user and hence are considered of higher priority than
      * system properties.
      * 
-     * @return The user properties, never {@code null}.
+     * @return The (read-only) user properties, never {@code null}.
      */
-    Properties getUserProperties();
+    Map<String, String> getUserProperties();
 
     /**
      * The configuration properties used to tweak internal aspects of the repository system (e.g. timeouts, thread
      * pooling, etc.)
      * 
-     * @return The configuration properties, never {@code null}.
+     * @return The (read-only) configuration properties, never {@code null}.
      */
-    Properties getConfigProperties();
+    Map<String, String> getConfigProperties();
 
     /**
      * Gets the mirror selector to use for repositories discovered in artifact descriptors.

@@ -148,7 +148,7 @@ class WagonRepositoryConnector
 
     private int getOption( String key, int defaultValue )
     {
-        String value = session.getConfigProperties().getProperty( key );
+        String value = session.getConfigProperties().get( key );
         try
         {
             return Integer.valueOf( value );
