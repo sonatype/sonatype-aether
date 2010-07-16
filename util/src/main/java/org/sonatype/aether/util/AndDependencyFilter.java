@@ -77,11 +77,11 @@ public class AndDependencyFilter
         return new AndDependencyFilter( filter1, filter2 );
     }
 
-    public boolean filterDependency( DependencyNode node )
+    public boolean accept( DependencyNode node )
     {
         for ( DependencyFilter filter : filters )
         {
-            if ( !filter.filterDependency( node ) )
+            if ( !filter.accept( node ) )
             {
                 return false;
             }

@@ -45,7 +45,7 @@ public class ExclusionsDependencyFilter
         }
     }
 
-    public boolean filterDependency( DependencyNode node )
+    public boolean accept( DependencyNode node )
     {
         Dependency dependency = node.getDependency();
 

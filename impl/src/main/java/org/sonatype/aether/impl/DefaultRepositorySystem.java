@@ -266,7 +266,7 @@ public class DefaultRepositorySystem
     private void toArtifactRequest( List<ArtifactRequest> requests, DependencyNode node, DependencyFilter filter )
     {
         Dependency dependency = node.getDependency();
-        if ( dependency != null && ( filter == null || filter.filterDependency( node ) ) )
+        if ( dependency != null && ( filter == null || filter.accept( node ) ) )
         {
             ArtifactRequest request = new ArtifactRequest( node );
             requests.add( request );

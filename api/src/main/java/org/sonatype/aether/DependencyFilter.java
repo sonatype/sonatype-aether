@@ -27,6 +27,6 @@ public interface DependencyFilter
      * @param node The dependency node to filter, must not be {@code null}.
      * @return {@code true} to include the dependency node, {@code false} to exclude it.
      */
-    boolean filterDependency( DependencyNode node );
+    boolean accept( DependencyNode node );
 
 }

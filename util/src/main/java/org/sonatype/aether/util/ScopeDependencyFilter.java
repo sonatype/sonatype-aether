@@ -67,7 +67,7 @@ public class ScopeDependencyFilter
         }
     }
 
-    public boolean filterDependency( DependencyNode node )
+    public boolean accept( DependencyNode node )
     {
         Dependency dependency = node.getDependency();
 

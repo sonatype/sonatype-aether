@@ -78,7 +78,7 @@ public class DependencyListGenerator
 
     public boolean visitEnter( DependencyNode node )
     {
-        if ( node.getDependency() != null && ( filter == null || filter.filterDependency( node ) ) )
+        if ( node.getDependency() != null && ( filter == null || filter.accept( node ) ) )
         {
             dependencies.add( node.getDependency() );
         }

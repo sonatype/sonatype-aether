@@ -78,7 +78,7 @@ public class ArtifactListGenerator
 
     public boolean visitEnter( DependencyNode node )
     {
-        if ( node.getDependency() != null && ( filter == null || filter.filterDependency( node ) ) )
+        if ( node.getDependency() != null && ( filter == null || filter.accept( node ) ) )
         {
             artifacts.add( node.getDependency().getArtifact() );
         }

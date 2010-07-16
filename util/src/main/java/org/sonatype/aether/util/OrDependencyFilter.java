@@ -77,11 +77,11 @@ public class OrDependencyFilter
         return new OrDependencyFilter( filter1, filter2 );
     }
 
-    public boolean filterDependency( DependencyNode node )
+    public boolean accept( DependencyNode node )
     {
         for ( DependencyFilter filter : filters )
         {
-            if ( filter.filterDependency( node ) )
+            if ( filter.accept( node ) )
             {
                 return true;
             }
