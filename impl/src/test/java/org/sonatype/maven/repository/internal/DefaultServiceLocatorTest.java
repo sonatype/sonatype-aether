@@ -1,4 +1,4 @@
-package org.sonatype.maven.repository.internal;
+package org.sonatype.aether.internal;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -16,13 +16,13 @@ package org.sonatype.maven.repository.internal;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.sonatype.maven.repository.ArtifactDescriptorException;
-import org.sonatype.maven.repository.ArtifactDescriptorRequest;
-import org.sonatype.maven.repository.ArtifactDescriptorResult;
-import org.sonatype.maven.repository.RepositorySystem;
-import org.sonatype.maven.repository.RepositorySystemSession;
-import org.sonatype.maven.repository.impl.DefaultServiceLocator;
-import org.sonatype.maven.repository.spi.ArtifactDescriptorReader;
+import org.sonatype.aether.ArtifactDescriptorException;
+import org.sonatype.aether.ArtifactDescriptorRequest;
+import org.sonatype.aether.ArtifactDescriptorResult;
+import org.sonatype.aether.RepositorySystem;
+import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.impl.DefaultServiceLocator;
+import org.sonatype.aether.spi.ArtifactDescriptorReader;
 
 /**
  * @author Benjamin Bentmann

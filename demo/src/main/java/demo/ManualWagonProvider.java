@@ -15,7 +15,7 @@ package demo;
 
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.providers.file.FileWagon;
-import org.sonatype.maven.repository.connector.wagon.WagonProvider;
+import org.sonatype.aether.connector.wagon.WagonProvider;
 
 class ManualWagonProvider
     implements WagonProvider

@@ -15,8 +15,8 @@ package demo;
 
 import java.io.PrintStream;
 
-import org.sonatype.maven.repository.RepositoryEvent;
-import org.sonatype.maven.repository.util.AbstractRepositoryListener;
+import org.sonatype.aether.RepositoryEvent;
+import org.sonatype.aether.util.AbstractRepositoryListener;
 
 class ConsoleRepositoryListener
     extends AbstractRepositoryListener

@@ -18,12 +18,12 @@ See the Apache License Version 2.0 for the specific language governing permissio
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.sonatype.maven.repository</groupId>
-  <artifactId>sonatype-repository-system</artifactId>
+  <groupId>org.sonatype.aether</groupId>
+  <artifactId>aether-parent</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Repository System</name>
+  <name>Aether</name>
 
   <modules>
     <module>api</module>

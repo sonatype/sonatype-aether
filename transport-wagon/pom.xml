@@ -19,27 +19,27 @@ See the Apache License Version 2.0 for the specific language governing permissio
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.sonatype.maven.repository</groupId>
-    <artifactId>sonatype-repository-system</artifactId>
+    <groupId>org.sonatype.aether</groupId>
+    <artifactId>aether-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>sonatype-repository-transport-wagon</artifactId>
+  <artifactId>aether-connector-wagon</artifactId>
 
-  <name>Repository System :: Wagon Bridge</name>
+  <name>Aether :: Connector :: Wagon</name>
   <description>
     A repository connector implementation based on Maven Wagon.
   </description>
 
   <dependencies>
     <dependency>
-      <groupId>org.sonatype.maven.repository</groupId>
-      <artifactId>sonatype-repository-api</artifactId>
+      <groupId>org.sonatype.aether</groupId>
+      <artifactId>aether-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.sonatype.maven.repository</groupId>
-      <artifactId>sonatype-repository-impl</artifactId>
+      <groupId>org.sonatype.aether</groupId>
+      <artifactId>aether-impl</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

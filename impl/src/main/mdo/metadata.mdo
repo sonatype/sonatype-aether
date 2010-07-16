@@ -27,7 +27,7 @@ under the License.
   <defaults>
     <default>
       <key>package</key>
-      <value>org.sonatype.maven.repository.internal.metadata</value>
+      <value>org.sonatype.aether.impl.metadata</value>
     </default>
   </defaults>
   <classes>

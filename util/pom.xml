@@ -19,19 +19,19 @@ See the Apache License Version 2.0 for the specific language governing permissio
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.sonatype.maven.repository</groupId>
-    <artifactId>sonatype-repository-system</artifactId>
+    <groupId>org.sonatype.aether</groupId>
+    <artifactId>aether-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>sonatype-repository-util</artifactId>
+  <artifactId>aether-util</artifactId>
 
-  <name>Repository System :: Utilities</name>
+  <name>Aether :: Utilities</name>
 
   <dependencies>
     <dependency>
-      <groupId>org.sonatype.maven.repository</groupId>
-      <artifactId>sonatype-repository-api</artifactId>
+      <groupId>org.sonatype.aether</groupId>
+      <artifactId>aether-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
