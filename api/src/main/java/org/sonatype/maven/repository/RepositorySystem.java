@@ -130,7 +130,7 @@ public interface RepositorySystem
      * 
      * @param session The repository session, must not be {@code null}.
      * @param requests The resolution requests, must not be {@code null}
-     * @return The resolution results, never {@code null}.
+     * @return The resolution results (in request order), never {@code null}.
      * @throws ArtifactResolutionException If any artifact could not be resolved.
      * @see Artifact#getFile()
      */
@@ -143,7 +143,7 @@ public interface RepositorySystem
      * 
      * @param session The repository session, must not be {@code null}.
      * @param requests The resolution requests, must not be {@code null}
-     * @return The resolution results, never {@code null}.
+     * @return The resolution results (in request order), never {@code null}.
      * @see Metadata#getFile()
      */
     List<MetadataResult> resolveMetadata( RepositorySystemSession session,
