@@ -21,11 +21,11 @@ import org.sonatype.maven.repository.DependencyFilter;
 import org.sonatype.maven.repository.DependencyNode;
 
 /**
- * A dependency filter that combines zero or more other filters using a logical {@code AND}.
+ * A dependency filter that combines zero or more other filters using a logical {@code OR}.
  * 
  * @author Benjamin Bentmann
  */
-public class AndDependencyFilter
+public class OrDependencyFilter
     implements DependencyFilter
 {
 
@@ -36,7 +36,7 @@ public class AndDependencyFilter
      * 
      * @param filters The filters to combine, may be {@code null}.
      */
-    public AndDependencyFilter( DependencyFilter... filters )
+    public OrDependencyFilter( DependencyFilter... filters )
     {
         if ( filters != null )
         {
@@ -49,7 +49,7 @@ public class AndDependencyFilter
      * 
      * @param filters The filters to combine, may be {@code null}.
      */
-    public AndDependencyFilter( Collection<DependencyFilter> filters )
+    public OrDependencyFilter( Collection<DependencyFilter> filters )
     {
         if ( filters != null )
         {
@@ -74,19 +74,19 @@ public class AndDependencyFilter
         {
             return filter1;
         }
-        return new AndDependencyFilter( filter1, filter2 );
+        return new OrDependencyFilter( filter1, filter2 );
     }
 
     public boolean filterDependency( DependencyNode node )
     {
         for ( DependencyFilter filter : filters )
         {
-            if ( !filter.filterDependency( node ) )
+            if ( filter.filterDependency( node ) )
             {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -102,7 +102,7 @@ public class AndDependencyFilter
             return false;
         }
 
-        AndDependencyFilter that = (AndDependencyFilter) obj;
+        OrDependencyFilter that = (OrDependencyFilter) obj;
 
         return this.filters.equals( that.filters );
     }
