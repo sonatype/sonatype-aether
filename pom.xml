@@ -29,7 +29,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
     <module>api</module>
     <module>util</module>
     <module>impl</module>
-    <module>transport-wagon</module>
+    <module>connector-wagon</module>
   </modules>
 
   <properties>
