@@ -19,7 +19,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -102,6 +104,8 @@ class WagonRepositoryConnector
 
     private boolean closed;
 
+    private Map<String, String> checksumAlgos;
+
     public WagonRepositoryConnector( WagonProvider wagonProvider, RemoteRepository repository,
                                      RepositorySystemSession session, Logger logger )
         throws NoRepositoryConnectorException
@@ -147,6 +151,10 @@ class WagonRepositoryConnector
             executor =
                 new ThreadPoolExecutor( threads, threads, 3, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>() );
         }
+
+        checksumAlgos = new LinkedHashMap<String, String>();
+        checksumAlgos.put( "SHA-1", ".sha1" );
+        checksumAlgos.put( "MD5", ".md5" );
     }
 
     private int getOption( String key, int defaultValue )
@@ -708,8 +716,7 @@ class WagonRepositoryConnector
                         wagon.removeTransferListener( wagonListener );
                     }
 
-                    uploadChecksum( wagon, file, path, ".sha1", "SHA-1" );
-                    uploadChecksum( wagon, file, path, ".md5", "MD5" );
+                    uploadChecksums( wagon, file, path );
 
                     if ( listener != null )
                     {
@@ -745,15 +752,37 @@ class WagonRepositoryConnector
             upload.setState( Transfer.State.DONE );
         }
 
-        private void uploadChecksum( Wagon wagon, File file, String path, String ext, String algo )
+        private void uploadChecksums( Wagon wagon, File file, String path )
         {
             try
             {
-                String checksum = ChecksumUtils.calc( file, algo );
+                Map<String, Object> checksums = ChecksumUtils.calc( file, checksumAlgos.keySet() );
+                for ( Map.Entry<String, Object> entry : checksums.entrySet() )
+                {
+                    uploadChecksum( wagon, file, path, entry.getKey(), entry.getValue() );
+                }
+            }
+            catch ( IOException e )
+            {
+                logger.debug( "Failed to upload checksums for " + file + ": " + e.getMessage(), e );
+            }
+        }
+
+        private void uploadChecksum( Wagon wagon, File file, String path, String algo, Object checksum )
+        {
+            try
+            {
+                if ( checksum instanceof Exception )
+                {
+                    throw (Exception) checksum;
+                }
+
+                String ext = checksumAlgos.get( algo );
+
                 File tmpFile = File.createTempFile( "checksum", ext );
                 try
                 {
-                    FileUtils.fileWrite( tmpFile.getAbsolutePath(), "UTF-8", checksum );
+                    FileUtils.fileWrite( tmpFile.getAbsolutePath(), "UTF-8", String.valueOf( checksum ) );
                     wagon.put( tmpFile, path + ext );
                 }
                 finally

@@ -19,12 +19,15 @@ package org.sonatype.aether.impl;
  * under the License.
  */
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.codehaus.plexus.util.FileUtils;
 
@@ -43,7 +46,7 @@ public class ChecksumUtils
         checksum = checksum.trim();
 
         // check for 'ALGO (name) = CHECKSUM' like used by openssl
-        if ( checksum.regionMatches( true, 0, "MD", 0, 2 ) || checksum.regionMatches( true, 0, "SHA", 0, 3 ) )
+        if ( checksum.matches( ".+= [0-9A-Fa-f]+" ) )
         {
             int lastSpacePos = checksum.lastIndexOf( ' ' );
             checksum = checksum.substring( lastSpacePos + 1 );
@@ -62,22 +65,46 @@ public class ChecksumUtils
         return checksum;
     }
 
-    public static String calc( File dataFile, String algo )
-        throws NoSuchAlgorithmException, IOException
+    public static Map<String, Object> calc( File dataFile, Collection<String> algos )
+        throws IOException
     {
-        MessageDigest digest = MessageDigest.getInstance( algo );
+        Map<String, Object> results = new LinkedHashMap<String, Object>();
+
+        Map<String, MessageDigest> digests = new LinkedHashMap<String, MessageDigest>();
+        for ( String algo : algos )
+        {
+            try
+            {
+                digests.put( algo, MessageDigest.getInstance( algo ) );
+            }
+            catch ( NoSuchAlgorithmException e )
+            {
+                results.put( algo, e );
+            }
+        }
 
         FileInputStream fis = new FileInputStream( dataFile );
         try
         {
-            DigestInputStream dis = new DigestInputStream( fis, digest );
-            for ( byte[] buffer = new byte[1024 * 4];; )
+            BufferedInputStream bis = new BufferedInputStream( fis );
+            try
             {
-                int read = dis.read( buffer );
-                if ( read < 0 )
+                for ( byte[] buffer = new byte[1024 * 4];; )
                 {
-                    break;
+                    int read = bis.read( buffer );
+                    if ( read < 0 )
+                    {
+                        break;
+                    }
+                    for ( MessageDigest digest : digests.values() )
+                    {
+                        digest.update( buffer, 0, read );
+                    }
                 }
+            }
+            finally
+            {
+                bis.close();
             }
         }
         finally
@@ -85,21 +112,26 @@ public class ChecksumUtils
             fis.close();
         }
 
-        byte[] bytes = digest.digest();
-
-        StringBuilder buffer = new StringBuilder( 64 );
-
-        for ( int i = 0; i < bytes.length; i++ )
+        for ( Map.Entry<String, MessageDigest> entry : digests.entrySet() )
         {
-            int b = bytes[i] & 0xFF;
-            if ( b < 0x10 )
+            byte[] bytes = entry.getValue().digest();
+
+            StringBuilder buffer = new StringBuilder( 64 );
+
+            for ( int i = 0; i < bytes.length; i++ )
             {
-                buffer.append( '0' );
+                int b = bytes[i] & 0xFF;
+                if ( b < 0x10 )
+                {
+                    buffer.append( '0' );
+                }
+                buffer.append( Integer.toHexString( b ) );
             }
-            buffer.append( Integer.toHexString( b ) );
+
+            results.put( entry.getKey(), buffer.toString() );
         }
 
-        return buffer.toString();
+        return results;
     }
 
 }
