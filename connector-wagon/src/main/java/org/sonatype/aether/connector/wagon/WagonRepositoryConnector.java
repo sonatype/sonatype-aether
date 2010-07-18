@@ -15,10 +15,12 @@ package org.sonatype.aether.connector.wagon;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -37,6 +39,7 @@ import org.apache.maven.wagon.proxy.ProxyInfo;
 import org.apache.maven.wagon.proxy.ProxyInfoProvider;
 import org.apache.maven.wagon.repository.Repository;
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.aether.ArtifactNotFoundException;
 import org.sonatype.aether.ArtifactTransferException;
 import org.sonatype.aether.Authentication;
@@ -224,6 +227,20 @@ class WagonRepositoryConnector
     private void connectWagon( Wagon wagon )
         throws Exception
     {
+        if ( StringUtils.isNotEmpty( session.getUserAgent() ) )
+        {
+            try
+            {
+                Method setHttpHeaders = wagon.getClass().getMethod( "setHttpHeaders", Properties.class );
+                Properties headers = new Properties();
+                headers.setProperty( "User-Agent", session.getUserAgent() );
+                setHttpHeaders.invoke( wagon, headers );
+            }
+            catch ( Exception e )
+            {
+                logger.debug( "Could not set user agent for wagon " + wagon.getClass().getName() + ": " + e );
+            }
+        }
         wagon.setTimeout( getOption( "maven.artifact.timeout", 10 * 1000 ) );
         wagon.connect( wagonRepo, wagonAuth, wagonProxy );
     }

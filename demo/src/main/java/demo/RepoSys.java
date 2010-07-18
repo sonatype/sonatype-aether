@@ -117,6 +117,8 @@ public class RepoSys
     {
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
 
+        session.setUserAgent( "Aether" );
+
         LocalRepositoryManager localRepoMan = new EnhancedLocalRepositoryManager( new File( "target/local-repo" ) );
         session.setLocalRepositoryManager( localRepoMan );
 
@@ -153,7 +155,7 @@ public class RepoSys
         session.setIgnoreInvalidArtifactDescriptor( true );
         session.setIgnoreMissingArtifactDescriptor( true );
 
-        session.setSystemProperties( System.getProperties() );
+        session.setSystemProps( System.getProperties() );
 
         DefaultArtifactTypeRegistry stereotypes = new DefaultArtifactTypeRegistry();
         stereotypes.add( new DefaultArtifactType( "pom" ) );

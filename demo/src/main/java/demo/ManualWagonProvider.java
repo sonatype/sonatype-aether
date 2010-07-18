@@ -15,6 +15,7 @@ package demo;
 
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.providers.file.FileWagon;
+import org.apache.maven.wagon.providers.http.LightweightHttpWagon;
 import org.sonatype.aether.connector.wagon.WagonProvider;
 
 class ManualWagonProvider
@@ -27,6 +28,10 @@ class ManualWagonProvider
         if ( "file".equals( roleHint ) )
         {
             return new FileWagon();
+        }
+        else if ( "http".equals( roleHint ) )
+        {
+            return new LightweightHttpWagon();
         }
         return null;
     }
