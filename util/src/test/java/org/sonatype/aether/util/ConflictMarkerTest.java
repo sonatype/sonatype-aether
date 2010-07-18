@@ -17,6 +17,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.util.graph.transformer.ConflictMarker;
 
 /**
  * @author Benjamin Bentmann

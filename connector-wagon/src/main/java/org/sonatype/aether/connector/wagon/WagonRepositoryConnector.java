@@ -67,7 +67,7 @@ import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.util.ChecksumUtils;
-import org.sonatype.aether.util.DefaultTransferEvent;
+import org.sonatype.aether.util.listener.DefaultTransferEvent;
 
 /**
  * A repository connector that uses Maven Wagon for the transfer.

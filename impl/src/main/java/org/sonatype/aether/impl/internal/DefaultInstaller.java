@@ -32,7 +32,7 @@ import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.Installer;
 import org.sonatype.aether.impl.LocalRepositoryMaintainer;
-import org.sonatype.aether.util.DefaultRepositoryEvent;
+import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;

@@ -21,6 +21,8 @@ package org.sonatype.aether.util;
 
 import java.util.Locale;
 
+import org.sonatype.aether.util.version.MavenVersion;
+
 import junit.framework.TestCase;
 
 /**

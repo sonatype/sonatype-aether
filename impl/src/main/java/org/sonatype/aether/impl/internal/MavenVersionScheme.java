@@ -14,7 +14,7 @@ package org.sonatype.aether.impl.internal;
  */
 
 import org.sonatype.aether.InvalidVersionException;
-import org.sonatype.aether.util.MavenVersion;
+import org.sonatype.aether.util.version.MavenVersion;
 
 /**
  * @author Benjamin Bentmann

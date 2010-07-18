@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.sonatype.aether.TransferEvent;
 import org.sonatype.aether.TransferResource;
-import org.sonatype.aether.util.AbstractTransferListener;
+import org.sonatype.aether.util.listener.AbstractTransferListener;
 
 class ConsoleTransferListener
     extends AbstractTransferListener

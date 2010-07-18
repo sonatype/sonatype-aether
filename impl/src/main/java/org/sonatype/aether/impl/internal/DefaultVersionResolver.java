@@ -42,7 +42,7 @@ import org.sonatype.aether.VersionResolutionException;
 import org.sonatype.aether.VersionResult;
 import org.sonatype.aether.WorkspaceReader;
 import org.sonatype.aether.WorkspaceRepository;
-import org.sonatype.aether.util.DefaultRepositoryEvent;
+import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 import org.sonatype.aether.impl.MetadataResolver;
 import org.sonatype.aether.impl.VersionResolver;
 import org.sonatype.aether.impl.metadata.Snapshot;

@@ -22,8 +22,8 @@ import org.sonatype.aether.TransferListener;
 import org.sonatype.aether.TransferResource;
 import org.sonatype.aether.TransferEvent.EventType;
 import org.sonatype.aether.TransferEvent.RequestType;
-import org.sonatype.aether.util.DefaultTransferEvent;
-import org.sonatype.aether.util.DefaultTransferResource;
+import org.sonatype.aether.util.listener.DefaultTransferEvent;
+import org.sonatype.aether.util.listener.DefaultTransferResource;
 
 /**
  * An adapter to transform transfer events from Wagon into events for the repository system.

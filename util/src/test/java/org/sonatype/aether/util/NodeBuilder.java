@@ -20,6 +20,7 @@ import org.sonatype.aether.Artifact;
 import org.sonatype.aether.DefaultArtifact;
 import org.sonatype.aether.Dependency;
 import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.util.graph.DefaultDependencyNode;
 
 /**
  * @author Benjamin Bentmann

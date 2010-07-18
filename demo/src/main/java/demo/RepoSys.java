@@ -42,23 +42,23 @@ import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
 import org.sonatype.aether.impl.ArtifactDescriptorReader;
 import org.sonatype.aether.impl.internal.DefaultServiceLocator;
 import org.sonatype.aether.impl.internal.EnhancedLocalRepositoryManager;
-import org.sonatype.aether.util.AndDependencySelector;
-import org.sonatype.aether.util.ChainedDependencyGraphTransformer;
-import org.sonatype.aether.util.ClassicDependencyManager;
-import org.sonatype.aether.util.ClassicVersionConflictResolver;
-import org.sonatype.aether.util.ConflictMarker;
 import org.sonatype.aether.util.DefaultArtifactType;
 import org.sonatype.aether.util.DefaultArtifactTypeRegistry;
 import org.sonatype.aether.util.DefaultAuthenticationSelector;
 import org.sonatype.aether.util.DefaultMirrorSelector;
 import org.sonatype.aether.util.DefaultProxySelector;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
-import org.sonatype.aether.util.ExclusionDependencySelector;
-import org.sonatype.aether.util.FatArtifactTraverser;
-import org.sonatype.aether.util.JavaDependencyContextRefiner;
-import org.sonatype.aether.util.JavaEffectiveScopeCalculator;
-import org.sonatype.aether.util.OptionalDependencySelector;
-import org.sonatype.aether.util.ScopeDependencySelector;
+import org.sonatype.aether.util.graph.manager.ClassicDependencyManager;
+import org.sonatype.aether.util.graph.selector.AndDependencySelector;
+import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector;
+import org.sonatype.aether.util.graph.selector.OptionalDependencySelector;
+import org.sonatype.aether.util.graph.selector.ScopeDependencySelector;
+import org.sonatype.aether.util.graph.transformer.ChainedDependencyGraphTransformer;
+import org.sonatype.aether.util.graph.transformer.ClassicVersionConflictResolver;
+import org.sonatype.aether.util.graph.transformer.ConflictMarker;
+import org.sonatype.aether.util.graph.transformer.JavaDependencyContextRefiner;
+import org.sonatype.aether.util.graph.transformer.JavaEffectiveScopeCalculator;
+import org.sonatype.aether.util.graph.traverser.FatArtifactTraverser;
 
 public class RepoSys
 {

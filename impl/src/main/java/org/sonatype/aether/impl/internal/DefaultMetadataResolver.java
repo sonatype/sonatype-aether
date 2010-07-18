@@ -45,7 +45,7 @@ import org.sonatype.aether.impl.MetadataResolver;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
-import org.sonatype.aether.util.DefaultRepositoryEvent;
+import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.locator.Service;
