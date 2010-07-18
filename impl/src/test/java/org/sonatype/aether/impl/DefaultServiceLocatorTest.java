@@ -21,7 +21,8 @@ import org.sonatype.aether.ArtifactDescriptorRequest;
 import org.sonatype.aether.ArtifactDescriptorResult;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.spi.ArtifactDescriptorReader;
+import org.sonatype.aether.impl.ArtifactDescriptorReader;
+import org.sonatype.aether.impl.internal.DefaultServiceLocator;
 
 /**
  * @author Benjamin Bentmann

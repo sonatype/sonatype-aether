@@ -18,12 +18,12 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.NoRepositoryConnectorException;
 import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.spi.Logger;
-import org.sonatype.aether.spi.NullLogger;
-import org.sonatype.aether.spi.RepositoryConnector;
-import org.sonatype.aether.spi.RepositoryConnectorFactory;
-import org.sonatype.aether.spi.Service;
-import org.sonatype.aether.spi.ServiceLocator;
+import org.sonatype.aether.spi.connector.RepositoryConnector;
+import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
+import org.sonatype.aether.spi.locator.Service;
+import org.sonatype.aether.spi.locator.ServiceLocator;
+import org.sonatype.aether.spi.log.Logger;
+import org.sonatype.aether.spi.log.NullLogger;
 
 /**
  * A repository connector factory that uses Maven Wagon for the transfers.

@@ -24,10 +24,18 @@ See the Apache License Version 2.0 for the specific language governing permissio
     <version>0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>aether-api</artifactId>
+  <artifactId>aether-spi</artifactId>
 
-  <name>Aether :: API</name>
+  <name>Aether :: SPI</name>
   <description>
-    The application programming interface for the repository system.
+    The service provider interface for repository system implementations and repository connectors.
   </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.sonatype.aether</groupId>
+      <artifactId>aether-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
 </project>

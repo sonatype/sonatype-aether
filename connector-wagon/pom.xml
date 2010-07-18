@@ -39,7 +39,12 @@ See the Apache License Version 2.0 for the specific language governing permissio
     </dependency>
     <dependency>
       <groupId>org.sonatype.aether</groupId>
-      <artifactId>aether-impl</artifactId>
+      <artifactId>aether-spi</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.aether</groupId>
+      <artifactId>aether-util</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

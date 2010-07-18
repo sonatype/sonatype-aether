@@ -33,11 +33,19 @@ under the License.
   <artifactId>aether-impl</artifactId>
 
   <name>Aether :: Implementation</name>
+  <description>
+    An implementation of the repository system.
+  </description>
 
   <dependencies>
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.aether</groupId>
+      <artifactId>aether-spi</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
