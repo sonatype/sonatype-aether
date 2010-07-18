@@ -57,7 +57,6 @@ import org.sonatype.aether.RepositoryPolicy;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.TransferEvent;
 import org.sonatype.aether.TransferListener;
-import org.sonatype.aether.impl.ChecksumUtils;
 import org.sonatype.aether.spi.ArtifactDownload;
 import org.sonatype.aether.spi.ArtifactTransfer;
 import org.sonatype.aether.spi.ArtifactUpload;
@@ -67,6 +66,7 @@ import org.sonatype.aether.spi.MetadataTransfer;
 import org.sonatype.aether.spi.MetadataUpload;
 import org.sonatype.aether.spi.RepositoryConnector;
 import org.sonatype.aether.spi.Transfer;
+import org.sonatype.aether.util.ChecksumUtils;
 import org.sonatype.aether.util.DefaultTransferEvent;
 
 /**
