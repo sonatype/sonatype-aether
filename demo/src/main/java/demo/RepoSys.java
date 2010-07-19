@@ -25,7 +25,7 @@ import org.sonatype.aether.Dependency;
 import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.DeployRequest;
 import org.sonatype.aether.InstallRequest;
-import org.sonatype.aether.LocalRepositoryManager;
+import org.sonatype.aether.LocalRepository;
 import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
@@ -34,7 +34,6 @@ import org.sonatype.aether.connector.wagon.WagonProvider;
 import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
 import org.sonatype.aether.impl.ArtifactDescriptorReader;
 import org.sonatype.aether.impl.internal.DefaultServiceLocator;
-import org.sonatype.aether.impl.internal.EnhancedLocalRepositoryManager;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 import org.sonatype.aether.util.graph.FileListGenerator;
 
@@ -47,7 +46,7 @@ public class RepoSys
         // RepositorySystem repoSystem = newManagedSystem();
         RepositorySystem repoSystem = newManualSystem();
 
-        RepositorySystemSession session = newSession();
+        RepositorySystemSession session = newSession( repoSystem );
 
         Dependency dependency =
             new Dependency( new DefaultArtifact( "org.apache.maven:maven-profile:2.2.1" ), "compile" );
@@ -95,12 +94,12 @@ public class RepoSys
         return locator.getService( RepositorySystem.class );
     }
 
-    private static RepositorySystemSession newSession()
+    private static RepositorySystemSession newSession( RepositorySystem system )
     {
         DefaultRepositorySystemSession session = DefaultRepositorySystemSession.newMavenRepositorySystemSession();
 
-        LocalRepositoryManager localRepoMan = new EnhancedLocalRepositoryManager( new File( "target/local-repo" ) );
-        session.setLocalRepositoryManager( localRepoMan );
+        LocalRepository localRepo = new LocalRepository( "target/local-repo" );
+        session.setLocalRepositoryManager( system.newLocalRepositoryManager( localRepo ) );
 
         session.setTransferListener( new ConsoleTransferListener( System.out ) );
         session.setRepositoryListener( new ConsoleRepositoryListener( System.out ) );
