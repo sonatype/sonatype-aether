@@ -42,7 +42,6 @@ public final class Dependency
      * 
      * @param artifact The artifact being depended on, may be {@code null}.
      * @param scope The scope of the dependency, may be {@code null}.
-     * @param optional A flag whether the dependency is optional or mandatory.
      */
     public Dependency( Artifact artifact, String scope )
     {

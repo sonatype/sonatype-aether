@@ -17,7 +17,7 @@ package org.sonatype.aether;
  * A request to resolve metadata from either a remote repository or the local repository.
  * 
  * @author Benjamin Bentmann
- * @see RepositorySystem#resolveMetadata(RepositorySession, java.util.Collection)
+ * @see RepositorySystem#resolveMetadata(RepositorySystemSession, java.util.Collection)
  * @see Metadata#getFile()
  */
 public class MetadataRequest

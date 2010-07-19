@@ -21,7 +21,7 @@ import java.util.List;
  * A request to read an artifact descriptor.
  * 
  * @author Benjamin Bentmann
- * @see RepositorySystem#readArtifactDescriptor(RepositorySession, ArtifactDescriptorRequest)
+ * @see RepositorySystem#readArtifactDescriptor(RepositorySystemSession, ArtifactDescriptorRequest)
  */
 public class ArtifactDescriptorRequest
 {

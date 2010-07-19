@@ -38,7 +38,7 @@ abstract class MavenMetadata
 
     private final File file;
 
-    protected final Metadata metadata;
+    protected Metadata metadata;
 
     protected MavenMetadata( Metadata metadata, File file )
     {

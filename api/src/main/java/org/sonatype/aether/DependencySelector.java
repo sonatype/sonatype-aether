@@ -32,8 +32,8 @@ public interface DependencySelector
     boolean selectDependency( Dependency dependency );
 
     /**
-     * Derives a dependency selector for the specified node. Implementors are expected to calculate a new dependency
-     * selector for the dependencies of the node.
+     * Derives a dependency selector for the specified node. When calculating the child selector, implementors are
+     * strongly advised to simply return the current instance if nothing changed to help save memory.
      * 
      * @param node The node to derive a filter for, must not be {@code null}.
      * @return The dependency filter for the node, must not be {@code null}.

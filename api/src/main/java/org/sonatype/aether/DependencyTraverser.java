@@ -33,8 +33,8 @@ public interface DependencyTraverser
 
     /**
      * Derives a dependency traverser that will be used to decide whether the transitive dependencies of the specified
-     * node's dependencies shall be processed. This method is called by the dependency tree builder just before it
-     * processes the child node. Implementors are expected to calculate a new dependency traverser for the node.
+     * node's dependencies shall be processed. When calculating the child traverser, implementors are strongly advised
+     * to simply return the current instance if nothing changed to help save memory.
      * 
      * @param node The node to derive a traverser for, must not be {@code null}.
      * @return The dependency traverser for the node, must not be {@code null}.

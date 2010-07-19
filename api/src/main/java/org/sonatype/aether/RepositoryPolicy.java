@@ -14,7 +14,8 @@ package org.sonatype.aether;
  */
 
 /**
- * A policy controlling access to a repository.
+ * A policy controlling access to a repository. <em>Note:</em> Instances of this class are immutable and the exposed
+ * mutators return new objects rather than changing the current instance.
  * 
  * @author Benjamin Bentmann
  */
@@ -68,16 +69,6 @@ public final class RepositoryPolicy
     public RepositoryPolicy()
     {
         this( true, UPDATE_POLICY_DAILY, CHECKSUM_POLICY_WARN );
-    }
-
-    /**
-     * Creates a copy of the specified policy.
-     * 
-     * @param policy The policy to copy, must not be {@code null}.
-     */
-    public RepositoryPolicy( RepositoryPolicy policy )
-    {
-        this( policy.isEnabled(), policy.getUpdatePolicy(), policy.getChecksumPolicy() );
     }
 
     /**

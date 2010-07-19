@@ -19,7 +19,7 @@ import java.util.Collection;
  * A connector for a remote repository. The connector is responsible for downloading/uploading of artifacts and metadata
  * from/to a remote repository. Besides performing the actual transfer and recording any exception encountered in the
  * provided upload/download objects, a connector must also use
- * {@link Transfer#setState(org.sonatype.aether.connector.Transfer.State)} to update the state of a transfer during
+ * {@link Transfer#setState(org.sonatype.aether.spi.connector.Transfer.State)} to update the state of a transfer during
  * its processing.
  * 
  * @author Benjamin Bentmann

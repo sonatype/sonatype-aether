@@ -21,7 +21,7 @@ import java.util.List;
  * A request to resolve a version range.
  * 
  * @author Benjamin Bentmann
- * @see RepositorySystem#resolveVersionRange(RepositorySession, VersionRangeRequest)
+ * @see RepositorySystem#resolveVersionRange(RepositorySystemSession, VersionRangeRequest)
  */
 public class VersionRangeRequest
 {

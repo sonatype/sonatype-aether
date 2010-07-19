@@ -22,7 +22,7 @@ import java.util.Map;
  * The result of a version range resolution request.
  * 
  * @author Benjamin Bentmann
- * @see RepositorySystem#resolveVersionRange(RepositorySession, VersionRangeRequest)
+ * @see RepositorySystem#resolveVersionRange(RepositorySystemSession, VersionRangeRequest)
  */
 public class VersionRangeResult
 {

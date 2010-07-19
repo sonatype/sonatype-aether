@@ -18,19 +18,17 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A request to collect the transitive dependencies and to build a dependency graph from them.
+ * A request to collect the transitive dependencies and to build a dependency graph from them. There are three ways to
+ * create a dependency graph. First, only the root dependency can be given. Second, a root dependency and direct
+ * dependencies can be specified in which case the specified direct dependencies are merged with the direct dependencies
+ * retrieved from the artifact descriptor of the root dependency. And last, only direct dependencies can be specified in
+ * which case the root node of the resulting graph has no associated dependency.
  * 
  * @author Benjamin Bentmann
- * @see RepositorySystem#collectDependencies(RepositorySession, CollectRequest)
+ * @see RepositorySystem#collectDependencies(RepositorySystemSession, CollectRequest)
  */
 public class CollectRequest
 {
-
-    // we have three types of collection regarding the request:
-    // 1. root-only, e.g. a plugin declaration, resolve the root and its transitive closure
-    // 2. root-with-children, e.g. a plugin declaration with project-level deps, merge children
-    // 3. children-only, e.g. the (managed) dependencies of a project, don't resolve root but only its transitive
-    // closure
 
     private Dependency root;
 

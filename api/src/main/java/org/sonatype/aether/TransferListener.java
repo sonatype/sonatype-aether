@@ -16,7 +16,7 @@ package org.sonatype.aether;
 /**
  * A listener being notified of artifact/metadata transfers from/to remote repositories. The listener may be called from
  * an arbitrary thread. <em>Note:</em> Implementors are strongly advised to inherit from
- * {@link org.sonatype.aether.util.AbstractTransferListener} instead of directly implementing this interface.
+ * {@link org.sonatype.aether.util.listener.AbstractTransferListener} instead of directly implementing this interface.
  * 
  * @author Benjamin Bentmann
  */

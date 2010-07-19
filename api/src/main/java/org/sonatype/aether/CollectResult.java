@@ -20,7 +20,7 @@ import java.util.List;
  * The result of a dependency collection request.
  * 
  * @author Benjamin Bentmann
- * @see RepositorySystem#collectDependencies(RepositorySession, CollectRequest)
+ * @see RepositorySystem#collectDependencies(RepositorySystemSession, CollectRequest)
  */
 public class CollectResult
 {

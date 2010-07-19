@@ -21,7 +21,7 @@ import java.util.List;
  * A request to resolve an artifact.
  * 
  * @author Benjamin Bentmann
- * @see RepositorySystem#resolveArtifacts(RepositorySession, java.util.Collection)
+ * @see RepositorySystem#resolveArtifacts(RepositorySystemSession, java.util.Collection)
  * @see Artifact#getFile()
  */
 public class ArtifactRequest

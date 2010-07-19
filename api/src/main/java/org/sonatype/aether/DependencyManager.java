@@ -33,8 +33,8 @@ public interface DependencyManager
     DependencyManagement manageDependency( Dependency dependency );
 
     /**
-     * Derives a dependency manager for the specified node. Implementors are expected to calculate a new dependency
-     * manager for the dependencies of the node.
+     * Derives a dependency manager for the specified node. When calculating the child manager, implementors are
+     * strongly advised to simply return the current instance if nothing changed to help save memory.
      * 
      * @param node The node to derive a manager for, must not be {@code null}.
      * @param managedDependencies The dependency management to consider for the child, must not be {@code null}.

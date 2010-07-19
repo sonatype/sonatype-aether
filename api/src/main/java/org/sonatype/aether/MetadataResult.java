@@ -17,7 +17,7 @@ package org.sonatype.aether;
  * The result of a metadata resolution request.
  * 
  * @author Benjamin Bentmann
- * @see RepositorySystem#resolveMetadata(RepositorySession, java.util.Collection)
+ * @see RepositorySystem#resolveMetadata(RepositorySystemSession, java.util.Collection)
  */
 public class MetadataResult
 {

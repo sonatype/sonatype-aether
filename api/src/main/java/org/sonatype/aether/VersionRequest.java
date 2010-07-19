@@ -21,7 +21,7 @@ import java.util.List;
  * A request to resolve a metaversion.
  * 
  * @author Benjamin Bentmann
- * @see RepositorySystem#resolveVersion(RepositorySession, VersionRequest)
+ * @see RepositorySystem#resolveVersion(RepositorySystemSession, VersionRequest)
  */
 public class VersionRequest
 {

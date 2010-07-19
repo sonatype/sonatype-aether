@@ -20,7 +20,7 @@ import java.util.Collection;
  * A request to deploy artifacts and their accompanying metadata into the a remote repository.
  * 
  * @author Benjamin Bentmann
- * @see RepositorySystem#deploy(RepositorySession, DeployRequest)
+ * @see RepositorySystem#deploy(RepositorySystemSession, DeployRequest)
  */
 public class DeployRequest
 {

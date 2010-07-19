@@ -16,7 +16,7 @@ package org.sonatype.aether.spi.connector;
 /**
  * An artifact/metadata transfer.
  * 
- * @author Benjamin
+ * @author Benjamin Bentmann
  */
 public abstract class Transfer
 {

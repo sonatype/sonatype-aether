@@ -20,7 +20,7 @@ import java.util.List;
  * The result of a version resolution request.
  * 
  * @author Benjamin Bentmann
- * @see RepositorySystem#resolveVersion(RepositorySession, VersionRequest)
+ * @see RepositorySystem#resolveVersion(RepositorySystemSession, VersionRequest)
  */
 public class VersionResult
 {

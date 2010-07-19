@@ -22,7 +22,7 @@ public interface ArtifactRepository
 {
 
     /**
-     * Gets the type of the repository, e.g. "default".
+     * Gets the type of the repository, for example "default".
      * 
      * @return The type of the repository, never {@code null}.
      */

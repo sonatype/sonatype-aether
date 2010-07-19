@@ -18,7 +18,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * A skeleton class for artifacts that implements {@link #equals(Object)}, {@link #hashCode()} and {@link #toString()}.
+ * A skeleton class for artifacts that implements {@link Object#equals(Object)}, {@link Object#hashCode()} and
+ * {@link Object#toString()}.
  * 
  * @author Benjamin Bentmann
  */

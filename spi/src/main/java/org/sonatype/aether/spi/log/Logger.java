@@ -21,10 +21,26 @@ package org.sonatype.aether.spi.log;
 public interface Logger
 {
 
+    /**
+     * Indicates whether debug logging is enabled.
+     * 
+     * @return {@code true} if debug logging is enabled, {@code false} otherwise.
+     */
     boolean isDebugEnabled();
 
+    /**
+     * Emits the specified message.
+     * 
+     * @param msg The message to log, must not be {@code null}.
+     */
     void debug( String msg );
 
+    /**
+     * Emits the specified message along with a stack trace of the given exception.
+     * 
+     * @param msg The message to log, must not be {@code null}.
+     * @param error The exception to log, may be {@code null}.
+     */
     void debug( String msg, Throwable error );
 
 }

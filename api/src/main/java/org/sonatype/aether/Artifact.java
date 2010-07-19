@@ -27,21 +27,21 @@ public interface Artifact
 {
 
     /**
-     * Gets the group identifier of this artifact, e.g. "org.apache.maven".
+     * Gets the group identifier of this artifact, for example "org.apache.maven".
      * 
      * @return The group identifier, never {@code null}.
      */
     String getGroupId();
 
     /**
-     * Gets the artifact identifier of this artifact, e.g. "maven-model".
+     * Gets the artifact identifier of this artifact, for example "maven-model".
      * 
      * @return The artifact identifier, never {@code null}.
      */
     String getArtifactId();
 
     /**
-     * Gets the version of this artifact, e.g. "1.0-20100529-1213". Note that in case of meta versions like
+     * Gets the version of this artifact, for example "1.0-20100529-1213". Note that in case of meta versions like
      * "1.0-SNAPSHOT", the artifact's version depends on the state of the artifact. Artifacts that have been resolved or
      * deployed will have the meta version expanded.
      * 
@@ -58,8 +58,8 @@ public interface Artifact
     Artifact setVersion( String version );
 
     /**
-     * Gets the base version of this artifact, e.g. "1.0-SNAPSHOT". In contrast to the {@link #getVersion()}, the base
-     * version will always refer to the unresolved meta version, e.g. "1.0-SNAPSHOT".
+     * Gets the base version of this artifact, for example "1.0-SNAPSHOT". In contrast to the {@link #getVersion()}, the
+     * base version will always refer to the unresolved meta version.
      * 
      * @return The base version, never {@code null}.
      */
@@ -73,14 +73,14 @@ public interface Artifact
     boolean isSnapshot();
 
     /**
-     * Gets the classifier of this artifact, e.g. "sources".
+     * Gets the classifier of this artifact, for example "sources".
      * 
      * @return The classifier or an empty string if none, never {@code null}.
      */
     String getClassifier();
 
     /**
-     * Gets the (file) extension of this artifact, e.g. "jar".
+     * Gets the (file) extension of this artifact, for example "jar".
      * 
      * @return The file extension, never {@code null}.
      */

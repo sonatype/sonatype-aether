@@ -42,7 +42,7 @@ public interface LocalRepositoryManager
      * exist yet at the returned location.
      * 
      * @param artifact The artifact for which to determine the path, must not be {@code null}.
-     * @param The source repository of the artifact, must not be {@code null}.
+     * @param repository The source repository of the artifact, must not be {@code null}.
      * @return The path, relative to the local repository's base directory.
      */
     String getPathForRemoteArtifact( Artifact artifact, RemoteRepository repository, String context );
@@ -61,7 +61,7 @@ public interface LocalRepositoryManager
      * exist yet at the returned location.
      * 
      * @param metadata The metadata for which to determine the path, must not be {@code null}.
-     * @param The source repository of the metadata, must not be {@code null}.
+     * @param repository The source repository of the metadata, must not be {@code null}.
      * @return The path, relative to the local repository's base directory.
      */
     String getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository, String context );

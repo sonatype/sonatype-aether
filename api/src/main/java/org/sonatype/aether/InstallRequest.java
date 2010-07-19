@@ -20,7 +20,7 @@ import java.util.Collection;
  * A request to install artifacts and their accompanying metadata into the local repository.
  * 
  * @author Benjamin Bentmann
- * @see RepositorySystem#install(RepositorySession, InstallRequest)
+ * @see RepositorySystem#install(RepositorySystemSession, InstallRequest)
  */
 public class InstallRequest
 {

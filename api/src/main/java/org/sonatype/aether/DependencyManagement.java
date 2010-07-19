@@ -19,7 +19,7 @@ import java.util.Collection;
  * The management updates to apply to a dependency.
  * 
  * @author Benjamin Bentmann
- * @see DependencyManager#manageDependency(DependencyNode, Dependency)
+ * @see DependencyManager#manageDependency(Dependency)
  */
 public class DependencyManagement
 {

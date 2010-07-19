@@ -20,6 +20,7 @@ import java.util.List;
  * A query to the local repository for the existence of an artifact.
  * 
  * @author Benjamin Bentmann
+ * @see LocalRepositoryManager#find(LocalArtifactRequest)
  */
 public class LocalArtifactRequest
 {

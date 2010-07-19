@@ -18,6 +18,7 @@ package org.sonatype.aether;
  * exposed mutators return new objects rather than changing the current instance.
  * 
  * @author Benjamin Bentmann
+ * @see Dependency#getExclusions()
  */
 public final class Exclusion
 {

@@ -20,7 +20,7 @@ import java.util.Collection;
  * The result of installing artifacts and their accompanying metadata into the a remote repository.
  * 
  * @author Benjamin Bentmann
- * @see RepositorySystem#install(RepositorySession, InstallRequest)
+ * @see RepositorySystem#install(RepositorySystemSession, InstallRequest)
  */
 public class InstallResult
 {
