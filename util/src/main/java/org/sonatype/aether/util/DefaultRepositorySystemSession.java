@@ -55,7 +55,7 @@ public class DefaultRepositorySystemSession
 
     private String id;
 
-    private String userAgent;
+    private String userAgent = "Aether";
 
     private boolean offline;
 
