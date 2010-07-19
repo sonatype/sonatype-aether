@@ -26,7 +26,11 @@ import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.RepositoryException;
 
 /**
+ * A dependency graph transformer that identifies conflicting dependencies. When this transformer has executed,
+ * dependency nodes that belong to the same conflict group will have an equal conflict identifier.
+ * 
  * @author Benjamin Bentmann
+ * @see DependencyNode#getConflictId()
  */
 public class ConflictMarker
     implements DependencyGraphTransformer

@@ -18,6 +18,8 @@ import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.RepositoryException;
 
 /**
+ * A dependency graph transformer that chains other transformers.
+ * 
  * @author Benjamin Bentmann
  */
 public class ChainedDependencyGraphTransformer
@@ -26,6 +28,11 @@ public class ChainedDependencyGraphTransformer
 
     private final DependencyGraphTransformer[] transformers;
 
+    /**
+     * Creates a new transformer that chains the specified transformers.
+     * 
+     * @param transformers The transformers to chain, may be {@code null} or empty.
+     */
     public ChainedDependencyGraphTransformer( DependencyGraphTransformer... transformers )
     {
         if ( transformers == null )
@@ -38,6 +45,14 @@ public class ChainedDependencyGraphTransformer
         }
     }
 
+    /**
+     * Creates a new transformer that chains the specified transformers or simply returns one of them if the other one
+     * is {@code null}.
+     * 
+     * @param transformer1 The first transformer of the chain, may be {@code null}.
+     * @param transformer2 The second transformer of the chain, may be {@code null}.
+     * @return The chained transformer or {@code null} if both input transformers are {@code null}.
+     */
     public static DependencyGraphTransformer newInstance( DependencyGraphTransformer transformer1,
                                                           DependencyGraphTransformer transformer2 )
     {

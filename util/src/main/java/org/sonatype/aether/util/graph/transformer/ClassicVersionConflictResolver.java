@@ -29,6 +29,11 @@ import org.sonatype.aether.Version;
 import org.sonatype.aether.VersionConstraint;
 
 /**
+ * A dependency graph transformer that resolves version conflicts using the nearest-wins strategy. For a given set of
+ * conflicting nodes, one node will be chosen as the winner and the other nodes are removed from the dependency graph.
+ * Note: This transformer assumes conflict groups have already been marked by a previous graph transformer like
+ * {@link ConflictMarker}.
+ * 
  * @author Benjamin Bentmann
  */
 public class ClassicVersionConflictResolver

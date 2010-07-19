@@ -27,6 +27,10 @@ import org.sonatype.aether.DependencyGraphTransformer;
 import org.sonatype.aether.DependencyNode;
 
 /**
+ * A dependency graph transformer that handles scope inheritance and conflict resolution among conflicting scopes. For a
+ * given set of conflicting nodes, the strongest scope will be assigned to all of the nodes. Note: This transformer
+ * assumes conflict groups have already been marked by a previous graph transformer like {@link ConflictMarker}.
+ * 
  * @author Benjamin Bentmann
  */
 public class JavaEffectiveScopeCalculator

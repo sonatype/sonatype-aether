@@ -43,6 +43,11 @@ public class FilterRepositorySystemSession
 
     protected RepositorySystemSession session;
 
+    /**
+     * Creates a new repository system session that wraps the specified session.
+     * 
+     * @param session The repository system session to wrap, must not be {@code null}.
+     */
     protected FilterRepositorySystemSession( RepositorySystemSession session )
     {
         this.session = session;

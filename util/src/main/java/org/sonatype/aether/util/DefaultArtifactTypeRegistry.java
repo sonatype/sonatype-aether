@@ -20,6 +20,8 @@ import org.sonatype.aether.ArtifactType;
 import org.sonatype.aether.ArtifactTypeRegistry;
 
 /**
+ * A simple artifact type registry.
+ * 
  * @author Benjamin Bentmann
  */
 public class DefaultArtifactTypeRegistry
@@ -28,6 +30,12 @@ public class DefaultArtifactTypeRegistry
 
     private final Map<String, ArtifactType> stereotypes = new HashMap<String, ArtifactType>();
 
+    /**
+     * Adds the specified artifact type to the registry.
+     * 
+     * @param stereotype The artifact type to add, must not be {@code null}.
+     * @return This registry for chaining, never {@code null}.
+     */
     public DefaultArtifactTypeRegistry add( ArtifactType stereotype )
     {
         stereotypes.put( stereotype.getId(), stereotype );

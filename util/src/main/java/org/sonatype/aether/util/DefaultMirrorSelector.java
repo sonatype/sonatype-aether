@@ -21,6 +21,8 @@ import org.sonatype.aether.MirrorSelector;
 import org.sonatype.aether.RemoteRepository;
 
 /**
+ * A simple mirror selector that selects mirrors based on repository identifiers.
+ * 
  * @author Benjamin Bentmann
  */
 public class DefaultMirrorSelector
@@ -33,6 +35,22 @@ public class DefaultMirrorSelector
 
     private final List<MirrorDef> mirrors = new ArrayList<MirrorDef>();
 
+    /**
+     * Adds the specified mirror to this selector.
+     * 
+     * @param id The identifier of the mirror, must not be {@code null}.
+     * @param url The URL of the mirror, must not be {@code null}.
+     * @param type The content type of the mirror, must not be {@code null}.
+     * @param repositoryManager A flag whether the mirror is a repository manager or a simple server.
+     * @param mirrorOfIds The identifier(s) of remote repositories to mirror, must not be {@code null}. Multiple
+     *            identifiers can be separated by comma and additionally the wildcards "*" and "external:*" can be used
+     *            to match all (external) repositories, prefixing a repo id with an exclamation mark allows to express
+     *            an exclusion. For example "external:*,!central".
+     * @param mirrorOfTypes The content type(s) of remote repositories to mirror, may be {@code null} or empty to match
+     *            any content type. Similar to the repo id specification, multiple types can be comma-separated, the
+     *            wildcard "*" and the "!" negation syntax are supported. For example "*,!p2".
+     * @return This selector for chaining, never {@code null}.
+     */
     public DefaultMirrorSelector add( String id, String url, String type, boolean repositoryManager,
                                       String mirrorOfIds, String mirrorOfTypes )
     {
@@ -81,7 +99,8 @@ public class DefaultMirrorSelector
         {
             for ( MirrorDef mirror : mirrors )
             {
-                if ( repoId.equals( mirror.mirrorOfIds ) && matchesType( repository.getContentType(), mirror.mirrorOfTypes ) )
+                if ( repoId.equals( mirror.mirrorOfIds )
+                    && matchesType( repository.getContentType(), mirror.mirrorOfTypes ) )
                 {
                     return mirror;
                 }

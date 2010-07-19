@@ -18,7 +18,7 @@ import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.DependencySelector;
 
 /**
- * A dependency selector with always includes or excludes dependencies.
+ * A dependency selector that always includes or excludes dependencies.
  * 
  * @author Benjamin Bentmann
  */
