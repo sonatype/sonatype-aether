@@ -17,6 +17,8 @@ import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A simple artifact.
@@ -42,6 +44,41 @@ public final class DefaultArtifact
     private final Map<String, String> properties;
 
     private String baseVersion;
+
+    public DefaultArtifact( String coords )
+    {
+        this( coords, Collections.<String, String> emptyMap() );
+    }
+
+    public DefaultArtifact( String coords, Map<String, String> properties )
+    {
+        Pattern p = Pattern.compile( "([^: ]+):([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?" );
+        Matcher m = p.matcher( coords );
+        if ( !m.matches() )
+        {
+            throw new IllegalArgumentException( "Bad artifact coordinates"
+                + ", expected format is <groupId>:<artifactId>:<version>[:<extension>[:<classifier>]]" );
+        }
+        groupId = m.group( 1 );
+        artifactId = m.group( 2 );
+        version = m.group( 3 );
+        extension = get( m.group( 5 ), "jar" );
+        classifier = get( m.group( 7 ), "" );
+        file = null;
+        if ( properties != null && !properties.isEmpty() )
+        {
+            this.properties = new HashMap<String, String>( properties );
+        }
+        else
+        {
+            this.properties = Collections.emptyMap();
+        }
+    }
+
+    private static String get( String value, String defaultValue )
+    {
+        return ( value == null || value.length() <= 0 ) ? defaultValue : value;
+    }
 
     public DefaultArtifact( String groupId, String artifactId, String extension, String version )
     {

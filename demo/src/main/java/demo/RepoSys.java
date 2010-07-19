@@ -36,6 +36,7 @@ import org.sonatype.aether.impl.ArtifactDescriptorReader;
 import org.sonatype.aether.impl.internal.DefaultServiceLocator;
 import org.sonatype.aether.impl.internal.EnhancedLocalRepositoryManager;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
+import org.sonatype.aether.util.graph.FileListGenerator;
 
 public class RepoSys
 {
@@ -48,14 +49,16 @@ public class RepoSys
 
         RepositorySystemSession session = newSession();
 
-        CollectRequest collectRequest = new CollectRequest();
-        collectRequest.setRoot( new Dependency( new DefaultArtifact( "org.apache.maven", "maven-profile", "", "jar",
-                                                                     "2.2.1" ), "compile" ) );
-        collectRequest.setRepositories( Arrays.asList( new RemoteRepository( "central", "default",
-                                                                             "http://repo1.maven.org/maven2/" ) ) );
-        DependencyNode root = repoSystem.collectDependencies( session, collectRequest ).getRoot();
+        Dependency dependency =
+            new Dependency( new DefaultArtifact( "org.apache.maven:maven-profile:2.2.1" ), "compile" );
+        RemoteRepository central = new RemoteRepository( "central", "default", "http://repo1.maven.org/maven2/" );
 
-        repoSystem.resolveDependencies( session, root, null );
+        CollectRequest collectRequest = new CollectRequest();
+        collectRequest.setRoot( dependency );
+        collectRequest.addRepository( central );
+        DependencyNode node = repoSystem.collectDependencies( session, collectRequest ).getRoot();
+
+        repoSystem.resolveDependencies( session, node, null );
 
         Artifact projectOutput = new DefaultArtifact( "test", "test", "", "jar", "0.1-SNAPSHOT" );
         projectOutput = projectOutput.setFile( new File( "pom.xml" ) );
@@ -71,7 +74,9 @@ public class RepoSys
         repoSystem.deploy( session, deployRequest );
 
         System.out.println( "============================================================" );
-        dump( root, "" );
+        dump( node, "" );
+
+        System.out.println( FileListGenerator.getClassPath( node ) );
     }
 
     private static RepositorySystem newManagedSystem()

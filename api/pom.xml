@@ -30,4 +30,12 @@ See the Apache License Version 2.0 for the specific language governing permissio
   <description>
     The application programming interface for the repository system.
   </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 </project>
