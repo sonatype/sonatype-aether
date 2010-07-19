@@ -47,6 +47,8 @@ import org.sonatype.aether.util.graph.transformer.JavaEffectiveScopeCalculator;
 import org.sonatype.aether.util.graph.traverser.FatArtifactTraverser;
 
 /**
+ * A simple repository system session.
+ * 
  * @author Benjamin Bentmann
  */
 public class DefaultRepositorySystemSession
