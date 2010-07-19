@@ -27,6 +27,9 @@ See the Apache License Version 2.0 for the specific language governing permissio
   <artifactId>aether-demo</artifactId>
 
   <name>Aether :: Demo</name>
+  <description>
+    A module to demonstrate the usage of Aether.
+  </description>
 
   <dependencies>
     <dependency>
