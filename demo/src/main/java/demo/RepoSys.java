@@ -19,20 +19,13 @@ import java.util.Arrays;
 import org.apache.maven.repository.internal.DefaultArtifactDescriptorReader;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.sonatype.aether.Artifact;
-import org.sonatype.aether.AuthenticationSelector;
 import org.sonatype.aether.CollectRequest;
 import org.sonatype.aether.DefaultArtifact;
 import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyGraphTransformer;
-import org.sonatype.aether.DependencyManager;
 import org.sonatype.aether.DependencyNode;
-import org.sonatype.aether.DependencySelector;
-import org.sonatype.aether.DependencyTraverser;
 import org.sonatype.aether.DeployRequest;
 import org.sonatype.aether.InstallRequest;
 import org.sonatype.aether.LocalRepositoryManager;
-import org.sonatype.aether.MirrorSelector;
-import org.sonatype.aether.ProxySelector;
 import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
@@ -42,23 +35,7 @@ import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
 import org.sonatype.aether.impl.ArtifactDescriptorReader;
 import org.sonatype.aether.impl.internal.DefaultServiceLocator;
 import org.sonatype.aether.impl.internal.EnhancedLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultArtifactType;
-import org.sonatype.aether.util.DefaultArtifactTypeRegistry;
-import org.sonatype.aether.util.DefaultAuthenticationSelector;
-import org.sonatype.aether.util.DefaultMirrorSelector;
-import org.sonatype.aether.util.DefaultProxySelector;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
-import org.sonatype.aether.util.graph.manager.ClassicDependencyManager;
-import org.sonatype.aether.util.graph.selector.AndDependencySelector;
-import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector;
-import org.sonatype.aether.util.graph.selector.OptionalDependencySelector;
-import org.sonatype.aether.util.graph.selector.ScopeDependencySelector;
-import org.sonatype.aether.util.graph.transformer.ChainedDependencyGraphTransformer;
-import org.sonatype.aether.util.graph.transformer.ClassicVersionConflictResolver;
-import org.sonatype.aether.util.graph.transformer.ConflictMarker;
-import org.sonatype.aether.util.graph.transformer.JavaDependencyContextRefiner;
-import org.sonatype.aether.util.graph.transformer.JavaEffectiveScopeCalculator;
-import org.sonatype.aether.util.graph.traverser.FatArtifactTraverser;
 
 public class RepoSys
 {
@@ -72,7 +49,7 @@ public class RepoSys
         RepositorySystemSession session = newSession();
 
         CollectRequest collectRequest = new CollectRequest();
-        collectRequest.setRoot( new Dependency( new DefaultArtifact( "org.apache.maven", "maven-core", "", "jar",
+        collectRequest.setRoot( new Dependency( new DefaultArtifact( "org.apache.maven", "maven-profile", "", "jar",
                                                                      "2.2.1" ), "compile" ) );
         collectRequest.setRepositories( Arrays.asList( new RemoteRepository( "central", "default",
                                                                              "http://repo1.maven.org/maven2/" ) ) );
@@ -115,9 +92,7 @@ public class RepoSys
 
     private static RepositorySystemSession newSession()
     {
-        DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
-
-        session.setUserAgent( "Aether" );
+        DefaultRepositorySystemSession session = DefaultRepositorySystemSession.newMavenRepositorySystemSession();
 
         LocalRepositoryManager localRepoMan = new EnhancedLocalRepositoryManager( new File( "target/local-repo" ) );
         session.setLocalRepositoryManager( localRepoMan );
@@ -125,52 +100,8 @@ public class RepoSys
         session.setTransferListener( new ConsoleTransferListener( System.out ) );
         session.setRepositoryListener( new ConsoleRepositoryListener( System.out ) );
 
-        MirrorSelector mirrorSelector = new DefaultMirrorSelector();
-        session.setMirrorSelector( mirrorSelector );
-
-        ProxySelector proxySelector = new DefaultProxySelector();
-        session.setProxySelector( proxySelector );
-
-        AuthenticationSelector authSelector = new DefaultAuthenticationSelector();
-        session.setAuthenticationSelector( authSelector );
-
-        DependencyTraverser depTraverser = new FatArtifactTraverser();
-        session.setDependencyTraverser( depTraverser );
-
-        DependencyManager depManager = new ClassicDependencyManager();
-        session.setDependencyManager( depManager );
-
-        DependencySelector depFilter =
-            new AndDependencySelector( new ScopeDependencySelector( "test", "provided" ),
-                                       new OptionalDependencySelector(), new ExclusionDependencySelector() );
-        session.setDependencySelector( depFilter );
-
-        DependencyGraphTransformer transformer =
-            new ChainedDependencyGraphTransformer( new ConflictMarker(), new JavaEffectiveScopeCalculator(),
-                                                   new ClassicVersionConflictResolver(),
-                                                   new JavaDependencyContextRefiner() );
-        transformer = null;
-        session.setDependencyGraphTransformer( transformer );
-
-        session.setIgnoreInvalidArtifactDescriptor( true );
-        session.setIgnoreMissingArtifactDescriptor( true );
-
-        session.setSystemProps( System.getProperties() );
-
-        DefaultArtifactTypeRegistry stereotypes = new DefaultArtifactTypeRegistry();
-        stereotypes.add( new DefaultArtifactType( "pom" ) );
-        stereotypes.add( new DefaultArtifactType( "maven-plugin", "jar", "", "java" ) );
-        stereotypes.add( new DefaultArtifactType( "jar", "jar", "", "java" ) );
-        stereotypes.add( new DefaultArtifactType( "ejb", "jar", "", "java" ) );
-        stereotypes.add( new DefaultArtifactType( "ejb-client", "jar", "client", "java" ) );
-        stereotypes.add( new DefaultArtifactType( "test-jar", "jar", "tests", "java" ) );
-        stereotypes.add( new DefaultArtifactType( "javadoc", "jar", "javadoc", "java" ) );
-        stereotypes.add( new DefaultArtifactType( "java-source", "jar", "sources", "java", false, false ) );
-        stereotypes.add( new DefaultArtifactType( "war", "war", "", "java", false, true ) );
-        stereotypes.add( new DefaultArtifactType( "ear", "ear", "", "java", false, true ) );
-        stereotypes.add( new DefaultArtifactType( "rar", "rar", "", "java", false, true ) );
-        stereotypes.add( new DefaultArtifactType( "par", "par", "", "java", false, true ) );
-        session.setArtifactTypeRegistry( stereotypes );
+        // uncomment to generate dirty trees
+        //session.setDependencyGraphTransformer( null );
 
         return session;
     }
