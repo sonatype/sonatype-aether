@@ -3,13 +3,13 @@ package org.sonatype.aether;
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
  *
- * This program is licensed to you under the Apache License Version 2.0, 
- * and you may not use this file except in compliance with the Apache License Version 2.0. 
+ * This program is licensed to you under the Apache License Version 2.0,
+ * and you may not use this file except in compliance with the Apache License Version 2.0.
  * You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
  *
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the Apache License Version 2.0 is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the Apache License Version 2.0 is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
@@ -21,7 +21,7 @@ import java.util.HashSet;
 /**
  * A dependency to some artifact. <em>Note:</em> Instances of this class are immutable and the exposed mutators return
  * new objects rather than changing the current instance.
- * 
+ *
  * @author Benjamin Bentmann
  */
 public final class Dependency
@@ -39,7 +39,7 @@ public final class Dependency
 
     /**
      * Creates a mandatory dependency on the specified artifact with the given scope.
-     * 
+     *
      * @param artifact The artifact being depended on, may be {@code null}.
      * @param scope The scope of the dependency, may be {@code null}.
      */
@@ -50,7 +50,7 @@ public final class Dependency
 
     /**
      * Creates a dependency on the specified artifact with the given scope.
-     * 
+     *
      * @param artifact The artifact being depended on, may be {@code null}.
      * @param scope The scope of the dependency, may be {@code null}.
      * @param optional A flag whether the dependency is optional or mandatory.
@@ -62,7 +62,7 @@ public final class Dependency
 
     /**
      * Creates a dependency on the specified artifact with the given scope and exclusions.
-     * 
+     *
      * @param artifact The artifact being depended on, may be {@code null}.
      * @param scope The scope of the dependency, may be {@code null}.
      * @param optional A flag whether the dependency is optional or mandatory.
@@ -96,7 +96,7 @@ public final class Dependency
 
     /**
      * Gets the artifact being depended on.
-     * 
+     *
      * @return The artifact, never {@code null}.
      */
     public Artifact getArtifact()
@@ -106,7 +106,7 @@ public final class Dependency
 
     /**
      * Sets the artifact being depended on.
-     * 
+     *
      * @param artifact The artifact, must not be {@code null}.
      * @return The new dependency, never {@code null}.
      */
@@ -121,7 +121,7 @@ public final class Dependency
 
     /**
      * Gets the scope of the dependency. The scope defines in which context this dependency is relevant.
-     * 
+     *
      * @return The scope or an empty string if not set, never {@code null}.
      */
     public String getScope()
@@ -131,13 +131,13 @@ public final class Dependency
 
     /**
      * Sets the scope of the dependency, e.g. "compile".
-     * 
+     *
      * @param scope The scope of the dependency, may be {@code null}.
      * @return The new dependency, never {@code null}.
      */
     public Dependency setScope( String scope )
     {
-        if ( this.scope.equals( scope ) || ( scope == null && this.scope.length() <= 0 ) )
+        if ( this.scope.equals( scope ) || scope == null || this.scope.length() <= 0 )
         {
             return this;
         }
@@ -145,9 +145,9 @@ public final class Dependency
     }
 
     /**
-     * Indicates whether this dependency is optional or not. Optional dependencies can usually be igored during
+     * Indicates whether this dependency is optional or not. Optional dependencies can usually be ignored during
      * transitive dependency resolution.
-     * 
+     *
      * @return {@code true} if the dependency is optional, {@code false} otherwise.
      */
     public boolean isOptional()
@@ -157,7 +157,7 @@ public final class Dependency
 
     /**
      * Sets the optional flag for the dependency.
-     * 
+     *
      * @param optional {@code true} if the dependency is optional, {@code false} if the dependency is mandatory.
      * @return The new dependency, never {@code null}.
      */
@@ -173,7 +173,7 @@ public final class Dependency
     /**
      * Gets the exclusions for this dependency. Exclusions can be used to remove transitive dependencies during
      * resolution.
-     * 
+     *
      * @return The (read-only) exclusions, never {@code null}.
      */
     public Collection<Exclusion> getExclusions()
@@ -183,13 +183,13 @@ public final class Dependency
 
     /**
      * Sets the exclusions for the dependency.
-     * 
+     *
      * @param exclusions The exclusions, may be {@code null}.
      * @return The new dependency, never {@code null}.
      */
     public Dependency setExclusions( Collection<Exclusion> exclusions )
     {
-        if ( getExclusions().equals( exclusions ) || ( exclusions == null && this.exclusions.length <= 0 ) )
+        if ( getExclusions().equals( exclusions ) || exclusions == null || this.exclusions.length <= 0 )
         {
             return this;
         }
