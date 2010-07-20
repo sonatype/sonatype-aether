@@ -178,4 +178,14 @@ public class FilterRepositorySystemSession
         return session.isTransferErrorCachingEnabled();
     }
 
+    public int getConnectTimeout()
+    {
+        return session.getConnectTimeout();
+    }
+
+    public int getRequestTimeout()
+    {
+        return session.getRequestTimeout();
+    }
+
 }

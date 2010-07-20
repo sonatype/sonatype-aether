@@ -249,7 +249,10 @@ class WagonRepositoryConnector
                 logger.debug( "Could not set user agent for wagon " + wagon.getClass().getName() + ": " + e );
             }
         }
-        wagon.setTimeout( getOption( "maven.artifact.timeout", 10 * 1000 ) );
+        if ( session.getConnectTimeout() > 0 )
+        {
+            wagon.setTimeout( session.getConnectTimeout() );
+        }
         wagon.connect( wagonRepo, wagonAuth, wagonProxy );
     }
 

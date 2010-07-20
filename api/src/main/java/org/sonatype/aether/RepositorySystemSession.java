@@ -31,6 +31,20 @@ public interface RepositorySystemSession
     String getUserAgent();
 
     /**
+     * Gets the timeout (in milliseconds) to wait for a successful connection to a remote server.
+     * 
+     * @return The connection timeout in milliseconds, non-positive values indicate no timeout.
+     */
+    int getConnectTimeout();
+
+    /**
+     * Gets the timeout (in milliseconds) to wait for a response from a remote server.
+     * 
+     * @return The request timeout in milliseconds, non-positive values indicate no timeout.
+     */
+    int getRequestTimeout();
+
+    /**
      * Indicates whether the repository system operates in offline mode and avoids/refuses any access to remote
      * repositories.
      * 

@@ -59,6 +59,10 @@ public class DefaultRepositorySystemSession
 
     private String userAgent = "Aether";
 
+    private int connectTimeout = 30 * 1000;
+
+    private int requestTimeout = 60 * 1000;
+
     private boolean offline;
 
     private boolean transferErrorCachingEnabled;
@@ -206,6 +210,28 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession setUserAgent( String userAgent )
     {
         this.userAgent = userAgent;
+        return this;
+    }
+
+    public int getConnectTimeout()
+    {
+        return connectTimeout;
+    }
+
+    public DefaultRepositorySystemSession setConnectionTimeout( int connectTimeout )
+    {
+        this.connectTimeout = connectTimeout;
+        return this;
+    }
+
+    public int getRequestTimeout()
+    {
+        return requestTimeout;
+    }
+
+    public DefaultRepositorySystemSession setRequestTimeout( int requestTimeout )
+    {
+        this.requestTimeout = requestTimeout;
         return this;
     }
 
