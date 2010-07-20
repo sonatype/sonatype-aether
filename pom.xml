@@ -33,6 +33,32 @@ See the Apache License Version 2.0 for the specific language governing permissio
   <description>
     The parent and aggregator for the repository system.
   </description>
+  <url>http://aether.sonatype.org/</url>
+  <inceptionYear>2010</inceptionYear>
+
+  <organization>
+    <name>Sonatype, Inc.</name>
+    <url>http://www.sonatype.com</url>
+  </organization>
+
+  <scm>
+    <connection>scm:git:git@github.com:sonatype/sonatype-aether.git</connection>
+    <developerConnection>scm:git:git@github.com:sonatype/sonatype-aether.git</developerConnection>
+    <url>git@github.com:sonatype/sonatype-aether.git</url>
+  </scm>
+
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.sonatype.org/browse/AETHER</url>
+  </issueManagement>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
   <modules>
     <module>api</module>
