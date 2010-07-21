@@ -16,7 +16,7 @@ package org.sonatype.aether;
 /**
  * A proxy to use for connections to a repository. <em>Note:</em> Instances of this class are immutable and the exposed
  * mutators return new objects rather than changing the current instance.
- *
+ * 
  * @author Benjamin Bentmann
  */
 public final class Proxy
@@ -32,7 +32,7 @@ public final class Proxy
 
     /**
      * Creates a new proxy with the specified properties.
-     *
+     * 
      * @param type The type of the proxy, e.g. "http", may be {@code null}.
      * @param host The host of the proxy, may be {@code null}.
      * @param port The port of the proxy.
@@ -48,7 +48,7 @@ public final class Proxy
 
     /**
      * Gets the type of this proxy.
-     *
+     * 
      * @return The type of this proxy, never {@code null}.
      */
     public String getType()
@@ -58,13 +58,13 @@ public final class Proxy
 
     /**
      * Sets the type of the proxy.
-     *
+     * 
      * @param type The type of the proxy, e.g. "http", may be {@code null}.
      * @return The new proxy, never {@code null}.
      */
     public Proxy setType( String type )
     {
-        if ( this.type.equals( type ) || type == null || this.type.length() <= 0 )
+        if ( this.type.equals( type ) || ( type == null && this.type.length() <= 0 ) )
         {
             return this;
         }
@@ -73,7 +73,7 @@ public final class Proxy
 
     /**
      * Gets the host for this proxy.
-     *
+     * 
      * @return The host for this proxy, never {@code null}.
      */
     public String getHost()
@@ -83,13 +83,13 @@ public final class Proxy
 
     /**
      * Sets the host of the proxy.
-     *
+     * 
      * @param host The host of the proxy, may be {@code null}.
      * @return The new proxy, never {@code null}.
      */
     public Proxy setHost( String host )
     {
-        if ( this.host.equals( host ) || host == null || this.host.length() <= 0 )
+        if ( this.host.equals( host ) || ( host == null && this.host.length() <= 0 ) )
         {
             return this;
         }
@@ -98,7 +98,7 @@ public final class Proxy
 
     /**
      * Gets the port number for this proxy.
-     *
+     * 
      * @return The port number for this proxy.
      */
     public int getPort()
@@ -108,7 +108,7 @@ public final class Proxy
 
     /**
      * Sets the port number for the proxy.
-     *
+     * 
      * @param port The port number for the proxy.
      * @return The new proxy, never {@code null}.
      */
@@ -123,7 +123,7 @@ public final class Proxy
 
     /**
      * Gets the authentication to use for the proxy connection.
-     *
+     * 
      * @return The authentication to use or {@code null} if none.
      */
     public Authentication getAuthentication()
@@ -133,7 +133,7 @@ public final class Proxy
 
     /**
      * Sets the authentication to use for the proxy connection.
-     *
+     * 
      * @param auth The authentication to use, may be {@code null}.
      * @return The new proxy, never {@code null}.
      */
