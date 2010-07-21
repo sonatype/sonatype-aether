@@ -14,7 +14,6 @@ package demo;
  */
 
 import java.io.File;
-import java.util.Arrays;
 
 import org.apache.maven.repository.internal.DefaultArtifactDescriptorReader;
 import org.codehaus.plexus.DefaultPlexusContainer;
