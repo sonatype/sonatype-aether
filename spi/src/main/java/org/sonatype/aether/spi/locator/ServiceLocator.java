@@ -46,7 +46,7 @@ public interface ServiceLocator
      * 
      * @param <T> The service type.
      * @param type The interface describing the service, must not be {@code null}.
-     * @return The available service instances, never {@code null}.
+     * @return The (read-only) list of available service instances, never {@code null}.
      */
     <T> List<T> getServices( Class<T> type );
 
