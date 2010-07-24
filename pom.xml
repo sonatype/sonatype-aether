@@ -59,11 +59,11 @@ See the Apache License Version 2.0 for the specific language governing permissio
   </licenses>
 
   <modules>
-    <module>api</module>
-    <module>spi</module>
-    <module>util</module>
-    <module>impl</module>
-    <module>connector-wagon</module>
+    <module>aether-api</module>
+    <module>aether-spi</module>
+    <module>aether-util</module>
+    <module>aether-impl</module>
+    <module>aether-connector-wagon</module>
   </modules>
 
   <properties>
