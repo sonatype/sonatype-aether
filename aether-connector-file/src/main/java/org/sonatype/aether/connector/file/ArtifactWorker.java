@@ -13,37 +13,31 @@ package org.sonatype.aether.connector.file;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.net.URI;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import org.codehaus.plexus.util.IOUtil;
 import org.sonatype.aether.ArtifactTransferException;
 import org.sonatype.aether.ChecksumFailureException;
 import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.TransferCancelledException;
-import org.sonatype.aether.TransferEvent;
-import org.sonatype.aether.TransferListener;
-import org.sonatype.aether.TransferResource;
-import org.sonatype.aether.TransferEvent.EventType;
-import org.sonatype.aether.TransferEvent.RequestType;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactTransfer;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
+import org.sonatype.aether.spi.connector.MetadataDownload;
+import org.sonatype.aether.spi.connector.MetadataTransfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
 import org.sonatype.aether.util.ChecksumUtils;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
-import org.sonatype.aether.util.listener.DefaultTransferResource;
 
 public class ArtifactWorker
     extends FileConnectorWorker
@@ -52,16 +46,16 @@ public class ArtifactWorker
 
     private static LinkedHashMap<String, String> checksumAlgos;
 
-//    private ArtifactTransfer transfer;
+    // private ArtifactTransfer transfer;
     private TransferWrapper transfer;
 
     private RemoteRepository repository;
 
     private DefaultLayout layout;
 
-//    private RepositorySystemSession session;
+    // private RepositorySystemSession session;
 
-//    private TransferListener listener;
+    // private TransferListener listener;
 
     static
     {
@@ -73,15 +67,15 @@ public class ArtifactWorker
     private ArtifactWorker( ArtifactTransfer transfer, RemoteRepository repository, Direction direction,
                             RepositorySystemSession session )
     {
-        super( session, repository, direction );
+        this( session, repository, direction );
         this.transfer = new TransferWrapper( transfer );
-        // this.direction = direction;
-        this.repository = repository;
-//        this.session = session;
+    }
 
-//        this.listener = session.getTransferListener();
-
-        this.layout = new DefaultLayout();
+    private ArtifactWorker( MetadataTransfer transfer, RemoteRepository repository, Direction direction,
+                            RepositorySystemSession session )
+    {
+        this( session, repository, direction );
+        this.transfer = new TransferWrapper( transfer );
     }
 
     public ArtifactWorker( ArtifactUpload transfer, RemoteRepository repository, RepositorySystemSession session )
@@ -94,6 +88,18 @@ public class ArtifactWorker
         this( transfer, repository, Direction.DOWNLOAD, session );
     }
 
+    public ArtifactWorker( MetadataDownload transfer, RemoteRepository repository, RepositorySystemSession session )
+    {
+        this( transfer, repository, Direction.DOWNLOAD, session );
+    }
+
+    public ArtifactWorker( RepositorySystemSession session, RemoteRepository repository, Direction direction )
+    {
+        super( session, repository, direction );
+        this.repository = repository;
+        this.layout = new DefaultLayout();
+    }
+
     public void run()
     {
         File target = null;
@@ -104,7 +110,7 @@ public class ArtifactWorker
             DefaultTransferEvent event = newEvent( transfer, repository );
             fireInitiated( event );
 
-            File baseDir = new File( repository.getUrl() );
+            File baseDir = new File( new URI( repository.getUrl() ));
             File localFile = transfer.getFile();
             File repoFile = new File( baseDir, layout.getPath( transfer.getArtifact() ) );
 
@@ -116,55 +122,81 @@ public class ArtifactWorker
                 case UPLOAD:
                     src = localFile;
                     target = repoFile;
-                    checksumAlgo = "SHA-1";
                     break;
                 case DOWNLOAD:
                     src = repoFile;
                     target = localFile;
 
-                    for ( Map.Entry<String, String> entry : checksumAlgos.entrySet() )
-                    {
-                        checksumFile = new File( repoFile.getPath() + entry.getValue() );
-                        if ( checksumFile.exists() )
-                        {
-                            checksumAlgo = entry.getKey();
-                        }
-                        break;
-                    }
-                    if ( checksumAlgo == null )
-                    {
-                        throw new ChecksumFailureException( "No supported checksum algorithm found." );
-                    }
                     break;
             }
 
-            DigestInputStream dis;
-            try
-            {
-                dis = new DigestInputStream( new FileInputStream( src ), MessageDigest.getInstance( checksumAlgo ) );
-            }
-            catch ( NoSuchAlgorithmException e )
-            {
-                throw new ChecksumFailureException( "No supported checksum algorithm found." );
-            }
+            // DigestInputStream dis;
+            // try
+            // {
+            // dis = new DigestInputStream( new FileInputStream( src ), MessageDigest.getInstance( checksumAlgo ) );
+            // }
+            // catch ( NoSuchAlgorithmException e )
+            // {
+            // throw new ChecksumFailureException( "No supported checksum algorithm found." );
+            // }
 
             transfer.setState( State.ACTIVE );
             event = newEvent( transfer, repository );
             fireStarted( event );
+            event = null;
 
-            IOUtil.copy( dis, new FileOutputStream( target ) );
+            target.getParentFile().mkdirs();
 
-            // write target checksum file
-            String checksumExtension = checksumAlgos.get( checksumAlgo );
-            checksumFile = new File( target.getPath() + checksumExtension );
-            String actualChecksum = new String( dis.getMessageDigest().digest() );
-            IOUtil.copy( actualChecksum, new FileWriter( checksumFile ) );
+            long fSize = src.length();
+            long bytesLeft = fSize;
 
-            // verify checksum
-            String expectedChecksum = ChecksumUtils.read( new File( src.getPath() + checksumExtension ) );
-            if ( !actualChecksum.equals( expectedChecksum ) )
+            FileChannel in = new FileInputStream( src ).getChannel();
+            FileChannel out = new FileOutputStream( target ).getChannel();
+
+            long count = copy( in, out );
+
+            Map<String, Object> crcs = ChecksumUtils.calc( src, checksumAlgos.keySet() );
+            switch ( direction )
             {
-                throw new ChecksumFailureException( expectedChecksum, actualChecksum );
+                case UPLOAD:
+                    // write checksum files
+                    for ( Entry<String, Object> crc : crcs.entrySet() )
+                    {
+                        String name = crc.getKey();
+                        Object sum = crc.getValue();
+
+                        if ( sum.getClass().isAssignableFrom( Throwable.class ) )
+                        {
+                            throw (Throwable) sum;
+                        }
+
+                        File crcTarget = new File( target.getPath() + checksumAlgos.get( name ) );
+                        FileWriter crcWriter = new FileWriter( crcTarget );
+                        crcWriter.write( sum.toString() );
+                        crcWriter.close();
+                    }
+                    break;
+                case DOWNLOAD:
+                    // verify checksum
+                    boolean verified = false;
+                    for ( Entry<String, String> entry : checksumAlgos.entrySet() ) {
+                        try {
+		                    String sum = ChecksumUtils.read( new File(src.getPath() + entry.getValue())); 
+		                    verified = sum.equalsIgnoreCase(  crcs.get( entry.getKey() ).toString()) ;
+		                    if ( ! verified ) {
+		                        throw new ChecksumFailureException( sum, crcs.get(entry.getKey()).toString() );
+		                    }
+		                    break;
+                        } catch (IOException e) {
+                            continue;
+                        }
+                    }
+                    
+                    if ( ! verified ) {
+                        throw new ChecksumFailureException( "no supported algorithms found" );
+                    }
+
+                    break;
             }
 
         }
@@ -177,7 +209,7 @@ public class ArtifactWorker
             transfer.setState( State.DONE );
             try
             {
-                if ( transfer.getException() != null )
+                if ( transfer.getException() == null )
                 {
                     fireSucceeded( newEvent( transfer, repository ) );
                 }
@@ -186,8 +218,11 @@ public class ArtifactWorker
                     // cleanup
                     if ( target != null )
                         target.delete();
-                    if ( checksumFile != null )
-                        checksumFile.delete();
+                    if ( direction.equals( Direction.UPLOAD )) {
+                        // FIXME: delete all checksum files
+	                    if ( checksumFile != null )
+	                        checksumFile.delete();
+                    }
                     fireFailed( newEvent( transfer, repository ) );
 
                 }
@@ -198,6 +233,36 @@ public class ArtifactWorker
             }
         }
 
+    }
+
+    private long copy( FileChannel in, FileChannel out )
+        throws IOException, TransferCancelledException
+    {
+        long count = 2000000L;
+        ByteBuffer buf = ByteBuffer.allocate( (int) count );
+
+        buf.clear();
+        int transferred;
+        while ( ( transferred = in.read( buf ) ) >= 0 || buf.position() != 0 )
+        {
+
+            DefaultTransferEvent event = newEvent( transfer, repository );
+            event.setDataBuffer( buf.array() );
+            event.setDataLength( buf.position() );
+            event.setDataOffset( 0 );
+            event.setTransferredBytes( transferred );
+            fireProgressed( event );
+
+            buf.flip();
+            out.write( buf );
+            buf.compact();
+        }
+        buf.flip();
+        while ( buf.hasRemaining() )
+        {
+            out.write( buf );
+        }
+        return count;
     }
 
 }

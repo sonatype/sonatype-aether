@@ -62,7 +62,7 @@ public class FileRepositoryConnector
         
         for ( MetadataDownload metadataDownload : metadataDownloads )
         {
-            MetadataWorker worker = new MetadataWorker (metadataDownload, repository, session);
+            ArtifactWorker worker = new ArtifactWorker (metadataDownload, repository, session);
             executor.execute( worker );
         }
     }

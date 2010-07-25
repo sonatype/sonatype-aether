@@ -27,12 +27,13 @@ import org.sonatype.aether.util.listener.DefaultTransferResource;
 
 public abstract class FileConnectorWorker
 {
-    protected enum Direction {
-        UPLOAD(TransferEvent.RequestType.PUT), DOWNLOAD(TransferEvent.RequestType.GET);
+    protected enum Direction
+    {
+        UPLOAD( TransferEvent.RequestType.PUT ), DOWNLOAD( TransferEvent.RequestType.GET );
 
         TransferEvent.RequestType type;
-        
-        private Direction( TransferEvent.RequestType  type )
+
+        private Direction( TransferEvent.RequestType type )
         {
             this.type = type;
         }
@@ -43,45 +44,61 @@ public abstract class FileConnectorWorker
         }
     }
 
-
     private TransferListener listener;
+
     protected Direction direction;
-    
-    
+
     public FileConnectorWorker( RepositorySystemSession session, RemoteRepository repository, Direction direction )
     {
         this.listener = session.getTransferListener();
         this.direction = direction;
     }
 
-    protected DefaultTransferEvent newEvent(TransferWrapper transfer, RemoteRepository repository) {
+    protected DefaultTransferEvent newEvent( TransferWrapper transfer, RemoteRepository repository )
+    {
         DefaultTransferEvent event = new DefaultTransferEvent();
         Artifact artifact = transfer.getArtifact();
-        String resourceName = String.format("%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
-        event.setResource( new DefaultTransferResource( repository.getUrl(), resourceName, transfer.getFile()) );
+        String resourceName =
+            String.format( "%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion() );
+        event.setResource( new DefaultTransferResource( repository.getUrl(), resourceName, transfer.getFile() ) );
         event.setRequestType( direction.getType() );
         return event;
-        
+
     }
 
-    protected void fireInitiated(DefaultTransferEvent event) throws TransferCancelledException {
+    protected void fireInitiated( DefaultTransferEvent event )
+        throws TransferCancelledException
+    {
         event.setType( TransferEvent.EventType.INITIATED );
         listener.transferInitiated( event );
     }
-    
-    protected void fireStarted(DefaultTransferEvent event) throws TransferCancelledException {
+
+    protected void fireStarted( DefaultTransferEvent event )
+        throws TransferCancelledException
+    {
         event.setType( TransferEvent.EventType.STARTED );
-        listener.transferInitiated( event );
+        listener.transferStarted( event );
     }
-    
-    protected void fireSucceeded(DefaultTransferEvent event) throws TransferCancelledException {
+
+    protected void fireSucceeded( DefaultTransferEvent event )
+        throws TransferCancelledException
+    {
         event.setType( TransferEvent.EventType.SUCCEEDED );
-        listener.transferInitiated( event );
+        listener.transferSucceeded( event );
     }
-    
-    protected void fireFailed(DefaultTransferEvent event) throws TransferCancelledException {
+
+    protected void fireFailed( DefaultTransferEvent event )
+        throws TransferCancelledException
+    {
         event.setType( TransferEvent.EventType.FAILED );
-        listener.transferInitiated( event );
+        listener.transferFailed( event );
+    }
+
+    protected void fireProgressed( DefaultTransferEvent event )
+        throws TransferCancelledException
+    {
+        event.setType( TransferEvent.EventType.PROGRESSED );
+        listener.transferProgressed( event );
     }
 
 }
