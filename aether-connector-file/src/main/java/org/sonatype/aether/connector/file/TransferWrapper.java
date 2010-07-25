@@ -17,6 +17,7 @@ import java.io.File;
 
 import org.sonatype.aether.Artifact;
 import org.sonatype.aether.ArtifactTransferException;
+import org.sonatype.aether.Metadata;
 import org.sonatype.aether.MetadataTransferException;
 import org.sonatype.aether.spi.connector.ArtifactTransfer;
 import org.sonatype.aether.spi.connector.MetadataTransfer;
@@ -25,6 +26,17 @@ import org.sonatype.aether.spi.connector.Transfer.State;
 
 public class TransferWrapper
 {
+    
+    public enum Type {
+        ARTIFACT, METADATA
+    }
+    
+    private Type type;
+
+    public Type getType()
+    {
+        return type;
+    }
 
     private MetadataTransfer metadataTransfer;
 
@@ -37,6 +49,7 @@ public class TransferWrapper
         super();
         this.artifactTransfer = transfer;
         this.transfer = transfer;
+        this.type = Type.ARTIFACT;
     }
 
     public TransferWrapper( MetadataTransfer transfer )
@@ -44,6 +57,7 @@ public class TransferWrapper
         super();
         this.metadataTransfer = transfer;
         this.transfer = transfer;
+        this.type = Type.METADATA;
     }
 
     public void setState( State new1 )
@@ -94,6 +108,11 @@ public class TransferWrapper
             return metadataTransfer.getException();
         else
             throw new RuntimeException( "TransferWrapper holds the wrong type" );
+    }
+
+    public Metadata getMetadata()
+    {
+        return metadataTransfer.getMetadata();
     }
 
 }

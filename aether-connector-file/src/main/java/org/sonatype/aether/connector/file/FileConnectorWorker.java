@@ -14,14 +14,13 @@ package org.sonatype.aether.connector.file;
  */
 
 import org.sonatype.aether.Artifact;
+import org.sonatype.aether.Metadata;
 import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.TransferCancelledException;
 import org.sonatype.aether.TransferEvent;
 import org.sonatype.aether.TransferEvent.RequestType;
 import org.sonatype.aether.TransferListener;
-import org.sonatype.aether.connector.file.FileConnectorWorker.Direction;
-import org.sonatype.aether.spi.connector.ArtifactTransfer;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
@@ -57,9 +56,19 @@ public abstract class FileConnectorWorker
     protected DefaultTransferEvent newEvent( TransferWrapper transfer, RemoteRepository repository )
     {
         DefaultTransferEvent event = new DefaultTransferEvent();
-        Artifact artifact = transfer.getArtifact();
-        String resourceName =
-            String.format( "%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion() );
+        String resourceName = null;
+        switch ( transfer.getType() )
+        {
+            case ARTIFACT:
+                Artifact artifact = transfer.getArtifact();
+                resourceName =
+                    String.format( "%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion() );
+                break;
+            case METADATA:
+                Metadata metadata = transfer.getMetadata();
+                resourceName =
+                    String.format( "%s:%s:%s", metadata.getGroupId(), metadata.getArtifactId(), metadata.getVersion() );
+        }
         event.setResource( new DefaultTransferResource( repository.getUrl(), resourceName, transfer.getFile() ) );
         event.setRequestType( direction.getType() );
         return event;

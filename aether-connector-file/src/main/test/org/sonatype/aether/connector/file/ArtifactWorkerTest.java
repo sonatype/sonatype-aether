@@ -12,11 +12,16 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonatype.aether.ArtifactTransferException;
 import org.sonatype.aether.DefaultArtifact;
+import org.sonatype.aether.DefaultMetadata;
+import org.sonatype.aether.Metadata.Nature;
+import org.sonatype.aether.MetadataTransferException;
 import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.TransferCancelledException;
 import org.sonatype.aether.TransferEvent;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
+import org.sonatype.aether.spi.connector.MetadataDownload;
+import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 import org.sonatype.aether.util.listener.AbstractTransferListener;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
@@ -108,6 +113,9 @@ public class ArtifactWorkerTest
             throw transfer.getException();
         }
         
+        file = File.createTempFile( "ArtifactWorkerTest", ".jar" );
+        file.deleteOnExit();
+        
         ArtifactDownload down = new ArtifactDownload(artifact, "", file, "");
         worker = new ArtifactWorker( down, repository, session );
         worker.run();
@@ -120,6 +128,44 @@ public class ArtifactWorkerTest
         String actualContent = "";
         while ( (content = r.readLine()) != null )
 	        actualContent += content;
+        
+        Assert.assertEquals( expectedContent, actualContent );
+    }
+    
+    @Test
+    public void testMetadataTransfer() throws IOException, MetadataTransferException {
+        File file = File.createTempFile( "ArtifactWorkerTest", ".jar" );
+        file.deleteOnExit();
+        FileWriter w = new FileWriter( file );
+        String expectedContent = "Dies ist ein Test.";
+        w.write( expectedContent );
+        w.close();
+        
+        DefaultMetadata metadata = new DefaultMetadata("test", "artId1", "1", "jar" , Nature.RELEASE_OR_SNAPSHOT);
+        MetadataUpload up = new MetadataUpload( metadata, file );
+        ArtifactWorker worker = new ArtifactWorker( up, repository, session );
+        worker.run();
+        if ( up.getException() != null ) {
+            throw up.getException();
+        }
+
+        file = File.createTempFile( "ArtifactWorkerTest", ".jar" );
+        file.deleteOnExit();
+        
+        MetadataDownload down = new MetadataDownload();
+        down.setMetadata( metadata ).setFile( file );
+        worker = new ArtifactWorker( down, repository, session );
+        worker.run();
+        
+        if ( down.getException() != null) {
+            throw down.getException();
+        }
+        
+        BufferedReader r = new BufferedReader(new FileReader(file));
+        String content = null;
+        String actualContent = "";
+        while ( (content = r.readLine()) != null )
+            actualContent += content;
         
         Assert.assertEquals( expectedContent, actualContent );
     }
