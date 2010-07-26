@@ -103,6 +103,13 @@ public abstract class FileConnectorWorker
         listener.transferFailed( event );
     }
 
+    protected void fireCorrupted( DefaultTransferEvent event )
+        throws TransferCancelledException
+    {
+        event.setType( TransferEvent.EventType.FAILED );
+        listener.transferCorrupted( event );
+    }
+
     protected void fireProgressed( DefaultTransferEvent event )
         throws TransferCancelledException
     {

@@ -19,7 +19,9 @@ import org.sonatype.aether.Artifact;
 import org.sonatype.aether.ArtifactTransferException;
 import org.sonatype.aether.Metadata;
 import org.sonatype.aether.MetadataTransferException;
+import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactTransfer;
+import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataTransfer;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
@@ -43,6 +45,8 @@ public class TransferWrapper
     private ArtifactTransfer artifactTransfer;
 
     private Transfer transfer;
+    
+    private String checksumPolicy = null;
 
     public TransferWrapper( ArtifactTransfer transfer )
     {
@@ -50,14 +54,22 @@ public class TransferWrapper
         this.artifactTransfer = transfer;
         this.transfer = transfer;
         this.type = Type.ARTIFACT;
+        
+        if ( transfer.getClass().isAssignableFrom( ArtifactDownload.class )) {
+            this.checksumPolicy = ( (ArtifactDownload) transfer ).getChecksumPolicy();
+        } 
     }
-
+    
     public TransferWrapper( MetadataTransfer transfer )
     {
         super();
         this.metadataTransfer = transfer;
         this.transfer = transfer;
         this.type = Type.METADATA;
+        
+        if ( transfer.getClass().isAssignableFrom( MetadataDownload.class )) {
+            this.checksumPolicy = ( (MetadataDownload) transfer ).getChecksumPolicy();
+        }
     }
 
     public void setState( State new1 )
@@ -113,6 +125,11 @@ public class TransferWrapper
     public Metadata getMetadata()
     {
         return metadataTransfer.getMetadata();
+    }
+
+    public String getChecksumPolicy()
+    {
+        return this.checksumPolicy;
     }
 
 }

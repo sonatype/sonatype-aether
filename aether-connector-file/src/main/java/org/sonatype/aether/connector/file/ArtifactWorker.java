@@ -30,6 +30,7 @@ import org.sonatype.aether.ArtifactTransferException;
 import org.sonatype.aether.ChecksumFailureException;
 import org.sonatype.aether.MetadataTransferException;
 import org.sonatype.aether.RemoteRepository;
+import org.sonatype.aether.RepositoryPolicy;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.TransferCancelledException;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
@@ -102,7 +103,7 @@ public class ArtifactWorker
     {
         this( transfer, repository, Direction.DOWNLOAD, session );
     }
-    
+
     public ArtifactWorker( MetadataUpload transfer, RemoteRepository repository, RepositorySystemSession session )
     {
         this( transfer, repository, Direction.UPLOAD, session );
@@ -168,7 +169,6 @@ public class ArtifactWorker
             {
                 case UPLOAD:
                     // write checksum files
-                    // FIXME use checksumPolicy
                     for ( Entry<String, Object> crc : crcs.entrySet() )
                     {
                         String name = crc.getKey();
@@ -187,41 +187,61 @@ public class ArtifactWorker
                     break;
                 case DOWNLOAD:
                     // verify checksum
-                    // FIXME use checksumPolicy
-                    boolean verified = false;
-                    for ( Entry<String, String> entry : checksumAlgos.entrySet() )
+                    if ( RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( transfer.getChecksumPolicy() ) )
                     {
-                        try
+                        break;
+                    }
+                    boolean verified = false;
+                    try
+                    {
+                        for ( Entry<String, String> entry : checksumAlgos.entrySet() )
                         {
-                            String sum = ChecksumUtils.read( new File( src.getPath() + entry.getValue() ) );
-                            verified = sum.equalsIgnoreCase( crcs.get( entry.getKey() ).toString() );
-                            if ( !verified )
+                            try
                             {
-                                throw new ChecksumFailureException( sum, crcs.get( entry.getKey() ).toString() );
+                                String sum = ChecksumUtils.read( new File( src.getPath() + entry.getValue() ) );
+                                verified = sum.equalsIgnoreCase( crcs.get( entry.getKey() ).toString() );
+                                if ( !verified )
+                                {
+                                    throw new ChecksumFailureException( sum, crcs.get( entry.getKey() ).toString() );
+                                }
+                                break;
                             }
-                            break;
+                            catch ( IOException e )
+                            {
+                                continue;
+                            }
                         }
-                        catch ( IOException e )
+
+                        // all algorithms checked
+                        if ( !verified )
                         {
-                            continue;
+                            throw new ChecksumFailureException( "no supported algorithms found" );
                         }
                     }
-
-                    if ( !verified )
+                    catch ( ChecksumFailureException e )
                     {
-                        throw new ChecksumFailureException( "no supported algorithms found" );
+                        if ( RepositoryPolicy.CHECKSUM_POLICY_FAIL.equals( transfer.getChecksumPolicy() ) )
+                        {
+                            throw e;
+                        }
+                        else if ( RepositoryPolicy.CHECKSUM_POLICY_WARN.equals( transfer.getChecksumPolicy() ) )
+                        {
+                            event = newEvent( transfer, repository );
+                            event.setException( e );
+                            fireCorrupted( event );
+                        }
+
                     }
 
                     break;
             }
-
         }
         catch ( Throwable t )
         {
             switch ( transfer.getType() )
             {
                 case ARTIFACT:
-		            transfer.setException( new ArtifactTransferException( transfer.getArtifact(), repository, t ) );
+                    transfer.setException( new ArtifactTransferException( transfer.getArtifact(), repository, t ) );
                     break;
                 case METADATA:
                     transfer.setException( new MetadataTransferException( transfer.getMetadata(), repository, t ) );
@@ -244,10 +264,12 @@ public class ArtifactWorker
                         target.delete();
                     if ( direction.equals( Direction.UPLOAD ) )
                     {
-                        // FIXME: delete all checksum files
+                        for ( String ext : checksumAlgos.values() )
+                        {
+                            new File( target.getPath() + ext ).delete();
+                        }
                     }
                     fireFailed( newEvent( transfer, repository ) );
-
                 }
             }
             catch ( TransferCancelledException e )

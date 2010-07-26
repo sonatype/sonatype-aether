@@ -16,6 +16,7 @@ import org.sonatype.aether.DefaultMetadata;
 import org.sonatype.aether.Metadata.Nature;
 import org.sonatype.aether.MetadataTransferException;
 import org.sonatype.aether.RemoteRepository;
+import org.sonatype.aether.RepositoryPolicy;
 import org.sonatype.aether.TransferCancelledException;
 import org.sonatype.aether.TransferEvent;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
@@ -117,6 +118,7 @@ public class ArtifactWorkerTest
         file.deleteOnExit();
         
         ArtifactDownload down = new ArtifactDownload(artifact, "", file, "");
+        down.setChecksumPolicy( RepositoryPolicy.CHECKSUM_POLICY_FAIL );
         worker = new ArtifactWorker( down, repository, session );
         worker.run();
         if ( down.getException() != null) {
@@ -153,6 +155,7 @@ public class ArtifactWorkerTest
         file.deleteOnExit();
         
         MetadataDownload down = new MetadataDownload();
+        down.setChecksumPolicy( RepositoryPolicy.CHECKSUM_POLICY_FAIL );
         down.setMetadata( metadata ).setFile( file );
         worker = new ArtifactWorker( down, repository, session );
         worker.run();
