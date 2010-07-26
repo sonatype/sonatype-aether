@@ -19,12 +19,13 @@ package org.sonatype.aether.util;
  * under the License.
  */
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
@@ -129,34 +130,19 @@ public class ChecksumUtils
         }
 
         FileInputStream fis = new FileInputStream( dataFile );
-        try
+        FileChannel in = fis.getChannel();
+        
+        ByteBuffer bytebuffer = ByteBuffer.allocate( 16 * 1024 );
+        while ( in.read( bytebuffer ) >= 0 || bytebuffer.position() != 0 )
         {
-            BufferedInputStream bis = new BufferedInputStream( fis );
-            try
+            bytebuffer.flip();
+            for ( MessageDigest digest : digests.values() )
             {
-                for ( byte[] buffer = new byte[1024 * 4];; )
-                {
-                    int read = bis.read( buffer );
-                    if ( read < 0 )
-                    {
-                        break;
-                    }
-                    for ( MessageDigest digest : digests.values() )
-                    {
-                        digest.update( buffer, 0, read );
-                    }
-                }
+                digest.update( bytebuffer );
             }
-            finally
-            {
-                bis.close();
-            }
+            bytebuffer.compact();
         }
-        finally
-        {
-            fis.close();
-        }
-
+        
         for ( Map.Entry<String, MessageDigest> entry : digests.entrySet() )
         {
             byte[] bytes = entry.getValue().digest();
