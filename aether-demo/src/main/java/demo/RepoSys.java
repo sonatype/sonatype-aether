@@ -18,12 +18,16 @@ import java.io.File;
 import org.apache.maven.repository.internal.DefaultArtifactDescriptorReader;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.sonatype.aether.Artifact;
+import org.sonatype.aether.ArtifactResolutionException;
 import org.sonatype.aether.CollectRequest;
 import org.sonatype.aether.DefaultArtifact;
 import org.sonatype.aether.Dependency;
+import org.sonatype.aether.DependencyCollectionException;
 import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.DeployRequest;
+import org.sonatype.aether.DeploymentException;
 import org.sonatype.aether.InstallRequest;
+import org.sonatype.aether.InstallationException;
 import org.sonatype.aether.LocalRepository;
 import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositorySystem;
@@ -42,9 +46,29 @@ public class RepoSys
     public static void main( String[] args )
         throws Exception
     {
-        // RepositorySystem repoSystem = newManagedSystem();
-        RepositorySystem repoSystem = newManualSystem();
+        RepositorySystem repoSystem;
 
+        System.out.println( "============================================================" );
+        System.out.println( "IoC managed/wired demo" );
+        System.out.println( "============================================================" );
+
+        // System managed by IoC container (Plexus in this case)
+        repoSystem = newManagedSystem();
+        playTheDanceBaby( repoSystem );
+
+        System.out.println();
+        System.out.println( "============================================================" );
+        System.out.println( "Manually managed/wired demo" );
+        System.out.println( "============================================================" );
+
+        // System manually managed, no IoC container (manually wired up)
+        repoSystem = newManualSystem();
+        playTheDanceBaby( repoSystem );
+    }
+
+    private static void playTheDanceBaby( RepositorySystem repoSystem )
+        throws DependencyCollectionException, ArtifactResolutionException, InstallationException, DeploymentException
+    {
         RepositorySystemSession session = newSession( repoSystem );
 
         Dependency dependency =
@@ -58,6 +82,15 @@ public class RepoSys
 
         repoSystem.resolveDependencies( session, node, null );
 
+        System.out.println( "------------------------------------------------------------" );
+        System.out.println( "Resolution results" );
+        dump( node, "" );
+
+        System.out.println( FileListGenerator.getClassPath( node ) );
+
+        System.out.println( "------------------------------------------------------------" );
+        System.out.println( "Deployment into repository" );
+
         Artifact projectOutput = new DefaultArtifact( "test", "test", "", "jar", "0.1-SNAPSHOT" );
         projectOutput = projectOutput.setFile( new File( "pom.xml" ) );
 
@@ -68,13 +101,8 @@ public class RepoSys
         DeployRequest deployRequest = new DeployRequest();
         deployRequest.addArtifact( projectOutput );
         deployRequest.setRepository( new RemoteRepository( "nexus", "default",
-                                                           new File( "target/dist-repo" ).toURI().toString() ) );
+            new File( "target/dist-repo" ).toURI().toString() ) );
         repoSystem.deploy( session, deployRequest );
-
-        System.out.println( "============================================================" );
-        dump( node, "" );
-
-        System.out.println( FileListGenerator.getClassPath( node ) );
     }
 
     private static RepositorySystem newManagedSystem()
@@ -104,7 +132,7 @@ public class RepoSys
         session.setRepositoryListener( new ConsoleRepositoryListener( System.out ) );
 
         // uncomment to generate dirty trees
-        //session.setDependencyGraphTransformer( null );
+        // session.setDependencyGraphTransformer( null );
 
         return session;
     }
