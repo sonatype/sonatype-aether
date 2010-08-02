@@ -19,7 +19,8 @@ import org.sonatype.aether.Metadata;
 import org.sonatype.aether.MetadataTransferException;
 
 /**
- * An upload of metadata to a remote repository.
+ * An upload of metadata to a remote repository. A repository connector processing this upload has to use
+ * {@link #setState(State)} and {@link #setException(MetadataTransferException)} to report the results of the transfer.
  * 
  * @author Benjamin Bentmann
  */

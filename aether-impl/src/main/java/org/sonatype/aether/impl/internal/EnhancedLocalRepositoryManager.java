@@ -14,7 +14,10 @@ package org.sonatype.aether.impl.internal;
  */
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 
@@ -97,20 +100,35 @@ public class EnhancedLocalRepositoryManager
     @Override
     public void addLocalArtifact( Artifact artifact )
     {
-        addArtifact( artifact, LOCAL_REPO_ID );
+        addArtifact( artifact, Collections.singleton( LOCAL_REPO_ID ) );
     }
 
     @Override
-    public void addRemoteArtifact( Artifact artifact, RemoteRepository repository, String context )
+    public void addRemoteArtifact( Artifact artifact, RemoteRepository repository, Collection<String> contexts )
     {
-        addArtifact( artifact, getRepositoryKey( repository, context ) );
+        addArtifact( artifact, getRepositoryKeys( repository, contexts ) );
     }
 
-    private void addArtifact( Artifact artifact, String repository )
+    private Collection<String> getRepositoryKeys( RemoteRepository repository, Collection<String> contexts )
+    {
+        Collection<String> keys = new HashSet<String>();
+
+        if ( contexts != null )
+        {
+            for ( String context : contexts )
+            {
+                keys.add( getRepositoryKey( repository, context ) );
+            }
+        }
+
+        return keys;
+    }
+
+    private void addArtifact( Artifact artifact, Collection<String> repositories )
     {
         String path = getPathForLocalArtifact( artifact );
         File file = new File( getRepository().getBasedir(), path );
-        addRepo( file, repository );
+        addRepo( file, repositories );
     }
 
     private Properties readRepos( File artifactFile )
@@ -120,9 +138,13 @@ public class EnhancedLocalRepositoryManager
         return trackingFileManager.read( trackingFile );
     }
 
-    private void addRepo( File artifactFile, String repository )
+    private void addRepo( File artifactFile, Collection<String> repositories )
     {
-        Map<String, String> updates = Collections.singletonMap( getKey( artifactFile, repository ), "" );
+        Map<String, String> updates = new HashMap<String, String>();
+        for ( String repository : repositories )
+        {
+            updates.put( getKey( artifactFile, repository ), "" );
+        }
 
         File trackingFile = getTrackingFile( artifactFile );
 

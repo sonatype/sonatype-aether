@@ -377,7 +377,7 @@ public class DefaultArtifactResolver
                         item.result.addException( e );
                         continue;
                     }
-                    lrm.addRemoteArtifact( artifact, group.repository, item.request.getRequestContext() );
+                    lrm.addRemoteArtifact( artifact, group.repository, download.getSupportedContexts() );
                     if ( maintainer != null )
                     {
                         maintainer.artifactDownloaded( new DefaultLocalRepositoryEvent( session, artifact ) );
