@@ -93,6 +93,7 @@ public interface RepositorySystemSession
      * repositories being used for resolution.
      * 
      * @return The global checksum policy or {@code null}/empty if not set and the per-repository policies apply.
+     * @see RepositoryPolicy
      */
     String getChecksumPolicy();
 
@@ -101,6 +102,7 @@ public interface RepositorySystemSession
      * repositories being used for resolution.
      * 
      * @return The global update policy or {@code null}/empty if not set and the per-repository policies apply.
+     * @see RepositoryPolicy
      */
     String getUpdatePolicy();
 
