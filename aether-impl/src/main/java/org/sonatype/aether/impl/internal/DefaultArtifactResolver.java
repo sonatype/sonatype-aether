@@ -34,6 +34,7 @@ import org.sonatype.aether.ArtifactResult;
 import org.sonatype.aether.ArtifactTransferException;
 import org.sonatype.aether.LocalArtifactRequest;
 import org.sonatype.aether.LocalArtifactResult;
+import org.sonatype.aether.LocalRepository;
 import org.sonatype.aether.LocalRepositoryManager;
 import org.sonatype.aether.NoRepositoryConnectorException;
 import org.sonatype.aether.RemoteRepository;
@@ -217,7 +218,8 @@ public class DefaultArtifactResolver
 
             LocalArtifactResult local =
                 lrm.find( new LocalArtifactRequest( artifact, repos, request.getRequestContext() ) );
-            if ( local.isAvailable() )
+            if ( local.isAvailable()
+                || ( local.getFile() != null && versionResult.getRepository() instanceof LocalRepository ) )
             {
                 result.setRepository( lrm.getRepository() );
                 try
@@ -229,6 +231,15 @@ public class DefaultArtifactResolver
                 catch ( ArtifactTransferException e )
                 {
                     result.addException( e );
+                }
+                if ( !local.isAvailable() )
+                {
+                    /*
+                     * NOTE: Interop with Maven 2.x: An artifact installed by Maven 2.x will not show up in the
+                     * repository tracking file of the local repository. If however the maven-metadata-local.xml tells
+                     * us the artifact was installed, we sync the repository tracking file.
+                     */
+                    lrm.addLocalArtifact( artifact );
                 }
                 continue;
             }
