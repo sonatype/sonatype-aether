@@ -26,13 +26,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 
+import org.sonatype.aether.Artifact;
 import org.sonatype.aether.ArtifactTransferException;
 import org.sonatype.aether.ChecksumFailureException;
+import org.sonatype.aether.Metadata;
 import org.sonatype.aether.MetadataTransferException;
 import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositoryPolicy;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.TransferCancelledException;
+import org.sonatype.aether.TransferEvent;
+import org.sonatype.aether.TransferEvent.RequestType;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactTransfer;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
@@ -42,11 +46,28 @@ import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.Transfer.State;
 import org.sonatype.aether.util.ChecksumUtils;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
+import org.sonatype.aether.util.listener.DefaultTransferResource;
 
-public class ArtifactWorker
-    extends FileConnectorWorker
+class FileRepositoryWorker
     implements Runnable
 {
+
+    protected enum Direction
+    {
+        UPLOAD( TransferEvent.RequestType.PUT ), DOWNLOAD( TransferEvent.RequestType.GET );
+    
+        TransferEvent.RequestType type;
+    
+        private Direction( TransferEvent.RequestType type )
+        {
+            this.type = type;
+        }
+    
+        public RequestType getType()
+        {
+            return type;
+        }
+    }
 
     private static LinkedHashMap<String, String> checksumAlgos;
 
@@ -58,6 +79,10 @@ public class ArtifactWorker
     private DefaultLayout layout;
 
     private CountDownLatch latch = null;
+
+    private TransferEventCatapult catapult;
+
+    protected Direction direction;
 
     // private RepositorySystemSession session;
 
@@ -75,45 +100,46 @@ public class ArtifactWorker
         checksumAlgos.put( "MD5", ".md5" );
     }
 
-    private ArtifactWorker( ArtifactTransfer transfer, RemoteRepository repository, Direction direction,
+    private FileRepositoryWorker( ArtifactTransfer transfer, RemoteRepository repository, Direction direction,
                             RepositorySystemSession session )
     {
         this( session, repository, direction );
         this.transfer = new TransferWrapper( transfer );
     }
 
-    private ArtifactWorker( MetadataTransfer transfer, RemoteRepository repository, Direction direction,
+    private FileRepositoryWorker( MetadataTransfer transfer, RemoteRepository repository, Direction direction,
                             RepositorySystemSession session )
     {
         this( session, repository, direction );
         this.transfer = new TransferWrapper( transfer );
     }
 
-    public ArtifactWorker( ArtifactUpload transfer, RemoteRepository repository, RepositorySystemSession session )
+    public FileRepositoryWorker( ArtifactUpload transfer, RemoteRepository repository, RepositorySystemSession session )
     {
         this( transfer, repository, Direction.UPLOAD, session );
     }
 
-    public ArtifactWorker( ArtifactDownload transfer, RemoteRepository repository, RepositorySystemSession session )
+    public FileRepositoryWorker( ArtifactDownload transfer, RemoteRepository repository, RepositorySystemSession session )
     {
         this( transfer, repository, Direction.DOWNLOAD, session );
     }
 
-    public ArtifactWorker( MetadataDownload transfer, RemoteRepository repository, RepositorySystemSession session )
+    public FileRepositoryWorker( MetadataDownload transfer, RemoteRepository repository, RepositorySystemSession session )
     {
         this( transfer, repository, Direction.DOWNLOAD, session );
     }
 
-    public ArtifactWorker( MetadataUpload transfer, RemoteRepository repository, RepositorySystemSession session )
+    public FileRepositoryWorker( MetadataUpload transfer, RemoteRepository repository, RepositorySystemSession session )
     {
         this( transfer, repository, Direction.UPLOAD, session );
     }
 
-    public ArtifactWorker( RepositorySystemSession session, RemoteRepository repository, Direction direction )
+    public FileRepositoryWorker( RepositorySystemSession session, RemoteRepository repository, Direction direction )
     {
-        super( session, repository, direction );
+        this.direction = direction;
         this.repository = repository;
         this.layout = new DefaultLayout();
+        this.catapult = new TransferEventCatapult( session.getTransferListener() );
     }
 
     public void run()
@@ -123,7 +149,7 @@ public class ArtifactWorker
         {
             transfer.setState( State.NEW );
             DefaultTransferEvent event = newEvent( transfer, repository );
-            fireInitiated( event );
+            catapult.fireInitiated( event );
 
             File baseDir = new File( new URI( repository.getUrl() ) );
             File localFile = transfer.getFile();
@@ -149,13 +175,12 @@ public class ArtifactWorker
                 case DOWNLOAD:
                     src = repoFile;
                     target = localFile;
-
                     break;
             }
 
             transfer.setState( State.ACTIVE );
             event = newEvent( transfer, repository );
-            fireStarted( event );
+            catapult.fireStarted( event );
             event = null;
 
             target.getParentFile().mkdirs();
@@ -228,7 +253,7 @@ public class ArtifactWorker
                         {
                             event = newEvent( transfer, repository );
                             event.setException( e );
-                            fireCorrupted( event );
+                            catapult.fireCorrupted( event );
                         }
 
                     }
@@ -255,7 +280,7 @@ public class ArtifactWorker
             {
                 if ( transfer.getException() == null )
                 {
-                    fireSucceeded( newEvent( transfer, repository ) );
+                    catapult.fireSucceeded( newEvent( transfer, repository ) );
                 }
                 else
                 {
@@ -269,15 +294,17 @@ public class ArtifactWorker
                             new File( target.getPath() + ext ).delete();
                         }
                     }
-                    fireFailed( newEvent( transfer, repository ) );
+                    catapult.fireFailed( newEvent( transfer, repository ) );
                 }
             }
             catch ( TransferCancelledException e )
             {
                 // done anyway
             }
-            if ( latch != null )
-                latch.countDown();
+            finally {
+	            if ( latch != null )
+	                latch.countDown();
+            }
         }
 
     }
@@ -285,7 +312,7 @@ public class ArtifactWorker
     private long copy( FileChannel in, FileChannel out )
         throws IOException, TransferCancelledException
     {
-        long count = 2000000L;
+        long count = 200000L;
         ByteBuffer buf = ByteBuffer.allocate( (int) count );
 
         buf.clear();
@@ -298,7 +325,7 @@ public class ArtifactWorker
             event.setDataLength( buf.position() );
             event.setDataOffset( 0 );
             event.setTransferredBytes( transferred );
-            fireProgressed( event );
+            catapult.fireProgressed( event );
 
             buf.flip();
             out.write( buf );
@@ -310,6 +337,27 @@ public class ArtifactWorker
             out.write( buf );
         }
         return count;
+    }
+
+    protected DefaultTransferEvent newEvent( TransferWrapper transfer, RemoteRepository repository )
+    {
+        DefaultTransferEvent event = new DefaultTransferEvent();
+        String resourceName = null;
+        switch ( transfer.getType() )
+        {
+            case ARTIFACT:
+                Artifact artifact = transfer.getArtifact();
+                resourceName =
+                    String.format( "%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion() );
+                break;
+            case METADATA:
+                Metadata metadata = transfer.getMetadata();
+                resourceName =
+                    String.format( "%s:%s:%s", metadata.getGroupId(), metadata.getArtifactId(), metadata.getVersion() );
+        }
+        event.setResource( new DefaultTransferResource( repository.getUrl(), resourceName, transfer.getFile() ) );
+        event.setRequestType( direction.getType() );
+        return event;
     }
 
 }

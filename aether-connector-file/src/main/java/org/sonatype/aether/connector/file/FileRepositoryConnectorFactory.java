@@ -20,21 +20,28 @@ import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 
+/**
+ * Factory creating {@link FileRepositoryConnector}s.
+ * 
+ * 
+ * @author Benjamin Hanzelmann
+ */
 @Component( role = RepositoryConnectorFactory.class, hint = "file" )
 public class FileRepositoryConnectorFactory
     implements RepositoryConnectorFactory
 {
 
     private static final int FRCF_PRIORITY = 1;
+
     public static final String CFG_PREFIX = "aether.connector.file";
 
     public RepositoryConnector newInstance( RepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException
     {
 
-        if ( repository.getProtocol().equals( "file" ) )
+        if ( "file".equalsIgnoreCase( repository.getProtocol() ) )
         {
-            FileRepositoryConnector connector = new FileRepositoryConnector(session, repository);
+            FileRepositoryConnector connector = new FileRepositoryConnector( session, repository );
             return connector;
         }
         else

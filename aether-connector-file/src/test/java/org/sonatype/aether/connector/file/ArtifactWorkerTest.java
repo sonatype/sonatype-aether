@@ -108,7 +108,7 @@ public class ArtifactWorkerTest
         w.close();
         
         ArtifactUpload transfer = new ArtifactUpload( artifact, file );
-        ArtifactWorker worker = new ArtifactWorker( transfer, repository, session );
+        FileRepositoryWorker worker = new FileRepositoryWorker( transfer, repository, session );
         worker.run();
         if ( transfer.getException() != null ) {
             throw transfer.getException();
@@ -119,7 +119,7 @@ public class ArtifactWorkerTest
         
         ArtifactDownload down = new ArtifactDownload(artifact, "", file, "");
         down.setChecksumPolicy( RepositoryPolicy.CHECKSUM_POLICY_FAIL );
-        worker = new ArtifactWorker( down, repository, session );
+        worker = new FileRepositoryWorker( down, repository, session );
         worker.run();
         if ( down.getException() != null) {
             throw down.getException();
@@ -145,7 +145,7 @@ public class ArtifactWorkerTest
         
         DefaultMetadata metadata = new DefaultMetadata("test", "artId1", "1", "jar" , Nature.RELEASE_OR_SNAPSHOT);
         MetadataUpload up = new MetadataUpload( metadata, file );
-        ArtifactWorker worker = new ArtifactWorker( up, repository, session );
+        FileRepositoryWorker worker = new FileRepositoryWorker( up, repository, session );
         worker.run();
         if ( up.getException() != null ) {
             throw up.getException();
@@ -157,7 +157,7 @@ public class ArtifactWorkerTest
         MetadataDownload down = new MetadataDownload();
         down.setChecksumPolicy( RepositoryPolicy.CHECKSUM_POLICY_FAIL );
         down.setMetadata( metadata ).setFile( file );
-        worker = new ArtifactWorker( down, repository, session );
+        worker = new FileRepositoryWorker( down, repository, session );
         worker.run();
         
         if ( down.getException() != null) {

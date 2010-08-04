@@ -24,7 +24,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class ParallelRepositoryConnector
+/**
+ * Provides methods to configure the used {@link ThreadPoolExecutor}.
+ * 
+ * @author Benjamin Hanzelmann
+ */
+abstract class ParallelRepositoryConnector
 {
     /*
      * Default Configuration
@@ -39,7 +44,11 @@ public abstract class ParallelRepositoryConnector
 
     private static final long KEEPALIVE = 60L;
     
+    private static final long SHUTDOWN_TIMEOUT = 5L;
+    
     private Map<String, String> config = Collections.emptyMap();
+
+    private long shutdownTimeout;
     
 	/**
 	 * The executor to use.
@@ -68,18 +77,40 @@ public abstract class ParallelRepositoryConnector
             String maximumPoolSize = config.get( CFG_PREFIX + ".threads.max" );
             String initialPoolSize = config.get( CFG_PREFIX + ".threads.initial" );
             String keepAlive = config.get( CFG_PREFIX + ".threads.keepalive" );
+	        String timeoutCfg = config.get( FileRepositoryConnectorFactory.CFG_PREFIX + ".shutdownTime" );
 
             tgName = tgName != null ? tgName : TG_NAME;
             tName = tName != null ? tName : T_NAME;
             int mPS = maximumPoolSize != null ? Integer.valueOf( maximumPoolSize ) : MAX_POOL_SIZE;
             int iPS = initialPoolSize != null ? Integer.valueOf( initialPoolSize ) : INITIAL_POOL_SIZE;
             long kAlive = keepAlive != null ? Long.valueOf( keepAlive ) : KEEPALIVE;
+	        shutdownTimeout = timeoutCfg != null ? Long.valueOf( timeoutCfg ) : SHUTDOWN_TIMEOUT;
 
             ThreadFactory threadFactory = new RepositoryConnectorThreadFactory( tgName, tName );
             BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>();
             TimeUnit timeUnit = TimeUnit.SECONDS;
 
             executor = new ThreadPoolExecutor( iPS, mPS, kAlive, timeUnit, workQueue, threadFactory );
+        }
+    }
+
+    public void close()
+    {
+        executor.shutdown();
+        try
+        {
+            boolean terminated = executor.awaitTermination( shutdownTimeout, TimeUnit.SECONDS );
+            
+            if ( terminated ) {
+                executor.shutdownNow();
+            }
+        }
+        catch ( InterruptedException e )
+        {
+            executor.shutdownNow();
+        }
+        finally {
+            executor = null;
         }
     }
 

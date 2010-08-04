@@ -15,6 +15,7 @@ package org.sonatype.aether.connector.file;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
 
 import org.sonatype.aether.NoRepositoryConnectorException;
 import org.sonatype.aether.RemoteRepository;
@@ -30,16 +31,15 @@ public class FileRepositoryConnector
     implements RepositoryConnector
 {
 
-
     private RemoteRepository repository;
 
-    private RepositorySystemSession session;
+    RepositorySystemSession session;
 
     public FileRepositoryConnector( RepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException
     {
         super( session.getConfigProperties() );
-        if ( !"default".equals( repository.getContentType() ) )
+        if ( !"default".equalsIgnoreCase( repository.getContentType() ) )
         {
             throw new NoRepositoryConnectorException( repository );
         }
@@ -53,17 +53,30 @@ public class FileRepositoryConnector
     {
         artifactDownloads = notNull( artifactDownloads );
         metadataDownloads = notNull( metadataDownloads );
+        
+        CountDownLatch latch = new CountDownLatch( artifactDownloads.size() + metadataDownloads.size() );
 
         for ( ArtifactDownload artifactDownload : artifactDownloads )
         {
-            ArtifactWorker worker = new ArtifactWorker( artifactDownload, repository, session);
+            FileRepositoryWorker worker = new FileRepositoryWorker( artifactDownload, repository, session);
+            worker.setLatch( latch );
             executor.execute( worker );
         }
         
         for ( MetadataDownload metadataDownload : metadataDownloads )
         {
-            ArtifactWorker worker = new ArtifactWorker (metadataDownload, repository, session);
+            FileRepositoryWorker worker = new FileRepositoryWorker (metadataDownload, repository, session);
             executor.execute( worker );
+        }
+        
+        try
+        {
+            latch.await();
+        }
+        catch ( InterruptedException e )
+        {
+            executor.shutdownNow();
+            initExecutor( true );
         }
     }
 
@@ -75,22 +88,31 @@ public class FileRepositoryConnector
     public void put( Collection<? extends ArtifactUpload> artifactUploads,
                      Collection<? extends MetadataUpload> metadataUploads )
     {
+        artifactUploads = notNull( artifactUploads );
+        metadataUploads = notNull( metadataUploads );
+        
+        CountDownLatch latch = new CountDownLatch( artifactUploads.size() + metadataUploads.size() );
+        
         for ( ArtifactUpload artifactUpload : artifactUploads )
         {
-            ArtifactWorker worker = new ArtifactWorker( artifactUpload, repository, session );
+            FileRepositoryWorker worker = new FileRepositoryWorker( artifactUpload, repository, session );
             executor.execute( worker );
         }
         for ( MetadataUpload metadataUpload : metadataUploads)
         {
-            MetadataWorker worker = new MetadataWorker (metadataUpload, repository, session);
+            FileRepositoryWorker worker = new FileRepositoryWorker (metadataUpload, repository, session);
             executor.execute( worker );
         }
-
-    }
-
-    public void close()
-    {
-        // TODO Auto-generated method stub
+        
+        try
+        {
+            latch.await();
+        }
+        catch ( InterruptedException e )
+        {
+            executor.shutdownNow();
+            initExecutor( true );
+        }
 
     }
 

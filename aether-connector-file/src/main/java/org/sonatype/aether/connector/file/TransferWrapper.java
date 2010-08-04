@@ -26,7 +26,13 @@ import org.sonatype.aether.spi.connector.MetadataTransfer;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
 
-public class TransferWrapper
+/**
+ * Wrapper object for {@link ArtifactTransfer} and {@link MetadataTransfer} objects.
+ * 
+ * @author Benjamin Hanzelmann
+ *
+ */
+class TransferWrapper
 {
     
     public enum Type {
