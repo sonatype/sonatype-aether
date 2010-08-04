@@ -64,19 +64,14 @@ public class EnhancedLocalRepositoryManager
         File file = new File( getRepository().getBasedir(), path );
 
         LocalArtifactResult result = new LocalArtifactResult( request );
+
         if ( file.isFile() )
         {
             result.setFile( file );
+
             Properties props = readRepos( file );
-            if ( !isTracked( props, file ) )
-            {
-                /*
-                 * NOTE: The artifact is present but not tracked at all, for inter-op with Maven 2.x, assume the
-                 * artifact was locally built.
-                 */
-                result.setAvailable( true );
-            }
-            else if ( props.getProperty( getKey( file, LOCAL_REPO_ID ) ) != null )
+
+            if ( props.get( getKey( file, LOCAL_REPO_ID ) ) != null )
             {
                 result.setAvailable( true );
             }
@@ -85,11 +80,19 @@ public class EnhancedLocalRepositoryManager
                 String context = request.getContext();
                 for ( RemoteRepository repository : request.getRepositories() )
                 {
-                    if ( props.getProperty( getKey( file, getRepositoryKey( repository, context ) ) ) != null )
+                    if ( props.get( getKey( file, getRepositoryKey( repository, context ) ) ) != null )
                     {
                         result.setAvailable( true );
                         break;
                     }
+                }
+                if ( !result.isAvailable() && !isTracked( props, file ) )
+                {
+                    /*
+                     * NOTE: The artifact is present but not tracked at all, for inter-op with Maven 2.x, assume the
+                     * artifact was locally built.
+                     */
+                    result.setAvailable( true );
                 }
             }
         }
@@ -135,7 +138,8 @@ public class EnhancedLocalRepositoryManager
     {
         File trackingFile = getTrackingFile( artifactFile );
 
-        return trackingFileManager.read( trackingFile );
+        Properties props = trackingFileManager.read( trackingFile );
+        return ( props != null ) ? props : new Properties();
     }
 
     private void addRepo( File artifactFile, Collection<String> repositories )
