@@ -130,19 +130,26 @@ public class ChecksumUtils
         }
 
         FileInputStream fis = new FileInputStream( dataFile );
-        FileChannel in = fis.getChannel();
-        
-        ByteBuffer bytebuffer = ByteBuffer.allocate( 16 * 1024 );
-        while ( in.read( bytebuffer ) >= 0 || bytebuffer.position() != 0 )
+        try
         {
-            bytebuffer.flip();
-            for ( MessageDigest digest : digests.values() )
+            FileChannel in = fis.getChannel();
+
+            ByteBuffer bytebuffer = ByteBuffer.allocate( 16 * 1024 );
+            while ( in.read( bytebuffer ) >= 0 || bytebuffer.position() != 0 )
             {
-                digest.update( bytebuffer );
+                bytebuffer.flip();
+                for ( MessageDigest digest : digests.values() )
+                {
+                    digest.update( bytebuffer );
+                }
+                bytebuffer.compact();
             }
-            bytebuffer.compact();
         }
-        
+        finally
+        {
+            fis.close();
+        }
+
         for ( Map.Entry<String, MessageDigest> entry : digests.entrySet() )
         {
             byte[] bytes = entry.getValue().digest();
