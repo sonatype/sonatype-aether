@@ -29,6 +29,7 @@ import org.codehaus.plexus.util.IOUtil;
 import org.sonatype.aether.ArtifactRepository;
 import org.sonatype.aether.DefaultMetadata;
 import org.sonatype.aether.InvalidVersionException;
+import org.sonatype.aether.InvalidVersionRangeException;
 import org.sonatype.aether.LocalRepositoryManager;
 import org.sonatype.aether.Metadata;
 import org.sonatype.aether.MetadataRequest;
@@ -42,9 +43,10 @@ import org.sonatype.aether.VersionRange;
 import org.sonatype.aether.VersionRangeRequest;
 import org.sonatype.aether.VersionRangeResolutionException;
 import org.sonatype.aether.VersionRangeResult;
+import org.sonatype.aether.VersionScheme;
 import org.sonatype.aether.WorkspaceReader;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
-import org.sonatype.aether.util.version.MavenVersionRange;
+import org.sonatype.aether.util.version.MavenVersionScheme;
 import org.sonatype.aether.impl.MetadataResolver;
 import org.sonatype.aether.impl.VersionRangeResolver;
 import org.sonatype.aether.impl.metadata.Versioning;
@@ -109,6 +111,11 @@ public class DefaultVersionRangeResolver
             result.addException( e );
             throw new VersionRangeResolutionException( result );
         }
+        catch ( InvalidVersionRangeException e )
+        {
+            result.addException( e );
+            throw new VersionRangeResolutionException( result );
+        }        
 
         result.setVersionConstraint( versionConstraint );
 
@@ -264,7 +271,7 @@ public class DefaultVersionRangeResolver
     }
 
     private VersionConstraint parseConstraint( String version, VersionScheme scheme )
-        throws InvalidVersionException
+        throws InvalidVersionException, InvalidVersionRangeException
     {
         VersionConstraint constraint = new VersionConstraint();
 
@@ -286,7 +293,7 @@ public class DefaultVersionRangeResolver
                 throw new InvalidVersionException( version, "Unbounded version range " + version );
             }
 
-            VersionRange range = parseRange( process.substring( 0, index + 1 ), scheme );
+            VersionRange range = scheme.parseVersionRange( process.substring( 0, index + 1 ) );
             constraint.addRange( range );
 
             process = process.substring( index + 1 ).trim();
@@ -309,88 +316,6 @@ public class DefaultVersionRangeResolver
         }
 
         return constraint;
-    }
-
-    private VersionRange parseRange( String range, VersionScheme scheme )
-        throws InvalidVersionException
-    {
-        String process = range;
-
-        boolean lowerBoundInclusive;
-        if ( range.startsWith( "[" ) )
-        {
-            lowerBoundInclusive = true;
-        }
-        else if ( range.startsWith( "(" ) )
-        {
-            lowerBoundInclusive = false;
-        }
-        else
-        {
-            throw new InvalidVersionException( range, "Invalid version range " + range
-                + ", a range must start with either [ or (" );
-        }
-
-        boolean upperBoundInclusive;
-        if ( range.endsWith( "]" ) )
-        {
-            upperBoundInclusive = true;
-        }
-        else if ( range.endsWith( ")" ) )
-        {
-            upperBoundInclusive = false;
-        }
-        else
-        {
-            throw new InvalidVersionException( range, "Invalid version range " + range
-                + ", a range must end with either [ or (" );
-        }
-
-        process = process.substring( 1, process.length() - 1 );
-
-        VersionRange versionRange;
-
-        int index = process.indexOf( "," );
-
-        if ( index < 0 )
-        {
-            if ( !lowerBoundInclusive || !upperBoundInclusive )
-            {
-                throw new InvalidVersionException( range, "Invalid version range " + range
-                    + ", single version must be surrounded by []" );
-            }
-
-            Version version = scheme.parseVersion( process.trim() );
-
-            versionRange = new MavenVersionRange( version, lowerBoundInclusive, version, upperBoundInclusive );
-        }
-        else
-        {
-            String lowerBound = process.substring( 0, index ).trim();
-            String upperBound = process.substring( index + 1 ).trim();
-
-            Version lowerVersion = null;
-            if ( lowerBound.length() > 0 )
-            {
-                lowerVersion = scheme.parseVersion( lowerBound );
-            }
-
-            Version upperVersion = null;
-            if ( upperBound.length() > 0 )
-            {
-                upperVersion = scheme.parseVersion( upperBound );
-            }
-
-            if ( upperVersion != null && lowerVersion != null && upperVersion.compareTo( lowerVersion ) < 0 )
-            {
-                throw new InvalidVersionException( range, "Invalid version range " + range
-                    + ", lower bound must not be greater than upper bound" );
-            }
-
-            versionRange = new MavenVersionRange( lowerVersion, lowerBoundInclusive, upperVersion, upperBoundInclusive );
-        }
-
-        return versionRange;
     }
 
 }

@@ -1,4 +1,4 @@
-package org.sonatype.aether.impl.internal;
+package org.sonatype.aether.util.version;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -14,12 +14,13 @@ package org.sonatype.aether.impl.internal;
  */
 
 import org.sonatype.aether.InvalidVersionException;
-import org.sonatype.aether.util.version.MavenVersion;
+import org.sonatype.aether.InvalidVersionRangeException;
+import org.sonatype.aether.VersionScheme;
 
 /**
  * @author Benjamin Bentmann
  */
-class MavenVersionScheme
+public class MavenVersionScheme
     implements VersionScheme
 {
 
@@ -28,5 +29,11 @@ class MavenVersionScheme
     {
         return new MavenVersion( version );
     }
+    
+    public MavenVersionRange parseVersionRange( String range )
+	    throws InvalidVersionRangeException
+	{
+	    return new MavenVersionRange( range );
+	}    
 
 }

@@ -13,11 +13,13 @@ package org.sonatype.aether.util.version;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import org.sonatype.aether.InvalidVersionRangeException;
 import org.sonatype.aether.Version;
 import org.sonatype.aether.VersionRange;
 
 /**
  * @author Benjamin Bentmann
+ * @Author Alin Dreghiciu
  */
 public final class MavenVersionRange
     implements VersionRange
@@ -30,6 +32,69 @@ public final class MavenVersionRange
     private final Version upperBound;
 
     private final boolean upperBoundInclusive;
+    
+    public MavenVersionRange( String range )
+    	throws InvalidVersionRangeException
+    {
+        String process = range;
+
+        if ( range.startsWith( "[" ) )
+        {
+            lowerBoundInclusive = true;
+        }
+        else if ( range.startsWith( "(" ) )
+        {
+            lowerBoundInclusive = false;
+        }
+        else
+        {
+            throw new InvalidVersionRangeException( range, "Invalid version range " + range
+                + ", a range must start with either [ or (" );
+        }
+
+        if ( range.endsWith( "]" ) )
+        {
+            upperBoundInclusive = true;
+        }
+        else if ( range.endsWith( ")" ) )
+        {
+            upperBoundInclusive = false;
+        }
+        else
+        {
+            throw new InvalidVersionRangeException( range, "Invalid version range " + range
+                + ", a range must end with either [ or (" );
+        }
+
+        process = process.substring( 1, process.length() - 1 );
+
+        int index = process.indexOf( "," );
+        
+        if ( index < 0 )
+        {
+            if ( !lowerBoundInclusive || !upperBoundInclusive )
+            {
+                throw new InvalidVersionRangeException( range, "Invalid version range " + range
+                    + ", single version must be surrounded by []" );
+            }
+
+            lowerBound = upperBound = new MavenVersion( process.trim() );
+        }
+        else
+        {
+            String parsedLowerBound = process.substring( 0, index ).trim();
+            String parsedUpperBound = process.substring( index + 1 ).trim();
+
+            lowerBound =  parsedLowerBound.length() > 0 ? new MavenVersion( parsedLowerBound ) : null;
+            upperBound = parsedUpperBound.length() > 0 ? new MavenVersion( parsedUpperBound ) : null;
+
+            if ( upperBound != null && lowerBound != null && upperBound.compareTo( lowerBound ) < 0 )
+            {
+                throw new InvalidVersionRangeException( range, "Invalid version range " + range
+                    + ", lower bound must not be greater than upper bound" );
+            }
+        }    	
+    }    
 
     public MavenVersionRange( Version lowerBound, boolean lowerBoundInclusive, Version upperBound,
                               boolean upperBoundInclusive )

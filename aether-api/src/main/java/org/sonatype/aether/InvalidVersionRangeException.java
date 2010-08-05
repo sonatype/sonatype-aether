@@ -1,4 +1,4 @@
-package org.sonatype.aether.impl.internal;
+package org.sonatype.aether;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -13,16 +13,33 @@ package org.sonatype.aether.impl.internal;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.InvalidVersionException;
-import org.sonatype.aether.Version;
 
 /**
- * @author Benjamin Bentmann
+ * Thrown in case that a version range could not be parsed.
+ * 
+ * @author Alin Dreghiciu
  */
-interface VersionScheme
+public class InvalidVersionRangeException
+    extends RepositoryException
 {
 
-    Version parseVersion( String version )
-        throws InvalidVersionException;
+    private final String range;
+
+    public InvalidVersionRangeException( String range, String message )
+    {
+        super( message );
+        this.range = range;
+    }
+
+    public InvalidVersionRangeException( String range, Throwable cause )
+    {
+        super( "Could not parse range " + range + getMessage( ": ", cause ), cause );
+        this.range = range;
+    }
+
+    public String getRange()
+    {
+        return range;
+    }
 
 }
