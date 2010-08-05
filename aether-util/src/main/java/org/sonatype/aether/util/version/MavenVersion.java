@@ -342,6 +342,11 @@ public final class MavenVersion
         }
     }
 
+    /**
+     * Creates a Maven version from the specified string.
+     * 
+     * @param version The version string to parse, must not be {@code null}.
+     */
     public MavenVersion( String version )
     {
         this.value = version;

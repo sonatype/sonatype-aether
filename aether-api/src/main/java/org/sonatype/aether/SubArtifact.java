@@ -31,6 +31,8 @@ public final class SubArtifact
 
     private final String extension;
 
+    private final File file;
+
     /**
      * Creates a new sub artifact. The classifier and extension specified for this artifact may use the asterisk
      * character "*" to refer to the corresponding property of the main artifact. For instance, the classifier
@@ -43,6 +45,11 @@ public final class SubArtifact
      */
     public SubArtifact( Artifact mainArtifact, String classifier, String extension )
     {
+        this( mainArtifact, classifier, extension, null );
+    }
+
+    private SubArtifact( Artifact mainArtifact, String classifier, String extension, File file )
+    {
         if ( mainArtifact == null )
         {
             throw new IllegalArgumentException( "no artifact specified" );
@@ -50,6 +57,7 @@ public final class SubArtifact
         this.mainArtifact = mainArtifact;
         this.classifier = classifier;
         this.extension = extension;
+        this.file = file;
     }
 
     public String getGroupId()
@@ -95,13 +103,16 @@ public final class SubArtifact
 
     public File getFile()
     {
-        return mainArtifact.getFile();
+        return file;
     }
 
     public Artifact setFile( File file )
     {
-        return new DefaultArtifact( getGroupId(), getArtifactId(), getClassifier(), getExtension(), getVersion(), file,
-                                    getProperties() );
+        if ( ( this.file == null ) ? file == null : this.file.equals( file ) )
+        {
+            return this;
+        }
+        return new SubArtifact( mainArtifact, classifier, extension, file );
     }
 
     public String getProperty( String key, String defaultValue )
