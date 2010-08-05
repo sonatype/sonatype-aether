@@ -24,7 +24,7 @@ public interface VersionScheme
     Version parseVersion( String version )
         throws InvalidVersionException;
     
-    public VersionRange parseVersionRange( String range )
+    VersionRange parseVersionRange( String range )
     	throws InvalidVersionRangeException;
 
 }
