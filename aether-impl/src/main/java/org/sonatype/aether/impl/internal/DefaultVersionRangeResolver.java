@@ -290,7 +290,7 @@ public class DefaultVersionRangeResolver
 
             if ( index < 0 )
             {
-                throw new InvalidVersionException( version, "Unbounded version range " + version );
+                throw new InvalidVersionRangeException( version, "Unbounded version range " + version );
             }
 
             VersionRange range = scheme.parseVersionRange( process.substring( 0, index + 1 ) );
@@ -306,7 +306,7 @@ public class DefaultVersionRangeResolver
 
         if ( process.length() > 0 && !constraint.getRanges().isEmpty() )
         {
-            throw new InvalidVersionException( version, "Invalid version range " + version
+            throw new InvalidVersionRangeException( version, "Invalid version range " + version
                 + ", expected [ or ( but got " + process );
         }
 

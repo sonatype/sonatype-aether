@@ -13,18 +13,33 @@ package org.sonatype.aether;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-
 /**
+ * A version scheme that handles interpretation of version strings to facilitate their comparison.
+ * 
  * @author Benjamin Bentmann
  * @author Alin Dreghiciu
  */
 public interface VersionScheme
 {
 
+    /**
+     * Parses the specified version string.
+     * 
+     * @param version The version string to parse, must not be {@code null}.
+     * @return The parsed version, never {@code null}.
+     * @throws InvalidVersionException If the string violates the syntax rules of this scheme.
+     */
     Version parseVersion( String version )
         throws InvalidVersionException;
-    
+
+    /**
+     * Parses the specified version range specification.
+     * 
+     * @param range The range specification to parse, must not be {@code null}.
+     * @return The parsed version range, never {@code null}.
+     * @throws InvalidVersionRangeException If the range specification violates the syntax rules of this scheme.
+     */
     VersionRange parseVersionRange( String range )
-    	throws InvalidVersionRangeException;
+        throws InvalidVersionRangeException;
 
 }
