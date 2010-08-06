@@ -76,7 +76,7 @@ public interface DependencyNode
 
     /**
      * Gets the known aliases for this dependency's artifact. An alias can be used to mark a patched rebuild of some
-     * other artifact as such, thereby allowing conflict resolution to consider the patched and the orginal artifact as
+     * other artifact as such, thereby allowing conflict resolution to consider the patched and the original artifact as
      * a conflict.
      * 
      * @return The known aliases, never {@code null}.
