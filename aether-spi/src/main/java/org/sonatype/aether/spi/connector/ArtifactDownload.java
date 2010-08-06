@@ -14,6 +14,7 @@ package org.sonatype.aether.spi.connector;
  */
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,7 +23,9 @@ import org.sonatype.aether.ArtifactTransferException;
 import org.sonatype.aether.RemoteRepository;
 
 /**
- * A download of an artifact from a remote repository.
+ * A download of an artifact from a remote repository. A repository connector processing this download has to use
+ * {@link #setState(State)}, {@link #setException(ArtifactTransferException)} and
+ * {@link #setSupportedContexts(Collection)} (if applicable) to report the results of the transfer.
  * 
  * @author Benjamin Bentmann
  */
@@ -35,6 +38,8 @@ public class ArtifactDownload
     private String checksumPolicy = "";
 
     private String context = "";
+
+    private Collection<String> contexts = Collections.emptySet();
 
     private List<RemoteRepository> repositories = Collections.emptyList();
 
@@ -143,6 +148,44 @@ public class ArtifactDownload
     public ArtifactDownload setRequestContext( String context )
     {
         this.context = ( context != null ) ? context : "";
+        if ( State.NEW.equals( getState() ) )
+        {
+            contexts = Collections.singleton( context );
+        }
+        return this;
+    }
+
+    /**
+     * Gets the set of request contexts in which the artifact is generally available. Repository managers can indicate
+     * that an artifact is available in more than the requested context to avoid future remote trips for the same
+     * artifact in a different context.
+     * 
+     * @return The set of requests context in which the artifact is available, never {@code null}.
+     */
+    public Collection<String> getSupportedContexts()
+    {
+        return contexts;
+    }
+
+    /**
+     * Sets the set of request contexts in which the artifact is generally available. Repository managers can indicate
+     * that an artifact is available in more than the requested context to avoid future remote trips for the same
+     * artifact in a different context. The set of supported contexts defaults to the original request context if not
+     * overridden by the repository connector.
+     * 
+     * @param contexts The set of requests context in which the artifact is available, may be {@code null}.
+     * @return This transfer for chaining, never {@code null}.
+     */
+    public ArtifactDownload setSupportedContexts( Collection<String> contexts )
+    {
+        if ( contexts == null || contexts.isEmpty() )
+        {
+            this.contexts = Collections.singleton( context );
+        }
+        else
+        {
+            this.contexts = contexts;
+        }
         return this;
     }
 

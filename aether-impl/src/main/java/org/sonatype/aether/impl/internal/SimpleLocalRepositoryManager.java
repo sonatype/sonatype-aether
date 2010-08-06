@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -205,7 +206,7 @@ public class SimpleLocalRepositoryManager
         // noop
     }
 
-    public void addRemoteArtifact( Artifact artifact, RemoteRepository repository, String context )
+    public void addRemoteArtifact( Artifact artifact, RemoteRepository repository, Collection<String> contexts )
     {
         // noop
     }

@@ -14,7 +14,10 @@ package org.sonatype.aether.impl.internal;
  */
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 
@@ -61,19 +64,14 @@ public class EnhancedLocalRepositoryManager
         File file = new File( getRepository().getBasedir(), path );
 
         LocalArtifactResult result = new LocalArtifactResult( request );
+
         if ( file.isFile() )
         {
             result.setFile( file );
+
             Properties props = readRepos( file );
-            if ( props == null )
-            {
-                /*
-                 * NOTE: tracking file not present at all, for inter-op with Maven 2.x, assume the artifact was locally
-                 * built.
-                 */
-                result.setAvailable( true );
-            }
-            else if ( props.getProperty( getKey( file, LOCAL_REPO_ID ) ) != null )
+
+            if ( props.get( getKey( file, LOCAL_REPO_ID ) ) != null )
             {
                 result.setAvailable( true );
             }
@@ -82,11 +80,19 @@ public class EnhancedLocalRepositoryManager
                 String context = request.getContext();
                 for ( RemoteRepository repository : request.getRepositories() )
                 {
-                    if ( props.getProperty( getKey( file, getRepositoryKey( repository, context ) ) ) != null )
+                    if ( props.get( getKey( file, getRepositoryKey( repository, context ) ) ) != null )
                     {
                         result.setAvailable( true );
                         break;
                     }
+                }
+                if ( !result.isAvailable() && !isTracked( props, file ) )
+                {
+                    /*
+                     * NOTE: The artifact is present but not tracked at all, for inter-op with Maven 2.x, assume the
+                     * artifact was locally built.
+                     */
+                    result.setAvailable( true );
                 }
             }
         }
@@ -97,32 +103,52 @@ public class EnhancedLocalRepositoryManager
     @Override
     public void addLocalArtifact( Artifact artifact )
     {
-        addArtifact( artifact, LOCAL_REPO_ID );
+        addArtifact( artifact, Collections.singleton( LOCAL_REPO_ID ) );
     }
 
     @Override
-    public void addRemoteArtifact( Artifact artifact, RemoteRepository repository, String context )
+    public void addRemoteArtifact( Artifact artifact, RemoteRepository repository, Collection<String> contexts )
     {
-        addArtifact( artifact, getRepositoryKey( repository, context ) );
+        addArtifact( artifact, getRepositoryKeys( repository, contexts ) );
     }
 
-    private void addArtifact( Artifact artifact, String repository )
+    private Collection<String> getRepositoryKeys( RemoteRepository repository, Collection<String> contexts )
+    {
+        Collection<String> keys = new HashSet<String>();
+
+        if ( contexts != null )
+        {
+            for ( String context : contexts )
+            {
+                keys.add( getRepositoryKey( repository, context ) );
+            }
+        }
+
+        return keys;
+    }
+
+    private void addArtifact( Artifact artifact, Collection<String> repositories )
     {
         String path = getPathForLocalArtifact( artifact );
         File file = new File( getRepository().getBasedir(), path );
-        addRepo( file, repository );
+        addRepo( file, repositories );
     }
 
     private Properties readRepos( File artifactFile )
     {
         File trackingFile = getTrackingFile( artifactFile );
 
-        return trackingFileManager.read( trackingFile );
+        Properties props = trackingFileManager.read( trackingFile );
+        return ( props != null ) ? props : new Properties();
     }
 
-    private void addRepo( File artifactFile, String repository )
+    private void addRepo( File artifactFile, Collection<String> repositories )
     {
-        Map<String, String> updates = Collections.singletonMap( getKey( artifactFile, repository ), "" );
+        Map<String, String> updates = new HashMap<String, String>();
+        for ( String repository : repositories )
+        {
+            updates.put( getKey( artifactFile, repository ), "" );
+        }
 
         File trackingFile = getTrackingFile( artifactFile );
 
@@ -137,6 +163,22 @@ public class EnhancedLocalRepositoryManager
     private String getKey( File file, String repository )
     {
         return file.getName() + '>' + repository;
+    }
+
+    private boolean isTracked( Properties props, File file )
+    {
+        if ( props != null )
+        {
+            String keyPrefix = file.getName() + '>';
+            for ( Object key : props.keySet() )
+            {
+                if ( key.toString().startsWith( keyPrefix ) )
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }

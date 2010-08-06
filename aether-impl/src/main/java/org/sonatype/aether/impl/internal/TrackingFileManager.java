@@ -23,7 +23,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 
@@ -131,8 +130,7 @@ class TrackingFileManager
 
                 logger.debug( "Writing resolution tracking file " + file );
                 props.store( stream,
-                             "NOTE: This is an internal implementation file, its format can be changed without prior notice."
-                                 + " Last modified on: " + new Date() );
+                             "NOTE: This is an internal implementation file, its format can be changed without prior notice." );
 
                 byte[] data = stream.toByteArray();
                 ByteBuffer buffer = ByteBuffer.allocate( data.length );

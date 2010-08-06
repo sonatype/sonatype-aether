@@ -1,4 +1,4 @@
-package org.sonatype.aether.impl.internal;
+package org.sonatype.aether;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -13,20 +13,31 @@ package org.sonatype.aether.impl.internal;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.InvalidVersionException;
-import org.sonatype.aether.util.version.MavenVersion;
+import static org.junit.Assert.*;
+
+import java.io.File;
+
+import org.junit.Test;
 
 /**
  * @author Benjamin Bentmann
  */
-class MavenVersionScheme
-    implements VersionScheme
+public class SubArtifactTest
 {
 
-    public MavenVersion parseVersion( String version )
-        throws InvalidVersionException
+    @Test
+    public void testMainArtifactFileNotRetained()
     {
-        return new MavenVersion( version );
+        Artifact a = new DefaultArtifact( "gid:aid:ver" ).setFile( new File( "" ) );
+        assertNotNull( a.getFile() );
+        a = new SubArtifact( a, "", "pom" );
+        assertNull( a.getFile() );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void testMainArtifactMissing()
+    {
+        new SubArtifact( null, "", "pom" );
     }
 
 }

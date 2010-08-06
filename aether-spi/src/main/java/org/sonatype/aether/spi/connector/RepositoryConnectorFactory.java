@@ -19,8 +19,10 @@ import org.sonatype.aether.RepositorySystemSession;
 
 /**
  * A factory to create repository connectors. A repository connector is responsible for uploads/downloads to/from a
- * remote repository. The registered factories will be tried in descending order of their priority when the repository
- * system needs a repository connector.
+ * certain kind of remote repository. When the repository system needs a repository connector for a given remote
+ * repository, it iterates the registered factories in descending order of their priority and calls
+ * {@link #newInstance(RepositorySystemSession, RemoteRepository)} on them. The first connector returned by a factory
+ * will then be used for the transfer.
  * 
  * @author Benjamin Bentmann
  */
@@ -28,9 +30,13 @@ public interface RepositoryConnectorFactory
 {
 
     /**
-     * Tries to create a repository connector for the specified remote repository.
+     * Tries to create a repository connector for the specified remote repository. Typically, a factory will inspect
+     * {@link RemoteRepository#getProtocol()} and {@link RemoteRepository#getContentType()} to determine whether it can
+     * handle a repository.
      * 
-     * @param session The repository system session, must not be {@code null}.
+     * @param session The repository system session from which to configure the connector, must not be {@code null}. In
+     *            particular, a connector must notify any {@link RepositorySystemSession#getTransferListener()} set for
+     *            the session and should obey the timeouts configured for the session.
      * @param repository The remote repository to create a connector for, must not be {@code null}.
      * @return The connector for the given repository, never {@code null}.
      * @throws NoRepositoryConnectorException If the factory cannot create a connector for the specified remote

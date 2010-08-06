@@ -20,7 +20,13 @@ import java.util.Collection;
  * from/to a remote repository. Besides performing the actual transfer and recording any exception encountered in the
  * provided upload/download objects, a connector must also use
  * {@link Transfer#setState(org.sonatype.aether.spi.connector.Transfer.State)} to update the state of a transfer during
- * its processing.
+ * its processing. Furthermore, the connector must notify any {@link org.sonatype.aether.TransferListener
+ * TransferListener} configured on its associated {@link org.sonatype.aether.RepositorySystemSession
+ * RepositorySystemSession}. If applicable, the session settings
+ * {@link org.sonatype.aether.RepositorySystemSession#getUserAgent() getUserAgent()},
+ * {@link org.sonatype.aether.RepositorySystemSession#getConnectTimeout() getConnectTimeout()} and
+ * {@link org.sonatype.aether.RepositorySystemSession#getRequestTimeout() getRequestTimeout()} should be respected as
+ * well.
  * 
  * @author Benjamin Bentmann
  */
@@ -28,7 +34,7 @@ public interface RepositoryConnector
 {
 
     /**
-     * Performs the specified downloads. Any error encountered during a transfer can be queried via
+     * Performs the specified downloads. Any error encountered during a transfer can later be queried via
      * {@link ArtifactDownload#getException()} and {@link MetadataDownload#getException()}, respectively.
      * 
      * @param artifactDownloads The artifact downloads to perform, may be {@code null} or empty.
@@ -38,7 +44,7 @@ public interface RepositoryConnector
               Collection<? extends MetadataDownload> metadataDownloads );
 
     /**
-     * Performs the specified uploads. Any error encountered during a transfer can be queried via
+     * Performs the specified uploads. Any error encountered during a transfer can later be queried via
      * {@link ArtifactDownload#getException()} and {@link MetadataDownload#getException()}, respectively.
      * 
      * @param artifactUploads The artifact uploads to perform, may be {@code null} or empty.

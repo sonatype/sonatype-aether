@@ -19,7 +19,8 @@ import org.sonatype.aether.Artifact;
 import org.sonatype.aether.ArtifactTransferException;
 
 /**
- * An upload of an artifact to a remote repository.
+ * An upload of an artifact to a remote repository. A repository connector processing this upload has to use
+ * {@link #setState(State)} and {@link #setException(ArtifactTransferException)} to report the results of the transfer.
  * 
  * @author Benjamin Bentmann
  */

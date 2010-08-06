@@ -1,5 +1,7 @@
 package org.sonatype.aether;
 
+import java.util.Collection;
+
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
  *
@@ -43,6 +45,7 @@ public interface LocalRepositoryManager
      * 
      * @param artifact The artifact for which to determine the path, must not be {@code null}.
      * @param repository The source repository of the artifact, must not be {@code null}.
+     * @param context The resolution context in which the artifact is being requested, may be {@code null}.
      * @return The path, relative to the local repository's base directory.
      */
     String getPathForRemoteArtifact( Artifact artifact, RemoteRepository repository, String context );
@@ -62,6 +65,7 @@ public interface LocalRepositoryManager
      * 
      * @param metadata The metadata for which to determine the path, must not be {@code null}.
      * @param repository The source repository of the metadata, must not be {@code null}.
+     * @param context The resolution context in which the metadata is being requested, may be {@code null}.
      * @return The path, relative to the local repository's base directory.
      */
     String getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository, String context );
@@ -91,8 +95,8 @@ public interface LocalRepositoryManager
      * 
      * @param artifact The artifact to register, must not be {@code null}.
      * @param repository The remote repository from which the artifact was resolved, must not be {@code null}.
-     * @param context The resolution context in which the artifact was resolved, may be {@code null}.
+     * @param contexts The resolution contexts in which the artifact is available, may be {@code null}.
      */
-    void addRemoteArtifact( Artifact artifact, RemoteRepository repository, String context );
+    void addRemoteArtifact( Artifact artifact, RemoteRepository repository, Collection<String> contexts );
 
 }
