@@ -223,7 +223,9 @@ public class PatternInclusionsDependencyFilter
 
         final PatternInclusionsDependencyFilter that = (PatternInclusionsDependencyFilter) obj;
 
-        return this.patterns.equals( that.patterns );
+        return this.patterns.equals( that.patterns )
+            && ( this.versionScheme == null ? that.versionScheme == null
+                            : this.versionScheme.equals( that.versionScheme ) );
     }
 
     @Override
@@ -231,6 +233,7 @@ public class PatternInclusionsDependencyFilter
     {
         int hash = 17;
         hash = hash * 31 + patterns.hashCode();
+        hash = hash * 31 + ( ( versionScheme == null ) ? 0 : versionScheme.hashCode() );
         return hash;
     }
 
