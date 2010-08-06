@@ -15,6 +15,7 @@ package org.sonatype.aether.connector.file;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -43,26 +44,33 @@ import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataTransfer;
 import org.sonatype.aether.spi.connector.MetadataUpload;
+import org.sonatype.aether.spi.connector.RepositoryConnector;
+import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
 import org.sonatype.aether.util.ChecksumUtils;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
+/**
+ * The actual class doing all the work. Handles artifact and metadata up- and downloads.
+ * 
+ * @author Benjamin Hanzelmann
+ */
 class FileRepositoryWorker
     implements Runnable
 {
 
-    protected enum Direction
+    enum Direction
     {
         UPLOAD( TransferEvent.RequestType.PUT ), DOWNLOAD( TransferEvent.RequestType.GET );
-    
+
         TransferEvent.RequestType type;
-    
+
         private Direction( TransferEvent.RequestType type )
         {
             this.type = type;
         }
-    
+
         public RequestType getType()
         {
             return type;
@@ -71,7 +79,6 @@ class FileRepositoryWorker
 
     private static LinkedHashMap<String, String> checksumAlgos;
 
-    // private ArtifactTransfer transfer;
     private TransferWrapper transfer;
 
     private RemoteRepository repository;
@@ -82,12 +89,11 @@ class FileRepositoryWorker
 
     private TransferEventCatapult catapult;
 
-    protected Direction direction;
+    private Direction direction;
 
-    // private RepositorySystemSession session;
-
-    // private TransferListener listener;
-
+    /**
+     * Set the latch to count down after all work is done.
+     */
     public void setLatch( CountDownLatch latch )
     {
         this.latch = latch;
@@ -101,47 +107,100 @@ class FileRepositoryWorker
     }
 
     private FileRepositoryWorker( ArtifactTransfer transfer, RemoteRepository repository, Direction direction,
-                            RepositorySystemSession session )
+                                  RepositorySystemSession session )
     {
         this( session, repository, direction );
+
+        if ( transfer == null )
+        {
+            throw new IllegalArgumentException( "Transfer may not be null." );
+        }
         this.transfer = new TransferWrapper( transfer );
     }
 
     private FileRepositoryWorker( MetadataTransfer transfer, RemoteRepository repository, Direction direction,
-                            RepositorySystemSession session )
+                                  RepositorySystemSession session )
     {
         this( session, repository, direction );
+
+        if ( transfer == null )
+        {
+            throw new IllegalArgumentException( "Transfer may not be null." );
+        }
         this.transfer = new TransferWrapper( transfer );
     }
 
+    /**
+     * Initialize the worker for an artifact upload.
+     * 
+     * @param transfer The actual {@link Transfer}-object. May not be <code>null</code>.
+     * @param repository The repository definition. May not be <code>null</code>.
+     * @param session The current repository system session. May not be <code>null</code>.
+     */
     public FileRepositoryWorker( ArtifactUpload transfer, RemoteRepository repository, RepositorySystemSession session )
     {
         this( transfer, repository, Direction.UPLOAD, session );
     }
 
+    /**
+     * Initialize the worker for an artifact download.
+     * 
+     * @param transfer The actual {@link Transfer}-object. May not be <code>null</code>.
+     * @param repository The repository definition. May not be <code>null</code>.
+     * @param session The current repository system session. May not be <code>null</code>.
+     */
     public FileRepositoryWorker( ArtifactDownload transfer, RemoteRepository repository, RepositorySystemSession session )
     {
         this( transfer, repository, Direction.DOWNLOAD, session );
     }
 
+    /**
+     * Initialize the worker for an metadata download.
+     * 
+     * @param transfer The actual {@link Transfer}-object. May not be <code>null</code>.
+     * @param repository The repository definition. May not be <code>null</code>.
+     * @param session The current repository system session. May not be <code>null</code>.
+     */
     public FileRepositoryWorker( MetadataDownload transfer, RemoteRepository repository, RepositorySystemSession session )
     {
         this( transfer, repository, Direction.DOWNLOAD, session );
     }
 
+    /**
+     * Initialize the worker for an metadata upload.
+     * 
+     * @param transfer The actual {@link Transfer}-object. May not be <code>null</code>.
+     * @param repository The repository definition. May not be <code>null</code>.
+     * @param session The current repository system session. May not be <code>null</code>.
+     */
     public FileRepositoryWorker( MetadataUpload transfer, RemoteRepository repository, RepositorySystemSession session )
     {
         this( transfer, repository, Direction.UPLOAD, session );
     }
 
-    public FileRepositoryWorker( RepositorySystemSession session, RemoteRepository repository, Direction direction )
+    private FileRepositoryWorker( RepositorySystemSession session, RemoteRepository repository, Direction direction )
     {
+        if ( repository == null )
+        {
+            throw new IllegalArgumentException( "RemoteRepository may not be null." );
+        }
+        if ( session == null )
+        {
+            throw new IllegalArgumentException( "RepositorySystemSession may not be null." );
+        }
+
+        this.catapult = new TransferEventCatapult( session.getTransferListener() );
+
         this.direction = direction;
         this.repository = repository;
         this.layout = new DefaultLayout();
-        this.catapult = new TransferEventCatapult( session.getTransferListener() );
     }
 
+    /**
+     * Do transfer according to {@link RepositoryConnector} specifications.
+     * 
+     * @see FileRepositoryConnector
+     */
     public void run()
     {
         File target = null;
@@ -184,10 +243,7 @@ class FileRepositoryWorker
             event = null;
 
             target.getParentFile().mkdirs();
-
-            FileChannel in = new FileInputStream( src ).getChannel();
-            FileChannel out = new FileOutputStream( target ).getChannel();
-            copy( in, out );
+            copy( src, target );
 
             Map<String, Object> crcs = ChecksumUtils.calc( src, checksumAlgos.keySet() );
             switch ( direction )
@@ -233,6 +289,7 @@ class FileRepositoryWorker
                             }
                             catch ( IOException e )
                             {
+                                // skip verify - try next algorithm
                                 continue;
                             }
                         }
@@ -301,45 +358,68 @@ class FileRepositoryWorker
             {
                 // done anyway
             }
-            finally {
-	            if ( latch != null )
-	                latch.countDown();
+            finally
+            {
+                if ( latch != null )
+                    latch.countDown();
             }
         }
 
     }
 
-    private long copy( FileChannel in, FileChannel out )
-        throws IOException, TransferCancelledException
+    private void copy( File src, File target )
+        throws FileNotFoundException, IOException, TransferCancelledException
     {
-        long count = 200000L;
-        ByteBuffer buf = ByteBuffer.allocate( (int) count );
+        FileChannel in = null;
+        FileChannel out = null;
+        FileInputStream inStream = null;
+        FileOutputStream outStream = null;
 
-        buf.clear();
-        int transferred;
-        while ( ( transferred = in.read( buf ) ) >= 0 || buf.position() != 0 )
+        try
         {
+            inStream = new FileInputStream( src );
+            in = inStream.getChannel();
+            outStream = new FileOutputStream( target );
+            out = outStream.getChannel();
+            long count = 200000L;
+            ByteBuffer buf = ByteBuffer.allocate( (int) count );
 
-            DefaultTransferEvent event = newEvent( transfer, repository );
-            event.setDataBuffer( buf.array() );
-            event.setDataLength( buf.position() );
-            event.setDataOffset( 0 );
-            event.setTransferredBytes( transferred );
-            catapult.fireProgressed( event );
+            buf.clear();
+            int transferred;
+            while ( ( transferred = in.read( buf ) ) >= 0 || buf.position() != 0 )
+            {
 
+                DefaultTransferEvent event = newEvent( transfer, repository );
+                event.setDataBuffer( buf.array() );
+                event.setDataLength( buf.position() );
+                event.setDataOffset( 0 );
+                event.setTransferredBytes( transferred );
+                catapult.fireProgressed( event );
+
+                buf.flip();
+                out.write( buf );
+                buf.compact();
+            }
             buf.flip();
-            out.write( buf );
-            buf.compact();
+            while ( buf.hasRemaining() )
+            {
+                out.write( buf );
+            }
         }
-        buf.flip();
-        while ( buf.hasRemaining() )
+        finally
         {
-            out.write( buf );
+            if ( inStream != null )
+                inStream.close();
+            if ( in != null )
+                in.close();
+            if ( outStream != null )
+                outStream.close();
+            if ( out != null )
+                out.close();
         }
-        return count;
     }
 
-    protected DefaultTransferEvent newEvent( TransferWrapper transfer, RemoteRepository repository )
+    private DefaultTransferEvent newEvent( TransferWrapper transfer, RemoteRepository repository )
     {
         DefaultTransferEvent event = new DefaultTransferEvent();
         String resourceName = null;

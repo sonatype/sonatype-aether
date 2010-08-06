@@ -26,6 +26,11 @@ import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 
+/**
+ * A connector for file://-URLs.
+ * 
+ * @author Benjamin Hanzelmann
+ */
 public class FileRepositoryConnector
     extends ParallelRepositoryConnector
     implements RepositoryConnector

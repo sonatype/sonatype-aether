@@ -5,15 +5,27 @@ import org.sonatype.aether.TransferEvent;
 import org.sonatype.aether.TransferListener;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 
+/**
+ * Helper for {@link TransferEvent}-handling.
+ * 
+ * @author Benjamin Hanzelmann
+ */
 class TransferEventCatapult
 {
-    
+
     private TransferListener listener;
 
-    public TransferEventCatapult(TransferListener listener)
+    public TransferEventCatapult( TransferListener listener )
     {
         super();
-        this.listener = listener;
+        if ( listener == null )
+        {
+            listener = new NoTransferListener();
+        }
+        else
+        {
+            this.listener = listener;
+        }
     }
 
     protected void fireInitiated( DefaultTransferEvent event )
@@ -56,6 +68,39 @@ class TransferEventCatapult
     {
         event.setType( TransferEvent.EventType.PROGRESSED );
         listener.transferProgressed( event );
+    }
+    
+
+    private final class NoTransferListener
+        implements TransferListener
+    {
+        public void transferSucceeded( TransferEvent event )
+        {
+        }
+    
+        public void transferStarted( TransferEvent event )
+            throws TransferCancelledException
+        {
+        }
+    
+        public void transferProgressed( TransferEvent event )
+            throws TransferCancelledException
+        {
+        }
+    
+        public void transferInitiated( TransferEvent event )
+            throws TransferCancelledException
+        {
+        }
+    
+        public void transferFailed( TransferEvent event )
+        {
+        }
+    
+        public void transferCorrupted( TransferEvent event )
+            throws TransferCancelledException
+        {
+        }
     }
 
 }
