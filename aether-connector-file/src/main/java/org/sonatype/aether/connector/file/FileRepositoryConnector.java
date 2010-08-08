@@ -71,6 +71,7 @@ public class FileRepositoryConnector
         for ( MetadataDownload metadataDownload : metadataDownloads )
         {
             FileRepositoryWorker worker = new FileRepositoryWorker (metadataDownload, repository, session);
+            worker.setLatch( latch );
             executor.execute( worker );
         }
         
@@ -101,11 +102,13 @@ public class FileRepositoryConnector
         for ( ArtifactUpload artifactUpload : artifactUploads )
         {
             FileRepositoryWorker worker = new FileRepositoryWorker( artifactUpload, repository, session );
+            worker.setLatch( latch );
             executor.execute( worker );
         }
         for ( MetadataUpload metadataUpload : metadataUploads)
         {
             FileRepositoryWorker worker = new FileRepositoryWorker (metadataUpload, repository, session);
+            worker.setLatch( latch );
             executor.execute( worker );
         }
         

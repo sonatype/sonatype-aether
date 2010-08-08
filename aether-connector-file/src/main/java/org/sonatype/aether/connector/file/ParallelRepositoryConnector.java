@@ -61,6 +61,7 @@ abstract class ParallelRepositoryConnector
     {
         super();
         this.config = config;
+        initExecutor();
     }
 
     protected void initExecutor()
