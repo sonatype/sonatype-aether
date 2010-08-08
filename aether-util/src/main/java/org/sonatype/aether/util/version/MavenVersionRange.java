@@ -21,7 +21,7 @@ import org.sonatype.aether.VersionRange;
  * A version range inspired by mathematical range syntax. For example, "[1.0,2.0)", "[1.0,)" or "[1.0]".
  * 
  * @author Benjamin Bentmann
- * @Author Alin Dreghiciu
+ * @author Alin Dreghiciu
  */
 public final class MavenVersionRange
     implements VersionRange

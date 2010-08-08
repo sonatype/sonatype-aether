@@ -35,10 +35,7 @@ public class CloningDependencyVisitor
     private DependencyNode root;
 
     /**
-     * Creates a new visitor that delegates traversal of nodes matching the given filter to the specified visitor.
-     * 
-     * @param visitor The visitor to delegate to, must not be {@code null}.
-     * @param filter The filter to apply, may be {@code null} to not filter.
+     * Creates a new visitor that clones the visited nodes.
      */
     public CloningDependencyVisitor()
     {
