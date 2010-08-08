@@ -55,7 +55,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
       <!-- archive>?</archive -->
     </mailingList>
     <mailingList>
-      <name>Maven Commits List</name>
+      <name>Aether Commits List</name>
       <subscribe>aether-scm-subscribe@sonatype.org</subscribe>
       <unsubscribe>aether-scm-unsubscribe@sonatype.org</unsubscribe>
     </mailingList>
