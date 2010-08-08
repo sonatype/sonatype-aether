@@ -3,13 +3,13 @@
 <!--
 Copyright (c) 2008 Sonatype, Inc. All rights reserved.
 
-This program is licensed to you under the Apache License Version 2.0, 
-and you may not use this file except in compliance with the Apache License Version 2.0. 
+This program is licensed to you under the Apache License Version 2.0,
+and you may not use this file except in compliance with the Apache License Version 2.0.
 You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
 
-Unless required by applicable law or agreed to in writing, 
-software distributed under the Apache License Version 2.0 is distributed on an 
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+Unless required by applicable law or agreed to in writing,
+software distributed under the Apache License Version 2.0 is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
 -->
 
@@ -38,6 +38,28 @@ See the Apache License Version 2.0 for the specific language governing permissio
     <name>Sonatype, Inc.</name>
     <url>http://www.sonatype.com</url>
   </organization>
+
+  <mailingLists>
+    <mailingList>
+      <name>Aether Developers List</name>
+      <subscribe>aether-dev-subscribe@sonatype.org</subscribe>
+      <unsubscribe>aether-dev-unsubscribe@sonatype.org</unsubscribe>
+      <post>aether-dev@sonatype.org</post>
+      <!-- archive>?</archive -->
+    </mailingList>
+    <mailingList>
+      <name>Aether Users List</name>
+      <subscribe>aether-user-subscribe@sonatype.org</subscribe>
+      <unsubscribe>aether-user-unsubscribe@sonatype.org</unsubscribe>
+      <post>aether-user@sonatype.org</post>
+      <!-- archive>?</archive -->
+    </mailingList>
+    <mailingList>
+      <name>Maven Commits List</name>
+      <subscribe>aether-scm-subscribe@sonatype.org</subscribe>
+      <unsubscribe>aether-scm-unsubscribe@sonatype.org</unsubscribe>
+    </mailingList>
+  </mailingLists>
 
   <scm>
     <connection>scm:git:git@github.com:sonatype/sonatype-aether.git</connection>
