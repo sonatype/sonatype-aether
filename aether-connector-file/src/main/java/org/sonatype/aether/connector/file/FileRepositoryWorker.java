@@ -203,7 +203,10 @@ class FileRepositoryWorker
      */
     public void run()
     {
+        // TODO check event types for mandatory values
+        
         File target = null;
+        long totalTransferred = -1;
         try
         {
             transfer.setState( State.NEW );
@@ -243,7 +246,7 @@ class FileRepositoryWorker
             event = null;
 
             target.getParentFile().mkdirs();
-            copy( src, target );
+            totalTransferred = copy( src, target );
 
             Map<String, Object> crcs = ChecksumUtils.calc( src, checksumAlgos.keySet() );
             switch ( direction )
@@ -337,7 +340,9 @@ class FileRepositoryWorker
             {
                 if ( transfer.getException() == null )
                 {
-                    catapult.fireSucceeded( newEvent( transfer, repository ) );
+                    DefaultTransferEvent event = newEvent( transfer, repository );
+                    event.setTransferredBytes( (int) totalTransferred );
+                    catapult.fireSucceeded( event );
                 }
                 else
                 {
@@ -367,7 +372,7 @@ class FileRepositoryWorker
 
     }
 
-    private void copy( File src, File target )
+    private long copy( File src, File target )
         throws FileNotFoundException, IOException, TransferCancelledException
     {
         FileChannel in = null;
@@ -375,6 +380,7 @@ class FileRepositoryWorker
         FileInputStream inStream = null;
         FileOutputStream outStream = null;
 
+        long total = 0;
         try
         {
             inStream = new FileInputStream( src );
@@ -388,6 +394,7 @@ class FileRepositoryWorker
             int transferred;
             while ( ( transferred = in.read( buf ) ) >= 0 || buf.position() != 0 )
             {
+                total += transferred;
 
                 DefaultTransferEvent event = newEvent( transfer, repository );
                 event.setDataBuffer( buf.array() );
@@ -417,6 +424,8 @@ class FileRepositoryWorker
             if ( out != null )
                 out.close();
         }
+
+        return total;
     }
 
     private DefaultTransferEvent newEvent( TransferWrapper transfer, RemoteRepository repository )
