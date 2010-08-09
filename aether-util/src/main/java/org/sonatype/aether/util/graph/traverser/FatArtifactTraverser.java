@@ -16,6 +16,7 @@ package org.sonatype.aether.util.graph.traverser;
 import org.sonatype.aether.Dependency;
 import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.DependencyTraverser;
+import org.sonatype.aether.util.ArtifactProperties;
 
 /**
  * A dependency traverser that excludes fat artifacts from the traversal. Fat artifacts are artifacts that have the
@@ -30,7 +31,7 @@ public class FatArtifactTraverser
 
     public boolean traverseDependency( Dependency dependency )
     {
-        return !Boolean.valueOf( dependency.getArtifact().getProperty( "includesDependencies", "" ) );
+        return !Boolean.valueOf( dependency.getArtifact().getProperty( ArtifactProperties.INCLUDES_DEPENDENCIES, "" ) );
     }
 
     public DependencyTraverser deriveChildTraverser( DependencyNode node )
