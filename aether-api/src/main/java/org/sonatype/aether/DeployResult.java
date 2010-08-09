@@ -100,7 +100,8 @@ public class DeployResult
     }
 
     /**
-     * Gets the metadata that got deployed.
+     * Gets the metadata that got deployed. Note that due to automatically generated metadata, there might have been
+     * more metadata deployed than originally specified in the deploy request.
      * 
      * @return The deployed metadata, never {@code null}.
      */
