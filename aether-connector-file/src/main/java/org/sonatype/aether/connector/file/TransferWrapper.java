@@ -61,7 +61,7 @@ class TransferWrapper
         this.transfer = transfer;
         this.type = Type.ARTIFACT;
         
-        if ( transfer.getClass().isAssignableFrom( ArtifactDownload.class )) {
+        if ( transfer instanceof ArtifactDownload ) {
             this.checksumPolicy = ( (ArtifactDownload) transfer ).getChecksumPolicy();
         } 
     }
@@ -73,7 +73,7 @@ class TransferWrapper
         this.transfer = transfer;
         this.type = Type.METADATA;
         
-        if ( transfer.getClass().isAssignableFrom( MetadataDownload.class )) {
+        if ( transfer instanceof MetadataDownload ) {
             this.checksumPolicy = ( (MetadataDownload) transfer ).getChecksumPolicy();
         }
     }

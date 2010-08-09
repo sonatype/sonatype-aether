@@ -258,7 +258,7 @@ class FileRepositoryWorker
                         String name = crc.getKey();
                         Object sum = crc.getValue();
 
-                        if ( sum.getClass().isAssignableFrom( Throwable.class ) )
+                        if ( sum instanceof Throwable )
                         {
                             throw (Throwable) sum;
                         }
