@@ -28,9 +28,11 @@ import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 
 import org.sonatype.aether.Artifact;
+import org.sonatype.aether.ArtifactNotFoundException;
 import org.sonatype.aether.ArtifactTransferException;
 import org.sonatype.aether.ChecksumFailureException;
 import org.sonatype.aether.Metadata;
+import org.sonatype.aether.MetadataNotFoundException;
 import org.sonatype.aether.MetadataTransferException;
 import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositoryPolicy;
@@ -320,6 +322,18 @@ class FileRepositoryWorker
 
                     break;
             }
+        }
+        catch ( FileNotFoundException e) {
+            switch ( transfer.getType() )
+            {
+                case ARTIFACT:
+                    transfer.setException( new ArtifactNotFoundException( transfer.getArtifact(), repository ) );
+                    break;
+                case METADATA:
+                    transfer.setException( new MetadataNotFoundException( transfer.getMetadata(), repository ) );
+                    break;
+            }
+            
         }
         catch ( Throwable t )
         {
