@@ -13,26 +13,27 @@ package org.sonatype.aether.util;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import java.util.Locale;
-
 /**
- * The dependency scopes used for Java dependencies. Be sure to invoke {@link #toString()} on a constant and not
- * {@link #name()} to get the string representation.
+ * The dependency scopes used for Java dependencies.
  * 
  * @author Benjamin Bentmann
  */
-public enum JavaScopes
+public final class JavaScopes
 {
 
-    COMPILE, PROVIDED, SYSTEM, RUNTIME, TEST, IMPORT;
+    public static final String COMPILE = "compile";
 
-    /**
-     * Gets the string representation of this scope constant, i.e. its lower-case form as used for dependencies.
-     */
-    @Override
-    public String toString()
+    public static final String PROVIDED = "provided";
+
+    public static final String SYSTEM = "system";
+
+    public static final String RUNTIME = "runtime";
+
+    public static final String TEST = "test";
+
+    private JavaScopes()
     {
-        return name().toLowerCase( Locale.ENGLISH );
-    };
+        // hide constructor
+    }
 
 }
