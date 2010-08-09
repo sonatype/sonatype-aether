@@ -26,7 +26,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
 
   <name>Aether :: Connector :: File</name>
   <description>
-      A repository connector implementation for repositories using file://-URLs
+      A repository connector implementation for repositories using file:// URLs.
   </description>
 
   <dependencies>
@@ -57,15 +57,14 @@ See the Apache License Version 2.0 for the specific language governing permissio
       <scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>com.thoughtworks.xstream</groupId>
-    	<artifactId>xstream</artifactId>
-    	<version>1.3.1</version>
-    	<type>jar</type>
-    	<scope>test</scope>
+      <groupId>com.thoughtworks.xstream</groupId>
+      <artifactId>xstream</artifactId>
+      <version>1.3.1</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>junit</groupId>
-    	<artifactId>junit</artifactId>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
     </dependency>
   </dependencies>
 
