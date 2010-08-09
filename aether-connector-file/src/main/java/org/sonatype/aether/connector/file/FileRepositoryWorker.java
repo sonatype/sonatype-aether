@@ -359,10 +359,6 @@ class FileRepositoryWorker
                     catapult.fireFailed( newEvent( transfer, repository ) );
                 }
             }
-            catch ( TransferCancelledException e )
-            {
-                // done anyway
-            }
             finally
             {
                 if ( latch != null )

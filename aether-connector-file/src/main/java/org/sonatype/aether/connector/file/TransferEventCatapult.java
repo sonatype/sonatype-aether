@@ -56,14 +56,12 @@ class TransferEventCatapult
     }
 
     protected void fireSucceeded( DefaultTransferEvent event )
-        throws TransferCancelledException
     {
         event.setType( TransferEvent.EventType.SUCCEEDED );
         listener.transferSucceeded( event );
     }
 
     protected void fireFailed( DefaultTransferEvent event )
-        throws TransferCancelledException
     {
         event.setType( TransferEvent.EventType.FAILED );
         listener.transferFailed( event );
