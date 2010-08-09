@@ -56,10 +56,10 @@ public class DefaultArtifactType
         this.extension = ( extension != null && extension.length() > 0 ) ? extension : id;
         this.classifier = ( classifier != null ) ? classifier : "";
         Map<String, String> props = new HashMap<String, String>();
-        props.put( "type", id );
-        props.put( "language", ( language != null && language.length() > 0 ) ? language : "none" );
-        props.put( "includesDependencies", Boolean.toString( includesDependencies ) );
-        props.put( "constitutesBuildPath", Boolean.toString( constitutesBuildPath ) );
+        props.put( ArtifactProperties.TYPE, id );
+        props.put( ArtifactProperties.LANGUAGE, ( language != null && language.length() > 0 ) ? language : "none" );
+        props.put( ArtifactProperties.INCLUDES_DEPENDENCIES, Boolean.toString( includesDependencies ) );
+        props.put( ArtifactProperties.CONSTITUTES_BUILD_PATH, Boolean.toString( constitutesBuildPath ) );
         properties = props;
     }
 

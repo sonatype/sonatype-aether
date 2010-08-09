@@ -17,6 +17,7 @@ package org.sonatype.aether.util;
  * The dependency scopes used for Java dependencies.
  * 
  * @author Benjamin Bentmann
+ * @see org.sonatype.aether.Dependency#getScope()
  */
 public final class JavaScopes
 {
