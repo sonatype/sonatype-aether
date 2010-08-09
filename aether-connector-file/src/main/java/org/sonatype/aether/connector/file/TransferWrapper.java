@@ -90,7 +90,7 @@ class TransferWrapper
         else if ( artifactTransfer != null )
             return artifactTransfer.getFile();
         else
-            throw new RuntimeException( "TransferWrapper holds the wrong type" );
+            throw new IllegalStateException( "TransferWrapper holds the wrong type" );
     }
 
     public Artifact getArtifact()
@@ -98,7 +98,7 @@ class TransferWrapper
         if ( artifactTransfer != null )
             return artifactTransfer.getArtifact();
         else
-            throw new RuntimeException( "TransferWrapper holds the wrong type" );
+            throw new IllegalStateException( "TransferWrapper holds the wrong type" );
 
     }
 
@@ -107,7 +107,7 @@ class TransferWrapper
         if ( artifactTransfer != null )
             artifactTransfer.setException( exception );
         else
-            throw new RuntimeException( "TransferWrapper holds the wrong type" );
+            throw new IllegalStateException( "TransferWrapper holds the wrong type" );
     }
 
     public void setException( MetadataTransferException exception )
@@ -115,7 +115,7 @@ class TransferWrapper
         if ( metadataTransfer != null )
             metadataTransfer.setException( exception );
         else
-            throw new RuntimeException( "TransferWrapper holds the wrong type" );
+            throw new IllegalStateException( "TransferWrapper holds the wrong type" );
     }
 
     public Object getException()
@@ -125,7 +125,7 @@ class TransferWrapper
         else if ( metadataTransfer != null )
             return metadataTransfer.getException();
         else
-            throw new RuntimeException( "TransferWrapper holds the wrong type" );
+            throw new IllegalStateException( "TransferWrapper holds the wrong type" );
     }
 
     public Metadata getMetadata()
