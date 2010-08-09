@@ -100,7 +100,8 @@ public class InstallResult
     }
 
     /**
-     * Gets the metadata that got installed.
+     * Gets the metadata that got installed. Note that due to automatically generated metadata, there might have been
+     * more metadata installed than originally specified in the install request.
      * 
      * @return The installed metadata, never {@code null}.
      */
