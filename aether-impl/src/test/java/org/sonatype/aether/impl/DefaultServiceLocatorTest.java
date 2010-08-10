@@ -21,6 +21,12 @@ import org.sonatype.aether.ArtifactDescriptorRequest;
 import org.sonatype.aether.ArtifactDescriptorResult;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.VersionRangeRequest;
+import org.sonatype.aether.VersionRangeResolutionException;
+import org.sonatype.aether.VersionRangeResult;
+import org.sonatype.aether.VersionRequest;
+import org.sonatype.aether.VersionResolutionException;
+import org.sonatype.aether.VersionResult;
 import org.sonatype.aether.impl.ArtifactDescriptorReader;
 import org.sonatype.aether.impl.internal.DefaultServiceLocator;
 
@@ -35,6 +41,8 @@ public class DefaultServiceLocatorTest
     {
         DefaultServiceLocator locator = new DefaultServiceLocator();
         locator.addService( ArtifactDescriptorReader.class, StubArtifactDescriptorReader.class );
+        locator.addService( VersionResolver.class, StubVersionResolver.class );
+        locator.addService( VersionRangeResolver.class, StubVersionRangeResolver.class );
 
         RepositorySystem repoSys = locator.getService( RepositorySystem.class );
         assertNotNull( repoSys );
@@ -47,6 +55,30 @@ public class DefaultServiceLocatorTest
         public ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session,
                                                                 ArtifactDescriptorRequest request )
             throws ArtifactDescriptorException
+        {
+            return null;
+        }
+
+    }
+
+    public static class StubVersionResolver
+        implements VersionResolver
+    {
+
+        public VersionResult resolveVersion( RepositorySystemSession session, VersionRequest request )
+            throws VersionResolutionException
+        {
+            return null;
+        }
+
+    }
+
+    public static class StubVersionRangeResolver
+        implements VersionRangeResolver
+    {
+
+        public VersionRangeResult resolveVersionRange( RepositorySystemSession session, VersionRangeRequest request )
+            throws VersionRangeResolutionException
         {
             return null;
         }
