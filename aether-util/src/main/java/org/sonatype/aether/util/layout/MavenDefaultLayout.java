@@ -1,4 +1,4 @@
-package org.sonatype.aether.connector.wagon;
+package org.sonatype.aether.util.layout;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -13,16 +13,34 @@ package org.sonatype.aether.connector.wagon;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.sonatype.aether.Artifact;
 import org.sonatype.aether.Metadata;
 
 /**
+ * The layout for a Maven remote repository of type "default".
+ * 
  * @author Benjamin Bentmann
  */
-class DefaultLayout
+public class MavenDefaultLayout
+    implements RepositoryLayout
 {
 
-    public String getPath( Artifact artifact )
+    private URI toUri( String path )
+    {
+        try
+        {
+            return new URI( null, null, path, null );
+        }
+        catch ( URISyntaxException e )
+        {
+            throw new IllegalStateException( e );
+        }
+    }
+
+    public URI getPath( Artifact artifact )
     {
         StringBuilder path = new StringBuilder( 128 );
 
@@ -41,10 +59,10 @@ class DefaultLayout
 
         path.append( '.' ).append( artifact.getExtension() );
 
-        return path.toString();
+        return toUri( path.toString() );
     }
 
-    public String getPath( Metadata metadata )
+    public URI getPath( Metadata metadata )
     {
         StringBuilder path = new StringBuilder( 128 );
 
@@ -65,7 +83,7 @@ class DefaultLayout
 
         path.append( metadata.getType() );
 
-        return path.toString();
+        return toUri( path.toString() );
     }
 
 }

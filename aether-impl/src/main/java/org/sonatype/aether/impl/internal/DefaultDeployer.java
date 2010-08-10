@@ -18,10 +18,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -42,6 +42,8 @@ import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositoryPolicy;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.Deployer;
+import org.sonatype.aether.impl.MetadataGenerator;
+import org.sonatype.aether.impl.MetadataGeneratorFactory;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
@@ -73,11 +75,25 @@ public class DefaultDeployer
     @Requirement
     private UpdateCheckManager updateCheckManager;
 
+    @Requirement( role = MetadataGeneratorFactory.class )
+    private List<MetadataGeneratorFactory> metadataFactories = new ArrayList<MetadataGeneratorFactory>();
+
+    private static final Comparator<MetadataGeneratorFactory> COMPARATOR = new Comparator<MetadataGeneratorFactory>()
+    {
+
+        public int compare( MetadataGeneratorFactory o1, MetadataGeneratorFactory o2 )
+        {
+            return o2.getPriority() - o1.getPriority();
+        }
+
+    };
+
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );
         setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
         setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
+        metadataFactories = locator.getServices( MetadataGeneratorFactory.class );
     }
 
     public DefaultDeployer setLogger( Logger logger )
@@ -106,6 +122,16 @@ public class DefaultDeployer
         return this;
     }
 
+    public DefaultDeployer addMetadataGeneratorFactory( MetadataGeneratorFactory factory )
+    {
+        if ( factory == null )
+        {
+            throw new IllegalArgumentException( "metadata generator factory has not been specified" );
+        }
+        metadataFactories.add( factory );
+        return this;
+    }
+
     public DeployResult deploy( RepositorySystemSession session, DeployRequest request )
         throws DeploymentException
     {
@@ -128,79 +154,56 @@ public class DefaultDeployer
             throw new DeploymentException( "Failed to deploy artifacts/metadata: " + e.getMessage(), e );
         }
 
+        List<MetadataGenerator> generators = getMetadataGenerators( session, request );
+
         try
         {
             List<ArtifactUpload> artifactUploads = new ArrayList<ArtifactUpload>();
             List<MetadataUpload> metadataUploads = new ArrayList<MetadataUpload>();
+            IdentityHashMap<Metadata, Object> processedMetadata = new IdentityHashMap<Metadata, Object>();
 
             EventCatapult catapult = new EventCatapult( session, repository );
 
-            Map<Object, RemoteSnapshotMetadata> snapshots = new LinkedHashMap<Object, RemoteSnapshotMetadata>();
-            Collection<Object> versions = new HashSet<Object>();
+            List<Artifact> artifacts = new ArrayList<Artifact>( request.getArtifacts() );
 
-            /*
-             * NOTE: This should be considered a quirk to support interop with Maven's ArtifactDeployer which processes
-             * one artifact at a time and hence cannot associate the artifacts from the same project to use the same
-             * timestamp+buildno for the snapshot versions. Allowing the caller to pass in metadata from a previous
-             * deployment allows to re-establish the association between the artifacts of the same project.
-             */
-            for ( Metadata metadata : request.getMetadata() )
+            for ( MetadataGenerator generator : generators )
             {
-                if ( metadata instanceof RemoteSnapshotMetadata )
+                for ( Metadata metadata : generator.prepare( artifacts ) )
                 {
-                    RemoteSnapshotMetadata snapshotMetadata = (RemoteSnapshotMetadata) metadata;
-                    snapshots.put( snapshotMetadata.getKey(), snapshotMetadata );
-                }
-                else if ( metadata instanceof VersionsMetadata )
-                {
-                    VersionsMetadata versionsMetadata = (VersionsMetadata) metadata;
-                    versions.add( versionsMetadata.getKey() );
+                    upload( metadataUploads, session, metadata, repository, connector, catapult );
+                    processedMetadata.put( metadata, null );
                 }
             }
 
-            for ( Artifact artifact : request.getArtifacts() )
+            for ( int i = 0; i < artifacts.size(); i++ )
             {
-                if ( artifact.isSnapshot() )
-                {
-                    Object key = RemoteSnapshotMetadata.getKey( artifact );
-                    RemoteSnapshotMetadata snapshotMetadata = snapshots.get( key );
-                    if ( snapshotMetadata == null )
-                    {
-                        snapshotMetadata = new RemoteSnapshotMetadata( artifact );
-                        snapshots.put( key, snapshotMetadata );
-                    }
-                    snapshotMetadata.bind( artifact );
-                }
-            }
+                Artifact artifact = artifacts.get( i );
 
-            for ( RemoteSnapshotMetadata metadata : snapshots.values() )
-            {
-                upload( metadataUploads, session, metadata, repository, connector, catapult );
-            }
-
-            for ( Artifact artifact : request.getArtifacts() )
-            {
-                if ( artifact.isSnapshot() && artifact.getVersion().equals( artifact.getBaseVersion() ) )
+                for ( MetadataGenerator generator : generators )
                 {
-                    Object key = RemoteSnapshotMetadata.getKey( artifact );
-                    RemoteSnapshotMetadata snapshotMetadata = snapshots.get( key );
-                    artifact = artifact.setVersion( snapshotMetadata.getExpandedVersion( artifact ) );
+                    artifact = generator.transformArtifact( artifact );
                 }
 
-                Object key = VersionsMetadata.getKey( artifact );
-                if ( versions.add( key ) )
-                {
-                    upload( metadataUploads, session, new VersionsMetadata( artifact ), repository, connector, catapult );
-                }
+                artifacts.set( i, artifact );
 
                 artifactUploads.add( new ArtifactUploadEx( artifact, artifact.getFile(), catapult ) );
             }
 
-            for ( Metadata metadata : request.getMetadata() )
+            for ( MetadataGenerator generator : generators )
             {
-                if ( !( metadata instanceof MavenMetadata ) )
+                for ( Metadata metadata : generator.finish( artifacts ) )
                 {
                     upload( metadataUploads, session, metadata, repository, connector, catapult );
+                    processedMetadata.put( metadata, null );
+                }
+            }
+
+            for ( Metadata metadata : request.getMetadata() )
+            {
+                if ( !processedMetadata.containsKey( metadata ) )
+                {
+                    upload( metadataUploads, session, metadata, repository, connector, catapult );
+                    processedMetadata.put( metadata, null );
                 }
             }
 
@@ -233,8 +236,28 @@ public class DefaultDeployer
         return result;
     }
 
-    private void upload( List<MetadataUpload> metadataUploads, RepositorySystemSession session, Metadata metadata,
-                         RemoteRepository repository, RepositoryConnector connector, EventCatapult catapult )
+    private List<MetadataGenerator> getMetadataGenerators( RepositorySystemSession session, DeployRequest request )
+    {
+        List<MetadataGeneratorFactory> factories = new ArrayList<MetadataGeneratorFactory>( this.metadataFactories );
+        Collections.sort( factories, COMPARATOR );
+
+        List<MetadataGenerator> generators = new ArrayList<MetadataGenerator>();
+
+        for ( MetadataGeneratorFactory factory : factories )
+        {
+            MetadataGenerator generator = factory.newInstance( session, request );
+            if ( generator != null )
+            {
+                generators.add( generator );
+            }
+        }
+
+        return generators;
+    }
+
+    private void upload( Collection<MetadataUpload> metadataUploads, RepositorySystemSession session,
+                         Metadata metadata, RemoteRepository repository, RepositoryConnector connector,
+                         EventCatapult catapult )
         throws DeploymentException
     {
         LocalRepositoryManager lrm = session.getLocalRepositoryManager();
@@ -242,51 +265,39 @@ public class DefaultDeployer
 
         File dstFile = new File( basedir, lrm.getPathForRemoteMetadata( metadata, repository, "" ) );
 
-        if ( metadata instanceof RemoteSnapshotMetadata && ( (RemoteSnapshotMetadata) metadata ).isResolved() )
+        if ( metadata instanceof MergeableMetadata )
         {
-            /*
-             * NOTE: Continued quirk mode to allow reuse of already initialized metadata from previous deployment, no
-             * need to refetch remote copy.
-             */
-            try
+            if ( !( (MergeableMetadata) metadata ).isMerged() )
             {
-                ( (MergeableMetadata) metadata ).merge( dstFile, dstFile );
-            }
-            catch ( RepositoryException e )
-            {
-                throw new DeploymentException( "Failed to update metadata " + metadata + ": " + e.getMessage(), e );
-            }
-        }
-        else if ( metadata instanceof MergeableMetadata )
-        {
-            RepositoryListener listener = session.getRepositoryListener();
-            if ( listener != null )
-            {
-                DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
-                event.setRepository( repository );
-                listener.metadataResolving( event );
-            }
+                RepositoryListener listener = session.getRepositoryListener();
+                if ( listener != null )
+                {
+                    DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+                    event.setRepository( repository );
+                    listener.metadataResolving( event );
+                }
 
-            RepositoryPolicy policy = getPolicy( session, repository, metadata.getNature() );
-            MetadataDownload download = new MetadataDownload();
-            download.setMetadata( metadata );
-            download.setFile( dstFile );
-            download.setChecksumPolicy( policy.getChecksumPolicy() );
-            connector.get( null, Arrays.asList( download ) );
+                RepositoryPolicy policy = getPolicy( session, repository, metadata.getNature() );
+                MetadataDownload download = new MetadataDownload();
+                download.setMetadata( metadata );
+                download.setFile( dstFile );
+                download.setChecksumPolicy( policy.getChecksumPolicy() );
+                connector.get( null, Arrays.asList( download ) );
 
-            if ( listener != null )
-            {
-                DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
-                event.setRepository( repository );
-                event.setException( download.getException() );
-                listener.metadataResolved( event );
-            }
+                if ( listener != null )
+                {
+                    DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+                    event.setRepository( repository );
+                    event.setException( download.getException() );
+                    listener.metadataResolved( event );
+                }
 
-            Exception error = download.getException();
-            if ( error != null && !( error instanceof MetadataNotFoundException ) )
-            {
-                throw new DeploymentException( "Failed to retrieve remote metadata " + metadata + ": "
-                    + error.getMessage(), error );
+                Exception error = download.getException();
+                if ( error != null && !( error instanceof MetadataNotFoundException ) )
+                {
+                    throw new DeploymentException( "Failed to retrieve remote metadata " + metadata + ": "
+                        + error.getMessage(), error );
+                }
             }
 
             try

@@ -16,6 +16,9 @@ package org.sonatype.aether.impl.internal;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
@@ -32,6 +35,8 @@ import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.Installer;
 import org.sonatype.aether.impl.LocalRepositoryMaintainer;
+import org.sonatype.aether.impl.MetadataGenerator;
+import org.sonatype.aether.impl.MetadataGeneratorFactory;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
@@ -52,10 +57,24 @@ public class DefaultInstaller
     @Requirement( optional = true )
     private LocalRepositoryMaintainer maintainer;
 
+    @Requirement( role = MetadataGeneratorFactory.class )
+    private List<MetadataGeneratorFactory> metadataFactories = new ArrayList<MetadataGeneratorFactory>();
+
+    private static final Comparator<MetadataGeneratorFactory> COMPARATOR = new Comparator<MetadataGeneratorFactory>()
+    {
+
+        public int compare( MetadataGeneratorFactory o1, MetadataGeneratorFactory o2 )
+        {
+            return o2.getPriority() - o1.getPriority();
+        }
+
+    };
+
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );
         setLocalRepositoryMaintainer( locator.getService( LocalRepositoryMaintainer.class ) );
+        metadataFactories = locator.getServices( MetadataGeneratorFactory.class );
     }
 
     public DefaultInstaller setLogger( Logger logger )
@@ -70,24 +89,91 @@ public class DefaultInstaller
         return this;
     }
 
+    public DefaultInstaller addMetadataGeneratorFactory( MetadataGeneratorFactory factory )
+    {
+        if ( factory == null )
+        {
+            throw new IllegalArgumentException( "metadata generator factory has not been specified" );
+        }
+        metadataFactories.add( factory );
+        return this;
+    }
+
     public InstallResult install( RepositorySystemSession session, InstallRequest request )
         throws InstallationException
     {
         InstallResult result = new InstallResult( request );
 
-        for ( Artifact artifact : request.getArtifacts() )
+        List<MetadataGenerator> generators = getMetadataGenerators( session, request );
+
+        List<Artifact> artifacts = new ArrayList<Artifact>( request.getArtifacts() );
+
+        IdentityHashMap<Metadata, Object> processedMetadata = new IdentityHashMap<Metadata, Object>();
+
+        for ( MetadataGenerator generator : generators )
         {
+            for ( Metadata metadata : generator.prepare( artifacts ) )
+            {
+                install( session, metadata );
+                processedMetadata.put( metadata, null );
+                result.addMetadata( metadata );
+            }
+        }
+
+        for ( int i = 0; i < artifacts.size(); i++ )
+        {
+            Artifact artifact = artifacts.get( i );
+
+            for ( MetadataGenerator generator : generators )
+            {
+                artifact = generator.transformArtifact( artifact );
+            }
+
+            artifacts.set( i, artifact );
+
             install( session, artifact );
             result.addArtifact( artifact );
         }
 
+        for ( MetadataGenerator generator : generators )
+        {
+            for ( Metadata metadata : generator.finish( artifacts ) )
+            {
+                install( session, metadata );
+                processedMetadata.put( metadata, null );
+                result.addMetadata( metadata );
+            }
+        }
+
         for ( Metadata metadata : request.getMetadata() )
         {
-            install( session, metadata );
-            result.addMetadata( metadata );
+            if ( !processedMetadata.containsKey( metadata ) )
+            {
+                install( session, metadata );
+                result.addMetadata( metadata );
+            }
         }
 
         return result;
+    }
+
+    private List<MetadataGenerator> getMetadataGenerators( RepositorySystemSession session, InstallRequest request )
+    {
+        List<MetadataGeneratorFactory> factories = new ArrayList<MetadataGeneratorFactory>( this.metadataFactories );
+        Collections.sort( factories, COMPARATOR );
+
+        List<MetadataGenerator> generators = new ArrayList<MetadataGenerator>();
+
+        for ( MetadataGeneratorFactory factory : factories )
+        {
+            MetadataGenerator generator = factory.newInstance( session, request );
+            if ( generator != null )
+            {
+                generators.add( generator );
+            }
+        }
+
+        return generators;
     }
 
     private void install( RepositorySystemSession session, Artifact artifact )
@@ -138,12 +224,6 @@ public class DefaultInstaller
         {
             artifactInstalled( session, artifact, dstFile, exception );
         }
-
-        List<MergeableMetadata> versionMetadata = generateVersionMetadata( artifact );
-        for ( MergeableMetadata metadata : versionMetadata )
-        {
-            install( session, metadata );
-        }
     }
 
     private void install( RepositorySystemSession session, Metadata metadata )
@@ -176,19 +256,6 @@ public class DefaultInstaller
         {
             metadataInstalled( session, metadata, dstFile, exception );
         }
-    }
-
-    private List<MergeableMetadata> generateVersionMetadata( Artifact artifact )
-    {
-        List<MergeableMetadata> result = new ArrayList<MergeableMetadata>();
-
-        result.add( new VersionsMetadata( artifact ) );
-        if ( artifact.isSnapshot() )
-        {
-            result.add( new LocalSnapshotMetadata( artifact ) );
-        }
-
-        return result;
     }
 
     private void artifactInstalling( RepositorySystemSession session, Artifact artifact, File dstFile )

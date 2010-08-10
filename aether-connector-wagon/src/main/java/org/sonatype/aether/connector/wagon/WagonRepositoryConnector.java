@@ -67,6 +67,8 @@ import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.util.ChecksumUtils;
+import org.sonatype.aether.util.layout.MavenDefaultLayout;
+import org.sonatype.aether.util.layout.RepositoryLayout;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 
 /**
@@ -94,7 +96,7 @@ class WagonRepositoryConnector
 
     private final ProxyInfoProvider wagonProxy;
 
-    private final DefaultLayout layout = new DefaultLayout();
+    private final RepositoryLayout layout = new MavenDefaultLayout();
 
     private final TransferListener listener;
 
@@ -327,7 +329,7 @@ class WagonRepositoryConnector
 
         for ( MetadataDownload download : metadataDownloads )
         {
-            String resource = layout.getPath( download.getMetadata() );
+            String resource = layout.getPath( download.getMetadata() ).getPath();
             GetTask<?> task =
                 new GetTask<MetadataTransfer>( resource, download.getFile(), download.getChecksumPolicy(), latch,
                                                download, METADATA );
@@ -337,7 +339,7 @@ class WagonRepositoryConnector
 
         for ( ArtifactDownload download : artifactDownloads )
         {
-            String resource = layout.getPath( download.getArtifact() );
+            String resource = layout.getPath( download.getArtifact() ).getPath();
             GetTask<?> task =
                 new GetTask<ArtifactTransfer>( resource, download.isExistenceCheck() ? null : download.getFile(),
                                                download.getChecksumPolicy(), latch, download, ARTIFACT );
@@ -377,7 +379,7 @@ class WagonRepositoryConnector
 
         for ( ArtifactUpload upload : artifactUploads )
         {
-            String path = layout.getPath( upload.getArtifact() );
+            String path = layout.getPath( upload.getArtifact() ).getPath();
 
             PutTask<?> task = new PutTask<ArtifactTransfer>( path, upload.getFile(), upload, ARTIFACT );
             task.run();
@@ -386,7 +388,7 @@ class WagonRepositoryConnector
 
         for ( MetadataUpload upload : metadataUploads )
         {
-            String path = layout.getPath( upload.getMetadata() );
+            String path = layout.getPath( upload.getMetadata() ).getPath();
 
             PutTask<?> task = new PutTask<MetadataTransfer>( path, upload.getFile(), upload, METADATA );
             task.run();
