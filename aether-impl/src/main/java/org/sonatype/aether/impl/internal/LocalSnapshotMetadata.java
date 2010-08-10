@@ -63,6 +63,16 @@ final class LocalSnapshotMetadata
         return new LocalSnapshotMetadata( artifact, file );
     }
 
+    public Object getKey()
+    {
+        return getGroupId() + ':' + getArtifactId() + ':' + getVersion();
+    }
+
+    public static Object getKey( Artifact artifact )
+    {
+        return artifact.getGroupId() + ':' + artifact.getArtifactId() + ':' + artifact.getBaseVersion();
+    }
+
     public String getGroupId()
     {
         return artifact.getGroupId();
