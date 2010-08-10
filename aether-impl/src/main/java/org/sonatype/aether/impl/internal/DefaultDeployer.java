@@ -242,51 +242,39 @@ public class DefaultDeployer
 
         File dstFile = new File( basedir, lrm.getPathForRemoteMetadata( metadata, repository, "" ) );
 
-        if ( metadata instanceof RemoteSnapshotMetadata && ( (RemoteSnapshotMetadata) metadata ).isResolved() )
+        if ( metadata instanceof MergeableMetadata )
         {
-            /*
-             * NOTE: Continued quirk mode to allow reuse of already initialized metadata from previous deployment, no
-             * need to refetch remote copy.
-             */
-            try
+            if ( !( (MergeableMetadata) metadata ).isMerged() )
             {
-                ( (MergeableMetadata) metadata ).merge( dstFile, dstFile );
-            }
-            catch ( RepositoryException e )
-            {
-                throw new DeploymentException( "Failed to update metadata " + metadata + ": " + e.getMessage(), e );
-            }
-        }
-        else if ( metadata instanceof MergeableMetadata )
-        {
-            RepositoryListener listener = session.getRepositoryListener();
-            if ( listener != null )
-            {
-                DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
-                event.setRepository( repository );
-                listener.metadataResolving( event );
-            }
+                RepositoryListener listener = session.getRepositoryListener();
+                if ( listener != null )
+                {
+                    DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+                    event.setRepository( repository );
+                    listener.metadataResolving( event );
+                }
 
-            RepositoryPolicy policy = getPolicy( session, repository, metadata.getNature() );
-            MetadataDownload download = new MetadataDownload();
-            download.setMetadata( metadata );
-            download.setFile( dstFile );
-            download.setChecksumPolicy( policy.getChecksumPolicy() );
-            connector.get( null, Arrays.asList( download ) );
+                RepositoryPolicy policy = getPolicy( session, repository, metadata.getNature() );
+                MetadataDownload download = new MetadataDownload();
+                download.setMetadata( metadata );
+                download.setFile( dstFile );
+                download.setChecksumPolicy( policy.getChecksumPolicy() );
+                connector.get( null, Arrays.asList( download ) );
 
-            if ( listener != null )
-            {
-                DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
-                event.setRepository( repository );
-                event.setException( download.getException() );
-                listener.metadataResolved( event );
-            }
+                if ( listener != null )
+                {
+                    DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+                    event.setRepository( repository );
+                    event.setException( download.getException() );
+                    listener.metadataResolved( event );
+                }
 
-            Exception error = download.getException();
-            if ( error != null && !( error instanceof MetadataNotFoundException ) )
-            {
-                throw new DeploymentException( "Failed to retrieve remote metadata " + metadata + ": "
-                    + error.getMessage(), error );
+                Exception error = download.getException();
+                if ( error != null && !( error instanceof MetadataNotFoundException ) )
+                {
+                    throw new DeploymentException( "Failed to retrieve remote metadata " + metadata + ": "
+                        + error.getMessage(), error );
+                }
             }
 
             try

@@ -40,6 +40,8 @@ abstract class MavenMetadata
 
     protected Metadata metadata;
 
+    private boolean merged;
+
     protected MavenMetadata( Metadata metadata, File file )
     {
         this.metadata = metadata;
@@ -64,6 +66,13 @@ abstract class MavenMetadata
         merge( recessive );
 
         write( result, metadata );
+
+        merged = true;
+    }
+
+    public boolean isMerged()
+    {
+        return merged;
     }
 
     protected void merge( Metadata recessive )
