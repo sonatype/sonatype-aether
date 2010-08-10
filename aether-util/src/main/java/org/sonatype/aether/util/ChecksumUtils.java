@@ -131,9 +131,9 @@ public class ChecksumUtils
             ByteBuffer bytebuffer = ByteBuffer.allocate( 16 * 1024 );
             while ( in.read( bytebuffer ) >= 0 || bytebuffer.position() != 0 )
             {
-                bytebuffer.flip();
                 for ( MessageDigest digest : digests.values() )
                 {
+                    bytebuffer.flip();
                     digest.update( bytebuffer );
                 }
                 bytebuffer.compact();
