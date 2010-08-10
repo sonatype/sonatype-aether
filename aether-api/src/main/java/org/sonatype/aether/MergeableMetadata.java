@@ -35,4 +35,11 @@ public interface MergeableMetadata
     void merge( File current, File result )
         throws RepositoryException;
 
+    /**
+     * Indicates whether this metadata has been merged.
+     * 
+     * @return {@code true} if the metadata has been merged, {@code false} otherwise.
+     */
+    boolean isMerged();
+
 }
