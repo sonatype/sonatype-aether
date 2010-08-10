@@ -21,7 +21,7 @@ import org.sonatype.aether.impl.LocalRepositoryEvent;
 /**
  * @author Benjamin Bentmann
  */
-public class DefaultLocalRepositoryEvent
+class DefaultLocalRepositoryEvent
     implements LocalRepositoryEvent
 {
 
