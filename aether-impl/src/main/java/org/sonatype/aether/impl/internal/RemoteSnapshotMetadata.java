@@ -88,11 +88,6 @@ final class RemoteSnapshotMetadata
         return versions.get( artifact.getClassifier() ).getVersion();
     }
 
-    boolean isResolved()
-    {
-        return metadata.getVersioning() != null;
-    }
-
     @Override
     protected void merge( Metadata recessive )
     {
