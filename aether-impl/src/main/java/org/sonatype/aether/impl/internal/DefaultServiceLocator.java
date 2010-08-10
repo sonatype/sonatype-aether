@@ -31,14 +31,13 @@ import org.sonatype.aether.impl.Installer;
 import org.sonatype.aether.impl.MetadataResolver;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.UpdateCheckManager;
-import org.sonatype.aether.impl.VersionRangeResolver;
-import org.sonatype.aether.impl.VersionResolver;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 
 /**
  * A simple service locator that is already setup with all components from this library. To acquire a complete
- * repository system, clients merely need to add an artifact descriptor and some repository connectors.
+ * repository system, clients need to add an artifact descriptor, a version resolver, a version range resolver and some
+ * repository connectors.
  * 
  * @author Benjamin Bentmann
  */
@@ -66,8 +65,6 @@ public class DefaultServiceLocator
         addService( MetadataResolver.class, DefaultMetadataResolver.class );
         addService( RemoteRepositoryManager.class, DefaultRemoteRepositoryManager.class );
         addService( UpdateCheckManager.class, DefaultUpdateCheckManager.class );
-        addService( VersionResolver.class, DefaultVersionResolver.class );
-        addService( VersionRangeResolver.class, DefaultVersionRangeResolver.class );
     }
 
     /**

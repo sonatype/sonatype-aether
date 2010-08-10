@@ -27,7 +27,7 @@ import org.sonatype.aether.WorkspaceRepository;
 /**
  * @author Benjamin Bentmann
  */
-class CacheUtils
+public class CacheUtils
 {
 
     public static <T> boolean eq( T s1, T s2 )
