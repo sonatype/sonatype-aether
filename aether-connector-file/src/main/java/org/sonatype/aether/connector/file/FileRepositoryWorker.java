@@ -206,7 +206,7 @@ class FileRepositoryWorker
     public void run()
     {
         // TODO check event types for mandatory values
-        
+
         File target = null;
         long totalTransferred = -1;
         try
@@ -215,7 +215,7 @@ class FileRepositoryWorker
             DefaultTransferEvent event = newEvent( transfer, repository );
             catapult.fireInitiated( event );
 
-            File baseDir = new File( new URI( repository.getUrl() ) );
+            File baseDir = new File( PathUtils.basedir( repository.getUrl() ) );
             File localFile = transfer.getFile();
             File repoFile = null;
             switch ( transfer.getType() )
@@ -323,7 +323,8 @@ class FileRepositoryWorker
                     break;
             }
         }
-        catch ( FileNotFoundException e) {
+        catch ( FileNotFoundException e )
+        {
             switch ( transfer.getType() )
             {
                 case ARTIFACT:
@@ -333,7 +334,7 @@ class FileRepositoryWorker
                     transfer.setException( new MetadataNotFoundException( transfer.getMetadata(), repository ) );
                     break;
             }
-            
+
         }
         catch ( Throwable t )
         {
