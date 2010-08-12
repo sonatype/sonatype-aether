@@ -33,7 +33,7 @@ class TransferEventCatapult
         super();
         if ( listener == null )
         {
-            listener = new NoTransferListener();
+            this.listener = new NoTransferListener();
         }
         else
         {

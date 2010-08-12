@@ -54,6 +54,8 @@ class TransferWrapper
     
     private String checksumPolicy = null;
 
+    private boolean existenceCheck = false;
+
     public TransferWrapper( ArtifactTransfer transfer )
     {
         super();
@@ -63,6 +65,7 @@ class TransferWrapper
         
         if ( transfer instanceof ArtifactDownload ) {
             this.checksumPolicy = ( (ArtifactDownload) transfer ).getChecksumPolicy();
+            this.existenceCheck  = ( (ArtifactDownload) transfer ).isExistenceCheck();
         } 
     }
     
@@ -136,6 +139,11 @@ class TransferWrapper
     public String getChecksumPolicy()
     {
         return this.checksumPolicy;
+    }
+
+    public boolean isExistenceCheck()
+    {
+        return existenceCheck;
     }
 
 }

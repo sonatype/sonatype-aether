@@ -247,80 +247,89 @@ class FileRepositoryWorker
             catapult.fireStarted( event );
             event = null;
 
-            target.getParentFile().mkdirs();
-            totalTransferred = copy( src, target );
-
-            Map<String, Object> crcs = ChecksumUtils.calc( src, checksumAlgos.keySet() );
-            switch ( direction )
+            if ( transfer.isExistenceCheck() )
             {
-                case UPLOAD:
-                    // write checksum files
-                    for ( Entry<String, Object> crc : crcs.entrySet() )
-                    {
-                        String name = crc.getKey();
-                        Object sum = crc.getValue();
+                if ( ! src.exists() ) {
+                    throw new FileNotFoundException( src.getAbsolutePath() );
+                }
+            }
+            else
+            {
+                target.getParentFile().mkdirs();
+                totalTransferred = copy( src, target );
 
-                        if ( sum instanceof Throwable )
+                Map<String, Object> crcs = ChecksumUtils.calc( src, checksumAlgos.keySet() );
+                switch ( direction )
+                {
+                    case UPLOAD:
+                        // write checksum files
+                        for ( Entry<String, Object> crc : crcs.entrySet() )
                         {
-                            throw (Throwable) sum;
-                        }
+                            String name = crc.getKey();
+                            Object sum = crc.getValue();
 
-                        File crcTarget = new File( target.getPath() + checksumAlgos.get( name ) );
-                        FileWriter crcWriter = new FileWriter( crcTarget );
-                        crcWriter.write( sum.toString() );
-                        crcWriter.close();
-                    }
-                    break;
-                case DOWNLOAD:
-                    // verify checksum
-                    if ( RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( transfer.getChecksumPolicy() ) )
-                    {
+                            if ( sum instanceof Throwable )
+                            {
+                                throw (Throwable) sum;
+                            }
+
+                            File crcTarget = new File( target.getPath() + checksumAlgos.get( name ) );
+                            FileWriter crcWriter = new FileWriter( crcTarget );
+                            crcWriter.write( sum.toString() );
+                            crcWriter.close();
+                        }
                         break;
-                    }
-                    boolean verified = false;
-                    try
-                    {
-                        for ( Entry<String, String> entry : checksumAlgos.entrySet() )
+                    case DOWNLOAD:
+                        // verify checksum
+                        if ( RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( transfer.getChecksumPolicy() ) )
                         {
-                            try
+                            break;
+                        }
+                        boolean verified = false;
+                        try
+                        {
+                            for ( Entry<String, String> entry : checksumAlgos.entrySet() )
                             {
-                                String sum = ChecksumUtils.read( new File( src.getPath() + entry.getValue() ) );
-                                verified = sum.equalsIgnoreCase( crcs.get( entry.getKey() ).toString() );
-                                if ( !verified )
+                                try
                                 {
-                                    throw new ChecksumFailureException( sum, crcs.get( entry.getKey() ).toString() );
+                                    String sum = ChecksumUtils.read( new File( src.getPath() + entry.getValue() ) );
+                                    verified = sum.equalsIgnoreCase( crcs.get( entry.getKey() ).toString() );
+                                    if ( !verified )
+                                    {
+                                        throw new ChecksumFailureException( sum, crcs.get( entry.getKey() ).toString() );
+                                    }
+                                    break;
                                 }
-                                break;
+                                catch ( IOException e )
+                                {
+                                    // skip verify - try next algorithm
+                                    continue;
+                                }
                             }
-                            catch ( IOException e )
+
+                            // all algorithms checked
+                            if ( !verified )
                             {
-                                // skip verify - try next algorithm
-                                continue;
+                                throw new ChecksumFailureException( "no supported algorithms found" );
                             }
                         }
+                        catch ( ChecksumFailureException e )
+                        {
+                            if ( RepositoryPolicy.CHECKSUM_POLICY_FAIL.equals( transfer.getChecksumPolicy() ) )
+                            {
+                                throw e;
+                            }
+                            else if ( RepositoryPolicy.CHECKSUM_POLICY_WARN.equals( transfer.getChecksumPolicy() ) )
+                            {
+                                event = newEvent( transfer, repository );
+                                event.setException( e );
+                                catapult.fireCorrupted( event );
+                            }
 
-                        // all algorithms checked
-                        if ( !verified )
-                        {
-                            throw new ChecksumFailureException( "no supported algorithms found" );
-                        }
-                    }
-                    catch ( ChecksumFailureException e )
-                    {
-                        if ( RepositoryPolicy.CHECKSUM_POLICY_FAIL.equals( transfer.getChecksumPolicy() ) )
-                        {
-                            throw e;
-                        }
-                        else if ( RepositoryPolicy.CHECKSUM_POLICY_WARN.equals( transfer.getChecksumPolicy() ) )
-                        {
-                            event = newEvent( transfer, repository );
-                            event.setException( e );
-                            catapult.fireCorrupted( event );
                         }
 
-                    }
-
-                    break;
+                        break;
+                }
             }
         }
         catch ( FileNotFoundException e )
@@ -362,8 +371,6 @@ class FileRepositoryWorker
                 else
                 {
                     // cleanup
-                    if ( target != null )
-                        target.delete();
                     if ( direction.equals( Direction.UPLOAD ) )
                     {
                         for ( String ext : checksumAlgos.values() )
@@ -371,6 +378,8 @@ class FileRepositoryWorker
                             new File( target.getPath() + ext ).delete();
                         }
                     }
+                    if ( target != null )
+                        target.delete();
                     catapult.fireFailed( newEvent( transfer, repository ) );
                 }
             }

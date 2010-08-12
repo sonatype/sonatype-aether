@@ -16,7 +16,6 @@ package org.sonatype.aether.util;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,6 +25,7 @@ import java.util.Map.Entry;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.sonatype.aether.test.util.FileUtil;
 
 public class ChecksumUtilTest
 {
@@ -57,44 +57,16 @@ public class ChecksumUtilTest
     public void before()
         throws IOException
     {
-        emptyFile = createTempFile( new byte[] {}, 0 );
+        emptyFile = FileUtil.createTempFile( new byte[] {}, 0 );
         sums.put( emptyFile, emptyFileChecksums );
 
         patternFile =
-            createTempFile( new byte[] { 0, 1, 2, 4, 8, 16, 32, 64, 127, -1, -2, -4, -8, -16, -32, -64, -127 }, 1000 );
+            FileUtil.createTempFile( new byte[] { 0, 1, 2, 4, 8, 16, 32, 64, 127, -1, -2, -4, -8, -16, -32, -64, -127 }, 1000 );
         sums.put( patternFile, patternFileChecksums );
 
-        textFile = createTempFile( "the quick brown fox jumps over the lazy dog\n".getBytes( "UTF-8" ), 500 );
+        textFile = FileUtil.createTempFile( "the quick brown fox jumps over the lazy dog\n".getBytes( "UTF-8" ), 500 );
         sums.put( textFile, textFileChecksums );
 
-    }
-
-    private static File createTempFile( byte[] pattern, int repeat )
-        throws IOException
-    {
-
-        File tmpFile = null;
-        FileOutputStream out = null;
-        try
-        {
-            tmpFile = File.createTempFile( "ChecksumUtilTest", ".data" );
-            tmpFile.deleteOnExit();
-
-            out = new FileOutputStream( tmpFile );
-            for ( int i = 0; i < repeat; i++ )
-            {
-                out.write( pattern );
-            }
-        }
-        finally
-        {
-            if ( out != null )
-            {
-                out.close();
-            }
-        }
-
-        return tmpFile;
     }
 
     @Test
