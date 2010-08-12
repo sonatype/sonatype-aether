@@ -83,7 +83,9 @@ public class ArtifactDownload
 
     /**
      * Indicates whether this transfer shall only verify the existence of the artifact in the remote repository rather
-     * than actually downloading the file.
+     * than actually downloading the file. Just like with an actual transfer, a connector is expected to signal the
+     * non-existence of the artifact by associating an {@link org.sonatype.aether.ArtifactNotFoundException
+     * ArtifactNotFoundException} with this download.
      * 
      * @return {@code true} if only the artifact existence shall be verified, {@code false} to actually download the
      *         artifact.
