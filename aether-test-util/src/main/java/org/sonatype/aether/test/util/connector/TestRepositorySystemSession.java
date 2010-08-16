@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.sonatype.aether.ArtifactTypeRegistry;
+import org.sonatype.aether.Authentication;
 import org.sonatype.aether.AuthenticationSelector;
 import org.sonatype.aether.DependencyGraphTransformer;
 import org.sonatype.aether.DependencyManager;
@@ -26,17 +27,22 @@ import org.sonatype.aether.LocalRepository;
 import org.sonatype.aether.LocalRepositoryManager;
 import org.sonatype.aether.MirrorSelector;
 import org.sonatype.aether.ProxySelector;
+import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositoryCache;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.TransferListener;
 import org.sonatype.aether.WorkspaceReader;
+import org.sonatype.aether.test.util.selectors.DefaultAuthenticationSelector;
+import org.sonatype.aether.test.util.selectors.DefaultProxySelector;
 
 public class TestRepositorySystemSession
     implements RepositorySystemSession
 {
 
     private TransferListener listener = new RecordingTransferListener();
+    private AuthenticationSelector authenticator = new DefaultAuthenticationSelector();
+    private ProxySelector proxySelector = new DefaultProxySelector();
 
     public String getUserAgent()
     {
@@ -135,12 +141,12 @@ public class TestRepositorySystemSession
 
     public ProxySelector getProxySelector()
     {
-        throw new UnsupportedOperationException( "getProxySelector()" );
+        return proxySelector;
     }
 
     public AuthenticationSelector getAuthenticationSelector()
     {
-        throw new UnsupportedOperationException( "getAuthenticationSelector()" );
+        return authenticator ;
     }
 
     public ArtifactTypeRegistry getArtifactTypeRegistry()
