@@ -71,7 +71,7 @@ public class TransferEventTester
         LinkedList<TransferEvent> events = new LinkedList<TransferEvent>( listener.getEvents() );
 
         TransferEvent currentEvent = events.poll();
-        assertNotNull( "iniiate event is missing", currentEvent);
+        assertNotNull( "initiate event is missing", currentEvent);
         assertEquals( TransferEvent.EventType.INITIATED, currentEvent.getType() );
         // TODO: check mandatory attributes
 
@@ -85,7 +85,8 @@ public class TransferEventTester
 
         TransferEvent succeedEvent = null;
 
-        int transferredBytes = 0;
+        int dataLength = 0;
+        long transferredBytes = 0;
         while ( ( currentEvent = events.poll() ) != null )
         {
             EventType currentType = currentEvent.getType();
@@ -98,7 +99,9 @@ public class TransferEventTester
             else
             {
                 assertTrue( progressed.equals( currentType ) );
-                transferredBytes += currentEvent.getTransferredBytes();
+                assertTrue( currentEvent.getTransferredBytes() > transferredBytes);
+                transferredBytes = currentEvent.getTransferredBytes();
+                dataLength += currentEvent.getDataLength();
                 // TODO: check mandatory attributes
             }
         }
@@ -107,8 +110,8 @@ public class TransferEventTester
         assertEquals( 0, events.size() );
 
         // test transferred size
-        assertEquals( tmpFile.length(), transferredBytes );
-        assertEquals( tmpFile.length(), succeedEvent.getTransferredBytes() );
+        assertEquals( "progress events transferred bytes don't match", tmpFile.length(), dataLength );
+        assertEquals( "succeed event transferred bytes don't match", tmpFile.length(), succeedEvent.getTransferredBytes() );
     }
 
     public static TestContext setupTestContext()
