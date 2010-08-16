@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.sonatype.aether.DefaultArtifact;
 import org.sonatype.aether.DefaultMetadata;
@@ -31,7 +30,6 @@ import org.sonatype.aether.Metadata;
 import org.sonatype.aether.NoRepositoryConnectorException;
 import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.TransferCancelledException;
 import org.sonatype.aether.TransferEvent;
 import org.sonatype.aether.TransferEvent.EventType;
 import org.sonatype.aether.TransferListener;
@@ -43,153 +41,9 @@ import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.test.util.FileUtil;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 public class TransferEventTester
 {
-
-    private static class RecordingTransferListener
-        implements TransferListener
-    {
-
-        private List<TransferEvent> events = new ArrayList<TransferEvent>();
-
-        private List<TransferEvent> progressEvents = new ArrayList<TransferEvent>();
-
-        private TransferListener realListener;
-
-        public RecordingTransferListener()
-        {
-            this( null );
-        }
-
-        public RecordingTransferListener( TransferListener transferListener )
-        {
-            this.realListener = transferListener;
-        }
-
-        public List<TransferEvent> getEvents()
-        {
-            return events;
-        }
-
-        public List<TransferEvent> getProgressEvents()
-        {
-            return progressEvents;
-        }
-
-        public void transferSucceeded( TransferEvent event )
-        {
-            events.add( event );
-            if ( realListener != null )
-            {
-                realListener.transferSucceeded( event );
-            }
-        }
-
-        public void transferStarted( TransferEvent event )
-            throws TransferCancelledException
-        {
-            events.add( event );
-            if ( realListener != null )
-            {
-                realListener.transferStarted( event );
-            }
-        }
-
-        public void transferProgressed( TransferEvent event )
-            throws TransferCancelledException
-        {
-            events.add( event );
-            progressEvents.add( event );
-            if ( realListener != null )
-            {
-                realListener.transferProgressed( event );
-            }
-        }
-
-        public void transferInitiated( TransferEvent event )
-            throws TransferCancelledException
-        {
-            events.add( event );
-            if ( realListener != null )
-            {
-                realListener.transferInitiated( event );
-            }
-        }
-
-        public void transferFailed( TransferEvent event )
-        {
-            events.add( event );
-            if ( realListener != null )
-            {
-                realListener.transferFailed( event );
-            }
-        }
-
-        public void transferCorrupted( TransferEvent event )
-            throws TransferCancelledException
-        {
-            events.add( event );
-            if ( realListener != null )
-            {
-                realListener.transferCorrupted( event );
-            }
-        }
-    }
-
-    public static class TestContext
-    {
-
-        private RemoteRepository repository;
-
-        private RepositorySystemSession session;
-
-        public TestContext( RemoteRepository repository, RepositorySystemSession session )
-        {
-            super();
-            this.repository = repository;
-            this.session = session;
-        }
-
-        public TestContext()
-        {
-            super();
-        }
-
-        public RemoteRepository getRepository()
-        {
-            return repository;
-        }
-
-        public RepositorySystemSession getSession()
-        {
-            return session;
-        }
-
-        public void setRepository( RemoteRepository repository )
-        {
-            this.repository = repository;
-        }
-
-        public void setSession( RepositorySystemSession session )
-        {
-            this.session = session;
-        }
-
-        public RecordingTransferListener getRecordingTransferListener()
-        {
-            if ( session.getTransferListener() instanceof RecordingTransferListener )
-            {
-                return (RecordingTransferListener) session.getTransferListener();
-            }
-            else
-            {
-                return new RecordingTransferListener( session.getTransferListener() );
-            }
-        }
-
-    }
 
     public static void testTransferEvents( RepositoryConnectorFactory factory )
         throws IOException, NoRepositoryConnectorException
@@ -281,11 +135,7 @@ public class TransferEventTester
                                                      e );
         }
 
-        DefaultRepositorySystemSession session = DefaultRepositorySystemSession.newMavenRepositorySystemSession();
-        if ( listener != null )
-        {
-            session.setTransferListener( listener );
-        }
+        TestRepositorySystemSession session = new TestRepositorySystemSession();
 
         return new TestContext( repository, session );
 

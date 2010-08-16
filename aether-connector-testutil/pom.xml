@@ -41,11 +41,6 @@ See the Apache License Version 2.0 for the specific language governing permissio
     	<version>${project.version}</version>
     </dependency>
     <dependency>
-    	<groupId>org.sonatype.aether</groupId>
-    	<artifactId>aether-impl</artifactId>
-    	<version>${project.version}</version>
-    </dependency>
-    <dependency>
     	<groupId>junit</groupId>
     	<artifactId>junit</artifactId>
 	<scope>compile</scope>
