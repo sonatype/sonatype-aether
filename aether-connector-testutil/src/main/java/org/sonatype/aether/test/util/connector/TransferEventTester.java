@@ -13,7 +13,8 @@ package org.sonatype.aether.test.util.connector;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +56,18 @@ public class TransferEventTester
 
         private List<TransferEvent> progressEvents = new ArrayList<TransferEvent>();
 
+        private TransferListener realListener;
+
+        public RecordingTransferListener()
+        {
+            this( null );
+        }
+
+        public RecordingTransferListener( TransferListener transferListener )
+        {
+            this.realListener = transferListener;
+        }
+
         public List<TransferEvent> getEvents()
         {
             return events;
@@ -68,12 +81,20 @@ public class TransferEventTester
         public void transferSucceeded( TransferEvent event )
         {
             events.add( event );
+            if ( realListener != null )
+            {
+                realListener.transferSucceeded( event );
+            }
         }
 
         public void transferStarted( TransferEvent event )
             throws TransferCancelledException
         {
             events.add( event );
+            if ( realListener != null )
+            {
+                realListener.transferStarted( event );
+            }
         }
 
         public void transferProgressed( TransferEvent event )
@@ -81,23 +102,39 @@ public class TransferEventTester
         {
             events.add( event );
             progressEvents.add( event );
+            if ( realListener != null )
+            {
+                realListener.transferProgressed( event );
+            }
         }
 
         public void transferInitiated( TransferEvent event )
             throws TransferCancelledException
         {
             events.add( event );
+            if ( realListener != null )
+            {
+                realListener.transferInitiated( event );
+            }
         }
 
         public void transferFailed( TransferEvent event )
         {
             events.add( event );
+            if ( realListener != null )
+            {
+                realListener.transferFailed( event );
+            }
         }
 
         public void transferCorrupted( TransferEvent event )
             throws TransferCancelledException
         {
             events.add( event );
+            if ( realListener != null )
+            {
+                realListener.transferCorrupted( event );
+            }
         }
     }
 
@@ -140,25 +177,45 @@ public class TransferEventTester
             this.session = session;
         }
 
+        public RecordingTransferListener getRecordingTransferListener()
+        {
+            if ( session.getTransferListener() instanceof RecordingTransferListener )
+            {
+                return (RecordingTransferListener) session.getTransferListener();
+            }
+            else
+            {
+                return new RecordingTransferListener( session.getTransferListener() );
+            }
+        }
+
     }
 
     public static void testTransferEvents( RepositoryConnectorFactory factory )
         throws IOException, NoRepositoryConnectorException
     {
-        byte[] pattern = "tmpFile".getBytes();
-        File tmpFile = FileUtil.createTempFile( pattern, 10000 );
 
         RecordingTransferListener listener = new RecordingTransferListener();
 
         TestContext ctx = setupTestContext( listener );
+        testTransferEvents( factory, ctx );
+    }
+
+    public static void testTransferEvents( RepositoryConnectorFactory factory, TestContext ctx )
+        throws IOException, NoRepositoryConnectorException
+    {
         RepositorySystemSession session = ctx.getSession();
         RemoteRepository repository = ctx.getRepository();
+        RecordingTransferListener listener = ctx.getRecordingTransferListener();
+
         RepositoryConnector connector = factory.newInstance( session, repository );
+
+        byte[] pattern = "tmpFile".getBytes();
+        File tmpFile = FileUtil.createTempFile( pattern, 10000 );
 
         Collection<ArtifactUpload> artUps = createTransfers( ArtifactUpload.class, 1, tmpFile );
 
         connector.put( artUps, null );
-
         Deque<TransferEvent> events = new LinkedList<TransferEvent>( listener.getEvents() );
 
         TransferEvent currentEvent = events.pop();
