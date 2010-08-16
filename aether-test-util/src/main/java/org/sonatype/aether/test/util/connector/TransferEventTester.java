@@ -13,15 +13,13 @@ package org.sonatype.aether.test.util.connector;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Deque;
 import java.util.LinkedList;
 
 import org.sonatype.aether.DefaultArtifact;
@@ -70,13 +68,15 @@ public class TransferEventTester
         Collection<ArtifactUpload> artUps = createTransfers( ArtifactUpload.class, 1, tmpFile );
 
         connector.put( artUps, null );
-        Deque<TransferEvent> events = new LinkedList<TransferEvent>( listener.getEvents() );
+        LinkedList<TransferEvent> events = new LinkedList<TransferEvent>( listener.getEvents() );
 
-        TransferEvent currentEvent = events.pop();
+        TransferEvent currentEvent = events.poll();
+        assertNotNull( "iniiate event is missing", currentEvent);
         assertEquals( TransferEvent.EventType.INITIATED, currentEvent.getType() );
         // TODO: check mandatory attributes
 
-        currentEvent = events.pop();
+        currentEvent = events.poll();
+        assertNotNull( "start event is missing", currentEvent);
         assertEquals( TransferEvent.EventType.STARTED, currentEvent.getType() );
         // TODO: check mandatory attributes
 
@@ -86,7 +86,7 @@ public class TransferEventTester
         TransferEvent succeedEvent = null;
 
         int transferredBytes = 0;
-        while ( ( currentEvent = events.pollFirst() ) != null )
+        while ( ( currentEvent = events.poll() ) != null )
         {
             EventType currentType = currentEvent.getType();
 
