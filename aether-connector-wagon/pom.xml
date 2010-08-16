@@ -65,6 +65,18 @@ See the Apache License Version 2.0 for the specific language governing permissio
       <artifactId>plexus-utils</artifactId>
       <version>2.0.5</version>
     </dependency>
+    <dependency>
+    	<groupId>org.sonatype.aether</groupId>
+    	<artifactId>aether-test-util</artifactId>
+    	<version>${project.version}</version>
+    	<scope>test</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.apache.maven.wagon</groupId>
+    	<artifactId>wagon-file</artifactId>
+    	<version>1.0-beta-6</version>
+    	<scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
