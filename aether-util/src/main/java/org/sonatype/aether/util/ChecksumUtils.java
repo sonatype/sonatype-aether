@@ -13,12 +13,13 @@ package org.sonatype.aether.util;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
@@ -123,32 +124,25 @@ public class ChecksumUtils
         }
 
         FileInputStream fis = new FileInputStream( dataFile );
+        FileChannel in = fis.getChannel();
         try
         {
-            BufferedInputStream bis = new BufferedInputStream( fis );
-            try
+
+            ByteBuffer bytebuffer = ByteBuffer.allocate( 16 * 1024 );
+            while ( in.read( bytebuffer ) >= 0 || bytebuffer.position() != 0 )
             {
-                for ( byte[] buffer = new byte[1024 * 4];; )
+                for ( MessageDigest digest : digests.values() )
                 {
-                    int read = bis.read( buffer );
-                    if ( read < 0 )
-                    {
-                        break;
-                    }
-                    for ( MessageDigest digest : digests.values() )
-                    {
-                        digest.update( buffer, 0, read );
-                    }
+                    bytebuffer.flip();
+                    digest.update( bytebuffer );
                 }
-            }
-            finally
-            {
-                bis.close();
+                bytebuffer.compact();
             }
         }
         finally
         {
             fis.close();
+            in.close();
         }
 
         for ( Map.Entry<String, MessageDigest> entry : digests.entrySet() )

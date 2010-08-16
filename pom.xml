@@ -91,6 +91,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
     <module>aether-util</module>
     <module>aether-impl</module>
     <module>aether-connector-wagon</module>
+    <module>aether-test-util</module>
   </modules>
 
   <properties>

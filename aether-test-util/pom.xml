@@ -43,6 +43,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
     <dependency>
     	<groupId>junit</groupId>
     	<artifactId>junit</artifactId>
+	<scope>compile</scope>
     </dependency>
   </dependencies>
 </project>
