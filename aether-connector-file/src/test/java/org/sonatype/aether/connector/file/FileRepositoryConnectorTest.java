@@ -13,13 +13,11 @@ package org.sonatype.aether.connector.file;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 
 import org.junit.Test;
 import org.sonatype.aether.DefaultArtifact;
@@ -33,8 +31,8 @@ import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.connector.TestContext;
 import org.sonatype.aether.test.util.connector.TransferEventTester;
-import org.sonatype.aether.test.util.connector.TransferEventTester.TestContext;
 
 public class FileRepositoryConnectorTest
 {
