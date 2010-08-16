@@ -40,7 +40,7 @@ public final class Dependency
     /**
      * Creates a mandatory dependency on the specified artifact with the given scope.
      *
-     * @param artifact The artifact being depended on, may be {@code null}.
+     * @param artifact The artifact being depended on, must not be {@code null}.
      * @param scope The scope of the dependency, may be {@code null}.
      */
     public Dependency( Artifact artifact, String scope )
@@ -51,7 +51,7 @@ public final class Dependency
     /**
      * Creates a dependency on the specified artifact with the given scope.
      *
-     * @param artifact The artifact being depended on, may be {@code null}.
+     * @param artifact The artifact being depended on, must not be {@code null}.
      * @param scope The scope of the dependency, may be {@code null}.
      * @param optional A flag whether the dependency is optional or mandatory.
      */
@@ -63,7 +63,7 @@ public final class Dependency
     /**
      * Creates a dependency on the specified artifact with the given scope and exclusions.
      *
-     * @param artifact The artifact being depended on, may be {@code null}.
+     * @param artifact The artifact being depended on, must not be {@code null}.
      * @param scope The scope of the dependency, may be {@code null}.
      * @param optional A flag whether the dependency is optional or mandatory.
      * @param exclusions The exclusions that apply to transitive dependencies, may be {@code null} if none.
