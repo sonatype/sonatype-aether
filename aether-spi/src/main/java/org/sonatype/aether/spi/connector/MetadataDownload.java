@@ -45,6 +45,22 @@ public class MetadataDownload
         // enables default constructor
     }
 
+    /**
+     * Creates a new download with the specified properties.
+     * 
+     * @param metadata The metadata to download, may be {@code null}.
+     * @param context The context in which this download is performed, may be {@code null}.
+     * @param file The local file to download the metadata to, may be {@code null}.
+     * @param checksumPolicy The checksum policy, may be {@code null}.
+     */
+    public MetadataDownload( Metadata metadata, String context, File file, String checksumPolicy )
+    {
+        setMetadata( metadata );
+        setFile( file );
+        setChecksumPolicy( checksumPolicy );
+        setRequestContext( context );
+    }
+
     @Override
     public MetadataDownload setMetadata( Metadata metadata )
     {
