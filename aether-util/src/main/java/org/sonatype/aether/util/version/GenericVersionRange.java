@@ -77,7 +77,7 @@ final class GenericVersionRange
         process = process.substring( 1, process.length() - 1 );
 
         int index = process.indexOf( "," );
-        
+
         if ( index < 0 )
         {
             if ( !lowerBoundInclusive || !upperBoundInclusive )
@@ -92,24 +92,33 @@ final class GenericVersionRange
         {
             String parsedLowerBound = process.substring( 0, index ).trim();
             String parsedUpperBound = process.substring( index + 1 ).trim();
-            
+
             // more than two bounds, e.g. (1,2,3)
-            if ( parsedUpperBound.contains( "," ) ) 
+            if ( parsedUpperBound.contains( "," ) )
             {
                 throw new InvalidVersionRangeException( range, "Invalid version range " + range
-                    + ", bounds may not contain additional ','");
+                    + ", bounds may not contain additional ','" );
             }
 
             lowerBound =  parsedLowerBound.length() > 0 ? new GenericVersion( parsedLowerBound ) : null;
             upperBound = parsedUpperBound.length() > 0 ? new GenericVersion( parsedUpperBound ) : null;
 
-            if ( upperBound != null && lowerBound != null && upperBound.compareTo( lowerBound ) < 0 )
+            if ( upperBound != null && lowerBound != null )
             {
-                throw new InvalidVersionRangeException( range, "Invalid version range " + range
-                    + ", lower bound must not be greater than upper bound" );
+                if ( upperBound.compareTo( lowerBound ) < 0 )
+                {
+                    throw new InvalidVersionRangeException( range, "Invalid version range " + range
+                        + ", lower bound must not be greater than upper bound" );
+                }
+
+                if ( upperBound.compareTo( lowerBound ) == 0 )
+                {
+                    throw new InvalidVersionRangeException( range, "Invalid version range " + range
+                        + ", lower bound must not be equal to upper bound" );
+                }
             }
-        }    	
-    }    
+        }
+    }
 
     public GenericVersionRange( Version lowerBound, boolean lowerBoundInclusive, Version upperBound,
                               boolean upperBoundInclusive )
