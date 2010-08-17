@@ -13,7 +13,9 @@ package org.sonatype.aether.test.util.connector;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +23,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Queue;
 
 import org.sonatype.aether.DefaultArtifact;
 import org.sonatype.aether.DefaultMetadata;
@@ -64,19 +67,42 @@ public class TransferEventTester
 
         byte[] pattern = "tmpFile".getBytes();
         File tmpFile = FileUtil.createTempFile( pattern, 10000 );
+        long expectedBytes = tmpFile.length();
 
         Collection<ArtifactUpload> artUps = createTransfers( ArtifactUpload.class, 1, tmpFile );
+        Collection<ArtifactDownload> artDowns = createTransfers( ArtifactDownload.class, 1, tmpFile );
+        Collection<MetadataUpload> metaUps = createTransfers( MetadataUpload.class, 1, tmpFile );
+        Collection<MetadataDownload> metaDowns = createTransfers( MetadataDownload.class, 1, tmpFile );
 
         connector.put( artUps, null );
         LinkedList<TransferEvent> events = new LinkedList<TransferEvent>( listener.getEvents() );
+        checkEvents( events, expectedBytes );
+        listener.clear();
 
+        connector.get( artDowns, null );
+        events = new LinkedList<TransferEvent>( listener.getEvents() );
+        checkEvents( events, expectedBytes );
+        listener.clear();
+
+        connector.put( null, metaUps );
+        events = new LinkedList<TransferEvent>( listener.getEvents() );
+        checkEvents( events, expectedBytes );
+        listener.clear();
+
+        connector.get( null, metaDowns );
+        events = new LinkedList<TransferEvent>( listener.getEvents() );
+        checkEvents( events, expectedBytes );
+    }
+
+    private static void checkEvents( Queue<TransferEvent> events, long expectedBytes )
+    {
         TransferEvent currentEvent = events.poll();
-        assertNotNull( "initiate event is missing", currentEvent);
+        assertNotNull( "initiate event is missing", currentEvent );
         assertEquals( TransferEvent.EventType.INITIATED, currentEvent.getType() );
         // TODO: check mandatory attributes
 
         currentEvent = events.poll();
-        assertNotNull( "start event is missing", currentEvent);
+        assertNotNull( "start event is missing", currentEvent );
         assertEquals( TransferEvent.EventType.STARTED, currentEvent.getType() );
         // TODO: check mandatory attributes
 
@@ -99,7 +125,7 @@ public class TransferEventTester
             else
             {
                 assertTrue( progressed.equals( currentType ) );
-                assertTrue( currentEvent.getTransferredBytes() > transferredBytes);
+                assertTrue( currentEvent.getTransferredBytes() > transferredBytes );
                 transferredBytes = currentEvent.getTransferredBytes();
                 dataLength += currentEvent.getDataLength();
                 // TODO: check mandatory attributes
@@ -110,8 +136,8 @@ public class TransferEventTester
         assertEquals( 0, events.size() );
 
         // test transferred size
-        assertEquals( "progress events transferred bytes don't match", tmpFile.length(), dataLength );
-        assertEquals( "succeed event transferred bytes don't match", tmpFile.length(), succeedEvent.getTransferredBytes() );
+        assertEquals( "progress events transferred bytes don't match", expectedBytes, dataLength );
+        assertEquals( "succeed event transferred bytes don't match", expectedBytes, succeedEvent.getTransferredBytes() );
     }
 
     public static TestContext setupTestContext()
@@ -153,6 +179,11 @@ public class TransferEventTester
         {
             DefaultArtifact artifact =
                 new DefaultArtifact( "testGroup", "testArtifact", "sources", "jar", ( i + 1 ) + "-test" );
+            DefaultMetadata metadata =
+                new DefaultMetadata( "testGroup", "testArtifact", ( i + 1 ) + "test", "jar",
+                                     Metadata.Nature.RELEASE_OR_SNAPSHOT, file );
+                String context = null;
+                String checksumPolicy = null;
 
             T obj = null;
             if ( cls.isAssignableFrom( ArtifactUpload.class ) )
@@ -161,20 +192,15 @@ public class TransferEventTester
             }
             else if ( cls.isAssignableFrom( ArtifactDownload.class ) )
             {
-                String context = null;
-                String checksumPolicy = null;
                 obj = (T) new ArtifactDownload( artifact, context, file, checksumPolicy );
             }
             else if ( cls.isAssignableFrom( MetadataUpload.class ) )
             {
-                DefaultMetadata metadata =
-                    new DefaultMetadata( "testGroup", "testArtifact", ( i + 1 ) + "test", "jar",
-                                         Metadata.Nature.RELEASE_OR_SNAPSHOT, file );
                 obj = (T) new MetadataUpload( metadata, file );
             }
             else if ( cls.isAssignableFrom( MetadataDownload.class ) )
             {
-                obj = (T) new MetadataDownload();
+                obj = (T) new MetadataDownload(metadata, context, file, checksumPolicy);
             }
 
             ret.add( obj );

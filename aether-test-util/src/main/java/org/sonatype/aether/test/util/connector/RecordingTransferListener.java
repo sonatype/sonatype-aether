@@ -108,4 +108,10 @@ class RecordingTransferListener
             realListener.transferCorrupted( event );
         }
     }
+
+    public void clear()
+    {
+        events.clear();
+        progressEvents.clear();
+    }
 }
