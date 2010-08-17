@@ -420,7 +420,7 @@ class FileRepositoryWorker
                 event.setDataBuffer( buf.array() );
                 event.setDataLength( buf.position() );
                 event.setDataOffset( 0 );
-                event.setTransferredBytes( transferred );
+                event.setTransferredBytes( total );
                 catapult.fireProgressed( event );
 
                 buf.flip();
