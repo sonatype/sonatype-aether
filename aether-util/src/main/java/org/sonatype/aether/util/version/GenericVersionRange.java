@@ -92,6 +92,13 @@ final class GenericVersionRange
         {
             String parsedLowerBound = process.substring( 0, index ).trim();
             String parsedUpperBound = process.substring( index + 1 ).trim();
+            
+            // more than two bounds, e.g. (1,2,3)
+            if ( parsedUpperBound.contains( "," ) ) 
+            {
+                throw new InvalidVersionRangeException( range, "Invalid version range " + range
+                    + ", bounds may not contain additional ','");
+            }
 
             lowerBound =  parsedLowerBound.length() > 0 ? new GenericVersion( parsedLowerBound ) : null;
             upperBound = parsedUpperBound.length() > 0 ? new GenericVersion( parsedUpperBound ) : null;
