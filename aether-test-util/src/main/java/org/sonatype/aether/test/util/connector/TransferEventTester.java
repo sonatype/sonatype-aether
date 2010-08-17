@@ -170,7 +170,6 @@ public class TransferEventTester
 
     }
 
-    @SuppressWarnings( "unchecked" )
     public static <T extends Transfer> Collection<T> createTransfers( Class<T> cls, int count, File file )
     {
         ArrayList<T> ret = new ArrayList<T>();
@@ -182,28 +181,28 @@ public class TransferEventTester
             DefaultMetadata metadata =
                 new DefaultMetadata( "testGroup", "testArtifact", ( i + 1 ) + "test", "jar",
                                      Metadata.Nature.RELEASE_OR_SNAPSHOT, file );
-                String context = null;
-                String checksumPolicy = null;
+            String context = null;
+            String checksumPolicy = null;
 
-            T obj = null;
+            Object obj = null;
             if ( cls.isAssignableFrom( ArtifactUpload.class ) )
             {
-                obj = (T) new ArtifactUpload( artifact, file );
+                obj = new ArtifactUpload( artifact, file );
             }
             else if ( cls.isAssignableFrom( ArtifactDownload.class ) )
             {
-                obj = (T) new ArtifactDownload( artifact, context, file, checksumPolicy );
+                obj = new ArtifactDownload( artifact, context, file, checksumPolicy );
             }
             else if ( cls.isAssignableFrom( MetadataUpload.class ) )
             {
-                obj = (T) new MetadataUpload( metadata, file );
+                obj = new MetadataUpload( metadata, file );
             }
             else if ( cls.isAssignableFrom( MetadataDownload.class ) )
             {
-                obj = (T) new MetadataDownload(metadata, context, file, checksumPolicy);
+                obj = new MetadataDownload( metadata, context, file, checksumPolicy );
             }
 
-            ret.add( obj );
+            ret.add( cls.cast( obj ) );
         }
 
         return ret;
