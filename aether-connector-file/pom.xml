@@ -72,12 +72,6 @@ See the Apache License Version 2.0 for the specific language governing permissio
     	<version>${project.version}</version>
     	<scope>test</scope>
     </dependency>
-    <dependency>
-    	<groupId>org.sonatype.aether</groupId>
-    	<artifactId>aether-connector-test-util</artifactId>
-    	<version>${project.version}</version>
-    	<scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
