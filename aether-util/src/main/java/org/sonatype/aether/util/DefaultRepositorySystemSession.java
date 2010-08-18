@@ -40,7 +40,7 @@ import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector;
 import org.sonatype.aether.util.graph.selector.OptionalDependencySelector;
 import org.sonatype.aether.util.graph.selector.ScopeDependencySelector;
 import org.sonatype.aether.util.graph.transformer.ChainedDependencyGraphTransformer;
-import org.sonatype.aether.util.graph.transformer.ClassicVersionConflictResolver;
+import org.sonatype.aether.util.graph.transformer.NearestVersionConflictResolver;
 import org.sonatype.aether.util.graph.transformer.ConflictMarker;
 import org.sonatype.aether.util.graph.transformer.JavaDependencyContextRefiner;
 import org.sonatype.aether.util.graph.transformer.JavaEffectiveScopeCalculator;
@@ -130,7 +130,7 @@ public class DefaultRepositorySystemSession
 
         DependencyGraphTransformer transformer =
             new ChainedDependencyGraphTransformer( new ConflictMarker(), new JavaEffectiveScopeCalculator(),
-                                                   new ClassicVersionConflictResolver(),
+                                                   new NearestVersionConflictResolver(),
                                                    new JavaDependencyContextRefiner() );
         session.setDependencyGraphTransformer( transformer );
 

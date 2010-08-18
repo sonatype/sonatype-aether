@@ -37,7 +37,7 @@ import org.sonatype.aether.VersionConstraint;
  * 
  * @author Benjamin Bentmann
  */
-public class ClassicVersionConflictResolver
+public class NearestVersionConflictResolver
     implements DependencyGraphTransformer
 {
 
