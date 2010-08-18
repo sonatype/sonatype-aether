@@ -51,7 +51,7 @@ import org.sonatype.aether.Version;
  * @author <a href="mailto:kenney@apache.org">Kenney Westerhof</a>
  * @author <a href="mailto:hboutemy@apache.org">Hervé Boutemy</a>
  */
-public final class MavenVersion
+public final class GenericVersion
     implements Version
 {
 
@@ -347,7 +347,7 @@ public final class MavenVersion
      * 
      * @param version The version string to parse, must not be {@code null}.
      */
-    public MavenVersion( String version )
+    public GenericVersion( String version )
     {
         this.value = version;
 
@@ -449,12 +449,12 @@ public final class MavenVersion
 
     public int compareTo( Version o )
     {
-        return items.compareTo( ( (MavenVersion) o ).items );
+        return items.compareTo( ( (GenericVersion) o ).items );
     }
 
     public boolean equals( Object o )
     {
-        return ( o instanceof MavenVersion ) && canonical.equals( ( (MavenVersion) o ).canonical );
+        return ( o instanceof GenericVersion ) && canonical.equals( ( (GenericVersion) o ).canonical );
     }
 
     public int hashCode()

@@ -1,4 +1,4 @@
-package org.sonatype.aether.util;
+package org.sonatype.aether.util.version;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,7 +21,7 @@ package org.sonatype.aether.util;
 
 import java.util.Locale;
 
-import org.sonatype.aether.util.version.MavenVersion;
+import org.sonatype.aether.util.version.GenericVersion;
 
 import junit.framework.TestCase;
 
@@ -31,13 +31,13 @@ import junit.framework.TestCase;
  * @author <a href="mailto:hboutemy@apache.org">Hervé Boutemy</a>
  */
 @SuppressWarnings( "unchecked" )
-public class MavenVersionTest
+public class GenericVersionTest
     extends TestCase
 {
 
     private Comparable newComparable( String version )
     {
-        return new MavenVersion( version );
+        return new GenericVersion( version );
     }
 
     private static final String[] VERSIONS_QUALIFIER =

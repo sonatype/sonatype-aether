@@ -18,25 +18,25 @@ import org.sonatype.aether.InvalidVersionRangeException;
 import org.sonatype.aether.VersionScheme;
 
 /**
- * Maven specific {@link VersionScheme}.
+ * A version scheme using {@link GenericVersion}.
  * 
  * @author Benjamin Bentmann
  * @author Alin Dreghiciu
  */
-public class MavenVersionScheme
+public class GenericVersionScheme
     implements VersionScheme
 {
 
-    public MavenVersion parseVersion( final String version )
+    public GenericVersion parseVersion( final String version )
         throws InvalidVersionException
     {
-        return new MavenVersion( version );
+        return new GenericVersion( version );
     }
 
-    public MavenVersionRange parseVersionRange( final String range )
+    public GenericVersionRange parseVersionRange( final String range )
         throws InvalidVersionRangeException
     {
-        return new MavenVersionRange( range );
+        return new GenericVersionRange( range );
     }
 
     @Override

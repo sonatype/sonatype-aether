@@ -23,7 +23,7 @@ import org.sonatype.aether.VersionRange;
  * @author Benjamin Bentmann
  * @author Alin Dreghiciu
  */
-public final class MavenVersionRange
+public final class GenericVersionRange
     implements VersionRange
 {
 
@@ -41,7 +41,7 @@ public final class MavenVersionRange
      * @param range The range specification to parse, must not be {@code null}.
      * @throws InvalidVersionRangeException If the range could not be parsed.
      */
-    public MavenVersionRange( String range )
+    public GenericVersionRange( String range )
         throws InvalidVersionRangeException
     {
         String process = range;
@@ -86,15 +86,15 @@ public final class MavenVersionRange
                     + ", single version must be surrounded by []" );
             }
 
-            lowerBound = upperBound = new MavenVersion( process.trim() );
+            lowerBound = upperBound = new GenericVersion( process.trim() );
         }
         else
         {
             String parsedLowerBound = process.substring( 0, index ).trim();
             String parsedUpperBound = process.substring( index + 1 ).trim();
 
-            lowerBound =  parsedLowerBound.length() > 0 ? new MavenVersion( parsedLowerBound ) : null;
-            upperBound = parsedUpperBound.length() > 0 ? new MavenVersion( parsedUpperBound ) : null;
+            lowerBound =  parsedLowerBound.length() > 0 ? new GenericVersion( parsedLowerBound ) : null;
+            upperBound = parsedUpperBound.length() > 0 ? new GenericVersion( parsedUpperBound ) : null;
 
             if ( upperBound != null && lowerBound != null && upperBound.compareTo( lowerBound ) < 0 )
             {
@@ -104,7 +104,7 @@ public final class MavenVersionRange
         }    	
     }    
 
-    public MavenVersionRange( Version lowerBound, boolean lowerBoundInclusive, Version upperBound,
+    public GenericVersionRange( Version lowerBound, boolean lowerBoundInclusive, Version upperBound,
                               boolean upperBoundInclusive )
     {
         this.lowerBound = lowerBound;
@@ -205,7 +205,7 @@ public final class MavenVersionRange
             return false;
         }
 
-        MavenVersionRange that = (MavenVersionRange) obj;
+        GenericVersionRange that = (GenericVersionRange) obj;
 
         return upperBoundInclusive == that.upperBoundInclusive && lowerBoundInclusive == that.lowerBoundInclusive
             && eq( upperBound, that.upperBound ) && eq( lowerBound, that.lowerBound );
