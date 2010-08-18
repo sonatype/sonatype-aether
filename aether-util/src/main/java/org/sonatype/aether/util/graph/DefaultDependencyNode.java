@@ -56,6 +56,14 @@ public class DefaultDependencyNode
     private String context = "";
 
     /**
+     * Creates an empty dependency node.
+     */
+    public DefaultDependencyNode()
+    {
+        // enables no-arg constructor
+    }
+
+    /**
      * Creates a new root node with the specified dependency.
      * 
      * @param dependency The dependency associated with this node, may be {@code null}.

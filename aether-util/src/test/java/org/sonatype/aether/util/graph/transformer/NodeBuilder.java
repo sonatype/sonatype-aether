@@ -20,7 +20,11 @@ import org.sonatype.aether.Artifact;
 import org.sonatype.aether.DefaultArtifact;
 import org.sonatype.aether.Dependency;
 import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.InvalidVersionException;
+import org.sonatype.aether.VersionConstraint;
+import org.sonatype.aether.VersionScheme;
 import org.sonatype.aether.util.graph.DefaultDependencyNode;
+import org.sonatype.aether.util.version.GenericVersionScheme;
 
 /**
  * @author Benjamin Bentmann
@@ -44,9 +48,9 @@ class NodeBuilder
 
     private String context;
 
-    private DependencyNode parent;
-
     private List<Artifact> relocations = new ArrayList<Artifact>();
+
+    private VersionScheme versionScheme = new GenericVersionScheme();
 
     public NodeBuilder artifactId( String artifactId )
     {
@@ -54,15 +58,15 @@ class NodeBuilder
         return this;
     }
 
-    public NodeBuilder scope( String scope )
+    public NodeBuilder version( String version )
     {
-        this.scope = scope;
+        this.version = version;
         return this;
     }
 
-    public NodeBuilder parent( DependencyNode parent )
+    public NodeBuilder scope( String scope )
     {
-        this.parent = parent;
+        this.scope = scope;
         return this;
     }
 
@@ -89,12 +93,24 @@ class NodeBuilder
     public DependencyNode build()
     {
         Dependency dependency = null;
+        DefaultDependencyNode node = new DefaultDependencyNode();
         if ( artifactId != null && artifactId.length() > 0 )
         {
             Artifact artifact = new DefaultArtifact( groupId, artifactId, classifier, ext, version );
             dependency = new Dependency( artifact, scope, optional );
+            node.setDependency( dependency );
+            try
+            {
+                node.setVersion( versionScheme.parseVersion( version ) );
+                VersionConstraint constraint = new VersionConstraint();
+                constraint.setPreferredVersion( node.getVersion() );
+                node.setVersionConstraint( constraint );
+            }
+            catch ( InvalidVersionException e )
+            {
+                throw new IllegalArgumentException( "bad version: " + e.getMessage(), e );
+            }
         }
-        DefaultDependencyNode node = new DefaultDependencyNode( dependency );
         node.setRequestContext( context );
         node.setRelocations( relocations );
         return node;

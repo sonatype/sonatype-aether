@@ -40,7 +40,6 @@ public class ConflictMarkerTest
         NodeBuilder builder = new NodeBuilder();
 
         DependencyNode root = builder.build();
-        builder.parent( root );
         root.getChildren().add( builder.artifactId( "a" ).build() );
         root.getChildren().add( builder.artifactId( "b" ).build() );
 
@@ -65,7 +64,6 @@ public class ConflictMarkerTest
         NodeBuilder builder = new NodeBuilder();
 
         DependencyNode root = builder.build();
-        builder.parent( root );
         root.getChildren().add( builder.artifactId( "a" ).build() );
         root.getChildren().add( builder.artifactId( "a" ).reloc( "reloc" ).build() );
 
@@ -89,7 +87,6 @@ public class ConflictMarkerTest
         NodeBuilder builder = new NodeBuilder();
 
         DependencyNode root = builder.build();
-        builder.parent( root );
         root.getChildren().add( builder.artifactId( "a" ).reloc( "reloc" ).build() );
         root.getChildren().add( builder.artifactId( "a" ).build() );
 
@@ -113,7 +110,6 @@ public class ConflictMarkerTest
         NodeBuilder builder = new NodeBuilder();
 
         DependencyNode root = builder.build();
-        builder.parent( root );
         root.getChildren().add( builder.artifactId( "a" ).build() );
         root.getChildren().add( builder.artifactId( "b" ).build() );
         root.getChildren().add( builder.artifactId( "c" ).reloc( "a" ).reloc( "b" ).build() );

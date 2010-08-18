@@ -76,7 +76,7 @@ class GraphNode
     @Override
     public String toString()
     {
-        return String.valueOf( getRepositories() );
+        return String.valueOf( getOutgoingEdges() );
     }
 
 }
