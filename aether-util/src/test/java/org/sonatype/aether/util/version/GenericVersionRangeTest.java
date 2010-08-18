@@ -1,4 +1,4 @@
-package org.sonatype.aether.util;
+package org.sonatype.aether.util.version;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -17,9 +17,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.sonatype.aether.InvalidVersionRangeException;
-import org.sonatype.aether.util.version.MavenVersionRange;
 
-public class MavenVersionRangeTest
+public class GenericVersionRangeTest
 {
     private static String[] invalidRanges = { "1.0", "[1.0", "(1.0", "1.0]", "1.0)", "[1,2,3]", "(1,2,3)", "[1,2,3)",
         "[2,1]", "1,2", "[1,1]", "(1)" };
@@ -36,7 +35,7 @@ public class MavenVersionRangeTest
         {
             try
             {
-                new MavenVersionRange( range );
+                new GenericVersionRange( range );
             }
             catch ( InvalidVersionRangeException e )
             {
@@ -52,7 +51,7 @@ public class MavenVersionRangeTest
         {
             try
             {
-                MavenVersionRange mvRange = new MavenVersionRange( range );
+                GenericVersionRange mvRange = new GenericVersionRange( range );
                 System.err.println( String.format( "lower bound: %s\nupper bound: %s\n", mvRange.getLowerBound(),
                                                    mvRange.getUpperBound() ) );
                 fail( range + " should be invalid." );
