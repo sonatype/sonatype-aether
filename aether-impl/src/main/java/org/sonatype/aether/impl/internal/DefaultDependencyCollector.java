@@ -47,6 +47,7 @@ import org.sonatype.aether.impl.ArtifactDescriptorReader;
 import org.sonatype.aether.impl.DependencyCollector;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.VersionRangeResolver;
+import org.sonatype.aether.util.ArtifactProperties;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
@@ -143,7 +144,14 @@ public class DefaultDependencyCollector
                 descriptorRequest.setArtifact( root.getArtifact() );
                 descriptorRequest.setRepositories( request.getRepositories() );
                 descriptorRequest.setRequestContext( request.getRequestContext() );
-                descriptorResult = descriptorReader.readArtifactDescriptor( session, descriptorRequest );
+                if ( isLackingDescriptor( root.getArtifact() ) )
+                {
+                    descriptorResult = new ArtifactDescriptorResult( descriptorRequest );
+                }
+                else
+                {
+                    descriptorResult = descriptorReader.readArtifactDescriptor( session, descriptorRequest );
+                }
             }
             catch ( ArtifactDescriptorException e )
             {
@@ -191,7 +199,7 @@ public class DefaultDependencyCollector
 
         boolean traverse = ( root == null ) || depTraverser.traverseDependency( root );
 
-        if ( traverse )
+        if ( traverse && !dependencies.isEmpty() )
         {
             DataPool pool = new DataPool( session );
 
@@ -314,9 +322,9 @@ public class DefaultDependencyCollector
                 }
                 disableVersionManagement = false;
 
-                boolean system = dependency.getArtifact().getFile() != null;
+                boolean noDescriptor = isLackingDescriptor( dependency.getArtifact() );
 
-                boolean traverse = !system && depTraverser.traverseDependency( dependency );
+                boolean traverse = !noDescriptor && depTraverser.traverseDependency( dependency );
 
                 VersionRangeResult rangeResult;
                 try
@@ -372,10 +380,9 @@ public class DefaultDependencyCollector
                         descriptorRequest.setRepositories( repos );
                         descriptorRequest.setRequestContext( result.getRequest().getRequestContext() );
 
-                        if ( system )
+                        if ( noDescriptor )
                         {
                             descriptorResult = new ArtifactDescriptorResult( descriptorRequest );
-                            descriptorResult.setArtifact( d.getArtifact() );
                         }
                         else
                         {
@@ -527,6 +534,11 @@ public class DefaultDependencyCollector
         }
 
         return null;
+    }
+
+    private boolean isLackingDescriptor( Artifact artifact )
+    {
+        return Boolean.parseBoolean( artifact.getProperty( ArtifactProperties.LACKS_DESCRIPTOR, "" ) );
     }
 
 }

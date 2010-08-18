@@ -110,19 +110,21 @@ public interface Artifact
     String getProperty( String key, String defaultValue );
 
     /**
-     * Gets the properties of this artifact. While the set of available properties is undefined, the following
+     * Gets the properties of this artifact. While the exact set of available properties is undefined, the following
      * properties are considered to be common:
      * <dl>
      * <dt>type</dt>
      * <dd>A high-level characterization of the artifact, e.g. "maven-plugin" or "test-jar".</dd>
      * <dt>language</dt>
      * <dd>The programming language this artifact is relevant for, e.g. "java" or "none".</dd>
+     * <dt>lacksDescriptor</dt>
+     * <dd>A boolean flag indicating whether the artifact has knowingly no accompanying artifact descriptor.</dd>
      * <dt>includesDependencies</dt>
-     * <dd>A boolean flag whether the artifact presents some kind of bundle that physically includes its dependencies,
-     * e.g. a fat WAR.</dd>
+     * <dd>A boolean flag indicating whether the artifact presents some kind of bundle that physically includes its
+     * dependencies, e.g. a fat WAR.</dd>
      * <dt>constitutesBuildPath</dt>
-     * <dd>A boolean flag whether the artifact is meant to be used for the compile/runtime/test build path of a consumer
-     * project.</dd>
+     * <dd>A boolean flag indicating whether the artifact is meant to be used for the compile/runtime/test build path of
+     * a consumer project.</dd>
      * </dl>
      * 
      * @return The (read-only) properties, never {@code null}.

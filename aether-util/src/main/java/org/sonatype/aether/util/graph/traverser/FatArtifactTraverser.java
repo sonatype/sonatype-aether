@@ -31,7 +31,8 @@ public class FatArtifactTraverser
 
     public boolean traverseDependency( Dependency dependency )
     {
-        return !Boolean.valueOf( dependency.getArtifact().getProperty( ArtifactProperties.INCLUDES_DEPENDENCIES, "" ) );
+        String prop = dependency.getArtifact().getProperty( ArtifactProperties.INCLUDES_DEPENDENCIES, "" );
+        return !Boolean.parseBoolean( prop );
     }
 
     public DependencyTraverser deriveChildTraverser( DependencyCollectionContext context )

@@ -33,14 +33,19 @@ public final class ArtifactProperties
     public static final String LANGUAGE = "language";
 
     /**
-     * A boolean flag whether the artifact presents some kind of bundle that physically includes its dependencies, e.g.
-     * a fat WAR.
+     * A boolean flag indicating whether the artifact has knowingly no accompanying artifact descriptor.
+     */
+    public static final String LACKS_DESCRIPTOR = "lacksDescriptor";
+
+    /**
+     * A boolean flag indicating whether the artifact presents some kind of bundle that physically includes its
+     * dependencies, e.g. a fat WAR.
      */
     public static final String INCLUDES_DEPENDENCIES = "includesDependencies";
 
     /**
-     * A boolean flag whether the artifact is meant to be used for the compile/runtime/test build path of a consumer
-     * project.
+     * A boolean flag indicating whether the artifact is meant to be used for the compile/runtime/test build path of a
+     * consumer project.
      */
     public static final String CONSTITUTES_BUILD_PATH = "constitutesBuildPath";
 

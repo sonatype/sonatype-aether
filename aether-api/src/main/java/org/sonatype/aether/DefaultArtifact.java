@@ -99,6 +99,12 @@ public final class DefaultArtifact
     public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version,
                             ArtifactType type )
     {
+        this( groupId, artifactId, classifier, extension, version, null, type );
+    }
+
+    public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version,
+                            Map<String, String> properties, ArtifactType type )
+    {
         this.groupId = emptify( groupId );
         this.artifactId = emptify( artifactId );
         if ( classifier != null || type == null )
@@ -119,14 +125,31 @@ public final class DefaultArtifact
         }
         this.version = emptify( version );
         this.file = null;
-        if ( type != null )
-        {
-            properties = new HashMap<String, String>( type.getProperties() );
-        }
-        else
+        this.properties = merge( properties, ( type != null ) ? type.getProperties() : null );
+    }
+
+    private static Map<String, String> merge( Map<String, String> dominant, Map<String, String> recessive )
+    {
+        Map<String, String> properties;
+
+        if ( ( dominant == null || dominant.isEmpty() ) && ( recessive == null || recessive.isEmpty() ) )
         {
             properties = Collections.emptyMap();
         }
+        else
+        {
+            properties = new HashMap<String, String>();
+            if ( recessive != null )
+            {
+                properties.putAll( recessive );
+            }
+            if ( dominant != null )
+            {
+                properties.putAll( dominant );
+            }
+        }
+
+        return properties;
     }
 
     public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version,
