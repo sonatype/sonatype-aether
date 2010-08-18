@@ -122,6 +122,10 @@ See the Apache License Version 2.0 for the specific language governing permissio
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>animal-sniffer-maven-plugin</artifactId>
+      </plugin>
     </plugins>
   </build>
 </project>

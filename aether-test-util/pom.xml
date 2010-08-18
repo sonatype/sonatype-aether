@@ -24,7 +24,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
 
   <artifactId>aether-test-util</artifactId>
 
-  <name>Aether :: TestUtilities</name>
+  <name>Aether :: Test Utilities</name>
   <description>
     A collection of utility classes to ease testing of the repository system.
   </description>
@@ -36,14 +36,23 @@ See the Apache License Version 2.0 for the specific language governing permissio
       <version>${project.version}</version>
     </dependency>
     <dependency>
-    	<groupId>org.sonatype.aether</groupId>
-    	<artifactId>aether-spi</artifactId>
-    	<version>${project.version}</version>
+      <groupId>org.sonatype.aether</groupId>
+      <artifactId>aether-spi</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-    	<groupId>junit</groupId>
-    	<artifactId>junit</artifactId>
-	<scope>compile</scope>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>animal-sniffer-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>
