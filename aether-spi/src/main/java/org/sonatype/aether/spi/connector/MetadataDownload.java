@@ -22,7 +22,7 @@ import org.sonatype.aether.MetadataTransferException;
 import org.sonatype.aether.RemoteRepository;
 
 /**
- * A download of metadata from a remote repository. A repository connector processing this upload has to use
+ * A download of metadata from a remote repository. A repository connector processing this download has to use
  * {@link #setState(State)} and {@link #setException(MetadataTransferException)} to report the results of the transfer.
  * 
  * @author Benjamin Bentmann
