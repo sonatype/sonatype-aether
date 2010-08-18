@@ -52,11 +52,11 @@ public class TransferEventTester
 
         RecordingTransferListener listener = new RecordingTransferListener();
 
-        TestContext ctx = setupTestContext( listener );
+        ConnectorTestContext ctx = setupTestContext( listener );
         testTransferEvents( factory, ctx );
     }
 
-    public static void testTransferEvents( RepositoryConnectorFactory factory, TestContext ctx )
+    public static void testTransferEvents( RepositoryConnectorFactory factory, ConnectorTestContext ctx )
         throws IOException, NoRepositoryConnectorException
     {
         RepositorySystemSession session = ctx.getSession();
@@ -140,12 +140,12 @@ public class TransferEventTester
         assertEquals( "succeed event transferred bytes don't match", expectedBytes, succeedEvent.getTransferredBytes() );
     }
 
-    public static TestContext setupTestContext()
+    public static ConnectorTestContext setupTestContext()
     {
         return setupTestContext( null );
     }
 
-    public static TestContext setupTestContext( TransferListener listener )
+    public static ConnectorTestContext setupTestContext( TransferListener listener )
     {
 
         File testRepo = new File( "target/test-repo" );
@@ -166,7 +166,7 @@ public class TransferEventTester
 
         TestRepositorySystemSession session = new TestRepositorySystemSession();
 
-        return new TestContext( repository, session );
+        return new ConnectorTestContext( repository, session );
 
     }
 

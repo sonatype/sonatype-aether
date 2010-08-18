@@ -16,21 +16,21 @@ package org.sonatype.aether.test.util.connector;
 import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositorySystemSession;
 
-public class TestContext
+public class ConnectorTestContext
 {
 
     private RemoteRepository repository;
 
     private RepositorySystemSession session;
 
-    public TestContext( RemoteRepository repository, RepositorySystemSession session )
+    public ConnectorTestContext( RemoteRepository repository, RepositorySystemSession session )
     {
         super();
         this.repository = repository;
         this.session = session;
     }
 
-    public TestContext()
+    public ConnectorTestContext()
     {
         super();
     }
