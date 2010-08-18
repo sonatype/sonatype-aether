@@ -13,41 +13,20 @@ package org.sonatype.aether.test.util.selectors;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.sonatype.aether.Authentication;
 import org.sonatype.aether.AuthenticationSelector;
 import org.sonatype.aether.RemoteRepository;
 
 /**
- * A simple authentication selector that selects authentication based on repository identifiers.
- * 
- * @author Benjamin Bentmann
+ * A simple authentication selector that never provides authentication.
  */
-public class DefaultAuthenticationSelector
+public class TestAuthenticationSelector
     implements AuthenticationSelector
 {
 
-    private final Map<String, Authentication> repos = new HashMap<String, Authentication>();
-
-    /**
-     * Adds the specified authentication info for the given repository identifier.
-     * 
-     * @param id The identifier of the repository to add the authentication for, must not be {@code null}.
-     * @param auth The authentication to add, must not be {@code null}.
-     * @return This selector for chaining, never {@code null}.
-     */
-    public DefaultAuthenticationSelector add( String id, Authentication auth )
-    {
-        repos.put( id, auth );
-
-        return this;
-    }
-
     public Authentication getAuthentication( RemoteRepository repository )
     {
-        return repos.get( repository.getId() );
+        return null;
     }
 
 }

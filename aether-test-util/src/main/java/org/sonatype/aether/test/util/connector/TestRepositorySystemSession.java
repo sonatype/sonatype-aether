@@ -32,14 +32,17 @@ import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.SessionData;
 import org.sonatype.aether.TransferListener;
 import org.sonatype.aether.WorkspaceReader;
-import org.sonatype.aether.test.util.selectors.DefaultAuthenticationSelector;
-import org.sonatype.aether.test.util.selectors.DefaultProxySelector;
+import org.sonatype.aether.test.util.selectors.TestAuthenticationSelector;
+import org.sonatype.aether.test.util.selectors.TestProxySelector;
 
 public class TestRepositorySystemSession
     implements RepositorySystemSession
 {
 
     private SessionData data = new TestSessionData();
+    private TransferListener listener = new RecordingTransferListener();
+    private AuthenticationSelector authenticator = new TestAuthenticationSelector();
+    private ProxySelector proxySelector = new TestProxySelector();
 
     public TransferListener getTransferListener()
     {
