@@ -13,6 +13,7 @@ package org.sonatype.aether.util.graph.transformer;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import org.sonatype.aether.DependencyGraphTransformationContext;
 import org.sonatype.aether.DependencyGraphTransformer;
 import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.RepositoryException;
@@ -67,12 +68,12 @@ public class ChainedDependencyGraphTransformer
         return new ChainedDependencyGraphTransformer( transformer1, transformer2 );
     }
 
-    public DependencyNode transformGraph( DependencyNode node )
+    public DependencyNode transformGraph( DependencyNode node, DependencyGraphTransformationContext context )
         throws RepositoryException
     {
         for ( DependencyGraphTransformer transformer : transformers )
         {
-            node = transformer.transformGraph( node );
+            node = transformer.transformGraph( node, context );
         }
         return node;
     }

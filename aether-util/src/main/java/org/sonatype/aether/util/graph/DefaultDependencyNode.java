@@ -14,6 +14,7 @@ package org.sonatype.aether.util.graph;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,21 +35,13 @@ public class DefaultDependencyNode
     implements DependencyNode
 {
 
-    private DependencyNode parent;
-
     private List<DependencyNode> children = new ArrayList<DependencyNode>( 0 );
-
-    private int depth;
 
     private Dependency dependency;
 
-    private String context = "";
-
     private List<Artifact> relocations = Collections.emptyList();
 
-    private List<Artifact> aliases = Collections.emptyList();
-
-    private Object conflictId;
+    private Collection<Artifact> aliases = Collections.emptyList();
 
     private VersionConstraint versionConstraint;
 
@@ -60,6 +53,8 @@ public class DefaultDependencyNode
 
     private List<RemoteRepository> repositories = Collections.emptyList();
 
+    private String context = "";
+
     /**
      * Creates a new root node with the specified dependency.
      * 
@@ -68,91 +63,46 @@ public class DefaultDependencyNode
     public DefaultDependencyNode( Dependency dependency )
     {
         this.dependency = dependency;
-        this.parent = null;
-        this.depth = 0;
     }
 
     /**
-     * Creates a new node with the specified dependency and parent.
+     * Creates a shallow clone of the specified node.
      * 
-     * @param dependency The dependency associated with this node, may be {@code null}.
-     * @param parent The parent node, may be {@code null}.
+     * @param node The node to copy, must not be {@code null}.
      */
-    public DefaultDependencyNode( Dependency dependency, DependencyNode parent )
+    public DefaultDependencyNode( DependencyNode node )
     {
-        this.dependency = dependency;
-        this.parent = parent;
-        this.depth = ( parent != null ) ? parent.getDepth() + 1 : 0;
+        setDependency( node.getDependency() );
+        setAliases( node.getAliases() );
+        setRequestContext( node.getRequestContext() );
+        setPremanagedScope( node.getPremanagedScope() );
+        setPremanagedVersion( node.getPremanagedVersion() );
+        setRelocations( node.getRelocations() );
+        setRepositories( node.getRepositories() );
+        setVersion( node.getVersion() );
+        setVersionConstraint( node.getVersionConstraint() );
     }
 
-    /**
-     * Gets the parent node of this node (if any).
-     * 
-     * @return The parent node or {@code null} if this node denotes the root of the dependency graph.
-     */
-    public DependencyNode getParent()
-    {
-        return parent;
-    }
-
-    /**
-     * Gets the depth of this node within the dependency graph. The root node has depth zero.
-     * 
-     * @return The depth of this node within the dependency graph.
-     */
-    public int getDepth()
-    {
-        return depth;
-    }
-
-    /**
-     * Gets the child nodes of this node.
-     * 
-     * @return The child nodes of this node, never {@code null}.
-     */
     public List<DependencyNode> getChildren()
     {
         return children;
     }
 
-    /**
-     * Gets the dependency associated with this node. <em>Note:</em> For dependency graphs that have been constructed
-     * without a root dependency, the root node will not have a dependency associated with it.
-     * 
-     * @return The dependency or {@code null} if none.
-     */
     public Dependency getDependency()
     {
         return dependency;
     }
 
-    /**
-     * Gets the context in which this dependency node was created.
-     * 
-     * @return The context, never {@code null}.
-     */
-    public String getContext()
+    public void setDependency( Dependency dependency )
     {
-        return context;
+        this.dependency = dependency;
     }
 
-    /**
-     * Sets the context in which this dependency node was created.
-     * 
-     * @param context The context, may be {@code null}.
-     * @return This dependency node for chaining, never {@code null}.
-     */
-    public DefaultDependencyNode setContext( String context )
+    public void setArtifact( Artifact artifact )
     {
-        this.context = ( context != null ) ? context : "";
-        return this;
+        dependency = dependency.setArtifact( artifact );
     }
 
-    /**
-     * Gets the sequence of relocations that was followed to resolve this dependency's artifact.
-     * 
-     * @return The sequence of relocations, never {@code null}.
-     */
     public List<Artifact> getRelocations()
     {
         return relocations;
@@ -162,9 +112,8 @@ public class DefaultDependencyNode
      * Sets the sequence of relocations that was followed to resolve this dependency's artifact.
      * 
      * @param relocations The sequence of relocations, may be {@code null}.
-     * @return This dependency node for chaining, never {@code null}.
      */
-    public DefaultDependencyNode setRelocations( List<Artifact> relocations )
+    public void setRelocations( List<Artifact> relocations )
     {
         if ( relocations == null || relocations.isEmpty() )
         {
@@ -174,17 +123,9 @@ public class DefaultDependencyNode
         {
             this.relocations = relocations;
         }
-        return this;
     }
 
-    /**
-     * Gets the known aliases for this dependency's artifact. An alias can be used to mark a patched rebuild of some
-     * other artifact as such, thereby allowing conflict resolution to consider the patched and the orginal artifact as
-     * a conflict.
-     * 
-     * @return The known aliases, never {@code null}.
-     */
-    public List<Artifact> getAliases()
+    public Collection<Artifact> getAliases()
     {
         return aliases;
     }
@@ -193,9 +134,8 @@ public class DefaultDependencyNode
      * Sets the known aliases for this dependency's artifact.
      * 
      * @param aliases The known aliases, may be {@code null}.
-     * @return This dependency node for chaining, never {@code null}.
      */
-    public DefaultDependencyNode setAliases( List<Artifact> aliases )
+    public void setAliases( Collection<Artifact> aliases )
     {
         if ( aliases == null || aliases.isEmpty() )
         {
@@ -205,46 +145,16 @@ public class DefaultDependencyNode
         {
             this.aliases = aliases;
         }
-        return this;
     }
 
-    /**
-     * Gets the conflict identifier for this node. Nodes having equal conflict identifiers are considered a conflict
-     * group and are subject to conflict resolution.
-     * 
-     * @return The conflict identifier or {@code null} if none.
-     */
-    public Object getConflictId()
-    {
-        return conflictId;
-    }
-
-    /**
-     * Sets the conflict identifier for this node.
-     * 
-     * @param conflictId The conflict identifier, may be {@code null}.
-     * @return This dependency node for chaining, never {@code null}.
-     */
-    public DefaultDependencyNode setConflictId( Object conflictId )
-    {
-        this.conflictId = conflictId;
-        return this;
-    }
-
-    /**
-     * Gets the version constraint that was parsed from the dependency's version declaration.
-     * 
-     * @return The version constraint for this node or {@code null}.
-     */
     public VersionConstraint getVersionConstraint()
     {
         return versionConstraint;
     }
 
-    public DefaultDependencyNode setVersionConstraint( VersionConstraint versionConstraint )
+    public void setVersionConstraint( VersionConstraint versionConstraint )
     {
         this.versionConstraint = versionConstraint;
-        return this;
     }
 
     public Version getVersion()
@@ -252,29 +162,16 @@ public class DefaultDependencyNode
         return version;
     }
 
-    public DefaultDependencyNode setVersion( Version version )
+    public void setVersion( Version version )
     {
         this.version = version;
-        return this;
     }
 
-    public DefaultDependencyNode setScope( String scope )
+    public void setScope( String scope )
     {
         dependency = dependency.setScope( scope );
-        return this;
     }
 
-    public DependencyNode setArtifact( Artifact artifact )
-    {
-        dependency = dependency.setArtifact( artifact );
-        return this;
-    }
-
-    /**
-     * Gets the version or version range for this dependency before dependency management was applied (if any).
-     * 
-     * @return The dependency version before dependency management or {@code null} if the version was not managed.
-     */
     public String getPremanagedVersion()
     {
         return premanagedVersion;
@@ -285,19 +182,12 @@ public class DefaultDependencyNode
      * 
      * @param premanagedVersion The originally declared dependency version or {@code null} if the version was not
      *            managed.
-     * @return This dependency node for chaining, never {@code null}.
      */
-    public DefaultDependencyNode setPremanagedVersion( String premanagedVersion )
+    public void setPremanagedVersion( String premanagedVersion )
     {
         this.premanagedVersion = premanagedVersion;
-        return this;
     }
 
-    /**
-     * Gets the scope for this dependency before dependency management was applied (if any).
-     * 
-     * @return The dependency scope before dependency management or {@code null} if the scope was not managed.
-     */
     public String getPremanagedScope()
     {
         return premanagedScope;
@@ -307,19 +197,12 @@ public class DefaultDependencyNode
      * Sets the scope for this dependency before dependency management was applied (if any).
      * 
      * @param premanagedScope The originally declared dependency scope or {@code null} if the scope was not managed.
-     * @return This dependency node for chaining, never {@code null}.
      */
-    public DefaultDependencyNode setPremanagedScope( String premanagedScope )
+    public void setPremanagedScope( String premanagedScope )
     {
         this.premanagedScope = premanagedScope;
-        return this;
     }
 
-    /**
-     * Gets the remote repositories from which this node's artifact shall be resolved.
-     * 
-     * @return The remote repositories to use for artifact resolution, never {@code null}.
-     */
     public List<RemoteRepository> getRepositories()
     {
         return repositories;
@@ -329,9 +212,8 @@ public class DefaultDependencyNode
      * Sets the remote repositories from which this node's artifact shall be resolved.
      * 
      * @param repositories The remote repositories to use for artifact resolution, may be {@code null}.
-     * @return This dependency node for chaining, never {@code null}.
      */
-    public DefaultDependencyNode setRepositories( List<RemoteRepository> repositories )
+    public void setRepositories( List<RemoteRepository> repositories )
     {
         if ( repositories == null || repositories.isEmpty() )
         {
@@ -341,15 +223,18 @@ public class DefaultDependencyNode
         {
             this.repositories = repositories;
         }
-        return this;
     }
 
-    /**
-     * Traverses this node and potentially its children using the specified visitor.
-     * 
-     * @param visitor The visitor to call back, must not be {@code null}.
-     * @return {@code true} to visit siblings nodes of this node as well, {@code false} to skip siblings.
-     */
+    public String getRequestContext()
+    {
+        return context;
+    }
+
+    public void setRequestContext( String context )
+    {
+        this.context = ( context != null ) ? context : "";
+    }
+
     public boolean accept( DependencyVisitor visitor )
     {
         if ( visitor.visitEnter( this ) )

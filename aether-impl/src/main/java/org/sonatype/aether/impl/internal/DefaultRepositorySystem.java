@@ -14,7 +14,6 @@ package org.sonatype.aether.impl.internal;
  */
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -29,10 +28,10 @@ import org.sonatype.aether.ArtifactResolutionException;
 import org.sonatype.aether.ArtifactResult;
 import org.sonatype.aether.CollectRequest;
 import org.sonatype.aether.CollectResult;
-import org.sonatype.aether.Dependency;
 import org.sonatype.aether.DependencyCollectionException;
 import org.sonatype.aether.DependencyFilter;
 import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.DependencyVisitor;
 import org.sonatype.aether.DeployRequest;
 import org.sonatype.aether.DeployResult;
 import org.sonatype.aether.DeploymentException;
@@ -63,6 +62,7 @@ import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.util.graph.FilteringDependencyVisitor;
 
 /**
  * @author Benjamin Bentmann
@@ -246,36 +246,23 @@ public class DefaultRepositorySystem
                                                      DependencyFilter filter )
         throws ArtifactResolutionException
     {
-        List<ArtifactRequest> requests = new ArrayList<ArtifactRequest>();
-        toArtifactRequest( requests, node, filter );
+        ArtifactRequestBuilder builder = new ArtifactRequestBuilder();
+        DependencyVisitor visitor = ( filter != null ) ? new FilteringDependencyVisitor( builder, filter ) : builder;
+        node.accept( visitor );
+        List<ArtifactRequest> requests = builder.getRequests();
 
         List<ArtifactResult> results = resolveArtifacts( session, requests );
 
         for ( ArtifactResult result : results )
         {
             Artifact artifact = result.getArtifact();
-            if ( artifact != null && artifact.getFile() != null )
+            if ( artifact != null )
             {
                 result.getRequest().getDependencyNode().setArtifact( artifact );
             }
         }
 
         return results;
-    }
-
-    private void toArtifactRequest( List<ArtifactRequest> requests, DependencyNode node, DependencyFilter filter )
-    {
-        Dependency dependency = node.getDependency();
-        if ( dependency != null && ( filter == null || filter.accept( node ) ) )
-        {
-            ArtifactRequest request = new ArtifactRequest( node );
-            requests.add( request );
-        }
-
-        for ( DependencyNode child : node.getChildren() )
-        {
-            toArtifactRequest( requests, child, filter );
-        }
     }
 
     public List<ArtifactResult> resolveDependencies( RepositorySystemSession session, CollectRequest request,

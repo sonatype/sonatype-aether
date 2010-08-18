@@ -19,7 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.DependencyCollectionContext;
 import org.sonatype.aether.DependencySelector;
 
 /**
@@ -100,14 +100,14 @@ public class AndDependencySelector
         return true;
     }
 
-    public DependencySelector deriveChildSelector( DependencyNode node )
+    public DependencySelector deriveChildSelector( DependencyCollectionContext context )
     {
         int seen = 0;
         Set<DependencySelector> childSelectors = null;
 
         for ( DependencySelector selector : selectors )
         {
-            DependencySelector childSelector = selector.deriveChildSelector( node );
+            DependencySelector childSelector = selector.deriveChildSelector( context );
             if ( childSelectors != null )
             {
                 childSelectors.add( childSelector );

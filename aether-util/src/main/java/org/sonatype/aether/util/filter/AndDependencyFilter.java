@@ -16,6 +16,7 @@ package org.sonatype.aether.util.filter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 import org.sonatype.aether.DependencyFilter;
 import org.sonatype.aether.DependencyNode;
@@ -77,11 +78,11 @@ public class AndDependencyFilter
         return new AndDependencyFilter( filter1, filter2 );
     }
 
-    public boolean accept( DependencyNode node )
+    public boolean accept( DependencyNode node, List<DependencyNode> parents )
     {
         for ( DependencyFilter filter : filters )
         {
-            if ( !filter.accept( node ) )
+            if ( !filter.accept( node, parents ) )
             {
                 return false;
             }

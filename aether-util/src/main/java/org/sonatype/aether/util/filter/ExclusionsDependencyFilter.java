@@ -15,6 +15,7 @@ package org.sonatype.aether.util.filter;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 import org.sonatype.aether.Dependency;
 import org.sonatype.aether.DependencyFilter;
@@ -32,8 +33,8 @@ public class ExclusionsDependencyFilter
     private final Collection<String> excludes = new HashSet<String>();
 
     /**
-     * Creates a new filter using the specified exclude patterns. A pattern can either be of the form {@code
-     * groupId:artifactId} (recommended) or just {@code artifactId}.
+     * Creates a new filter using the specified exclude patterns. A pattern can either be of the form
+     * {@code groupId:artifactId} (recommended) or just {@code artifactId}.
      * 
      * @param excludes The exclude patterns, may be {@code null} or empty to exclude no artifacts.
      */
@@ -45,7 +46,7 @@ public class ExclusionsDependencyFilter
         }
     }
 
-    public boolean accept( DependencyNode node )
+    public boolean accept( DependencyNode node, List<DependencyNode> parents )
     {
         Dependency dependency = node.getDependency();
 

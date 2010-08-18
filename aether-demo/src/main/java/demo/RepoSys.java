@@ -36,7 +36,7 @@ import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.connector.wagon.WagonProvider;
 import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
-import org.sonatype.aether.util.graph.FileListGenerator;
+import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
 
 public class RepoSys
 {
@@ -84,7 +84,9 @@ public class RepoSys
         System.out.println( "Resolution results" );
         dump( node, "" );
 
-        System.out.println( FileListGenerator.getClassPath( node ) );
+        PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
+        node.accept( nlg );
+        System.out.println( nlg.getClassPath() );
 
         System.out.println( "------------------------------------------------------------" );
         System.out.println( "Deployment into repository" );

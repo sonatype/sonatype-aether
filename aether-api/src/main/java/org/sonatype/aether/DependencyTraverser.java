@@ -14,8 +14,7 @@ package org.sonatype.aether;
  */
 
 /**
- * Decides whether the dependencies of a dependency node should be traversed as well. The dependency tree builder will
- * maintain one dependency traverser for each node of the dependency tree.
+ * Decides whether the dependencies of a dependency node should be traversed as well.
  * 
  * @author Benjamin Bentmann
  */
@@ -23,22 +22,22 @@ public interface DependencyTraverser
 {
 
     /**
-     * Decides whether the transitive dependencies of the specified dependency should be traversed.
+     * Decides whether the dependencies of the specified dependency should be traversed.
      * 
      * @param dependency The dependency to check, must not be {@code null}.
-     * @return {@code true} if the dependency tree builder should recurse into the specified dependency and process its
+     * @return {@code true} if the dependency graph builder should recurse into the specified dependency and process its
      *         dependencies, {@code false} otherwise.
      */
     boolean traverseDependency( Dependency dependency );
 
     /**
-     * Derives a dependency traverser that will be used to decide whether the transitive dependencies of the specified
-     * node's dependencies shall be processed. When calculating the child traverser, implementors are strongly advised
-     * to simply return the current instance if nothing changed to help save memory.
+     * Derives a dependency traverser that will be used to decide whether the transitive dependencies of the dependency
+     * given in the collection context shall be traversed. When calculating the child traverser, implementors are
+     * strongly advised to simply return the current instance if nothing changed to help save memory.
      * 
-     * @param node The node to derive a traverser for, must not be {@code null}.
-     * @return The dependency traverser for the node, must not be {@code null}.
+     * @param context The dependency collection context, must not be {@code null}.
+     * @return The dependency traverser for the target node, must not be {@code null}.
      */
-    DependencyTraverser deriveChildTraverser( DependencyNode node );
+    DependencyTraverser deriveChildTraverser( DependencyCollectionContext context );
 
 }

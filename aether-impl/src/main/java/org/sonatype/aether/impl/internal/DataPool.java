@@ -59,7 +59,7 @@ final class DataPool
 
     private Map<Object, Constraint> constraints = new WeakHashMap<Object, Constraint>();
 
-    private Map<Object, LightDependencyNode> nodes = new HashMap<Object, LightDependencyNode>();
+    private Map<Object, GraphNode> nodes = new HashMap<Object, GraphNode>();
 
     @SuppressWarnings( "unchecked" )
     public DataPool( RepositorySystemSession session )
@@ -151,18 +151,23 @@ final class DataPool
         constraints.put( key, new Constraint( result ) );
     }
 
-    public Object toKey( Dependency dependency, List<RemoteRepository> repositories, DependencySelector selector,
-                         DependencyManager manager, DependencyTraverser traverser )
+    public Object toKey( Artifact artifact, List<RemoteRepository> repositories )
     {
-        return new NodeKey( dependency, repositories, selector, manager, traverser );
+        return new NodeKey( artifact, repositories );
     }
 
-    public LightDependencyNode getNode( Object key )
+    public Object toKey( Artifact artifact, List<RemoteRepository> repositories, DependencySelector selector,
+                         DependencyManager manager, DependencyTraverser traverser )
+    {
+        return new GraphKey( artifact, repositories, selector, manager, traverser );
+    }
+
+    public GraphNode getNode( Object key )
     {
         return nodes.get( key );
     }
 
-    public void putNode( Object key, LightDependencyNode node )
+    public void putNode( Object key, GraphNode node )
     {
         nodes.put( key, node );
     }
@@ -328,33 +333,20 @@ final class DataPool
     static class NodeKey
     {
 
-        private final Dependency dependency;
+        private final Artifact artifact;
 
         private final List<RemoteRepository> repositories;
 
-        private final DependencySelector selector;
-
-        private final DependencyManager manager;
-
-        private final DependencyTraverser traverser;
-
         private final int hashCode;
 
-        public NodeKey( Dependency dependency, List<RemoteRepository> repositories, DependencySelector selector,
-                        DependencyManager manager, DependencyTraverser traverser )
+        public NodeKey( Artifact artifact, List<RemoteRepository> repositories )
         {
-            this.dependency = dependency;
+            this.artifact = artifact;
             this.repositories = repositories;
-            this.selector = selector;
-            this.manager = manager;
-            this.traverser = traverser;
 
             int hash = 17;
-            hash = hash * 31 + dependency.hashCode();
+            hash = hash * 31 + artifact.hashCode();
             hash = hash * 31 + repositories.hashCode();
-            hash = hash * 31 + selector.hashCode();
-            hash = hash * 31 + manager.hashCode();
-            hash = hash * 31 + traverser.hashCode();
             hashCode = hash;
         }
 
@@ -370,7 +362,63 @@ final class DataPool
                 return false;
             }
             NodeKey that = (NodeKey) obj;
-            return dependency.equals( that.dependency ) && repositories.equals( that.repositories )
+            return artifact.equals( that.artifact ) && repositories.equals( that.repositories );
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return hashCode;
+        }
+
+    }
+
+    static class GraphKey
+    {
+
+        private final Artifact artifact;
+
+        private final List<RemoteRepository> repositories;
+
+        private final DependencySelector selector;
+
+        private final DependencyManager manager;
+
+        private final DependencyTraverser traverser;
+
+        private final int hashCode;
+
+        public GraphKey( Artifact artifact, List<RemoteRepository> repositories, DependencySelector selector,
+                         DependencyManager manager, DependencyTraverser traverser )
+        {
+            this.artifact = artifact;
+            this.repositories = repositories;
+            this.selector = selector;
+            this.manager = manager;
+            this.traverser = traverser;
+
+            int hash = 17;
+            hash = hash * 31 + artifact.hashCode();
+            hash = hash * 31 + repositories.hashCode();
+            hash = hash * 31 + selector.hashCode();
+            hash = hash * 31 + manager.hashCode();
+            hash = hash * 31 + traverser.hashCode();
+            hashCode = hash;
+        }
+
+        @Override
+        public boolean equals( Object obj )
+        {
+            if ( obj == this )
+            {
+                return true;
+            }
+            else if ( !( obj instanceof GraphKey ) )
+            {
+                return false;
+            }
+            GraphKey that = (GraphKey) obj;
+            return artifact.equals( that.artifact ) && repositories.equals( that.repositories )
                 && selector.equals( that.selector ) && manager.equals( that.manager )
                 && traverser.equals( that.traverser );
         }

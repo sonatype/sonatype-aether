@@ -16,11 +16,12 @@ package org.sonatype.aether.util.graph.transformer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.Map;
 
+import org.sonatype.aether.DependencyGraphTransformationContext;
 import org.sonatype.aether.DependencyGraphTransformer;
 import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.RepositoryException;
@@ -40,26 +41,47 @@ public class ClassicVersionConflictResolver
     implements DependencyGraphTransformer
 {
 
-    public DependencyNode transformGraph( DependencyNode node )
+    public DependencyNode transformGraph( DependencyNode node, DependencyGraphTransformationContext context )
         throws RepositoryException
     {
+        Map<?, ?> conflictIds = (Map<?, ?>) context.get( TransformationContextKeys.CONFLICT_IDS );
+        if ( conflictIds == null )
+        {
+            throw new RepositoryException( "conflict groups have not been identified" );
+        }
+
         Map<Object, ConflictGroup> groups = new HashMap<Object, ConflictGroup>( 1024 );
-        analyze( node, groups );
-        prune( node, groups );
+        Map<DependencyNode, Integer> depths = new IdentityHashMap<DependencyNode, Integer>( 1024 );
+
+        analyze( node, 0, depths, groups, conflictIds );
+
+        prune( node, 0, groups, conflictIds );
+
         return node;
     }
 
-    private void analyze( DependencyNode node, Map<Object, ConflictGroup> groups )
+    private void analyze( DependencyNode node, int depth, Map<DependencyNode, Integer> depths,
+                          Map<Object, ConflictGroup> groups, Map<?, ?> conflictIds )
         throws RepositoryException
     {
+        Integer smallestDepth = depths.get( node );
+        if ( smallestDepth == null || smallestDepth.intValue() > depth )
+        {
+            depths.put( node, Integer.valueOf( depth ) );
+        }
+        else
+        {
+            return;
+        }
+
         if ( node.getDependency() != null )
         {
-            Object key = node.getConflictId();
+            Object key = conflictIds.get( node );
 
             ConflictGroup group = groups.get( key );
             if ( group == null )
             {
-                group = new ConflictGroup( key, node.getVersionConstraint().getPreferredVersion(), node.getDepth() );
+                group = new ConflictGroup( key, node.getVersionConstraint().getPreferredVersion(), depth );
                 groups.put( key, group );
             }
             else if ( !group.isAcceptable( node.getVersion() ) )
@@ -67,29 +89,34 @@ public class ClassicVersionConflictResolver
                 return;
             }
 
-            group.versions.add( node.getVersion() );
+            smallestDepth = group.versions.get( node.getVersion() );
+            if ( smallestDepth == null || smallestDepth.intValue() > depth )
+            {
+                group.versions.put( node.getVersion(), Integer.valueOf( depth ) );
+            }
+
             if ( !node.getVersionConstraint().getRanges().isEmpty() )
             {
                 group.constraints.add( node.getVersionConstraint() );
             }
 
-            if ( node.getDepth() < group.depth )
+            if ( depth < group.depth )
             {
-                group.depth = node.getDepth();
-
                 Version recommendedVersion = node.getVersionConstraint().getPreferredVersion();
                 if ( group.isAcceptable( recommendedVersion ) )
                 {
                     group.version = recommendedVersion;
+                    group.depth = depth;
                 }
             }
 
             if ( !group.isAcceptable( group.version ) )
             {
                 group.version = null;
-                for ( Iterator<Version> it = group.versions.iterator(); it.hasNext(); )
+                for ( Iterator<Map.Entry<Version, Integer>> it = group.versions.entrySet().iterator(); it.hasNext(); )
                 {
-                    Version version = it.next();
+                    Map.Entry<Version, Integer> entry = it.next();
+                    Version version = entry.getKey();
                     if ( !group.isAcceptable( version ) )
                     {
                         it.remove();
@@ -97,6 +124,7 @@ public class ClassicVersionConflictResolver
                     else if ( group.version == null || version.compareTo( group.version ) > 0 )
                     {
                         group.version = version;
+                        group.depth = entry.getValue().intValue();
                     }
                 }
                 if ( group.version == null )
@@ -111,26 +139,30 @@ public class ClassicVersionConflictResolver
             }
         }
 
+        depth++;
+
         for ( DependencyNode child : node.getChildren() )
         {
-            analyze( child, groups );
+            analyze( child, depth, depths, groups, conflictIds );
         }
     }
 
-    private void prune( DependencyNode node, Map<Object, ConflictGroup> groups )
+    private void prune( DependencyNode node, int depth, Map<Object, ConflictGroup> groups, Map<?, ?> conflictIds )
     {
+        depth++;
+
         for ( Iterator<DependencyNode> it = node.getChildren().iterator(); it.hasNext(); )
         {
             DependencyNode child = it.next();
 
-            Object key = child.getConflictId();
+            Object key = conflictIds.get( child );
 
             ConflictGroup group = groups.get( key );
 
-            if ( !group.pruned && group.depth == child.getDepth() && group.version.equals( child.getVersion() ) )
+            if ( !group.pruned && group.depth == depth && group.version.equals( child.getVersion() ) )
             {
                 group.pruned = true;
-                prune( child, groups );
+                prune( child, depth, groups, conflictIds );
             }
             else
             {
@@ -146,7 +178,7 @@ public class ClassicVersionConflictResolver
 
         Collection<VersionConstraint> constraints = new HashSet<VersionConstraint>();
 
-        Collection<Version> versions = new LinkedList<Version>();
+        Map<Version, Integer> versions = new HashMap<Version, Integer>();
 
         Version version;
 

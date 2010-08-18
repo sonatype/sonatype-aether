@@ -16,6 +16,7 @@ package org.sonatype.aether.util.filter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 import org.sonatype.aether.Dependency;
 import org.sonatype.aether.DependencyFilter;
@@ -67,7 +68,7 @@ public class ScopeDependencyFilter
         }
     }
 
-    public boolean accept( DependencyNode node )
+    public boolean accept( DependencyNode node, List<DependencyNode> parents )
     {
         Dependency dependency = node.getDependency();
 
@@ -76,7 +77,7 @@ public class ScopeDependencyFilter
             return true;
         }
 
-        String scope = dependency.getScope();
+        String scope = node.getDependency().getScope();
         return ( included.isEmpty() || included.contains( scope ) )
             && ( excluded.isEmpty() || !excluded.contains( scope ) );
     }

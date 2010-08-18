@@ -14,17 +14,20 @@ package org.sonatype.aether.util.graph.transformer;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.sonatype.aether.Dependency;
+import org.sonatype.aether.DependencyGraphTransformationContext;
 import org.sonatype.aether.DependencyGraphTransformer;
 import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.RepositoryException;
+import org.sonatype.aether.util.JavaScopes;
 
 /**
  * A dependency graph transformer that handles scope inheritance and conflict resolution among conflicting scopes. For a
@@ -37,145 +40,140 @@ public class JavaEffectiveScopeCalculator
     implements DependencyGraphTransformer
 {
 
-    private static final String SYSTEM = "system";
-
-    private static final String PROVIDED = "provided";
-
-    private static final String COMPILE = "compile";
-
-    private static final String RUNTIME = "runtime";
-
-    private static final String TEST = "test";
-
-    public DependencyNode transformGraph( DependencyNode node )
+    public DependencyNode transformGraph( DependencyNode node, DependencyGraphTransformationContext context )
+        throws RepositoryException
     {
-        Map<DependencyNode, String> scopes = new IdentityHashMap<DependencyNode, String>( 16 * 1024 );
+        Map<?, ?> conflictIds = (Map<?, ?>) context.get( TransformationContextKeys.CONFLICT_IDS );
+        if ( conflictIds == null )
+        {
+            throw new RepositoryException( "conflict groups have not been identified" );
+        }
+
+        Map<DependencyNode, Collection<String>> scopes = new IdentityHashMap<DependencyNode, Collection<String>>( 1024 );
         Map<Object, DependencyGroup> groups = new HashMap<Object, DependencyGroup>( 1024 );
 
-        Dependency parent = node.getDependency();
-        String parentScope = ( parent != null ) ? parent.getScope() : "";
-        analyze( node, parentScope, scopes, groups );
+        analyze( node, "", scopes, groups, conflictIds );
 
-        Set<Object> keys = new HashSet<Object>( groups.keySet() );
-        while ( !keys.isEmpty() )
+        Map<DependencyNode, Object> directNodes = new IdentityHashMap<DependencyNode, Object>();
+        if ( node.getDependency() == null )
         {
-            Iterator<Object> it = keys.iterator();
-            Object key = it.next();
-            it.remove();
-
-            DependencyGroup group = groups.get( key );
-            resolve( group, scopes, keys );
+            for ( DependencyNode child : node.getChildren() )
+            {
+                directNodes.put( child, null );
+            }
+        }
+        else
+        {
+            directNodes.put( node, null );
         }
 
-        for ( Map.Entry<DependencyNode, String> entry : scopes.entrySet() )
-        {
-            entry.getKey().setScope( entry.getValue() );
-        }
+        resolve( scopes, groups.values(), directNodes.keySet() );
 
         return node;
     }
 
-    private void analyze( DependencyNode node, String scope, Map<DependencyNode, String> scopes,
-                          Map<Object, DependencyGroup> groups )
+    private void analyze( DependencyNode node, String parentScope, Map<DependencyNode, Collection<String>> scopes,
+                          Map<Object, DependencyGroup> groups, Map<?, ?> conflictIds )
     {
+        String scope;
+
         Dependency dependency = node.getDependency();
         if ( dependency != null )
         {
-            if ( node.getPremanagedScope() != null )
+            scope = dependency.getScope();
+            if ( node.getPremanagedScope() == null )
             {
-                scope = dependency.getScope();
+                scope = getInheritedScope( parentScope, scope );
             }
-            scopes.put( node, scope );
 
-            Object key = node.getConflictId();
-            DependencyGroup group = groups.get( key );
-            if ( group == null )
+            Collection<String> nodeScopes = scopes.get( node );
+            if ( nodeScopes == null )
             {
-                group = new DependencyGroup();
-                groups.put( key, group );
+                nodeScopes = new HashSet<String>();
+                scopes.put( node, nodeScopes );
             }
-            group.nodes.add( node );
-        }
-
-        for ( DependencyNode childNode : node.getChildren() )
-        {
-            Dependency child = childNode.getDependency();
-            String childScope = child.getScope();
-            String inheritedScope = getInheritedScope( scope, childScope );
-            analyze( childNode, inheritedScope, scopes, groups );
-        }
-    }
-
-    private void resolve( DependencyGroup group, Map<DependencyNode, String> scopes, Set<Object> keys )
-    {
-        if ( group.nodes.size() <= 1 )
-        {
-            return;
-        }
-
-        String effectiveScope = null;
-        Set<String> groupScopes = new HashSet<String>();
-
-        for ( DependencyNode node : group.nodes )
-        {
-            String scope = scopes.get( node );
-            groupScopes.add( scope );
-            if ( node.getParent().getDependency() == null )
-            {
-                effectiveScope = scope;
-            }
-        }
-
-        if ( groupScopes.size() <= 1 )
-        {
-            return;
-        }
-
-        if ( effectiveScope == null )
-        {
-            if ( groupScopes.contains( COMPILE ) )
-            {
-                effectiveScope = COMPILE;
-            }
-            else if ( groupScopes.contains( SYSTEM ) || groupScopes.contains( PROVIDED ) )
-            {
-                effectiveScope = groupScopes.contains( RUNTIME ) ? COMPILE : PROVIDED;
-            }
-            else if ( groupScopes.contains( RUNTIME ) )
-            {
-                effectiveScope = RUNTIME;
-            }
-            else
+            if ( !nodeScopes.add( scope ) )
             {
                 return;
             }
-        }
 
-        for ( DependencyNode node : group.nodes )
-        {
-            String scope = scopes.get( node );
-            if ( !effectiveScope.equals( scope ) && !SYSTEM.equals( scope ) )
+            if ( nodeScopes.size() == 1 )
             {
-                adjust( node, effectiveScope, scopes, keys );
+                Object key = conflictIds.get( node );
+                DependencyGroup group = groups.get( key );
+                if ( group == null )
+                {
+                    group = new DependencyGroup();
+                    groups.put( key, group );
+                }
+                group.nodes.add( node );
             }
         }
-    }
-
-    private void adjust( DependencyNode node, String scope, Map<DependencyNode, String> scopes, Set<Object> keys )
-    {
-        scopes.put( node, scope );
+        else
+        {
+            scope = parentScope;
+        }
 
         for ( DependencyNode childNode : node.getChildren() )
         {
-            if ( childNode.getPremanagedScope() == null )
+            analyze( childNode, scope, scopes, groups, conflictIds );
+        }
+    }
+
+    private void resolve( Map<DependencyNode, Collection<String>> scopes, Collection<DependencyGroup> groups,
+                          Collection<DependencyNode> directNodes )
+    {
+        for ( DependencyGroup group : groups )
+        {
+            String effectiveScope = null;
+
+            Set<String> groupScopes = new HashSet<String>();
+
+            for ( DependencyNode node : group.nodes )
             {
-                String childScope = childNode.getDependency().getScope();
-                String inheritedScope = getInheritedScope( scope, childScope );
-                String oldScope = scopes.get( childNode );
-                if ( !inheritedScope.equals( oldScope ) )
+                groupScopes.addAll( scopes.get( node ) );
+
+                if ( directNodes.contains( node ) )
                 {
-                    keys.add( childNode.getConflictId() );
-                    adjust( childNode, inheritedScope, scopes, keys );
+                    effectiveScope = node.getDependency().getScope();
+                }
+            }
+
+            if ( effectiveScope == null )
+            {
+                if ( groupScopes.size() == 1 )
+                {
+                    effectiveScope = groupScopes.iterator().next();
+                }
+                else if ( groupScopes.contains( JavaScopes.COMPILE ) )
+                {
+                    effectiveScope = JavaScopes.COMPILE;
+                }
+                else if ( groupScopes.contains( JavaScopes.SYSTEM ) || groupScopes.contains( JavaScopes.PROVIDED ) )
+                {
+                    effectiveScope =
+                        groupScopes.contains( JavaScopes.RUNTIME ) ? JavaScopes.COMPILE : JavaScopes.PROVIDED;
+                }
+                else if ( groupScopes.contains( JavaScopes.RUNTIME ) )
+                {
+                    effectiveScope = JavaScopes.RUNTIME;
+                }
+                else if ( groupScopes.contains( JavaScopes.TEST ) )
+                {
+                    effectiveScope = JavaScopes.TEST;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+
+            for ( DependencyNode node : group.nodes )
+            {
+                String scope = node.getDependency().getScope();
+                if ( !effectiveScope.equals( scope ) && !JavaScopes.SYSTEM.equals( scope ) )
+                {
+                    node.setScope( effectiveScope );
                 }
             }
         }
@@ -185,25 +183,25 @@ public class JavaEffectiveScopeCalculator
     {
         String result;
 
-        if ( SYSTEM.equals( childScope ) || TEST.equals( childScope ) )
+        if ( JavaScopes.SYSTEM.equals( childScope ) || JavaScopes.TEST.equals( childScope ) )
         {
             result = childScope;
         }
-        else if ( parentScope.length() <= 0 || COMPILE.equals( parentScope ) )
+        else if ( parentScope == null || parentScope.length() <= 0 || JavaScopes.COMPILE.equals( parentScope ) )
         {
             result = childScope;
         }
-        else if ( TEST.equals( parentScope ) || RUNTIME.equals( parentScope ) )
+        else if ( JavaScopes.TEST.equals( parentScope ) || JavaScopes.RUNTIME.equals( parentScope ) )
         {
             result = parentScope;
         }
-        else if ( SYSTEM.equals( parentScope ) || PROVIDED.equals( parentScope ) )
+        else if ( JavaScopes.SYSTEM.equals( parentScope ) || JavaScopes.PROVIDED.equals( parentScope ) )
         {
-            result = PROVIDED;
+            result = JavaScopes.PROVIDED;
         }
         else
         {
-            result = RUNTIME;
+            result = JavaScopes.RUNTIME;
         }
 
         return result;

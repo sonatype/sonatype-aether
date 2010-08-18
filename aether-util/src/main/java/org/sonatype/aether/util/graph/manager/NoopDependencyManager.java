@@ -13,12 +13,10 @@ package org.sonatype.aether.util.graph.manager;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import java.util.List;
-
 import org.sonatype.aether.Dependency;
+import org.sonatype.aether.DependencyCollectionContext;
 import org.sonatype.aether.DependencyManagement;
 import org.sonatype.aether.DependencyManager;
-import org.sonatype.aether.DependencyNode;
 
 /**
  * A dependency manager that does not do any dependency management.
@@ -31,7 +29,7 @@ public class NoopDependencyManager
 
     public static final DependencyManager INSTANCE = new NoopDependencyManager();
 
-    public DependencyManager deriveChildManager( DependencyNode node, List<? extends Dependency> managedDependencies )
+    public DependencyManager deriveChildManager( DependencyCollectionContext context )
     {
         return this;
     }

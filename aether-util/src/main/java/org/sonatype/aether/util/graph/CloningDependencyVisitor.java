@@ -13,14 +13,16 @@ package org.sonatype.aether.util.graph;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.DependencyVisitor;
 
 /**
  * A dependency visitor that constructs a clone of the visited dependency graph. If such a visitor is passed into a
- * {@link FilteringDependencyVisitor}, a sub tree can be created. This class creates shallow clones of the visited
+ * {@link FilteringDependencyVisitor}, a sub graph can be created. This class creates shallow clones of the visited
  * dependency nodes but clients can create a subclass and override {@link #clone(DependencyNode, DependencyNode)} to
  * alter the clone process.
  * 
@@ -29,6 +31,8 @@ import org.sonatype.aether.DependencyVisitor;
 public class CloningDependencyVisitor
     implements DependencyVisitor
 {
+
+    private final Map<DependencyNode, DependencyNode> clones;
 
     private final LinkedList<DependencyNode> parents;
 
@@ -40,12 +44,13 @@ public class CloningDependencyVisitor
     public CloningDependencyVisitor()
     {
         parents = new LinkedList<DependencyNode>();
+        clones = new IdentityHashMap<DependencyNode, DependencyNode>( 256 );
     }
 
     /**
-     * Gets the root node of the cloned dependency tree.
+     * Gets the root node of the cloned dependency graph.
      * 
-     * @return The root node of the cloned dependency tree or {@code null}.
+     * @return The root node of the cloned dependency graph or {@code null}.
      */
     public DependencyNode getRootNode()
     {
@@ -56,29 +61,30 @@ public class CloningDependencyVisitor
      * Creates a clone of the specified node for usage as a child of the given parent node.
      * 
      * @param node The node to clone, must not be {@code null}.
-     * @param parent The parent for the cloned node, may be {@code null} if none.
      * @return The cloned node, never {@code null}.
      */
-    protected DependencyNode clone( DependencyNode node, DependencyNode parent )
+    protected DependencyNode clone( DependencyNode node )
     {
-        DefaultDependencyNode clone = new DefaultDependencyNode( node.getDependency(), parent );
-        clone.setAliases( node.getAliases() );
-        clone.setConflictId( node.getConflictId() );
-        clone.setContext( node.getContext() );
-        clone.setPremanagedScope( node.getPremanagedScope() );
-        clone.setPremanagedVersion( node.getPremanagedVersion() );
-        clone.setRelocations( node.getRelocations() );
-        clone.setRepositories( node.getRepositories() );
-        clone.setVersion( node.getVersion() );
-        clone.setVersionConstraint( node.getVersionConstraint() );
+        DefaultDependencyNode clone = new DefaultDependencyNode( node );
         return clone;
     }
 
     public boolean visitEnter( DependencyNode node )
     {
-        DependencyNode parent = parents.peek();
+        boolean recurse = true;
 
-        DependencyNode clone = clone( node, parent );
+        DependencyNode clone = clones.get( node );
+        if ( clone == null )
+        {
+            clone = clone( node );
+            clones.put( node, clone );
+        }
+        else
+        {
+            recurse = false;
+        }
+
+        DependencyNode parent = parents.peek();
 
         if ( parent == null )
         {
@@ -91,7 +97,7 @@ public class CloningDependencyVisitor
 
         parents.addFirst( clone );
 
-        return true;
+        return recurse;
     }
 
     public boolean visitLeave( DependencyNode node )

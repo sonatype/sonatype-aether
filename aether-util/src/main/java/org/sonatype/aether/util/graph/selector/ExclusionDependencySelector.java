@@ -20,7 +20,7 @@ import java.util.Set;
 
 import org.sonatype.aether.Artifact;
 import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.DependencyCollectionContext;
 import org.sonatype.aether.DependencySelector;
 import org.sonatype.aether.Exclusion;
 
@@ -100,9 +100,9 @@ public class ExclusionDependencySelector
         return "*".equals( pattern ) || pattern.equals( value );
     }
 
-    public DependencySelector deriveChildSelector( DependencyNode node )
+    public DependencySelector deriveChildSelector( DependencyCollectionContext context )
     {
-        Dependency dependency = node.getDependency();
+        Dependency dependency = context.getDependency();
         Collection<Exclusion> exclusions = ( dependency != null ) ? dependency.getExclusions() : null;
         if ( exclusions == null || exclusions.isEmpty() )
         {

@@ -16,18 +16,22 @@ package org.sonatype.aether.util.graph.transformer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.sonatype.aether.Artifact;
 import org.sonatype.aether.Dependency;
+import org.sonatype.aether.DependencyGraphTransformationContext;
 import org.sonatype.aether.DependencyGraphTransformer;
 import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.RepositoryException;
 
 /**
- * A dependency graph transformer that identifies conflicting dependencies. When this transformer has executed,
- * dependency nodes that belong to the same conflict group will have an equal conflict identifier.
+ * A dependency graph transformer that identifies conflicting dependencies. When this transformer has executed, the
+ * transformation context holds a {@code Map<DependencyNode, Object>} where dependency nodes that belong to the same
+ * conflict group will have an equal conflict identifier. This map is stored using the key
+ * {@link TransformationContextKeys#CONFLICT_IDS}.
  * 
  * @author Benjamin Bentmann
  * @see DependencyNode#getConflictId()
@@ -36,17 +40,30 @@ public class ConflictMarker
     implements DependencyGraphTransformer
 {
 
-    public DependencyNode transformGraph( DependencyNode node )
+    private final Object SEEN = Boolean.TRUE;
+
+    public DependencyNode transformGraph( DependencyNode node, DependencyGraphTransformationContext context )
         throws RepositoryException
     {
+        Map<DependencyNode, Object> nodes = new IdentityHashMap<DependencyNode, Object>();
         Map<Object, ConflictGroup> groups = new HashMap<Object, ConflictGroup>( 1024 );
-        analyze( node, groups );
-        mark( node, groups );
+
+        analyze( node, nodes, groups );
+
+        mark( nodes, groups );
+
+        context.put( TransformationContextKeys.CONFLICT_IDS, nodes );
+
         return node;
     }
 
-    private void analyze( DependencyNode node, Map<Object, ConflictGroup> groups )
+    private void analyze( DependencyNode node, Map<DependencyNode, Object> nodes, Map<Object, ConflictGroup> groups )
     {
+        if ( nodes.put( node, SEEN ) != null )
+        {
+            return;
+        }
+
         Set<Object> keys = getKeys( node );
         if ( !keys.isEmpty() )
         {
@@ -111,7 +128,7 @@ public class ConflictMarker
 
         for ( DependencyNode child : node.getChildren() )
         {
-            analyze( child, groups );
+            analyze( child, nodes, groups );
         }
     }
 
@@ -146,6 +163,7 @@ public class ConflictMarker
         Set<Object> keys;
 
         Dependency dependency = node.getDependency();
+
         if ( dependency == null )
         {
             keys = Collections.emptySet();
@@ -180,18 +198,20 @@ public class ConflictMarker
         return keys;
     }
 
-    private void mark( DependencyNode node, Map<Object, ConflictGroup> groups )
+    private void mark( Map<DependencyNode, Object> nodes, Map<Object, ConflictGroup> groups )
     {
-        Dependency dependency = node.getDependency();
-        if ( dependency != null )
+        for ( Map.Entry<DependencyNode, Object> entry : nodes.entrySet() )
         {
-            Object key = toKey( dependency.getArtifact() );
-            node.setConflictId( groups.get( key ).keys );
-        }
-
-        for ( DependencyNode child : node.getChildren() )
-        {
-            mark( child, groups );
+            Dependency dependency = entry.getKey().getDependency();
+            if ( dependency != null )
+            {
+                Object key = toKey( dependency.getArtifact() );
+                entry.setValue( groups.get( key ).keys );
+            }
+            else
+            {
+                entry.setValue( null );
+            }
         }
     }
 

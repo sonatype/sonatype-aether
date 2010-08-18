@@ -1,4 +1,4 @@
-package org.sonatype.aether.util;
+package org.sonatype.aether.util.graph.transformer;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -94,8 +94,8 @@ class NodeBuilder
             Artifact artifact = new DefaultArtifact( groupId, artifactId, classifier, ext, version );
             dependency = new Dependency( artifact, scope, optional );
         }
-        DefaultDependencyNode node = new DefaultDependencyNode( dependency, parent );
-        node.setContext( context );
+        DefaultDependencyNode node = new DefaultDependencyNode( dependency );
+        node.setRequestContext( context );
         node.setRelocations( relocations );
         return node;
     }

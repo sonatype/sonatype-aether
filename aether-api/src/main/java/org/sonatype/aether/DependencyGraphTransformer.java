@@ -26,10 +26,11 @@ public interface DependencyGraphTransformer
      * provided input graph or create a new graph.
      * 
      * @param node The root node of the graph to transform, must not be {@code null}.
+     * @param context The graph transformation context, must not be {@code null}.
      * @return The result graph of the transformation, never {@code null}.
      * @throws RepositoryException If the transformation failed.
      */
-    DependencyNode transformGraph( DependencyNode node )
+    DependencyNode transformGraph( DependencyNode node, DependencyGraphTransformationContext context )
         throws RepositoryException;
 
 }

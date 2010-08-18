@@ -13,11 +13,8 @@ package org.sonatype.aether;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import java.util.List;
-
 /**
- * Applies dependency management to the dependencies of a dependency node. The dependency tree builder will maintain one
- * dependency manager for each node of the dependency tree.
+ * Applies dependency management to the dependencies of a dependency node.
  * 
  * @author Benjamin Bentmann
  */
@@ -33,13 +30,12 @@ public interface DependencyManager
     DependencyManagement manageDependency( Dependency dependency );
 
     /**
-     * Derives a dependency manager for the specified node. When calculating the child manager, implementors are
-     * strongly advised to simply return the current instance if nothing changed to help save memory.
+     * Derives a dependency manager for the specified collection context. When calculating the child manager,
+     * implementors are strongly advised to simply return the current instance if nothing changed to help save memory.
      * 
-     * @param node The node to derive a manager for, must not be {@code null}.
-     * @param managedDependencies The dependency management to consider for the child, must not be {@code null}.
-     * @return The dependency manager for the dependencies of the node, must not be {@code null}.
+     * @param context The dependency collection context, must not be {@code null}.
+     * @return The dependency manager for the dependencies of the target node, must not be {@code null}.
      */
-    DependencyManager deriveChildManager( DependencyNode node, List<? extends Dependency> managedDependencies );
+    DependencyManager deriveChildManager( DependencyCollectionContext context );
 
 }

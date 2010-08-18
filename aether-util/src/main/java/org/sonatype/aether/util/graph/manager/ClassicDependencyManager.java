@@ -17,14 +17,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 
 import org.sonatype.aether.Artifact;
 import org.sonatype.aether.Dependency;
+import org.sonatype.aether.DependencyCollectionContext;
 import org.sonatype.aether.DependencyManagement;
 import org.sonatype.aether.DependencyManager;
-import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.Exclusion;
 
 /**
@@ -63,7 +62,7 @@ public class ClassicDependencyManager
         this.managedExclusions = managedExclusions;
     }
 
-    public DependencyManager deriveChildManager( DependencyNode node, List<? extends Dependency> managedDependencies )
+    public DependencyManager deriveChildManager( DependencyCollectionContext context )
     {
         if ( depth >= 2 )
         {
@@ -78,7 +77,7 @@ public class ClassicDependencyManager
         Map<Object, String> managedScopes = this.managedScopes;
         Map<Object, Collection<Exclusion>> managedExclusions = this.managedExclusions;
 
-        for ( Dependency managedDependency : managedDependencies )
+        for ( Dependency managedDependency : context.getManagedDependencies() )
         {
             Artifact artifact = managedDependency.getArtifact();
             Object key = getKey( artifact );

@@ -14,7 +14,7 @@ package org.sonatype.aether.util.graph.selector;
  */
 
 import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.DependencyCollectionContext;
 import org.sonatype.aether.DependencySelector;
 
 /**
@@ -43,7 +43,7 @@ public class StaticDependencySelector
         return select;
     }
 
-    public DependencySelector deriveChildSelector( DependencyNode node )
+    public DependencySelector deriveChildSelector( DependencyCollectionContext context )
     {
         return this;
     }

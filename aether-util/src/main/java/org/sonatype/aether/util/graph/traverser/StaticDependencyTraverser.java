@@ -14,7 +14,7 @@ package org.sonatype.aether.util.graph.traverser;
  */
 
 import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.DependencyCollectionContext;
 import org.sonatype.aether.DependencyTraverser;
 
 /**
@@ -43,7 +43,7 @@ public class StaticDependencyTraverser
         return traverse;
     }
 
-    public DependencyTraverser deriveChildTraverser( DependencyNode node )
+    public DependencyTraverser deriveChildTraverser( DependencyCollectionContext context )
     {
         return this;
     }

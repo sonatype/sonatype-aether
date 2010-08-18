@@ -13,29 +13,17 @@ package org.sonatype.aether;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import java.util.Collection;
 import java.util.List;
 
 /**
- * A node within a dependency graph.
+ * A node within a dependency graph. <em>Note:</em> When traversing a dirty graph, i.e. a graph which hasn't undergone
+ * conflict resolution, there can be multiple path leading to the same node instance.
  * 
  * @author Benjamin Bentmann
  */
 public interface DependencyNode
 {
-
-    /**
-     * Gets the parent node of this node (if any).
-     * 
-     * @return The parent node or {@code null} if this node denotes the root of the dependency graph.
-     */
-    DependencyNode getParent();
-
-    /**
-     * Gets the depth of this node within the dependency graph. The root node has depth zero.
-     * 
-     * @return The depth of this node within the dependency graph.
-     */
-    int getDepth();
 
     /**
      * Gets the child nodes of this node.
@@ -53,22 +41,14 @@ public interface DependencyNode
     Dependency getDependency();
 
     /**
-     * Gets the context in which this dependency node was created.
+     * Sets the artifact of the dependency.
      * 
-     * @return The context, never {@code null}.
+     * @param artifact The artifact satisfying the dependency, must not be {@code null}.
      */
-    String getContext();
+    void setArtifact( Artifact artifact );
 
     /**
-     * Sets the context in which this dependency node was created.
-     * 
-     * @param context The context, may be {@code null}.
-     * @return This dependency node for chaining, never {@code null}.
-     */
-    DependencyNode setContext( String context );
-
-    /**
-     * Gets the sequence of relocations that was followed to resolve this dependency's artifact.
+     * Gets the sequence of relocations that was followed to resolve the artifact referenced by the dependency.
      * 
      * @return The sequence of relocations, never {@code null}.
      */
@@ -81,23 +61,7 @@ public interface DependencyNode
      * 
      * @return The known aliases, never {@code null}.
      */
-    List<Artifact> getAliases();
-
-    /**
-     * Gets the conflict identifier for this node. Nodes having equal conflict identifiers are considered a conflict
-     * group and are subject to conflict resolution.
-     * 
-     * @return The conflict identifier or {@code null} if none.
-     */
-    Object getConflictId();
-
-    /**
-     * Sets the conflict identifier for this node.
-     * 
-     * @param conflictId The conflict identifier, may be {@code null}.
-     * @return This dependency node for chaining, never {@code null}.
-     */
-    DependencyNode setConflictId( Object conflictId );
+    Collection<Artifact> getAliases();
 
     /**
      * Gets the version constraint that was parsed from the dependency's version declaration.
@@ -106,23 +70,29 @@ public interface DependencyNode
      */
     VersionConstraint getVersionConstraint();
 
-    DependencyNode setVersionConstraint( VersionConstraint versionConstraint );
-
+    /**
+     * Gets the version that was selected for the dependency's target artifact.
+     * 
+     * @return The parsed version or {@code null}.
+     */
     Version getVersion();
 
-    DependencyNode setScope( String scope );
-
-    DependencyNode setArtifact( Artifact artifact );
+    /**
+     * Sets the scope of the dependency.
+     * 
+     * @param scope The scope, may be {@code null}.
+     */
+    void setScope( String scope );
 
     /**
-     * Gets the version or version range for this dependency before dependency management was applied (if any).
+     * Gets the version or version range for the dependency before dependency management was applied (if any).
      * 
      * @return The dependency version before dependency management or {@code null} if the version was not managed.
      */
     String getPremanagedVersion();
 
     /**
-     * Gets the scope for this dependency before dependency management was applied (if any).
+     * Gets the scope for the dependency before dependency management was applied (if any).
      * 
      * @return The dependency scope before dependency management or {@code null} if the scope was not managed.
      */
@@ -136,12 +106,18 @@ public interface DependencyNode
     List<RemoteRepository> getRepositories();
 
     /**
-     * Sets the remote repositories from which this node's artifact shall be resolved.
+     * Gets the request context in which this dependency node was created.
      * 
-     * @param repositories The remote repositories to use for artifact resolution, may be {@code null}.
-     * @return This dependency node for chaining, never {@code null}.
+     * @return The request context, never {@code null}.
      */
-    DependencyNode setRepositories( List<RemoteRepository> repositories );
+    String getRequestContext();
+
+    /**
+     * Sets the request context in which this dependency node was created.
+     * 
+     * @param context The context, may be {@code null}.
+     */
+    void setRequestContext( String context );
 
     /**
      * Traverses this node and potentially its children using the specified visitor.

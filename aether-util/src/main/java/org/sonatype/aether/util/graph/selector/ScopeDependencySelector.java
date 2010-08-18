@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.DependencyCollectionContext;
 import org.sonatype.aether.DependencySelector;
 
 /**
@@ -98,16 +98,14 @@ public class ScopeDependencySelector
             && ( excluded.isEmpty() || !excluded.contains( scope ) );
     }
 
-    public DependencySelector deriveChildSelector( DependencyNode node )
+    public DependencySelector deriveChildSelector( DependencyCollectionContext context )
     {
-        boolean transitive = node.getDependency() != null;
-
-        if ( transitive == this.transitive )
+        if ( this.transitive || context.getDependency() == null )
         {
             return this;
         }
 
-        return new ScopeDependencySelector( transitive, included, excluded );
+        return new ScopeDependencySelector( true, included, excluded );
     }
 
     @Override

@@ -13,12 +13,15 @@ package org.sonatype.aether.util.graph;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import java.util.LinkedList;
+
 import org.sonatype.aether.DependencyFilter;
 import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.DependencyVisitor;
 
 /**
- * A dependency visitor that delegates to another visitor if nodes match a filter.
+ * A dependency visitor that delegates to another visitor if nodes match a filter. Note that in case of a mismatching
+ * node, the children of that node are still visisted and presented to the filter.
  * 
  * @author Benjamin Bentmann
  */
@@ -29,6 +32,10 @@ public class FilteringDependencyVisitor
     private final DependencyFilter filter;
 
     private final DependencyVisitor visitor;
+
+    private final LinkedList<Boolean> accepts;
+
+    private final LinkedList<DependencyNode> parents;
 
     /**
      * Creates a new visitor that delegates traversal of nodes matching the given filter to the specified visitor.
@@ -44,6 +51,8 @@ public class FilteringDependencyVisitor
         }
         this.visitor = visitor;
         this.filter = filter;
+        this.accepts = new LinkedList<Boolean>();
+        this.parents = new LinkedList<DependencyNode>();
     }
 
     /**
@@ -68,7 +77,13 @@ public class FilteringDependencyVisitor
 
     public boolean visitEnter( DependencyNode node )
     {
-        if ( filter == null || filter.accept( node ) )
+        boolean accept = filter == null || filter.accept( node, parents );
+
+        accepts.addFirst( Boolean.valueOf( accept ) );
+
+        parents.addFirst( node );
+
+        if ( accept )
         {
             return visitor.visitEnter( node );
         }
@@ -80,7 +95,11 @@ public class FilteringDependencyVisitor
 
     public boolean visitLeave( DependencyNode node )
     {
-        if ( filter == null || filter.accept( node ) )
+        parents.removeFirst();
+
+        Boolean accept = accepts.removeFirst();
+
+        if ( accept.booleanValue() )
         {
             return visitor.visitLeave( node );
         }

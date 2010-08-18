@@ -14,8 +14,7 @@ package org.sonatype.aether;
  */
 
 /**
- * Decides what dependencies to include in the dependency graph. The dependency tree builder will maintain one
- * dependency selector for each node of the dependency tree.
+ * Decides what dependencies to include in the dependency graph.
  * 
  * @author Benjamin Bentmann
  */
@@ -32,12 +31,12 @@ public interface DependencySelector
     boolean selectDependency( Dependency dependency );
 
     /**
-     * Derives a dependency selector for the specified node. When calculating the child selector, implementors are
-     * strongly advised to simply return the current instance if nothing changed to help save memory.
+     * Derives a dependency selector for the specified collection context. When calculating the child selector,
+     * implementors are strongly advised to simply return the current instance if nothing changed to help save memory.
      * 
-     * @param node The node to derive a filter for, must not be {@code null}.
-     * @return The dependency filter for the node, must not be {@code null}.
+     * @param context The dependency collection context, must not be {@code null}.
+     * @return The dependency filter for the target node, must not be {@code null}.
      */
-    DependencySelector deriveChildSelector( DependencyNode node );
+    DependencySelector deriveChildSelector( DependencyCollectionContext context );
 
 }

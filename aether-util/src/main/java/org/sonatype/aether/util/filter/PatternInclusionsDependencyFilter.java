@@ -16,6 +16,7 @@ package org.sonatype.aether.util.filter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 import org.sonatype.aether.Artifact;
 import org.sonatype.aether.Dependency;
@@ -100,7 +101,7 @@ public class PatternInclusionsDependencyFilter
         this.versionScheme = versionScheme;
     }
 
-    public boolean accept( final DependencyNode node )
+    public boolean accept( final DependencyNode node, List<DependencyNode> parents )
     {
         final Dependency dependency = node.getDependency();
         if ( dependency == null )

@@ -14,6 +14,7 @@ package org.sonatype.aether.util.filter;
  */
 
 import java.util.Collection;
+import java.util.List;
 
 import org.sonatype.aether.Dependency;
 import org.sonatype.aether.DependencyNode;
@@ -85,14 +86,14 @@ public class PatternExclusionsDependencyFilter
     }
 
     @Override
-    public boolean accept( final DependencyNode node )
+    public boolean accept( final DependencyNode node, List<DependencyNode> parents )
     {
         final Dependency dependency = node.getDependency();
         if ( dependency == null )
         {
             return true;
         }
-        return !super.accept( node );
+        return !super.accept( node, parents );
     }
 
 }

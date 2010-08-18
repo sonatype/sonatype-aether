@@ -14,6 +14,7 @@ package org.sonatype.aether;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,8 @@ public class ArtifactDescriptorResult
     private List<Exception> exceptions;
 
     private List<Artifact> relocations;
+
+    private Collection<Artifact> aliases;
 
     private Artifact artifact;
 
@@ -60,6 +63,7 @@ public class ArtifactDescriptorResult
         this.artifact = request.getArtifact();
         this.exceptions = new ArrayList<Exception>( 2 );
         this.relocations = new ArrayList<Artifact>( 2 );
+        this.aliases = new ArrayList<Artifact>( 1 );
         this.dependencies = new ArrayList<Dependency>();
         this.managedDependencies = new ArrayList<Dependency>();
         this.repositories = new ArrayList<RemoteRepository>();
@@ -161,6 +165,52 @@ public class ArtifactDescriptorResult
         if ( artifact != null )
         {
             relocations.add( artifact );
+        }
+        return this;
+    }
+
+    /**
+     * Gets the known aliases for this artifact. An alias denotes a different artifact with (almost) the same contents
+     * and can be used to mark a patched rebuild of some other artifact as such, thereby allowing conflict resolution to
+     * consider the patched and the original artifact as a conflict.
+     * 
+     * @return The aliases of the artifact, never {@code null}.
+     */
+    public Collection<Artifact> getAliases()
+    {
+        return aliases;
+    }
+
+    /**
+     * Sets the aliases of the artifact.
+     * 
+     * @param aliases The aliases of the artifact, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
+    public ArtifactDescriptorResult setAliases( Collection<Artifact> aliases )
+    {
+        if ( aliases == null )
+        {
+            this.aliases = new ArrayList<Artifact>( 0 );
+        }
+        else
+        {
+            this.aliases = aliases;
+        }
+        return this;
+    }
+
+    /**
+     * Records the specified alias.
+     * 
+     * @param alias The alias for the artifact, may be {@code null}.
+     * @return This result for chaining, never {@code null}.
+     */
+    public ArtifactDescriptorResult addAlias( Artifact alias )
+    {
+        if ( alias != null )
+        {
+            aliases.add( alias );
         }
         return this;
     }

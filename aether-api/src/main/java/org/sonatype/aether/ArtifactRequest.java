@@ -66,7 +66,7 @@ public class ArtifactRequest
     {
         setDependencyNode( node );
         setRepositories( node.getRepositories() );
-        setRequestContext( node.getContext() );
+        setRequestContext( node.getRequestContext() );
     }
 
     /**

@@ -14,6 +14,7 @@ package org.sonatype.aether.util.graph.transformer;
  */
 
 import org.sonatype.aether.Dependency;
+import org.sonatype.aether.DependencyGraphTransformationContext;
 import org.sonatype.aether.DependencyGraphTransformer;
 import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.RepositoryException;
@@ -25,23 +26,23 @@ public class JavaDependencyContextRefiner
     implements DependencyGraphTransformer
 {
 
-    public DependencyNode transformGraph( DependencyNode node )
+    public DependencyNode transformGraph( DependencyNode node, DependencyGraphTransformationContext context )
         throws RepositoryException
     {
-        String context = node.getContext();
+        String ctx = node.getRequestContext();
         if ( "project".equals( context ) )
         {
             String scope = getClasspathScope( node );
             if ( scope != null )
             {
-                context += '/' + scope;
-                node.setContext( context );
+                ctx += '/' + scope;
+                node.setRequestContext( ctx );
             }
         }
 
         for ( DependencyNode child : node.getChildren() )
         {
-            transformGraph( child );
+            transformGraph( child, context );
         }
 
         return node;

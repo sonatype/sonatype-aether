@@ -14,7 +14,7 @@ package org.sonatype.aether.util.graph.selector;
  */
 
 import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.DependencyCollectionContext;
 import org.sonatype.aether.DependencySelector;
 
 /**
@@ -27,36 +27,34 @@ public class OptionalDependencySelector
     implements DependencySelector
 {
 
-    private final boolean transitive;
+    private final int depth;
 
     /**
      * Creates a new selector to exclude optional transitive dependencies.
      */
     public OptionalDependencySelector()
     {
-        transitive = false;
+        depth = 0;
     }
 
-    private OptionalDependencySelector( boolean transitive )
+    private OptionalDependencySelector( int depth )
     {
-        this.transitive = transitive;
+        this.depth = depth;
     }
 
     public boolean selectDependency( Dependency dependency )
     {
-        return !transitive || !dependency.isOptional();
+        return depth < 2 || !dependency.isOptional();
     }
 
-    public DependencySelector deriveChildSelector( DependencyNode node )
+    public DependencySelector deriveChildSelector( DependencyCollectionContext context )
     {
-        boolean transitive = node.getDepth() > 0;
-
-        if ( transitive == this.transitive )
+        if ( depth >= 2 )
         {
             return this;
         }
 
-        return new OptionalDependencySelector( transitive );
+        return new OptionalDependencySelector( depth + 1 );
     }
 
     @Override
@@ -72,14 +70,14 @@ public class OptionalDependencySelector
         }
 
         OptionalDependencySelector that = (OptionalDependencySelector) obj;
-        return transitive == that.transitive;
+        return depth == that.depth;
     }
 
     @Override
     public int hashCode()
     {
         int hash = getClass().hashCode();
-        hash = hash * 31 + ( transitive ? 1 : 0 );
+        hash = hash * 31 + depth;
         return hash;
     }
 
