@@ -1,4 +1,4 @@
-package org.sonatype.aether.test.util.connector;
+package org.sonatype.aether.test.impl;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.

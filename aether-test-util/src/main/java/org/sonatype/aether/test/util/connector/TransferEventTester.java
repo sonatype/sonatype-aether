@@ -41,6 +41,8 @@ import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.spi.connector.Transfer;
+import org.sonatype.aether.test.impl.RecordingTransferListener;
+import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.FileUtil;
 
 public class TransferEventTester

@@ -1,4 +1,4 @@
-package org.sonatype.aether.test.util.connector;
+package org.sonatype.aether.test.impl;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -20,7 +20,7 @@ import org.sonatype.aether.TransferCancelledException;
 import org.sonatype.aether.TransferEvent;
 import org.sonatype.aether.TransferListener;
 
-class RecordingTransferListener
+public class RecordingTransferListener
     implements TransferListener
 {
 

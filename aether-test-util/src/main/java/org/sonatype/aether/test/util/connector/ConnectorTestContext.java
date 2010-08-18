@@ -15,6 +15,7 @@ package org.sonatype.aether.test.util.connector;
 
 import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.test.impl.RecordingTransferListener;
 
 public class ConnectorTestContext
 {
