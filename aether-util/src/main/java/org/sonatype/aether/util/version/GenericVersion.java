@@ -51,7 +51,7 @@ import org.sonatype.aether.Version;
  * @author <a href="mailto:kenney@apache.org">Kenney Westerhof</a>
  * @author <a href="mailto:hboutemy@apache.org">Hervé Boutemy</a>
  */
-public final class GenericVersion
+final class GenericVersion
     implements Version
 {
 

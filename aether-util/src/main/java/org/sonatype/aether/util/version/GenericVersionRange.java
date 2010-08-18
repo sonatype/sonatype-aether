@@ -23,7 +23,7 @@ import org.sonatype.aether.VersionRange;
  * @author Benjamin Bentmann
  * @author Alin Dreghiciu
  */
-public final class GenericVersionRange
+final class GenericVersionRange
     implements VersionRange
 {
 
