@@ -13,9 +13,8 @@ package org.sonatype.aether.test.util.connector;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static org.sonatype.aether.TransferEvent.EventType.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +46,7 @@ import org.sonatype.aether.test.util.FileUtil;
 
 public class TransferEventTester
 {
+    // TODO: test failed/interrupted transfers
 
     public static void testTransferEvents( RepositoryConnectorFactory factory )
         throws IOException, NoRepositoryConnectorException
@@ -100,13 +100,13 @@ public class TransferEventTester
     {
         TransferEvent currentEvent = events.poll();
         assertNotNull( "initiate event is missing", currentEvent );
-        assertEquals( TransferEvent.EventType.INITIATED, currentEvent.getType() );
-        // TODO: check mandatory attributes
+        assertEquals( INITIATED, currentEvent.getType() );
+        checkProperties( currentEvent );
 
         currentEvent = events.poll();
         assertNotNull( "start event is missing", currentEvent );
         assertEquals( TransferEvent.EventType.STARTED, currentEvent.getType() );
-        // TODO: check mandatory attributes
+        checkProperties( currentEvent );
 
         EventType progressed = TransferEvent.EventType.PROGRESSED;
         EventType succeeded = TransferEvent.EventType.SUCCEEDED;
@@ -122,6 +122,7 @@ public class TransferEventTester
             if ( succeeded.equals( currentType ) )
             {
                 succeedEvent = currentEvent;
+		        checkProperties( currentEvent );
                 break;
             }
             else
@@ -130,7 +131,7 @@ public class TransferEventTester
                 assertTrue( currentEvent.getTransferredBytes() > transferredBytes );
                 transferredBytes = currentEvent.getTransferredBytes();
                 dataLength += currentEvent.getDataLength();
-                // TODO: check mandatory attributes
+		        checkProperties( currentEvent );
             }
         }
 
@@ -140,6 +141,25 @@ public class TransferEventTester
         // test transferred size
         assertEquals( "progress events transferred bytes don't match", expectedBytes, dataLength );
         assertEquals( "succeed event transferred bytes don't match", expectedBytes, succeedEvent.getTransferredBytes() );
+    }
+
+    private static void checkProperties( TransferEvent event )
+    {
+        assertNotNull( event.getResource() );
+        assertNotNull( event.getRequestType() );
+        assertNotNull( event.getType() );
+
+        if ( PROGRESSED.equals( event.getType() ) )
+        {
+            assertNotNull( event.getDataBuffer() );
+            assertTrue( event.getDataLength() > -1 );
+            assertTrue( event.getDataOffset() > -1 );
+            assertTrue( event.getTransferredBytes() > -1 );
+        }
+        else if ( SUCCEEDED.equals( event.getType() ) )
+        {
+            assertTrue( event.getTransferredBytes() > -1 );
+        }
     }
 
     public static ConnectorTestContext setupTestContext()
