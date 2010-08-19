@@ -110,12 +110,6 @@ final class GenericVersionRange
                     throw new InvalidVersionRangeException( range, "Invalid version range " + range
                         + ", lower bound must not be greater than upper bound" );
                 }
-
-                if ( upperBound.compareTo( lowerBound ) == 0 )
-                {
-                    throw new InvalidVersionRangeException( range, "Invalid version range " + range
-                        + ", lower bound must not be equal to upper bound" );
-                }
             }
         }
     }

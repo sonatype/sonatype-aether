@@ -17,50 +17,135 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.sonatype.aether.InvalidVersionRangeException;
+import org.sonatype.aether.Version;
+import org.sonatype.aether.VersionRange;
 
 public class GenericVersionRangeTest
 {
-    private static String[] invalidRanges = { "1.0", "[1.0", "(1.0", "1.0]", "1.0)", "[1,2,3]", "(1,2,3)", "[1,2,3)",
-        "[2,1]", "1,2", "[1,1]", "(1)" };
 
-    private static String[] validRanges = { "[1,2]", "(1.2.3.4.5,1.2.3.4.6)", "[1a,1b]", "[1]" };
-
-    // TODO: multiple range sets are parsed somewhere else? works in POM, but not in unit test
-    // "(,1.0],[1.2,)", "(,1.1),(1.1,)"
-
-    @Test
-    public void testValidRanges()
+    private Version newVersion( String version )
     {
-        for ( String range : validRanges )
+        return new GenericVersion( version );
+    }
+
+    private VersionRange parseValid( String range )
+    {
+        try
         {
-            try
-            {
-                new GenericVersionRange( range );
-            }
-            catch ( InvalidVersionRangeException e )
-            {
-                fail( range + " should be valid." );
-            }
+            return new GenericVersionRange( range );
+        }
+        catch ( InvalidVersionRangeException e )
+        {
+            AssertionError error =
+                new AssertionError( range + " should be valid but failed to parse due to: " + e.getMessage() );
+            error.initCause( e );
+            throw error;
         }
     }
 
-    @Test
-    public void testInvalidRanges()
+    private void parseInvalid( String range )
     {
-        for ( String range : invalidRanges )
+        try
         {
-            try
-            {
-                GenericVersionRange mvRange = new GenericVersionRange( range );
-                System.err.println( String.format( "lower bound: %s\nupper bound: %s\n", mvRange.getLowerBound(),
-                                                   mvRange.getUpperBound() ) );
-                fail( range + " should be invalid." );
-            }
-            catch ( InvalidVersionRangeException e )
-            {
-                // expected
-            }
+            new GenericVersionRange( range );
+            fail( range + " should be invalid" );
         }
+        catch ( InvalidVersionRangeException e )
+        {
+            assertTrue( true );
+        }
+    }
+
+    private void assertContains( VersionRange range, String version )
+    {
+        assertTrue( range + " should contain " + version, range.containsVersion( newVersion( version ) ) );
+    }
+
+    private void assertNotContains( VersionRange range, String version )
+    {
+        assertFalse( range + " should not contain " + version, range.containsVersion( newVersion( version ) ) );
+    }
+
+    @Test
+    public void testLowerBoundInclusiveUpperBoundInclusive()
+    {
+        VersionRange range = parseValid( "[1,2]" );
+        assertContains( range, "1" );
+        assertContains( range, "2" );
+        assertFalse( range.containsSnapshots() );
+        assertEquals( range, parseValid( range.toString() ) );
+    }
+
+    @Test
+    public void testLowerBoundInclusiveUpperBoundExclusive()
+    {
+        VersionRange range = parseValid( "[1.2.3.4.5,1.2.3.4.6)" );
+        assertContains( range, "1.2.3.4.5" );
+        assertNotContains( range, "1.2.3.4.6" );
+        assertFalse( range.containsSnapshots() );
+        assertEquals( range, parseValid( range.toString() ) );
+    }
+
+    @Test
+    public void testLowerBoundExclusiveUpperBoundInclusive()
+    {
+        VersionRange range = parseValid( "(1a,1b]" );
+        assertNotContains( range, "1a" );
+        assertContains( range, "1b" );
+        assertFalse( range.containsSnapshots() );
+        assertEquals( range, parseValid( range.toString() ) );
+    }
+
+    @Test
+    public void testLowerBoundExclusiveUpperBoundExclusive()
+    {
+        VersionRange range = parseValid( "(1,3)" );
+        assertNotContains( range, "1" );
+        assertNotContains( range, "3" );
+        assertFalse( range.containsSnapshots() );
+        assertEquals( range, parseValid( range.toString() ) );
+    }
+
+    @Test
+    public void testSingleVersion()
+    {
+        VersionRange range = parseValid( "[1]" );
+        assertContains( range, "1" );
+        assertFalse( range.containsSnapshots() );
+        assertEquals( range, parseValid( range.toString() ) );
+
+        range = parseValid( "[1,1]" );
+        assertContains( range, "1" );
+        assertFalse( range.containsSnapshots() );
+        assertEquals( range, parseValid( range.toString() ) );
+    }
+
+    @Test
+    public void testMissingOpenCloseDelimiter()
+    {
+        parseInvalid( "1.0" );
+    }
+
+    @Test
+    public void testMissingOpenDelimiter()
+    {
+        parseInvalid( "1.0]" );
+        parseInvalid( "1.0)" );
+    }
+
+    @Test
+    public void testMissingCloseDelimiter()
+    {
+        parseInvalid( "[1.0" );
+        parseInvalid( "(1.0" );
+    }
+
+    @Test
+    public void testTooManyVersions()
+    {
+        parseInvalid( "[1,2,3]" );
+        parseInvalid( "(1,2,3)" );
+        parseInvalid( "[1,2,3)" );
     }
 
 }
