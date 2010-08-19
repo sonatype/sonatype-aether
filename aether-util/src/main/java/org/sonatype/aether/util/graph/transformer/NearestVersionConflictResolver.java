@@ -13,13 +13,19 @@ package org.sonatype.aether.util.graph.transformer;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 import org.sonatype.aether.DependencyGraphTransformationContext;
 import org.sonatype.aether.DependencyGraphTransformer;
@@ -50,18 +56,109 @@ public class NearestVersionConflictResolver
             throw new RepositoryException( "conflict groups have not been identified" );
         }
 
-        Map<Object, ConflictGroup> groups = new HashMap<Object, ConflictGroup>( 1024 );
-        Map<DependencyNode, Integer> depths = new IdentityHashMap<DependencyNode, Integer>( 1024 );
+        Map<Object, ConflictId> ids = new LinkedHashMap<Object, ConflictId>();
 
-        analyze( node, 0, depths, groups, conflictIds );
+        {
+            Set<ConflictId> parents = new HashSet<ConflictId>( 128 );
 
-        prune( node, 0, groups, conflictIds );
+            ConflictId id = null;
+            Object key = conflictIds.get( node );
+            if ( key != null )
+            {
+                id = new ConflictId( key );
+                ids.put( key, id );
+                parents.add( id );
+            }
+
+            Map<DependencyNode, Object> visited = new IdentityHashMap<DependencyNode, Object>( conflictIds.size() );
+
+            buildConflitIdDAG( ids, node, id, visited, parents, conflictIds );
+        }
+
+        List<ConflictId> sorted = topsortConflictIds( ids.values() );
+
+        Map<DependencyNode, Integer> depths = new IdentityHashMap<DependencyNode, Integer>( conflictIds.size() );
+        for ( ConflictId id : sorted )
+        {
+            ConflictGroup group = new ConflictGroup( id );
+            depths.clear();
+            selectVersion( node, null, 0, depths, group, conflictIds, ids );
+            pruneNonSelectedVersions( group, conflictIds );
+        }
 
         return node;
     }
 
-    private void analyze( DependencyNode node, int depth, Map<DependencyNode, Integer> depths,
-                          Map<Object, ConflictGroup> groups, Map<?, ?> conflictIds )
+    private void buildConflitIdDAG( Map<Object, ConflictId> ids, DependencyNode node, ConflictId id,
+                                    Map<DependencyNode, Object> visited, Set<ConflictId> parents, Map<?, ?> conflictIds )
+    {
+        if ( visited.put( node, Boolean.TRUE ) != null )
+        {
+            return;
+        }
+
+        ConflictId parentId = id;
+
+        for ( DependencyNode child : node.getChildren() )
+        {
+            Object key = conflictIds.get( child );
+            ConflictId childId = ids.get( key );
+            if ( childId == null )
+            {
+                childId = new ConflictId( key );
+                ids.put( key, childId );
+            }
+
+            boolean noCircle = parents.add( childId );
+            if ( noCircle && parentId != null )
+            {
+                parentId.add( childId );
+            }
+
+            buildConflitIdDAG( ids, child, childId, visited, parents, conflictIds );
+
+            if ( noCircle )
+            {
+                parents.remove( childId );
+            }
+        }
+    }
+
+    private List<ConflictId> topsortConflictIds( Collection<ConflictId> conflictIds )
+    {
+        List<ConflictId> sorted = new ArrayList<ConflictId>( conflictIds.size() );
+
+        Queue<ConflictId> roots = new LinkedList<ConflictId>();
+        for ( ConflictId id : conflictIds )
+        {
+            if ( id.inDegree <= 0 )
+            {
+                roots.add( id );
+            }
+        }
+
+        while ( !roots.isEmpty() )
+        {
+            ConflictId root = roots.remove();
+
+            sorted.add( root );
+
+            for ( ConflictId child : root.children )
+            {
+                child.inDegree--;
+                if ( child.inDegree <= 0 )
+                {
+                    roots.add( child );
+                }
+            }
+        }
+
+        return sorted;
+    }
+
+    private void selectVersion( DependencyNode node, DependencyNode parent, int depth,
+                                Map<DependencyNode, Integer> depths, ConflictGroup group, Map<?, ?> conflictIds,
+                                Map<?, ConflictId> ids )
         throws RepositoryException
     {
         Integer smallestDepth = depths.get( node );
@@ -74,17 +171,15 @@ public class NearestVersionConflictResolver
             return;
         }
 
-        if ( node.getDependency() != null )
+        Object key = conflictIds.get( node );
+        if ( group.id.key.equals( key ) )
         {
-            Object key = conflictIds.get( node );
-
-            ConflictGroup group = groups.get( key );
-            if ( group == null )
+            if ( parent != null )
             {
-                group = new ConflictGroup( key, node.getVersionConstraint().getPreferredVersion(), depth );
-                groups.put( key, group );
+                group.positions.add( new Position( parent, depth ) );
             }
-            else if ( !group.isAcceptable( node.getVersion() ) )
+
+            if ( !group.isAcceptable( node.getVersion() ) )
             {
                 return;
             }
@@ -110,7 +205,7 @@ public class NearestVersionConflictResolver
                 }
             }
 
-            if ( !group.isAcceptable( group.version ) )
+            if ( group.version == null || !group.isAcceptable( group.version ) )
             {
                 group.version = null;
                 for ( Iterator<Map.Entry<Version, Integer>> it = group.versions.entrySet().iterator(); it.hasNext(); )
@@ -134,7 +229,7 @@ public class NearestVersionConflictResolver
                     {
                         versions.add( constraint.toString() );
                     }
-                    throw new UnsolvableVersionConflictException( key, versions );
+                    throw new UnsolvableVersionConflictException( group.id.key, versions );
                 }
             }
         }
@@ -143,54 +238,111 @@ public class NearestVersionConflictResolver
 
         for ( DependencyNode child : node.getChildren() )
         {
-            analyze( child, depth, depths, groups, conflictIds );
+            selectVersion( child, node, depth, depths, group, conflictIds, ids );
         }
     }
 
-    private void prune( DependencyNode node, int depth, Map<Object, ConflictGroup> groups, Map<?, ?> conflictIds )
+    private void pruneNonSelectedVersions( ConflictGroup group, Map<?, ?> conflictIds )
     {
-        depth++;
-
-        for ( Iterator<DependencyNode> it = node.getChildren().iterator(); it.hasNext(); )
+        for ( Position pos : group.positions )
         {
-            DependencyNode child = it.next();
-
-            Object key = conflictIds.get( child );
-
-            ConflictGroup group = groups.get( key );
-
-            if ( !group.pruned && group.depth == depth && group.version.equals( child.getVersion() ) )
+            for ( Iterator<DependencyNode> it = pos.parent.getChildren().iterator(); it.hasNext(); )
             {
-                group.pruned = true;
-                prune( child, depth, groups, conflictIds );
-            }
-            else
-            {
-                it.remove();
+                DependencyNode child = it.next();
+
+                Object key = conflictIds.get( child );
+
+                if ( group.id.key.equals( key ) )
+                {
+                    if ( !group.pruned && group.depth == pos.depth && group.version.equals( child.getVersion() ) )
+                    {
+                        group.pruned = true;
+                    }
+                    else
+                    {
+                        it.remove();
+                    }
+                }
             }
         }
     }
 
-    static class ConflictGroup
+    static final class ConflictId
     {
 
         final Object key;
 
+        Collection<ConflictId> children = Collections.emptySet();
+
+        int inDegree;
+
+        public ConflictId( Object key )
+        {
+            this.key = key;
+        }
+
+        public void add( ConflictId child )
+        {
+            if ( children.isEmpty() )
+            {
+                children = new HashSet<ConflictId>();
+            }
+            if ( children.add( child ) )
+            {
+                child.inDegree++;
+            }
+        }
+
+        @Override
+        public boolean equals( Object obj )
+        {
+            if ( this == obj )
+            {
+                return true;
+            }
+            else if ( !( obj instanceof ConflictId ) )
+            {
+                return false;
+            }
+            ConflictId that = (ConflictId) obj;
+            return this.key.equals( that.key );
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return key.hashCode();
+        }
+
+        @Override
+        public String toString()
+        {
+            return key + " <" + inDegree;
+        }
+
+    }
+
+    static final class ConflictGroup
+    {
+
+        final ConflictId id;
+
         Collection<VersionConstraint> constraints = new HashSet<VersionConstraint>();
 
-        Map<Version, Integer> versions = new HashMap<Version, Integer>();
+        Map<Version, Integer> versions = new LinkedHashMap<Version, Integer>();
 
         Version version;
 
         int depth;
 
+        Collection<Position> positions = new LinkedHashSet<Position>();
+
         boolean pruned;
 
-        public ConflictGroup( Object key, Version version, int depth )
+        public ConflictGroup( ConflictId id )
         {
-            this.key = key;
-            this.version = version;
-            this.depth = depth;
+            this.id = id;
+            this.depth = Integer.MAX_VALUE;
         }
 
         boolean isAcceptable( Version version )
@@ -204,6 +356,58 @@ public class NearestVersionConflictResolver
             }
             return true;
         }
+
+        @Override
+        public String toString()
+        {
+            return id + " > " + version;
+        }
+
+    }
+
+    static final class Position
+    {
+
+        final DependencyNode parent;
+
+        final int depth;
+
+        final int hash;
+
+        public Position( DependencyNode parent, int depth )
+        {
+            this.parent = parent;
+            this.depth = depth;
+            hash = 31 * parent.hashCode() + depth;
+        }
+
+        @Override
+        public boolean equals( Object obj )
+        {
+            if ( this == obj )
+            {
+                return true;
+            }
+            else if ( !( obj instanceof Position ) )
+            {
+                return false;
+            }
+            Position that = (Position) obj;
+            return this.parent == that.parent && this.depth == that.depth;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return hash;
+        }
+
+        @Override
+        public String toString()
+        {
+            return depth + " > " + parent;
+        }
+
     }
 
 }
