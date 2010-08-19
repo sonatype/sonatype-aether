@@ -24,8 +24,33 @@ public class VersionRangeResolutionException
 
     public VersionRangeResolutionException( VersionRangeResult result )
     {
-        super( "Failed to resolve version range" + ( result != null ? " for " + result.getRequest().getArtifact() : "" ) );
+        super( getMessage( result ), getCause( result ) );
         this.result = result;
+    }
+
+    private static String getMessage( VersionRangeResult result )
+    {
+        StringBuilder buffer = new StringBuilder( 256 );
+        buffer.append( "Failed to resolve version range" );
+        if ( result != null )
+        {
+            buffer.append( " for " ).append( result.getRequest().getArtifact() );
+            if ( !result.getExceptions().isEmpty() )
+            {
+                buffer.append( ": " ).append( result.getExceptions().iterator().next().getMessage() );
+            }
+        }
+        return buffer.toString();
+    }
+
+    private static Throwable getCause( VersionRangeResult result )
+    {
+        Throwable cause = null;
+        if ( result != null && !result.getExceptions().isEmpty() )
+        {
+            cause = result.getExceptions().get( 0 );
+        }
+        return cause;
     }
 
     public VersionRangeResolutionException( VersionRangeResult result, String message )
