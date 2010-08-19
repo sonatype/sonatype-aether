@@ -41,8 +41,10 @@ public class TestRepositorySystemSession
 
     private SessionData data = new TestSessionData();
     private TransferListener listener = new RecordingTransferListener();
+    private RepositoryListener repositoryListener = new RecordingRepositoryListener();
     private AuthenticationSelector authenticator = new TestAuthenticationSelector();
     private ProxySelector proxySelector = new TestProxySelector();
+    private LocalRepositoryManager localRepositoryManager = new TestLocalRepositoryManager();
 
     public TransferListener getTransferListener()
     {
@@ -96,7 +98,7 @@ public class TestRepositorySystemSession
 
     public LocalRepositoryManager getLocalRepositoryManager()
     {
-        throw new UnsupportedOperationException( "getLocalRepositoryManager()" );
+        return localRepositoryManager;
     }
 
     public WorkspaceReader getWorkspaceReader()
@@ -106,7 +108,7 @@ public class TestRepositorySystemSession
 
     public RepositoryListener getRepositoryListener()
     {
-        throw new UnsupportedOperationException( "getRepositoryListener()" );
+        return repositoryListener;
     }
 
     public Map<String, String> getSystemProperties()
