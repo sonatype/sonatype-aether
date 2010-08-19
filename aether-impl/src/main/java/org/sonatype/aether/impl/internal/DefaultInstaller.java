@@ -182,6 +182,12 @@ public class DefaultInstaller
         LocalRepositoryManager lrm = session.getLocalRepositoryManager();
 
         File srcFile = artifact.getFile();
+        
+        if ( srcFile == null )
+        {
+            throw new InstallationException( "Failed to install artifact " + artifact + ": no file attached.");
+        }
+        
         File dstFile = new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalArtifact( artifact ) );
 
         artifactInstalling( session, artifact, dstFile );
