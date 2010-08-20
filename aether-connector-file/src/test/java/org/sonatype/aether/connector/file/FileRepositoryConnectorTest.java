@@ -31,7 +31,7 @@ import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.test.util.FileUtil;
-import org.sonatype.aether.test.util.connector.TestContext;
+import org.sonatype.aether.test.util.connector.ConnectorTestContext;
 import org.sonatype.aether.test.util.connector.TransferEventTester;
 
 public class FileRepositoryConnectorTest
@@ -41,7 +41,7 @@ public class FileRepositoryConnectorTest
     public void testBlocking()
         throws NoRepositoryConnectorException, IOException
     {
-        TestContext ctx = TransferEventTester.setupTestContext();
+        ConnectorTestContext ctx = TransferEventTester.setupTestContext();
         FileRepositoryConnector connector = new FileRepositoryConnector( ctx.getSession(), ctx.getRepository() );
 
         int count = 1000;
