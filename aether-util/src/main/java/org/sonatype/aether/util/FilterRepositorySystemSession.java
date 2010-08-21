@@ -73,7 +73,7 @@ public class FilterRepositorySystemSession
         return session.getChecksumPolicy();
     }
 
-    public Map<String, String> getConfigProperties()
+    public Map<String, Object> getConfigProperties()
     {
         return session.getConfigProperties();
     }

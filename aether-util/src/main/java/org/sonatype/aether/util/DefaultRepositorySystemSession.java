@@ -89,7 +89,7 @@ public class DefaultRepositorySystemSession
 
     private Map<String, String> userProperties = Collections.emptyMap();
 
-    private Map<String, String> configProperties = Collections.emptyMap();
+    private Map<String, Object> configProperties = Collections.emptyMap();
 
     private MirrorSelector mirrorSelector;
 
@@ -157,12 +157,20 @@ public class DefaultRepositorySystemSession
         return session;
     }
 
+    /**
+     * Creates an uninitialized session.
+     */
     public DefaultRepositorySystemSession()
     {
         // enables default constructor
         setId( null );
     }
 
+    /**
+     * Creates a shallow copy of the specified session.
+     * 
+     * @param session The session to copy, must not be {@code null}.
+     */
     public DefaultRepositorySystemSession( RepositorySystemSession session )
     {
         setUserAgent( session.getUserAgent() );
@@ -361,24 +369,24 @@ public class DefaultRepositorySystemSession
         return this;
     }
 
-    private Map<String, String> toSafeMap( Map<?, ?> table )
+    private <T> Map<String, T> toSafeMap( Map<?, ?> table, Class<T> valueType )
     {
-        Map<String, String> map;
+        Map<String, T> map;
         if ( table == null || table.isEmpty() )
         {
             map = Collections.emptyMap();
         }
         else
         {
-            map = new LinkedHashMap<String, String>();
+            map = new LinkedHashMap<String, T>();
             for ( Object key : table.keySet() )
             {
                 if ( key instanceof String )
                 {
                     Object value = table.get( key );
-                    if ( value instanceof String )
+                    if ( valueType.isInstance( value ) )
                     {
-                        map.put( key.toString(), value.toString() );
+                        map.put( key.toString(), valueType.cast( value ) );
                     }
                 }
             }
@@ -407,7 +415,7 @@ public class DefaultRepositorySystemSession
 
     public DefaultRepositorySystemSession setSystemProps( Hashtable<?, ?> systemProperties )
     {
-        this.systemProperties = toSafeMap( systemProperties );
+        this.systemProperties = toSafeMap( systemProperties, String.class );
         return this;
     }
 
@@ -431,16 +439,16 @@ public class DefaultRepositorySystemSession
 
     public DefaultRepositorySystemSession setUserProps( Map<?, ?> userProperties )
     {
-        this.userProperties = toSafeMap( userProperties );
+        this.userProperties = toSafeMap( userProperties, String.class );
         return this;
     }
 
-    public Map<String, String> getConfigProperties()
+    public Map<String, Object> getConfigProperties()
     {
         return configProperties;
     }
 
-    public DefaultRepositorySystemSession setConfigProperties( Map<String, String> configProperties )
+    public DefaultRepositorySystemSession setConfigProperties( Map<String, Object> configProperties )
     {
         if ( configProperties == null )
         {
@@ -455,7 +463,7 @@ public class DefaultRepositorySystemSession
 
     public DefaultRepositorySystemSession setConfigProps( Map<?, ?> configProperties )
     {
-        this.configProperties = toSafeMap( configProperties );
+        this.configProperties = toSafeMap( configProperties, Object.class );
         return this;
     }
 
@@ -541,8 +549,7 @@ public class DefaultRepositorySystemSession
         return dependencyGraphTransformer;
     }
 
-    public DefaultRepositorySystemSession setDependencyGraphTransformer(
-                                                                         DependencyGraphTransformer dependencyGraphTransformer )
+    public DefaultRepositorySystemSession setDependencyGraphTransformer( DependencyGraphTransformer dependencyGraphTransformer )
     {
         this.dependencyGraphTransformer = dependencyGraphTransformer;
         return this;

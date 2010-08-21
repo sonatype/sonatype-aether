@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.sonatype.aether.ArtifactTypeRegistry;
-import org.sonatype.aether.Authentication;
 import org.sonatype.aether.AuthenticationSelector;
 import org.sonatype.aether.DependencyGraphTransformer;
 import org.sonatype.aether.DependencyManager;
@@ -27,7 +26,6 @@ import org.sonatype.aether.LocalRepository;
 import org.sonatype.aether.LocalRepositoryManager;
 import org.sonatype.aether.MirrorSelector;
 import org.sonatype.aether.ProxySelector;
-import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositoryCache;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
@@ -64,7 +62,7 @@ public class TestRepositorySystemSession
         return listener;
     }
 
-    public Map<String, String> getConfigProperties()
+    public Map<String, Object> getConfigProperties()
     {
         return Collections.emptyMap();
     }

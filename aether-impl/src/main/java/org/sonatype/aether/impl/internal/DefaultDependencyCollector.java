@@ -214,18 +214,15 @@ public class DefaultDependencyCollector
         }
 
         DependencyGraphTransformer transformer = session.getDependencyGraphTransformer();
-        if ( transformer != null )
+        try
         {
-            try
-            {
-                DefaultDependencyGraphTransformationContext context =
-                    new DefaultDependencyGraphTransformationContext( session );
-                result.setRoot( transformer.transformGraph( edge, context ) );
-            }
-            catch ( RepositoryException e )
-            {
-                result.addException( e );
-            }
+            DefaultDependencyGraphTransformationContext context =
+                new DefaultDependencyGraphTransformationContext( session );
+            result.setRoot( transformer.transformGraph( edge, context ) );
+        }
+        catch ( RepositoryException e )
+        {
+            result.addException( e );
         }
 
         if ( !result.getExceptions().isEmpty() )

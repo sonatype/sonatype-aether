@@ -161,12 +161,12 @@ public interface RepositorySystemSession
     Map<String, String> getUserProperties();
 
     /**
-     * The configuration properties used to tweak internal aspects of the repository system (e.g. timeouts, thread
-     * pooling, etc.)
+     * The configuration properties used to tweak internal aspects of the repository system (e.g. thread pooling,
+     * connector-specific behavior, etc.)
      * 
      * @return The (read-only) configuration properties, never {@code null}.
      */
-    Map<String, String> getConfigProperties();
+    Map<String, Object> getConfigProperties();
 
     /**
      * Gets the mirror selector to use for repositories discovered in artifact descriptors.
