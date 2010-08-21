@@ -24,9 +24,11 @@ public interface RepositoryCache
 {
 
     /**
-     * Puts the specified data into the cache. <strong>Warning:</strong> The cache will directly save the provided
-     * reference. If the cached data is mutable, i.e. could be modified after being put into the cache, the caller is
-     * responsible for creating a copy of the original data and store the copy in the cache.
+     * Puts the specified data into the cache. It is entirely up to the cache implementation how long this data will be
+     * kept before being purged, i.e. callers must not make any assumptions about the lifetime of cached data.
+     * <strong>Warning:</strong> The cache will directly save the provided reference. If the cached data is mutable,
+     * i.e. could be modified after being put into the cache, the caller is responsible for creating a copy of the
+     * original data and store the copy in the cache.
      * 
      * @param session The repository session during which the cache is accessed, must not be {@code null}.
      * @param key The key to use for lookup the data with, must not be {@code null}.
