@@ -9,8 +9,8 @@ Issue Tracker
 Mailing Lists
 =============
 - Development of Aether:  
-  <mailto:aether-dev@sonatype.org> to post mails  
-  <mailto:aether-dev-subscribe@sonatype.org> to subscribe to the list
+  <aether-dev@sonatype.org> to post mails  
+  <aether-dev-subscribe@sonatype.org> to subscribe to the list
 - Usage of Aether:  
-  <mailto:aether-user@sonatype.org> to post mails  
-  <mailto:aether-user-subscribe@sonatype.org> to subscribe to the list
+  <aether-user@sonatype.org> to post mails  
+  <aether-user-subscribe@sonatype.org> to subscribe to the list
