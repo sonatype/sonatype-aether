@@ -2,13 +2,11 @@ Wiki
 ====
 <https://docs.sonatype.org/display/AETHER/Home>
 
-Issues
-======
+Issue Tracker
+=============
 <https://issues.sonatype.org/browse/AETHER>
 
 Mailing Lists
 =============
-<aether-dev@sonatype.org>
-<aether-user@sonatype.org>
-
-Append "-subscribe" to the user info of these addresses to subscribe to the list.
+- Development: <aether-dev@sonatype.org> (post), <aether-dev-subscribe@sonatype.org> (subscribe)
+- Usage: <aether-user@sonatype.org> (post), <aether-user-subscribe@sonatype.org> (subscribe)
