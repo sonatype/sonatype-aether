@@ -13,25 +13,26 @@ package org.sonatype.aether;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-
 /**
+ * Thrown when a version or version range could not be parsed.
+ * 
  * @author Benjamin Bentmann
  */
-public class InvalidVersionException
+public class InvalidVersionSpecificationException
     extends RepositoryException
 {
 
     private final String version;
 
-    public InvalidVersionException( String version, String message )
+    public InvalidVersionSpecificationException( String version, String message )
     {
         super( message );
         this.version = version;
     }
 
-    public InvalidVersionException( String version, Throwable cause )
+    public InvalidVersionSpecificationException( String version, Throwable cause )
     {
-        super( "Could not parse version " + version + getMessage( ": ", cause ), cause );
+        super( "Could not parse version specification " + version + getMessage( ": ", cause ), cause );
         this.version = version;
     }
 

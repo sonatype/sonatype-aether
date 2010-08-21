@@ -13,7 +13,7 @@ package org.sonatype.aether.util.version;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.InvalidVersionRangeException;
+import org.sonatype.aether.InvalidVersionSpecificationException;
 import org.sonatype.aether.Version;
 import org.sonatype.aether.VersionRange;
 
@@ -39,10 +39,10 @@ final class GenericVersionRange
      * Creates a version range from the specified range specification.
      * 
      * @param range The range specification to parse, must not be {@code null}.
-     * @throws InvalidVersionRangeException If the range could not be parsed.
+     * @throws InvalidVersionSpecificationException If the range could not be parsed.
      */
     public GenericVersionRange( String range )
-        throws InvalidVersionRangeException
+        throws InvalidVersionSpecificationException
     {
         String process = range;
 
@@ -56,7 +56,7 @@ final class GenericVersionRange
         }
         else
         {
-            throw new InvalidVersionRangeException( range, "Invalid version range " + range
+            throw new InvalidVersionSpecificationException( range, "Invalid version range " + range
                 + ", a range must start with either [ or (" );
         }
 
@@ -70,7 +70,7 @@ final class GenericVersionRange
         }
         else
         {
-            throw new InvalidVersionRangeException( range, "Invalid version range " + range
+            throw new InvalidVersionSpecificationException( range, "Invalid version range " + range
                 + ", a range must end with either [ or (" );
         }
 
@@ -82,7 +82,7 @@ final class GenericVersionRange
         {
             if ( !lowerBoundInclusive || !upperBoundInclusive )
             {
-                throw new InvalidVersionRangeException( range, "Invalid version range " + range
+                throw new InvalidVersionSpecificationException( range, "Invalid version range " + range
                     + ", single version must be surrounded by []" );
             }
 
@@ -96,7 +96,7 @@ final class GenericVersionRange
             // more than two bounds, e.g. (1,2,3)
             if ( parsedUpperBound.contains( "," ) )
             {
-                throw new InvalidVersionRangeException( range, "Invalid version range " + range
+                throw new InvalidVersionSpecificationException( range, "Invalid version range " + range
                     + ", bounds may not contain additional ','" );
             }
 
@@ -107,7 +107,7 @@ final class GenericVersionRange
             {
                 if ( upperBound.compareTo( lowerBound ) < 0 )
                 {
-                    throw new InvalidVersionRangeException( range, "Invalid version range " + range
+                    throw new InvalidVersionSpecificationException( range, "Invalid version range " + range
                         + ", lower bound must not be greater than upper bound" );
                 }
             }

@@ -27,19 +27,19 @@ public interface VersionScheme
      * 
      * @param version The version string to parse, must not be {@code null}.
      * @return The parsed version, never {@code null}.
-     * @throws InvalidVersionException If the string violates the syntax rules of this scheme.
+     * @throws InvalidVersionSpecificationException If the string violates the syntax rules of this scheme.
      */
     Version parseVersion( String version )
-        throws InvalidVersionException;
+        throws InvalidVersionSpecificationException;
 
     /**
      * Parses the specified version range specification.
      * 
      * @param range The range specification to parse, must not be {@code null}.
      * @return The parsed version range, never {@code null}.
-     * @throws InvalidVersionRangeException If the range specification violates the syntax rules of this scheme.
+     * @throws InvalidVersionSpecificationException If the range specification violates the syntax rules of this scheme.
      */
     VersionRange parseVersionRange( String range )
-        throws InvalidVersionRangeException;
+        throws InvalidVersionSpecificationException;
 
 }

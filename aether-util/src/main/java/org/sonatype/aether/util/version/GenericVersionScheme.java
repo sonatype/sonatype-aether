@@ -13,8 +13,7 @@ package org.sonatype.aether.util.version;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.InvalidVersionException;
-import org.sonatype.aether.InvalidVersionRangeException;
+import org.sonatype.aether.InvalidVersionSpecificationException;
 import org.sonatype.aether.VersionScheme;
 
 /**
@@ -28,13 +27,13 @@ public class GenericVersionScheme
 {
 
     public GenericVersion parseVersion( final String version )
-        throws InvalidVersionException
+        throws InvalidVersionSpecificationException
     {
         return new GenericVersion( version );
     }
 
     public GenericVersionRange parseVersionRange( final String range )
-        throws InvalidVersionRangeException
+        throws InvalidVersionSpecificationException
     {
         return new GenericVersionRange( range );
     }

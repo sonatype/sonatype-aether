@@ -22,8 +22,7 @@ import org.sonatype.aether.Artifact;
 import org.sonatype.aether.Dependency;
 import org.sonatype.aether.DependencyFilter;
 import org.sonatype.aether.DependencyNode;
-import org.sonatype.aether.InvalidVersionException;
-import org.sonatype.aether.InvalidVersionRangeException;
+import org.sonatype.aether.InvalidVersionSpecificationException;
 import org.sonatype.aether.Version;
 import org.sonatype.aether.VersionRange;
 import org.sonatype.aether.VersionScheme;
@@ -198,11 +197,7 @@ public class PatternInclusionsDependencyFilter
 
                 return parsedRange.containsVersion( parsedVersion );
             }
-            catch ( final InvalidVersionException e )
-            {
-                return false;
-            }
-            catch ( final InvalidVersionRangeException e )
+            catch ( final InvalidVersionSpecificationException e )
             {
                 return false;
             }

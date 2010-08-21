@@ -20,7 +20,7 @@ import org.sonatype.aether.Artifact;
 import org.sonatype.aether.DefaultArtifact;
 import org.sonatype.aether.Dependency;
 import org.sonatype.aether.DependencyNode;
-import org.sonatype.aether.InvalidVersionException;
+import org.sonatype.aether.InvalidVersionSpecificationException;
 import org.sonatype.aether.VersionConstraint;
 import org.sonatype.aether.VersionScheme;
 import org.sonatype.aether.util.graph.DefaultDependencyNode;
@@ -106,7 +106,7 @@ class NodeBuilder
                 constraint.setPreferredVersion( node.getVersion() );
                 node.setVersionConstraint( constraint );
             }
-            catch ( InvalidVersionException e )
+            catch ( InvalidVersionSpecificationException e )
             {
                 throw new IllegalArgumentException( "bad version: " + e.getMessage(), e );
             }
