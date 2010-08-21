@@ -43,6 +43,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <!-- NOTE: This module is currently only available from its sources at http://github.com/bentmann/maven-3/ -->
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-aether-provider</artifactId>
       <version>3.0-SNAPSHOT</version>
@@ -121,6 +122,13 @@ See the Apache License Version 2.0 for the specific language governing permissio
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <!-- this module is just a source code demo and not to be shared as an artifact -->
+          <skip>true</skip>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
