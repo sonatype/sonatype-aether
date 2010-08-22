@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.sonatype.aether.ArtifactTypeRegistry;
 import org.sonatype.aether.AuthenticationSelector;
@@ -32,6 +31,7 @@ import org.sonatype.aether.ProxySelector;
 import org.sonatype.aether.RepositoryCache;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.SessionData;
 import org.sonatype.aether.TransferListener;
 import org.sonatype.aether.WorkspaceReader;
 import org.sonatype.aether.util.graph.manager.ClassicDependencyManager;
@@ -54,8 +54,6 @@ import org.sonatype.aether.util.graph.traverser.FatArtifactTraverser;
 public class DefaultRepositorySystemSession
     implements RepositorySystemSession
 {
-
-    private String id;
 
     private boolean offline;
 
@@ -100,6 +98,8 @@ public class DefaultRepositorySystemSession
     private DependencySelector dependencySelector;
 
     private DependencyGraphTransformer dependencyGraphTransformer;
+
+    private SessionData data;
 
     private RepositoryCache cache;
 
@@ -157,7 +157,6 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession()
     {
         // enables default constructor
-        setId( null );
     }
 
     /**
@@ -189,18 +188,8 @@ public class DefaultRepositorySystemSession
         setDependencyManager( session.getDependencyManager() );
         setDependencySelector( session.getDependencySelector() );
         setDependencyGraphTransformer( session.getDependencyGraphTransformer() );
+        setData( session.getData() );
         setCache( session.getCache() );
-    }
-
-    public String getId()
-    {
-        return id;
-    }
-
-    public DefaultRepositorySystemSession setId( String id )
-    {
-        this.id = ( id != null ) ? id : UUID.randomUUID().toString().replace( "-", "" );
-        return this;
     }
 
     public boolean isOffline()
@@ -556,6 +545,17 @@ public class DefaultRepositorySystemSession
     public RepositoryCache getCache()
     {
         return cache;
+    }
+
+    public DefaultRepositorySystemSession setData( SessionData data )
+    {
+        this.data = data;
+        return this;
+    }
+
+    public SessionData getData()
+    {
+        return data;
     }
 
     public DefaultRepositorySystemSession setCache( RepositoryCache cache )

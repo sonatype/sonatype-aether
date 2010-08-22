@@ -28,6 +28,7 @@ import org.sonatype.aether.ProxySelector;
 import org.sonatype.aether.RepositoryCache;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.SessionData;
 import org.sonatype.aether.TransferListener;
 import org.sonatype.aether.WorkspaceReader;
 
@@ -171,6 +172,11 @@ public class FilterRepositorySystemSession
     public boolean isTransferErrorCachingEnabled()
     {
         return session.isTransferErrorCachingEnabled();
+    }
+
+    public SessionData getData()
+    {
+        return session.getData();
     }
 
 }

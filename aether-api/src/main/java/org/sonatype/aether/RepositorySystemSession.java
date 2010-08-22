@@ -205,6 +205,13 @@ public interface RepositorySystemSession
     DependencyGraphTransformer getDependencyGraphTransformer();
 
     /**
+     * Gets the custom data associated with this session.
+     * 
+     * @return The session data, never {@code null}.
+     */
+    SessionData getData();
+
+    /**
      * Gets the cache the repository system may use to save data for future reuse during the session.
      * 
      * @return The repository cache or {@code null} if none.

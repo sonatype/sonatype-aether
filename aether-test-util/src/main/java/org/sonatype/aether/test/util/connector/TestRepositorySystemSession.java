@@ -29,6 +29,7 @@ import org.sonatype.aether.ProxySelector;
 import org.sonatype.aether.RepositoryCache;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.SessionData;
 import org.sonatype.aether.TransferListener;
 import org.sonatype.aether.WorkspaceReader;
 import org.sonatype.aether.test.util.selectors.DefaultAuthenticationSelector;
@@ -38,24 +39,13 @@ public class TestRepositorySystemSession
     implements RepositorySystemSession
 {
 
+    private SessionData data = new TestSessionData();
+
     private TransferListener listener = new RecordingTransferListener();
+
     private AuthenticationSelector authenticator = new DefaultAuthenticationSelector();
+
     private ProxySelector proxySelector = new DefaultProxySelector();
-
-    public String getUserAgent()
-    {
-        return "Aether";
-    }
-
-    public int getConnectTimeout()
-    {
-        return 60;
-    }
-
-    public int getRequestTimeout()
-    {
-        return 60;
-    }
 
     public TransferListener getTransferListener()
     {
@@ -144,7 +134,7 @@ public class TestRepositorySystemSession
 
     public AuthenticationSelector getAuthenticationSelector()
     {
-        return authenticator ;
+        return authenticator;
     }
 
     public ArtifactTypeRegistry getArtifactTypeRegistry()
@@ -172,8 +162,14 @@ public class TestRepositorySystemSession
         throw new UnsupportedOperationException( "getDependencyGraphTransformer()" );
     }
 
+    public SessionData getData()
+    {
+        return data;
+    }
+
     public RepositoryCache getCache()
     {
-        throw new UnsupportedOperationException( "getCache()" );
+        return null;
     }
+
 }
