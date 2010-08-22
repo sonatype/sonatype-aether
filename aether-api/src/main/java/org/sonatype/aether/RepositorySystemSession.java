@@ -24,27 +24,6 @@ public interface RepositorySystemSession
 {
 
     /**
-     * Gets the user agent that repository connectors should report to servers.
-     * 
-     * @return The user agent to use or {@code null}/empty if undefined.
-     */
-    String getUserAgent();
-
-    /**
-     * Gets the timeout (in milliseconds) to wait for a successful connection to a remote server.
-     * 
-     * @return The connection timeout in milliseconds, non-positive values indicate no timeout.
-     */
-    int getConnectTimeout();
-
-    /**
-     * Gets the timeout (in milliseconds) to wait for a response from a remote server.
-     * 
-     * @return The request timeout in milliseconds, non-positive values indicate no timeout.
-     */
-    int getRequestTimeout();
-
-    /**
      * Indicates whether the repository system operates in offline mode and avoids/refuses any access to remote
      * repositories.
      * 
@@ -165,6 +144,7 @@ public interface RepositorySystemSession
      * connector-specific behavior, etc.)
      * 
      * @return The (read-only) configuration properties, never {@code null}.
+     * @see ConfigurationProperties
      */
     Map<String, Object> getConfigProperties();
 

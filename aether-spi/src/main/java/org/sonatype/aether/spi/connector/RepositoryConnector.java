@@ -22,13 +22,11 @@ import java.util.Collection;
  * {@link Transfer#setState(org.sonatype.aether.spi.connector.Transfer.State)} to update the state of a transfer during
  * its processing. Furthermore, the connector must notify any {@link org.sonatype.aether.TransferListener
  * TransferListener} configured on its associated {@link org.sonatype.aether.RepositorySystemSession
- * RepositorySystemSession}. If applicable, the session settings
- * {@link org.sonatype.aether.RepositorySystemSession#getUserAgent() getUserAgent()},
- * {@link org.sonatype.aether.RepositorySystemSession#getConnectTimeout() getConnectTimeout()} and
- * {@link org.sonatype.aether.RepositorySystemSession#getRequestTimeout() getRequestTimeout()} should be respected as
- * well.
+ * RepositorySystemSession}. If applicable, a connector should obey connect/request timeouts and other relevant settings
+ * from the configuration properties of the repository system session.
  * 
  * @author Benjamin Bentmann
+ * @see org.sonatype.aether.RepositorySystemSession#getConfigProperties()
  */
 public interface RepositoryConnector
 {

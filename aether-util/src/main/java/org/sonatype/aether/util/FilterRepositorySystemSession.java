@@ -138,11 +138,6 @@ public class FilterRepositorySystemSession
         return session.getUpdatePolicy();
     }
 
-    public String getUserAgent()
-    {
-        return session.getUserAgent();
-    }
-
     public Map<String, String> getUserProperties()
     {
         return session.getUserProperties();
@@ -176,16 +171,6 @@ public class FilterRepositorySystemSession
     public boolean isTransferErrorCachingEnabled()
     {
         return session.isTransferErrorCachingEnabled();
-    }
-
-    public int getConnectTimeout()
-    {
-        return session.getConnectTimeout();
-    }
-
-    public int getRequestTimeout()
-    {
-        return session.getRequestTimeout();
     }
 
 }

@@ -47,6 +47,7 @@ import org.sonatype.aether.ArtifactTransferException;
 import org.sonatype.aether.Authentication;
 import org.sonatype.aether.AuthenticationSelector;
 import org.sonatype.aether.ChecksumFailureException;
+import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.MetadataNotFoundException;
 import org.sonatype.aether.MetadataTransferException;
 import org.sonatype.aether.NoRepositoryConnectorException;
@@ -137,7 +138,13 @@ class WagonRepositoryConnector
         wagonAuth = getAuthenticationInfo( repository, session.getAuthenticationSelector() );
         wagonProxy = getProxy( repository, session.getProxySelector() );
 
-        int threads = getOption( "maven.artifact.threads", 5 );
+        int threads =
+            ConfigurationProperties.get( session.getConfigProperties(), "aether.connector.wagon.threads",
+                                         Integer.MIN_VALUE );
+        if ( threads == Integer.MIN_VALUE )
+        {
+            threads = ConfigurationProperties.get( session.getConfigProperties(), "maven.artifact.threads", 5 );
+        }
         if ( threads <= 1 )
         {
             executor = new Executor()
@@ -157,19 +164,6 @@ class WagonRepositoryConnector
         checksumAlgos = new LinkedHashMap<String, String>();
         checksumAlgos.put( "SHA-1", ".sha1" );
         checksumAlgos.put( "MD5", ".md5" );
-    }
-
-    private int getOption( String key, int defaultValue )
-    {
-        Object value = session.getConfigProperties().get( key );
-        try
-        {
-            return Integer.valueOf( (String) value );
-        }
-        catch ( Exception e )
-        {
-            return defaultValue;
-        }
     }
 
     private AuthenticationInfo getAuthenticationInfo( RemoteRepository repository, AuthenticationSelector selector )
@@ -237,13 +231,16 @@ class WagonRepositoryConnector
     private void connectWagon( Wagon wagon )
         throws Exception
     {
-        if ( StringUtils.isNotEmpty( session.getUserAgent() ) )
+        String userAgent =
+            ConfigurationProperties.get( session.getConfigProperties(), ConfigurationProperties.USER_AGENT,
+                                         ConfigurationProperties.DEFAULT_USER_AGENT );
+        if ( StringUtils.isNotEmpty( userAgent ) )
         {
             try
             {
                 Method setHttpHeaders = wagon.getClass().getMethod( "setHttpHeaders", Properties.class );
                 Properties headers = new Properties();
-                headers.setProperty( "User-Agent", session.getUserAgent() );
+                headers.setProperty( "User-Agent", userAgent );
                 setHttpHeaders.invoke( wagon, headers );
             }
             catch ( Exception e )
@@ -251,10 +248,12 @@ class WagonRepositoryConnector
                 logger.debug( "Could not set user agent for wagon " + wagon.getClass().getName() + ": " + e );
             }
         }
-        if ( session.getConnectTimeout() > 0 )
-        {
-            wagon.setTimeout( session.getConnectTimeout() );
-        }
+
+        int connectTimeout =
+            ConfigurationProperties.get( session.getConfigProperties(), ConfigurationProperties.CONNECT_TIMEOUT,
+                                         ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
+        wagon.setTimeout( Math.max( connectTimeout, 0 ) );
+
         wagon.connect( wagonRepo, wagonAuth, wagonProxy );
     }
 

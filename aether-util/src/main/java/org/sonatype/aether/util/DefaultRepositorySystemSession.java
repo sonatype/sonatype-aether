@@ -13,7 +13,7 @@ package org.sonatype.aether.util;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -57,12 +57,6 @@ public class DefaultRepositorySystemSession
 
     private String id;
 
-    private String userAgent = "Aether";
-
-    private int connectTimeout = 30 * 1000;
-
-    private int requestTimeout = 60 * 1000;
-
     private boolean offline;
 
     private boolean transferErrorCachingEnabled;
@@ -85,11 +79,11 @@ public class DefaultRepositorySystemSession
 
     private TransferListener transferListener;
 
-    private Map<String, String> systemProperties = Collections.emptyMap();
+    private Map<String, String> systemProperties = new HashMap<String, String>();
 
-    private Map<String, String> userProperties = Collections.emptyMap();
+    private Map<String, String> userProperties = new HashMap<String, String>();
 
-    private Map<String, Object> configProperties = Collections.emptyMap();
+    private Map<String, Object> configProperties = new HashMap<String, Object>();
 
     private MirrorSelector mirrorSelector;
 
@@ -173,7 +167,6 @@ public class DefaultRepositorySystemSession
      */
     public DefaultRepositorySystemSession( RepositorySystemSession session )
     {
-        setUserAgent( session.getUserAgent() );
         setOffline( session.isOffline() );
         setTransferErrorCachingEnabled( session.isTransferErrorCachingEnabled() );
         setNotFoundCachingEnabled( session.isNotFoundCachingEnabled() );
@@ -207,39 +200,6 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession setId( String id )
     {
         this.id = ( id != null ) ? id : UUID.randomUUID().toString().replace( "-", "" );
-        return this;
-    }
-
-    public String getUserAgent()
-    {
-        return userAgent;
-    }
-
-    public DefaultRepositorySystemSession setUserAgent( String userAgent )
-    {
-        this.userAgent = userAgent;
-        return this;
-    }
-
-    public int getConnectTimeout()
-    {
-        return connectTimeout;
-    }
-
-    public DefaultRepositorySystemSession setConnectionTimeout( int connectTimeout )
-    {
-        this.connectTimeout = connectTimeout;
-        return this;
-    }
-
-    public int getRequestTimeout()
-    {
-        return requestTimeout;
-    }
-
-    public DefaultRepositorySystemSession setRequestTimeout( int requestTimeout )
-    {
-        this.requestTimeout = requestTimeout;
         return this;
     }
 
@@ -374,7 +334,7 @@ public class DefaultRepositorySystemSession
         Map<String, T> map;
         if ( table == null || table.isEmpty() )
         {
-            map = Collections.emptyMap();
+            map = new HashMap<String, T>();
         }
         else
         {
@@ -390,7 +350,6 @@ public class DefaultRepositorySystemSession
                     }
                 }
             }
-            map = Collections.unmodifiableMap( map );
         }
         return map;
     }
@@ -404,11 +363,11 @@ public class DefaultRepositorySystemSession
     {
         if ( systemProperties == null )
         {
-            this.systemProperties = Collections.emptyMap();
+            this.systemProperties = new HashMap<String, String>();
         }
         else
         {
-            this.systemProperties = Collections.unmodifiableMap( systemProperties );
+            this.systemProperties = systemProperties;
         }
         return this;
     }
@@ -416,6 +375,19 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession setSystemProps( Hashtable<?, ?> systemProperties )
     {
         this.systemProperties = toSafeMap( systemProperties, String.class );
+        return this;
+    }
+
+    public DefaultRepositorySystemSession setSystemProperty( String key, String value )
+    {
+        if ( value != null )
+        {
+            systemProperties.put( key, value );
+        }
+        else
+        {
+            systemProperties.remove( key );
+        }
         return this;
     }
 
@@ -428,11 +400,11 @@ public class DefaultRepositorySystemSession
     {
         if ( userProperties == null )
         {
-            this.userProperties = Collections.emptyMap();
+            this.userProperties = new HashMap<String, String>();
         }
         else
         {
-            this.userProperties = Collections.unmodifiableMap( userProperties );
+            this.userProperties = userProperties;
         }
         return this;
     }
@@ -440,6 +412,19 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession setUserProps( Map<?, ?> userProperties )
     {
         this.userProperties = toSafeMap( userProperties, String.class );
+        return this;
+    }
+
+    public DefaultRepositorySystemSession setUserProperty( String key, String value )
+    {
+        if ( value != null )
+        {
+            userProperties.put( key, value );
+        }
+        else
+        {
+            userProperties.remove( key );
+        }
         return this;
     }
 
@@ -452,11 +437,11 @@ public class DefaultRepositorySystemSession
     {
         if ( configProperties == null )
         {
-            this.configProperties = Collections.emptyMap();
+            this.configProperties = new HashMap<String, Object>();
         }
         else
         {
-            this.configProperties = Collections.unmodifiableMap( configProperties );
+            this.configProperties = configProperties;
         }
         return this;
     }
@@ -464,6 +449,19 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession setConfigProps( Map<?, ?> configProperties )
     {
         this.configProperties = toSafeMap( configProperties, Object.class );
+        return this;
+    }
+
+    public DefaultRepositorySystemSession setConfigProperty( String key, Object value )
+    {
+        if ( value != null )
+        {
+            configProperties.put( key, value );
+        }
+        else
+        {
+            configProperties.remove( key );
+        }
         return this;
     }
 
