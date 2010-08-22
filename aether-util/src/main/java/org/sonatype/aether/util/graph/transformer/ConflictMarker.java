@@ -34,7 +34,6 @@ import org.sonatype.aether.RepositoryException;
  * {@link TransformationContextKeys#CONFLICT_IDS}.
  * 
  * @author Benjamin Bentmann
- * @see DependencyNode#getConflictId()
  */
 public class ConflictMarker
     implements DependencyGraphTransformer

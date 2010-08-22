@@ -23,8 +23,8 @@ import org.sonatype.aether.DependencyVisitor;
 /**
  * A dependency visitor that constructs a clone of the visited dependency graph. If such a visitor is passed into a
  * {@link FilteringDependencyVisitor}, a sub graph can be created. This class creates shallow clones of the visited
- * dependency nodes but clients can create a subclass and override {@link #clone(DependencyNode, DependencyNode)} to
- * alter the clone process.
+ * dependency nodes but clients can create a subclass and override {@link #clone(DependencyNode)} to alter the clone
+ * process.
  * 
  * @author Benjamin Bentmann
  */

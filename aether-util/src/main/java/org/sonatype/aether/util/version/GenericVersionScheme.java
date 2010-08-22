@@ -20,7 +20,7 @@ import org.sonatype.aether.VersionRange;
 import org.sonatype.aether.VersionScheme;
 
 /**
- * A version scheme using {@link GenericVersion}.
+ * A version scheme using a generic version syntax.
  * 
  * @author Benjamin Bentmann
  * @author Alin Dreghiciu
