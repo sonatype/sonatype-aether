@@ -29,32 +29,35 @@ public class NearestVersionConflictResolverTest
     extends AbstractDependencyGraphTransformerTest
 {
 
-    
     @Test
-    public void testMultipleVersionsAtSameLevel()
+    public void testSelectHighestVersionFromMultipleVersionsAtSameLevel()
         throws Exception
     {
         // root
-        // +- a:2
         // +- a:1
+        // +- a:3
+        // \- a:2
 
         DependencyNode a1 = builder.artifactId( "a" ).version( "1" ).build();
         DependencyNode a2 = builder.artifactId( "a" ).version( "2" ).build();
+        DependencyNode a3 = builder.artifactId( "a" ).version( "3" ).build();
 
         DependencyNode root = builder.artifactId( null ).build();
-        root.getChildren().add( a2 );
         root.getChildren().add( a1 );
+        root.getChildren().add( a3 );
+        root.getChildren().add( a2 );
 
         Map<DependencyNode, Object> conflictIds = new IdentityHashMap<DependencyNode, Object>();
         conflictIds.put( a1, "a" );
         conflictIds.put( a2, "a" );
+        conflictIds.put( a3, "a" );
         context.put( TransformationContextKeys.CONFLICT_IDS, conflictIds );
 
         NearestVersionConflictResolver transformer = new NearestVersionConflictResolver();
         root = transformer.transformGraph( root, context );
 
         assertEquals( 1, root.getChildren().size() );
-        assertSame( a2, root.getChildren().iterator().next() );
+        assertSame( a3, root.getChildren().iterator().next() );
     }
 
     @Test
@@ -63,8 +66,8 @@ public class NearestVersionConflictResolverTest
     {
         // root
         // +- a
-        // |  \- b:1
-        // |     \- j:1
+        // |  \- b:1           # will be removed in favor of b:2
+        // |     \- j:1        # nearest version of j in dirty tree
         // +- c
         // |  \- d
         // |     \- e
@@ -110,13 +113,13 @@ public class NearestVersionConflictResolverTest
     }
 
     @Test
-    public void testNearestVersionUnderneathRemovedNode()
+    public void testNearestDirtyVersionUnderneathRemovedNode()
         throws Exception
     {
         // root
         // +- a
-        // |  \- b:1
-        // |     \- j:1
+        // |  \- b:1           # will be removed in favor of b:2
+        // |     \- j:1        # nearest version of j in dirty tree
         // +- c
         // |  \- d
         // |     \- e
@@ -161,6 +164,65 @@ public class NearestVersionConflictResolverTest
 
         List<DependencyNode> trail = find( root, "j" );
         assertEquals( 5, trail.size() );
+    }
+
+    @Test
+    public void testViolationOfHardConstraintFallsBackToNearestSeenNotFirstSeen()
+        throws Exception
+    {
+        // root
+        // +- x:1
+        // +- a:1
+        // |  \- b:1
+        // |     \- x:3
+        // +- c:1
+        // |  \- x:2
+        // \- d:1
+        //    \- e:1
+        //       \- x:[2,)   # forces rejection of x:1, should fallback to nearest and not first-seen, i.e. x:2 and not x:3
+
+        DependencyNode x1 = builder.artifactId( "x" ).version( "1" ).build();
+        DependencyNode x2 = builder.artifactId( "x" ).version( "2" ).build();
+        DependencyNode x3 = builder.artifactId( "x" ).version( "3" ).build();
+        DependencyNode x2r = builder.artifactId( "x" ).version( "2" ).range( "[2,)" ).build();
+
+        DependencyNode b = builder.artifactId( "b" ).version( "1" ).build();
+        b.getChildren().add( x3 );
+        DependencyNode a = builder.artifactId( "a" ).build();
+        a.getChildren().add( b );
+
+        DependencyNode c = builder.artifactId( "c" ).build();
+        c.getChildren().add( x2 );
+
+        DependencyNode e = builder.artifactId( "e" ).build();
+        e.getChildren().add( x2r );
+        DependencyNode d = builder.artifactId( "d" ).build();
+        d.getChildren().add( e );
+
+        DependencyNode root = builder.artifactId( null ).build();
+        root.getChildren().add( x1 );
+        root.getChildren().add( a );
+        root.getChildren().add( c );
+        root.getChildren().add( d );
+
+        Map<DependencyNode, Object> conflictIds = new IdentityHashMap<DependencyNode, Object>();
+        conflictIds.put( x1, "x" );
+        conflictIds.put( x2, "x" );
+        conflictIds.put( x3, "x" );
+        conflictIds.put( x2r, "x" );
+        conflictIds.put( a, "a" );
+        conflictIds.put( b, "b" );
+        conflictIds.put( c, "c" );
+        conflictIds.put( d, "d" );
+        conflictIds.put( e, "e" );
+        context.put( TransformationContextKeys.CONFLICT_IDS, conflictIds );
+
+        NearestVersionConflictResolver transformer = new NearestVersionConflictResolver();
+        root = transformer.transformGraph( root, context );
+
+        List<DependencyNode> trail = find( root, "x" );
+        assertEquals( 3, trail.size() );
+        assertSame( x2, trail.get( 0 ) );
     }
 
 }

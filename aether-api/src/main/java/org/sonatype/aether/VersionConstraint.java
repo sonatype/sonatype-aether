@@ -14,143 +14,39 @@ package org.sonatype.aether;
  */
 
 import java.util.Collection;
-import java.util.HashSet;
 
 /**
- * A constraint on versions for a dependency.
+ * A constraint on versions for a dependency. A constraint can either consist of one or more version ranges or a single
+ * version. In the first case, the constraint expresses a hard requirement on a version matching one of its ranges. In
+ * the second case, the constraint expresses a soft requirement on a specific version (i.e. a recommendation).
  * 
  * @author Benjamin Bentmann
  */
-public class VersionConstraint
+public interface VersionConstraint
 {
-
-    private Collection<VersionRange> ranges = new HashSet<VersionRange>();
-
-    private Version preferredVersion;
-
-    /**
-     * Adds the specified version range to this constraint. All versions matched by the given range satisfy this
-     * constraint.
-     * 
-     * @param range The version range to add, may be {@code null}.
-     * @return This constraint for chaining, never {@code null}.
-     */
-    public VersionConstraint addRange( VersionRange range )
-    {
-        if ( range != null )
-        {
-            ranges.add( range );
-        }
-        return this;
-    }
 
     /**
      * Gets the version ranges of this constraint.
      * 
      * @return The version ranges, may be empty but never {@code null}.
      */
-    public Collection<VersionRange> getRanges()
-    {
-        return ranges;
-    }
+    Collection<VersionRange> getRanges();
 
     /**
-     * Sets the preferred version to satisfy this constraint.
+     * Gets the version recommended by this constraint.
      * 
-     * @param preferredVersion The preferred version for this constraint, may be {@code null} if none.
-     * @return This constraint for chaining, never {@code null}.
+     * @return The recommended version or {@code null} if none.
      */
-    public VersionConstraint setPreferredVersion( Version preferredVersion )
-    {
-        this.preferredVersion = preferredVersion;
-        return this;
-    }
-
-    /**
-     * Gets the preferred version to satisfiy this constraint.
-     * 
-     * @return The preferred version for this constraint or {@code null} if unknown.
-     */
-    public Version getPreferredVersion()
-    {
-        return preferredVersion;
-    }
+    Version getVersion();
 
     /**
      * Determines whether the specified version satisfies this constraint. In more detail, a version satisfies this
-     * constraint if it matches at least one version range or if this constraint has no version ranges at all.
+     * constraint if it matches at least one version range or if this constraint has no version ranges at all and the
+     * specified version equals the version recommended by the constraint.
      * 
      * @param version The version to test, must not be {@code null}.
      * @return {@code true} if the specified version satisfies this constraint, {@code false} otherwise.
      */
-    public boolean containsVersion( Version version )
-    {
-        for ( VersionRange range : ranges )
-        {
-            if ( range.containsVersion( version ) )
-            {
-                return true;
-            }
-        }
-        return ranges.isEmpty();
-    }
-
-    @Override
-    public String toString()
-    {
-        StringBuilder buffer = new StringBuilder( 128 );
-
-        for ( VersionRange range : getRanges() )
-        {
-            if ( buffer.length() > 0 )
-            {
-                buffer.append( "," );
-            }
-            buffer.append( range );
-        }
-
-        if ( buffer.length() <= 0 )
-        {
-            buffer.append( getPreferredVersion() );
-        }
-
-        return buffer.toString();
-    }
-
-    @Override
-    public boolean equals( Object obj )
-    {
-        if ( this == obj )
-        {
-            return true;
-        }
-        if ( obj == null || !getClass().equals( obj.getClass() ) )
-        {
-            return false;
-        }
-
-        VersionConstraint that = (VersionConstraint) obj;
-
-        return ranges.equals( that.getRanges() ) && eq( preferredVersion, that.getPreferredVersion() );
-    }
-
-    private static <T> boolean eq( T s1, T s2 )
-    {
-        return s1 != null ? s1.equals( s2 ) : s2 == null;
-    }
-
-    @Override
-    public int hashCode()
-    {
-        int hash = 17;
-        hash = hash * 31 + hash( getRanges() );
-        hash = hash * 31 + hash( getPreferredVersion() );
-        return hash;
-    }
-
-    private static int hash( Object obj )
-    {
-        return obj != null ? obj.hashCode() : 0;
-    }
+    boolean containsVersion( Version version );
 
 }

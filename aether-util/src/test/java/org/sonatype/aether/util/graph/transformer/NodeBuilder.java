@@ -21,7 +21,6 @@ import org.sonatype.aether.DefaultArtifact;
 import org.sonatype.aether.Dependency;
 import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.InvalidVersionSpecificationException;
-import org.sonatype.aether.VersionConstraint;
 import org.sonatype.aether.VersionScheme;
 import org.sonatype.aether.util.graph.DefaultDependencyNode;
 import org.sonatype.aether.util.version.GenericVersionScheme;
@@ -37,6 +36,8 @@ class NodeBuilder
     private String artifactId = "";
 
     private String version = "0.1";
+
+    private String range;
 
     private String ext = "jar";
 
@@ -61,6 +62,13 @@ class NodeBuilder
     public NodeBuilder version( String version )
     {
         this.version = version;
+        this.range = null;
+        return this;
+    }
+
+    public NodeBuilder range( String range )
+    {
+        this.range = range;
         return this;
     }
 
@@ -102,9 +110,7 @@ class NodeBuilder
             try
             {
                 node.setVersion( versionScheme.parseVersion( version ) );
-                VersionConstraint constraint = new VersionConstraint();
-                constraint.setPreferredVersion( node.getVersion() );
-                node.setVersionConstraint( constraint );
+                node.setVersionConstraint( versionScheme.parseVersionConstraint( range != null ? range : version ) );
             }
             catch ( InvalidVersionSpecificationException e )
             {
