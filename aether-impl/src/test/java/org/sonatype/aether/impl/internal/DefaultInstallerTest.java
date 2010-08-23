@@ -138,7 +138,7 @@ public class DefaultInstallerTest
                     new File( session.getLocalRepositoryManager().getRepository().getBasedir(), localArtifactPath );
 
                 assertTrue( seenArtifactInstalling );
-                assertEquals( event.getFile(), artifactFile );
+                assertEquals( artifactFile, event.getFile() );
                 assertEquals( event.getArtifact(), artifact );
             }
 
@@ -149,15 +149,18 @@ public class DefaultInstallerTest
                 File artifactFile =
                     new File( session.getLocalRepositoryManager().getRepository().getBasedir(), localArtifactPath );
 
-                assertEquals( event.getFile(), artifactFile );
+                assertEquals( artifactFile, event.getFile() );
                 assertEquals( event.getArtifact(), artifact );
             }
 
             @Override
             public void metadataInstalled( RepositoryEvent event )
             {
+                File metadataFile =
+                    new File( session.getLocalRepositoryManager().getRepository().getBasedir(), localMetadataPath );
+
                 assertTrue( seenMetadataInstalling );
-                assertTrue( event.getFile().getAbsolutePath().endsWith( localMetadataPath ) );
+                assertEquals( metadataFile, event.getFile() );
                 assertEquals( event.getMetadata(), metadata );
             }
 
@@ -165,7 +168,10 @@ public class DefaultInstallerTest
             public void metadataInstalling( RepositoryEvent event )
             {
                 this.seenMetadataInstalling = true;
-                assertTrue( event.getFile().getAbsolutePath().endsWith( localMetadataPath ) );
+                File metadataFile =
+                    new File( session.getLocalRepositoryManager().getRepository().getBasedir(), localMetadataPath );
+
+                assertEquals( metadataFile, event.getFile() );
                 assertEquals( event.getMetadata(), metadata );
             }
 
