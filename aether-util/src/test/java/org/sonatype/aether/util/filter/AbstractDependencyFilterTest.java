@@ -18,13 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.sonatype.aether.Artifact;
-import org.sonatype.aether.Dependency;
 import org.sonatype.aether.DependencyFilter;
 import org.sonatype.aether.DependencyNode;
-import org.sonatype.aether.DependencyVisitor;
-import org.sonatype.aether.RemoteRepository;
-import org.sonatype.aether.Version;
-import org.sonatype.aether.VersionConstraint;
 
 public abstract class AbstractDependencyFilterTest
 {
