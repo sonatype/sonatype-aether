@@ -51,7 +51,7 @@ public class LocalArtifactRegistration
     }
 
     /**
-     * Creates a query with the specified properties.
+     * Creates a registration request for the specified (remotely resolved) artifact.
      * 
      * @param artifact The artifact to query for, may be {@code null}.
      * @param repository The remote repository or {@code null} if the artifact was locally built.
