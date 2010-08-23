@@ -33,7 +33,7 @@ public class PatternInclusionsDependencyFilterTest
     public void acceptTestCornerCases()
     {
         NodeBuilder builder = new NodeBuilder();
-        builder.artifactId( "testArtifact" ).build();
+        builder.artifactId( "testArtifact" );
         List<DependencyNode> parents = new LinkedList<DependencyNode>();
 
         // Empty String, Empty List
@@ -48,7 +48,7 @@ public class PatternInclusionsDependencyFilterTest
     public void acceptTestMatches()
     {
         NodeBuilder builder = new NodeBuilder();
-        builder.groupId( "com.example.test" ).artifactId( "testArtifact" ).ext( "jar" ).version( "1.0.3" ).build();
+        builder.groupId( "com.example.test" ).artifactId( "testArtifact" ).ext( "jar" ).version( "1.0.3" );
         List<DependencyNode> parents = new LinkedList<DependencyNode>();
 
         // full match
@@ -107,7 +107,7 @@ public class PatternInclusionsDependencyFilterTest
     public void acceptTestLessToken()
     {
         NodeBuilder builder = new NodeBuilder();
-        builder.groupId( "com.example.test" ).artifactId( "testArtifact" ).ext( "jar" ).version( "1.0.3" ).build();
+        builder.groupId( "com.example.test" ).artifactId( "testArtifact" ).ext( "jar" ).version( "1.0.3" );
         List<DependencyNode> parents = new LinkedList<DependencyNode>();
 
         assertTrue( new PatternInclusionsDependencyFilter( "com.example.test:testArtifact:jar" ).accept( builder.build(),
@@ -123,7 +123,7 @@ public class PatternInclusionsDependencyFilterTest
     public void acceptTestMissmatch()
     {
         NodeBuilder builder = new NodeBuilder();
-        builder.groupId( "com.example.test" ).artifactId( "testArtifact" ).ext( "jar" ).version( "1.0.3" ).build();
+        builder.groupId( "com.example.test" ).artifactId( "testArtifact" ).ext( "jar" ).version( "1.0.3" );
         List<DependencyNode> parents = new LinkedList<DependencyNode>();
 
         assertFalse( new PatternInclusionsDependencyFilter( "OTHER.GROUP.ID:testArtifact:jar:1.0.3" ).accept( builder.build(),
@@ -145,7 +145,7 @@ public class PatternInclusionsDependencyFilterTest
     public void acceptTestMoreToken()
     {
         NodeBuilder builder = new NodeBuilder();
-        builder.groupId( "com.example.test" ).artifactId( "testArtifact" ).ext( "jar" ).version( "1.0.3" ).build();
+        builder.groupId( "com.example.test" ).artifactId( "testArtifact" ).ext( "jar" ).version( "1.0.3" );
         List<DependencyNode> parents = new LinkedList<DependencyNode>();
 
         assertFalse( new PatternInclusionsDependencyFilter( "com.example.test:testArtifact:jar:1.0.3:foo" ).accept( builder.build(),
@@ -156,7 +156,7 @@ public class PatternInclusionsDependencyFilterTest
     public void acceptTestRange()
     {
         NodeBuilder builder = new NodeBuilder();
-        builder.groupId( "com.example.test" ).artifactId( "testArtifact" ).ext( "jar" ).version( "1.0.3" ).build();
+        builder.groupId( "com.example.test" ).artifactId( "testArtifact" ).ext( "jar" ).version( "1.0.3" );
         List<DependencyNode> parents = new LinkedList<DependencyNode>();
 
         String prefix = "com.example.test:testArtifact:jar:";
