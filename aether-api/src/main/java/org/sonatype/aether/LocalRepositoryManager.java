@@ -76,18 +76,20 @@ public interface LocalRepositoryManager
      * Queries for the existence of an artifact in the local repository. The request could be satisfied by a locally
      * built artifact or a previously downloaded artifact.
      * 
-     * @param result The artifact request, must not be {@code null}.
+     * @param session The repository system session during which the request is made, must not be {@code null}.
+     * @param request The artifact request, must not be {@code null}.
      * @return The result of the request, never {@code null}.
      */
-    LocalArtifactResult find( LocalArtifactRequest result );
+    LocalArtifactResult find( RepositorySystemSession session, LocalArtifactRequest request );
 
     /**
      * Registers an installed or resolved artifact with the local repository. Note that artifact registration is merely
      * concerned about updating the local repository's internal state, not about actually installing the artifact or its
      * accompanying metadata.
      * 
-     * @param artifact The artifact to register, must not be {@code null}.
+     * @param session The repository system session during which the registration is made, must not be {@code null}.
+     * @param request The registration request, must not be {@code null}.
      */
-    void add( LocalArtifactRegistration request );
+    void add( RepositorySystemSession session, LocalArtifactRegistration request );
 
 }

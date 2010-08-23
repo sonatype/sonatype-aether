@@ -218,7 +218,7 @@ public class DefaultArtifactResolver
             }
 
             LocalArtifactResult local =
-                lrm.find( new LocalArtifactRequest( artifact, repos, request.getRequestContext() ) );
+                lrm.find( session, new LocalArtifactRequest( artifact, repos, request.getRequestContext() ) );
             if ( local.isAvailable()
                 || ( local.getFile() != null && versionResult.getRepository() instanceof LocalRepository ) )
             {
@@ -240,7 +240,7 @@ public class DefaultArtifactResolver
                      * repository tracking file of the local repository. If however the maven-metadata-local.xml tells
                      * us the artifact was installed, we sync the repository tracking file.
                      */
-                    lrm.add( new LocalArtifactRegistration( artifact ) );
+                    lrm.add( session, new LocalArtifactRegistration( artifact ) );
                 }
                 continue;
             }
@@ -389,7 +389,8 @@ public class DefaultArtifactResolver
                         item.result.addException( e );
                         continue;
                     }
-                    lrm.add( new LocalArtifactRegistration( artifact, group.repository, download.getSupportedContexts() ) );
+                    lrm.add( session,
+                             new LocalArtifactRegistration( artifact, group.repository, download.getSupportedContexts() ) );
                     if ( maintainer != null )
                     {
                         maintainer.artifactDownloaded( new DefaultLocalRepositoryEvent( session, artifact ) );

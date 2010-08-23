@@ -19,7 +19,7 @@ import java.io.File;
  * A result from the local repository about the existence of an artifact.
  * 
  * @author Benjamin Bentmann
- * @see LocalRepositoryManager#find(LocalArtifactRequest)
+ * @see LocalRepositoryManager#find(RepositorySystemSession, LocalArtifactRequest)
  */
 public class LocalArtifactResult
 {

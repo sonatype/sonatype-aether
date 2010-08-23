@@ -30,6 +30,8 @@ import org.sonatype.aether.LocalArtifactRegistration;
 import org.sonatype.aether.LocalArtifactRequest;
 import org.sonatype.aether.LocalArtifactResult;
 import org.sonatype.aether.RemoteRepository;
+import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.FileUtil;
 
 public class EnhancedLocalRepositoryManagerTest
@@ -46,6 +48,8 @@ public class EnhancedLocalRepositoryManagerTest
     private RemoteRepository repository;
 
     private String testContext = "project/compile";
+
+    private RepositorySystemSession session;
 
     @Before
     public void setup()
@@ -64,18 +68,24 @@ public class EnhancedLocalRepositoryManagerTest
 
         artifactFile = new File( baseDir, manager.getPathForLocalArtifact( artifact ) );
 
+        session = new TestRepositorySystemSession();
     }
 
     @After
     public void tearDown()
     {
         FileUtil.deleteDir( baseDir );
+
+        session = null;
+        manager = null;
+        repository = null;
+        artifact = null;
     }
 
     private long addLocalArtifact( Artifact artifact )
         throws IOException
     {
-        manager.add( new LocalArtifactRegistration( artifact ) );
+        manager.add( session, new LocalArtifactRegistration( artifact ) );
         String path = manager.getPathForLocalArtifact( artifact );
 
         return copy( artifact, path );
@@ -85,7 +95,7 @@ public class EnhancedLocalRepositoryManagerTest
         throws IOException
     {
         Collection<String> contexts = Arrays.asList( testContext );
-        manager.add( new LocalArtifactRegistration( artifact, repository, contexts ) );
+        manager.add( session, new LocalArtifactRegistration( artifact, repository, contexts ) );
         String path = manager.getPathForRemoteArtifact( artifact, repository, testContext );
         return copy( artifact, path );
     }
@@ -108,7 +118,7 @@ public class EnhancedLocalRepositoryManagerTest
         addLocalArtifact( artifact );
 
         LocalArtifactRequest request = new LocalArtifactRequest( artifact, null, null );
-        LocalArtifactResult result = manager.find( request );
+        LocalArtifactResult result = manager.find( session, request );
         assertTrue( result.isAvailable() );
     }
 
@@ -119,7 +129,7 @@ public class EnhancedLocalRepositoryManagerTest
         addRemoteArtifact( artifact );
 
         LocalArtifactRequest request = new LocalArtifactRequest( artifact, Arrays.asList( repository ), testContext );
-        LocalArtifactResult result = manager.find( request );
+        LocalArtifactResult result = manager.find( session, request );
         assertTrue( result.isAvailable() );
     }
 
@@ -130,7 +140,7 @@ public class EnhancedLocalRepositoryManagerTest
         addRemoteArtifact( artifact );
 
         LocalArtifactRequest request = new LocalArtifactRequest( artifact, Arrays.asList( repository ), "different" );
-        LocalArtifactResult result = manager.find( request );
+        LocalArtifactResult result = manager.find( session, request );
         assertFalse( result.isAvailable() );
     }
 
@@ -142,7 +152,7 @@ public class EnhancedLocalRepositoryManagerTest
         addLocalArtifact( artifact );
 
         LocalArtifactRequest request = new LocalArtifactRequest( artifact, Arrays.asList( repository ), testContext );
-        LocalArtifactResult result = manager.find( request );
+        LocalArtifactResult result = manager.find( session, request );
         assertFalse( result.isAvailable() );
     }
 
@@ -154,7 +164,7 @@ public class EnhancedLocalRepositoryManagerTest
         assertTrue( "could not delete artifact file", artifactFile.delete() );
 
         LocalArtifactRequest request = new LocalArtifactRequest( artifact, Arrays.asList( repository ), testContext );
-        LocalArtifactResult result = manager.find( request );
+        LocalArtifactResult result = manager.find( session, request );
         assertFalse( result.isAvailable() );
     }
 }

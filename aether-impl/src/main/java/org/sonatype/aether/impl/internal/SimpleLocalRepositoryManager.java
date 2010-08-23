@@ -28,6 +28,7 @@ import org.sonatype.aether.LocalRepository;
 import org.sonatype.aether.LocalRepositoryManager;
 import org.sonatype.aether.Metadata;
 import org.sonatype.aether.RemoteRepository;
+import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.spi.log.Logger;
 
 /**
@@ -186,7 +187,7 @@ public class SimpleLocalRepositoryManager
         return result;
     }
 
-    public LocalArtifactResult find( LocalArtifactRequest request )
+    public LocalArtifactResult find( RepositorySystemSession session, LocalArtifactRequest request )
     {
         String path = getPathForLocalArtifact( request.getArtifact() );
         File file = new File( getRepository().getBasedir(), path );
@@ -201,7 +202,7 @@ public class SimpleLocalRepositoryManager
         return result;
     }
 
-    public void add( LocalArtifactRegistration request )
+    public void add( RepositorySystemSession session, LocalArtifactRegistration request )
     {
         // noop
     }

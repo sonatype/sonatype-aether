@@ -24,6 +24,7 @@ import org.sonatype.aether.LocalRepository;
 import org.sonatype.aether.LocalRepositoryManager;
 import org.sonatype.aether.Metadata;
 import org.sonatype.aether.RemoteRepository;
+import org.sonatype.aether.RepositorySystemSession;
 
 public class TestLocalRepositoryManager
     implements LocalRepositoryManager
@@ -70,7 +71,7 @@ public class TestLocalRepositoryManager
         return getPathForLocalMetadata( metadata );
     }
 
-    public LocalArtifactResult find( LocalArtifactRequest request )
+    public LocalArtifactResult find( RepositorySystemSession session, LocalArtifactRequest request )
     {
         Artifact artifact = request.getArtifact();
 
@@ -80,7 +81,7 @@ public class TestLocalRepositoryManager
         return result;
     }
 
-    public void add( LocalArtifactRegistration request )
+    public void add( RepositorySystemSession session, LocalArtifactRegistration request )
     {
         registration.add( request.getArtifact() );
     }

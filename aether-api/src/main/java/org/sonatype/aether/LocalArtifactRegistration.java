@@ -21,7 +21,7 @@ import java.util.Collections;
  * serve physically present artifacts if those haven't be previously registered to them.
  * 
  * @author Benjamin Bentmann
- * @see LocalRepositoryManager#add(LocalArtifactRegistration)
+ * @see LocalRepositoryManager#add(RepositorySystemSession, LocalArtifactRegistration)
  */
 public class LocalArtifactRegistration
 {
