@@ -225,4 +225,44 @@ public class NearestVersionConflictResolverTest
         assertSame( x2, trail.get( 0 ) );
     }
 
+    @Test
+    public void testCyclicConflictIdGraph()
+        throws Exception
+    {
+        // root
+        // +- a:1
+        // |  \- b:1
+        // \- b:2
+        //    \- a:2
+
+        DependencyNode a1 = builder.artifactId( "a" ).version( "1" ).build();
+        DependencyNode a2 = builder.artifactId( "a" ).version( "2" ).build();
+
+        DependencyNode b1 = builder.artifactId( "b" ).version( "1" ).build();
+        DependencyNode b2 = builder.artifactId( "b" ).version( "2" ).build();
+
+        a1.getChildren().add( b1 );
+        b2.getChildren().add( a2 );
+
+        DependencyNode root = builder.artifactId( null ).build();
+        root.getChildren().add( a1 );
+        root.getChildren().add( b2 );
+
+        Map<DependencyNode, Object> conflictIds = new IdentityHashMap<DependencyNode, Object>();
+        conflictIds.put( a1, "a" );
+        conflictIds.put( a2, "a" );
+        conflictIds.put( b1, "b" );
+        conflictIds.put( b2, "b" );
+        context.put( TransformationContextKeys.CONFLICT_IDS, conflictIds );
+
+        NearestVersionConflictResolver transformer = new NearestVersionConflictResolver();
+        root = transformer.transformGraph( root, context );
+
+        assertEquals( 2, root.getChildren().size() );
+        assertSame( a1, root.getChildren().get( 0 ) );
+        assertSame( b2, root.getChildren().get( 1 ) );
+        assertTrue( a1.getChildren().isEmpty() );
+        assertTrue( b2.getChildren().isEmpty() );
+    }
+
 }

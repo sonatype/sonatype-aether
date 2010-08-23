@@ -59,20 +59,17 @@ public class NearestVersionConflictResolver
         Map<Object, ConflictId> ids = new LinkedHashMap<Object, ConflictId>();
 
         {
-            Set<ConflictId> parents = new HashSet<ConflictId>( 128 );
-
             ConflictId id = null;
             Object key = conflictIds.get( node );
             if ( key != null )
             {
                 id = new ConflictId( key );
                 ids.put( key, id );
-                parents.add( id );
             }
 
             Map<DependencyNode, Object> visited = new IdentityHashMap<DependencyNode, Object>( conflictIds.size() );
 
-            buildConflitIdDAG( ids, node, id, visited, parents, conflictIds );
+            buildConflitIdDAG( ids, node, id, visited, conflictIds );
         }
 
         List<ConflictId> sorted = topsortConflictIds( ids.values() );
@@ -90,7 +87,7 @@ public class NearestVersionConflictResolver
     }
 
     private void buildConflitIdDAG( Map<Object, ConflictId> ids, DependencyNode node, ConflictId id,
-                                    Map<DependencyNode, Object> visited, Set<ConflictId> parents, Map<?, ?> conflictIds )
+                                    Map<DependencyNode, Object> visited, Map<?, ?> conflictIds )
     {
         if ( visited.put( node, Boolean.TRUE ) != null )
         {
@@ -109,18 +106,12 @@ public class NearestVersionConflictResolver
                 ids.put( key, childId );
             }
 
-            boolean noCircle = parents.add( childId );
-            if ( noCircle && parentId != null )
+            if ( parentId != null )
             {
                 parentId.add( childId );
             }
 
-            buildConflitIdDAG( ids, child, childId, visited, parents, conflictIds );
-
-            if ( noCircle )
-            {
-                parents.remove( childId );
-            }
+            buildConflitIdDAG( ids, child, childId, visited, conflictIds );
         }
     }
 
@@ -146,9 +137,47 @@ public class NearestVersionConflictResolver
             for ( ConflictId child : root.children )
             {
                 child.inDegree--;
-                if ( child.inDegree <= 0 )
+                if ( child.inDegree == 0 )
                 {
                     roots.add( child );
+                }
+            }
+        }
+
+        while ( sorted.size() < conflictIds.size() )
+        {
+            // cycle -> deal gracefully with nodes still having positive in-degree
+            roots.clear();
+
+            ConflictId nearest = null;
+            for ( ConflictId id : conflictIds )
+            {
+                if ( id.inDegree <= 0 )
+                {
+                    continue;
+                }
+                if ( nearest == null || id.inDegree < nearest.inDegree )
+                {
+                    nearest = id;
+                }
+            }
+
+            nearest.inDegree = 0;
+            roots.add( nearest );
+
+            while ( !roots.isEmpty() )
+            {
+                ConflictId root = roots.remove();
+
+                sorted.add( root );
+
+                for ( ConflictId child : root.children )
+                {
+                    child.inDegree--;
+                    if ( child.inDegree == 0 )
+                    {
+                        roots.add( child );
+                    }
                 }
             }
         }
