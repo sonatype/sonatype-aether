@@ -141,6 +141,11 @@ public class JavaEffectiveScopeCalculator
 
             if ( effectiveScope == null )
             {
+                if ( groupScopes.size() > 1 )
+                {
+                    groupScopes.remove( JavaScopes.SYSTEM );
+                }
+
                 if ( groupScopes.size() == 1 )
                 {
                     effectiveScope = groupScopes.iterator().next();
@@ -149,14 +154,13 @@ public class JavaEffectiveScopeCalculator
                 {
                     effectiveScope = JavaScopes.COMPILE;
                 }
-                else if ( groupScopes.contains( JavaScopes.SYSTEM ) || groupScopes.contains( JavaScopes.PROVIDED ) )
-                {
-                    effectiveScope =
-                        groupScopes.contains( JavaScopes.RUNTIME ) ? JavaScopes.COMPILE : JavaScopes.PROVIDED;
-                }
                 else if ( groupScopes.contains( JavaScopes.RUNTIME ) )
                 {
                     effectiveScope = JavaScopes.RUNTIME;
+                }
+                else if ( groupScopes.contains( JavaScopes.PROVIDED ) )
+                {
+                    effectiveScope = JavaScopes.PROVIDED;
                 }
                 else if ( groupScopes.contains( JavaScopes.TEST ) )
                 {
