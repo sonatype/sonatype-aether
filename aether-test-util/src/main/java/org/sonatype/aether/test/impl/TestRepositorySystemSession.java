@@ -60,7 +60,7 @@ public class TestRepositorySystemSession
 
     public boolean isOffline()
     {
-        throw new UnsupportedOperationException( "isOffline()" );
+        return false;
     }
 
     public boolean isTransferErrorCachingEnabled()
