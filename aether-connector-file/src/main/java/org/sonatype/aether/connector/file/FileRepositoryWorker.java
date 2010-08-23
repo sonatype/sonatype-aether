@@ -455,13 +455,12 @@ class FileRepositoryWorker
         {
             case ARTIFACT:
                 Artifact artifact = transfer.getArtifact();
-                resourceName =
-                    String.format( "%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion() );
+                resourceName = new DefaultLayout().getPath( artifact );
                 break;
             case METADATA:
                 Metadata metadata = transfer.getMetadata();
-                resourceName =
-                    String.format( "%s:%s:%s", metadata.getGroupId(), metadata.getArtifactId(), metadata.getVersion() );
+                resourceName = new DefaultLayout().getPath( metadata );
+                break;
         }
         event.setResource( new DefaultTransferResource( repository.getUrl(), resourceName, transfer.getFile() ) );
         event.setRequestType( direction.getType() );
