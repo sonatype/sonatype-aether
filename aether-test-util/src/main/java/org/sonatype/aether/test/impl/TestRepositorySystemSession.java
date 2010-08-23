@@ -32,8 +32,6 @@ import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.SessionData;
 import org.sonatype.aether.TransferListener;
 import org.sonatype.aether.WorkspaceReader;
-import org.sonatype.aether.test.util.selectors.TestAuthenticationSelector;
-import org.sonatype.aether.test.util.selectors.TestProxySelector;
 
 public class TestRepositorySystemSession
     implements RepositorySystemSession
