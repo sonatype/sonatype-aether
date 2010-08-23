@@ -138,7 +138,8 @@ abstract class ParallelRepositoryConnector
         public Thread newThread( Runnable r )
         {
             Thread t = new Thread( myTG, r, tName + "-" + counter.getAndIncrement() );
-            t.setDaemon( true );
+            // TODO: are daemon threads the cause for failing IT0461?
+//            t.setDaemon( true );
             return t;
         }
 
