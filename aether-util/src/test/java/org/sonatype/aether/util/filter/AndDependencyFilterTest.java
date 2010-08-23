@@ -33,6 +33,7 @@ public class AndDependencyFilterTest
     public void acceptTest()
     {
         NodeBuilder builder = new NodeBuilder();
+        builder.artifactId( "test" );
         List<DependencyNode> parents = new LinkedList<DependencyNode>();
         
 

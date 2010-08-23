@@ -34,6 +34,7 @@ public class OrDependencyFilterTest
     public void acceptTest()
     {
         NodeBuilder builder = new NodeBuilder();
+        builder.artifactId( "test" );
         List<DependencyNode> parents = new LinkedList<DependencyNode>();
         // Empty OR
         assertFalse( new OrDependencyFilter().accept( builder.build(), parents ) );
