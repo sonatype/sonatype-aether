@@ -1,4 +1,4 @@
-package org.sonatype.aether.test.util.selectors;
+package org.sonatype.aether.test.impl;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -13,20 +13,23 @@ package org.sonatype.aether.test.util.selectors;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.Authentication;
-import org.sonatype.aether.AuthenticationSelector;
+import org.sonatype.aether.Proxy;
+import org.sonatype.aether.ProxySelector;
 import org.sonatype.aether.RemoteRepository;
 
 /**
- * A simple authentication selector that never provides authentication.
+ * A proxy selector which never returns any proxy.
  */
-public class TestAuthenticationSelector
-    implements AuthenticationSelector
+class TestProxySelector
+    implements ProxySelector
 {
 
-    public Authentication getAuthentication( RemoteRepository repository )
+
+    public Proxy getProxy( RemoteRepository repository )
     {
         return null;
     }
+
+
 
 }
