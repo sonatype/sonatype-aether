@@ -311,6 +311,10 @@ public class DefaultDeployer
         }
         else
         {
+            if ( metadata.getFile() == null )
+            {
+                throw new DeploymentException( "Failed to update metadata " + metadata + ": No file attached." );
+            }
             try
             {
                 FileUtils.copyFile( metadata.getFile(), dstFile );
