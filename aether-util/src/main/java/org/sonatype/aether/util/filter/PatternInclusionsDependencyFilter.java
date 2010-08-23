@@ -71,7 +71,7 @@ public class PatternInclusionsDependencyFilter
      */
     public PatternInclusionsDependencyFilter( final VersionScheme versionScheme, final String... patterns )
     {
-        this( versionScheme, Arrays.asList( patterns ) );
+        this( versionScheme, patterns == null ? null : Arrays.asList( patterns ) );
     }
 
     /**
