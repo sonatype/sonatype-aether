@@ -16,7 +16,7 @@ package org.sonatype.aether.util.version;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.sonatype.aether.InvalidVersionRangeException;
+import org.sonatype.aether.InvalidVersionSpecificationException;
 import org.sonatype.aether.Version;
 import org.sonatype.aether.VersionRange;
 
@@ -34,7 +34,7 @@ public class GenericVersionRangeTest
         {
             return new GenericVersionRange( range );
         }
-        catch ( InvalidVersionRangeException e )
+        catch ( InvalidVersionSpecificationException e )
         {
             AssertionError error =
                 new AssertionError( range + " should be valid but failed to parse due to: " + e.getMessage() );
@@ -50,7 +50,7 @@ public class GenericVersionRangeTest
             new GenericVersionRange( range );
             fail( range + " should be invalid" );
         }
-        catch ( InvalidVersionRangeException e )
+        catch ( InvalidVersionSpecificationException e )
         {
             assertTrue( true );
         }

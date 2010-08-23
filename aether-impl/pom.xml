@@ -73,10 +73,10 @@ under the License.
       <scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>org.sonatype.aether</groupId>
-    	<artifactId>aether-test-util</artifactId>
-    	<version>${project.version}</version>
-    	<scope>test</scope>
+      <groupId>org.sonatype.aether</groupId>
+      <artifactId>aether-test-util</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

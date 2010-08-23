@@ -122,7 +122,7 @@ public class TransferEventTester
             if ( succeeded.equals( currentType ) )
             {
                 succeedEvent = currentEvent;
-		        checkProperties( currentEvent );
+                checkProperties( currentEvent );
                 break;
             }
             else
@@ -131,7 +131,7 @@ public class TransferEventTester
                 assertTrue( currentEvent.getTransferredBytes() > transferredBytes );
                 transferredBytes = currentEvent.getTransferredBytes();
                 dataLength += currentEvent.getDataLength();
-		        checkProperties( currentEvent );
+                checkProperties( currentEvent );
             }
         }
 
