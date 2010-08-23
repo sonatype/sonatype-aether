@@ -13,7 +13,7 @@ package org.sonatype.aether.connector.file;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import static org.sonatype.aether.connector.file.FileRepositoryConnectorFactory.CFG_PREFIX;
+import static org.sonatype.aether.connector.file.FileRepositoryConnectorFactory.*;
 
 import java.util.Collections;
 import java.util.Map;
