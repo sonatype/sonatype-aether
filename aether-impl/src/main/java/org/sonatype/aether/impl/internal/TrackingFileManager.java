@@ -54,7 +54,7 @@ class TrackingFileManager
             try
             {
                 FileInputStream stream = new FileInputStream( file );
-                channel = new FileInputStream( file ).getChannel();
+                channel = stream.getChannel();
                 lock = channel.lock( 0, channel.size(), true );
 
                 logger.debug( "Reading resolution tracking file " + file );
