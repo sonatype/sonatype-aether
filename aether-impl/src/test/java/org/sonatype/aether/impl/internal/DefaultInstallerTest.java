@@ -85,7 +85,7 @@ public class DefaultInstallerTest
 
         assertTrue( metadataFile.exists() );
         assertEquals( metadataFile.length(), 8 );
-        
+
         assertEquals( result.getRequest(), request );
 
         assertEquals( result.getArtifacts().size(), 1 );
@@ -105,7 +105,7 @@ public class DefaultInstallerTest
         DefaultInstaller installer = new DefaultInstaller();
         installer.install( session, request );
     }
-    
+
     @Test( expected = InstallationException.class )
     public void testNullMetadataFile()
         throws InstallationException
@@ -134,8 +134,11 @@ public class DefaultInstallerTest
             @Override
             public void artifactInstalled( RepositoryEvent event )
             {
+                File artifactFile =
+                    new File( session.getLocalRepositoryManager().getRepository().getBasedir(), localArtifactPath );
+
                 assertTrue( seenArtifactInstalling );
-                assertTrue( event.getFile().getAbsolutePath().endsWith( localArtifactPath ) );
+                assertEquals( event.getFile(), artifactFile );
                 assertEquals( event.getArtifact(), artifact );
             }
 
@@ -143,7 +146,10 @@ public class DefaultInstallerTest
             public void artifactInstalling( RepositoryEvent event )
             {
                 this.seenArtifactInstalling = true;
-                assertTrue( event.getFile().getAbsolutePath().endsWith( localArtifactPath ) );
+                File artifactFile =
+                    new File( session.getLocalRepositoryManager().getRepository().getBasedir(), localArtifactPath );
+
+                assertEquals( event.getFile(), artifactFile );
                 assertEquals( event.getArtifact(), artifact );
             }
 
