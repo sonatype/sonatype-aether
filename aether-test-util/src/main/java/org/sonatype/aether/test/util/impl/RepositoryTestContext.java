@@ -14,7 +14,6 @@ package org.sonatype.aether.test.util.impl;
  */
 
 import org.sonatype.aether.Artifact;
-import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 
@@ -43,7 +42,7 @@ public class RepositoryTestContext
     {
         this.artifact = artifact;
     }
-    
+
     public RecordingRepositoryListener getRecordingRepositoryListener()
     {
         if ( session.getRepositoryListener() instanceof RecordingRepositoryListener )
