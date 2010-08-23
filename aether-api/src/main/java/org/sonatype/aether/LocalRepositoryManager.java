@@ -32,7 +32,8 @@ public interface LocalRepositoryManager
 
     /**
      * Gets the relative path for a locally built artifact. Note that the artifact need not actually exist yet at the
-     * returned location.
+     * returned location. The path uses the forward slash as directory separator regardless of the underlying file
+     * system.
      * 
      * @param artifact The artifact for which to determine the path, must not be {@code null}.
      * @return The path, relative to the local repository's base directory.
@@ -41,7 +42,8 @@ public interface LocalRepositoryManager
 
     /**
      * Gets the relative path for an artifact cached from a remote repository. Note that the artifact need not actually
-     * exist yet at the returned location.
+     * exist yet at the returned location. The path uses the forward slash as directory separator regardless of the
+     * underlying file system.
      * 
      * @param artifact The artifact for which to determine the path, must not be {@code null}.
      * @param repository The source repository of the artifact, must not be {@code null}.
@@ -52,7 +54,8 @@ public interface LocalRepositoryManager
 
     /**
      * Gets the relative path for locally built metadata. Note that the metadata need not actually exist yet at the
-     * returned location.
+     * returned location. The path uses the forward slash as directory separator regardless of the underlying file
+     * system.
      * 
      * @param metadata The metadata for which to determine the path, must not be {@code null}.
      * @return The path, relative to the local repository's base directory.
@@ -61,7 +64,8 @@ public interface LocalRepositoryManager
 
     /**
      * Gets the relative path for metadata cached from a remote repository. Note that the metadata need not actually
-     * exist yet at the returned location.
+     * exist yet at the returned location. The path uses the forward slash as directory separator regardless of the
+     * underlying file system.
      * 
      * @param metadata The metadata for which to determine the path, must not be {@code null}.
      * @param repository The source repository of the metadata, must not be {@code null}.
