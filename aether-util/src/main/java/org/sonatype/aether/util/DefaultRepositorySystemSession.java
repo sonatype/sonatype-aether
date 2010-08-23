@@ -212,7 +212,8 @@ public class DefaultRepositorySystemSession
 
     public LocalRepository getLocalRepository()
     {
-        return getLocalRepositoryManager().getRepository();
+        LocalRepositoryManager lrm = getLocalRepositoryManager();
+        return ( lrm != null ) ? lrm.getRepository() : null;
     }
 
     public LocalRepositoryManager getLocalRepositoryManager()
