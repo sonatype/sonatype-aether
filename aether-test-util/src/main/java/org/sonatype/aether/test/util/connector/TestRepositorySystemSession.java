@@ -41,12 +41,6 @@ public class TestRepositorySystemSession
 
     private SessionData data = new TestSessionData();
 
-    private TransferListener listener = new RecordingTransferListener();
-
-    private AuthenticationSelector authenticator = new DefaultAuthenticationSelector();
-
-    private ProxySelector proxySelector = new DefaultProxySelector();
-
     public TransferListener getTransferListener()
     {
         return listener;
