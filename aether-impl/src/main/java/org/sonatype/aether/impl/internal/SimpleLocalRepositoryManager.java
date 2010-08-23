@@ -17,11 +17,11 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.sonatype.aether.Artifact;
+import org.sonatype.aether.LocalArtifactRegistration;
 import org.sonatype.aether.LocalArtifactRequest;
 import org.sonatype.aether.LocalArtifactResult;
 import org.sonatype.aether.LocalRepository;
@@ -201,12 +201,7 @@ public class SimpleLocalRepositoryManager
         return result;
     }
 
-    public void addLocalArtifact( Artifact artifact )
-    {
-        // noop
-    }
-
-    public void addRemoteArtifact( Artifact artifact, RemoteRepository repository, Collection<String> contexts )
+    public void add( LocalArtifactRegistration request )
     {
         // noop
     }

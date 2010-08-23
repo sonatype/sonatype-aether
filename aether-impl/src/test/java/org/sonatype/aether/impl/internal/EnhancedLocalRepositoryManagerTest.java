@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.sonatype.aether.Artifact;
 import org.sonatype.aether.DefaultArtifact;
+import org.sonatype.aether.LocalArtifactRegistration;
 import org.sonatype.aether.LocalArtifactRequest;
 import org.sonatype.aether.LocalArtifactResult;
 import org.sonatype.aether.RemoteRepository;
@@ -74,7 +75,7 @@ public class EnhancedLocalRepositoryManagerTest
     private long addLocalArtifact( Artifact artifact )
         throws IOException
     {
-        manager.addLocalArtifact( artifact );
+        manager.add( new LocalArtifactRegistration( artifact ) );
         String path = manager.getPathForLocalArtifact( artifact );
 
         return copy( artifact, path );
@@ -84,7 +85,7 @@ public class EnhancedLocalRepositoryManagerTest
         throws IOException
     {
         Collection<String> contexts = Arrays.asList( testContext );
-        manager.addRemoteArtifact( artifact, repository, contexts );
+        manager.add( new LocalArtifactRegistration( artifact, repository, contexts ) );
         String path = manager.getPathForRemoteArtifact( artifact, repository, testContext );
         return copy( artifact, path );
     }

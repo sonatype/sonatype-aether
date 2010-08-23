@@ -1,7 +1,5 @@
 package org.sonatype.aether;
 
-import java.util.Collection;
-
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
  *
@@ -84,23 +82,12 @@ public interface LocalRepositoryManager
     LocalArtifactResult find( LocalArtifactRequest result );
 
     /**
-     * Registers the specified locally built artifact with the local repository. Note that artifact registration is
-     * merely concerned about updating the local repository's internal state, not about actually installing the artifact
-     * or its accompanying metadata.
+     * Registers an installed or resolved artifact with the local repository. Note that artifact registration is merely
+     * concerned about updating the local repository's internal state, not about actually installing the artifact or its
+     * accompanying metadata.
      * 
      * @param artifact The artifact to register, must not be {@code null}.
      */
-    void addLocalArtifact( Artifact artifact );
-
-    /**
-     * Registers the specified remotely cached artifact with the local repository. Note that artifact registration is
-     * merely concerned about updating the local repository's internal state, not about actually installing the artifact
-     * or its accompanying metadata.
-     * 
-     * @param artifact The artifact to register, must not be {@code null}.
-     * @param repository The remote repository from which the artifact was resolved, must not be {@code null}.
-     * @param contexts The resolution contexts in which the artifact is available, may be {@code null}.
-     */
-    void addRemoteArtifact( Artifact artifact, RemoteRepository repository, Collection<String> contexts );
+    void add( LocalArtifactRegistration request );
 
 }

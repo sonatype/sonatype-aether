@@ -32,6 +32,7 @@ import org.sonatype.aether.ArtifactRequest;
 import org.sonatype.aether.ArtifactResolutionException;
 import org.sonatype.aether.ArtifactResult;
 import org.sonatype.aether.ArtifactTransferException;
+import org.sonatype.aether.LocalArtifactRegistration;
 import org.sonatype.aether.LocalArtifactRequest;
 import org.sonatype.aether.LocalArtifactResult;
 import org.sonatype.aether.LocalRepository;
@@ -239,7 +240,7 @@ public class DefaultArtifactResolver
                      * repository tracking file of the local repository. If however the maven-metadata-local.xml tells
                      * us the artifact was installed, we sync the repository tracking file.
                      */
-                    lrm.addLocalArtifact( artifact );
+                    lrm.add( new LocalArtifactRegistration( artifact ) );
                 }
                 continue;
             }
@@ -388,7 +389,7 @@ public class DefaultArtifactResolver
                         item.result.addException( e );
                         continue;
                     }
-                    lrm.addRemoteArtifact( artifact, group.repository, download.getSupportedContexts() );
+                    lrm.add( new LocalArtifactRegistration( artifact, group.repository, download.getSupportedContexts() ) );
                     if ( maintainer != null )
                     {
                         maintainer.artifactDownloaded( new DefaultLocalRepositoryEvent( session, artifact ) );

@@ -28,6 +28,7 @@ import org.sonatype.aether.Artifact;
 import org.sonatype.aether.InstallRequest;
 import org.sonatype.aether.InstallResult;
 import org.sonatype.aether.InstallationException;
+import org.sonatype.aether.LocalArtifactRegistration;
 import org.sonatype.aether.LocalRepositoryManager;
 import org.sonatype.aether.MergeableMetadata;
 import org.sonatype.aether.Metadata;
@@ -214,7 +215,7 @@ public class DefaultInstaller
                 logger.debug( "Skipped re-installing " + srcFile + " to " + dstFile + ", seems unchanged" );
             }
 
-            lrm.addLocalArtifact( artifact );
+            lrm.add( new LocalArtifactRegistration( artifact ) );
 
             if ( maintainer != null )
             {

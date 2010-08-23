@@ -13,11 +13,11 @@ package org.sonatype.aether.test.impl;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.sonatype.aether.Artifact;
+import org.sonatype.aether.LocalArtifactRegistration;
 import org.sonatype.aether.LocalArtifactRequest;
 import org.sonatype.aether.LocalArtifactResult;
 import org.sonatype.aether.LocalRepository;
@@ -30,7 +30,7 @@ public class TestLocalRepositoryManager
 {
 
     private LocalRepository localRepository = new LocalRepository( "target/test-local-repository" );
-    
+
     private Set<Artifact> registration = new HashSet<Artifact>();
 
     public LocalRepository getRepository()
@@ -45,8 +45,10 @@ public class TestLocalRepositoryManager
         String extension = artifact.getExtension();
         String version = artifact.getVersion();
         String classifier = artifact.getClassifier();
-        
-        String path = String.format("%s/%s/%s/%s-%s-%s%s.%s", groupId, artifactId, version, groupId, artifactId, version, classifier, extension);
+
+        String path =
+            String.format( "%s/%s/%s/%s-%s-%s%s.%s", groupId, artifactId, version, groupId, artifactId, version,
+                           classifier, extension );
         return path;
     }
 
@@ -60,7 +62,7 @@ public class TestLocalRepositoryManager
         String artifactId = metadata.getArtifactId();
         String groupId = metadata.getGroupId();
         String version = metadata.getVersion();
-        return String.format("%s/%s/%s/%s-%s-%s.pom", groupId, artifactId, version, groupId, artifactId, version);
+        return String.format( "%s/%s/%s/%s-%s-%s.pom", groupId, artifactId, version, groupId, artifactId, version );
     }
 
     public String getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository, String context )
@@ -71,21 +73,16 @@ public class TestLocalRepositoryManager
     public LocalArtifactResult find( LocalArtifactRequest request )
     {
         Artifact artifact = request.getArtifact();
-        
+
         LocalArtifactResult result = new LocalArtifactResult( request );
-        
-        result.setAvailable( registration.contains(artifact) );
+
+        result.setAvailable( registration.contains( artifact ) );
         return result;
     }
 
-    public void addLocalArtifact( Artifact artifact )
+    public void add( LocalArtifactRegistration request )
     {
-        registration.add( artifact );
-    }
-
-    public void addRemoteArtifact( Artifact artifact, RemoteRepository repository, Collection<String> contexts )
-    {
-        registration.add( artifact );
+        registration.add( request.getArtifact() );
     }
 
 }

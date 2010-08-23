@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.sonatype.aether.Artifact;
+import org.sonatype.aether.LocalArtifactRegistration;
 import org.sonatype.aether.LocalArtifactRequest;
 import org.sonatype.aether.LocalArtifactResult;
 import org.sonatype.aether.RemoteRepository;
@@ -101,15 +102,16 @@ public class EnhancedLocalRepositoryManager
     }
 
     @Override
-    public void addLocalArtifact( Artifact artifact )
+    public void add( LocalArtifactRegistration request )
     {
-        addArtifact( artifact, Collections.singleton( LOCAL_REPO_ID ) );
-    }
-
-    @Override
-    public void addRemoteArtifact( Artifact artifact, RemoteRepository repository, Collection<String> contexts )
-    {
-        addArtifact( artifact, getRepositoryKeys( repository, contexts ) );
+        if ( request.getRepository() == null )
+        {
+            addArtifact( request.getArtifact(), Collections.singleton( LOCAL_REPO_ID ) );
+        }
+        else
+        {
+            addArtifact( request.getArtifact(), getRepositoryKeys( request.getRepository(), request.getContexts() ) );
+        }
     }
 
     private Collection<String> getRepositoryKeys( RemoteRepository repository, Collection<String> contexts )
@@ -129,6 +131,10 @@ public class EnhancedLocalRepositoryManager
 
     private void addArtifact( Artifact artifact, Collection<String> repositories )
     {
+        if ( artifact == null )
+        {
+            throw new IllegalArgumentException( "artifact to register not specified" );
+        }
         String path = getPathForLocalArtifact( artifact );
         File file = new File( getRepository().getBasedir(), path );
         addRepo( file, repositories );
