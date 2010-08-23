@@ -20,6 +20,7 @@ import java.util.Map;
 import org.junit.Test;
 import org.sonatype.aether.DependencyGraphTransformationContext;
 import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.util.NodeBuilder;
 import org.sonatype.aether.util.graph.transformer.ConflictMarker;
 
 /**

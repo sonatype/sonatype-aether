@@ -1,4 +1,4 @@
-package org.sonatype.aether.util.graph.transformer;
+package org.sonatype.aether.util;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -28,7 +28,7 @@ import org.sonatype.aether.util.version.GenericVersionScheme;
 /**
  * @author Benjamin Bentmann
  */
-class NodeBuilder
+public class NodeBuilder
 {
 
     private String groupId = "test";
@@ -56,6 +56,19 @@ class NodeBuilder
     public NodeBuilder artifactId( String artifactId )
     {
         this.artifactId = artifactId;
+        return this;
+    }
+
+    public NodeBuilder groupId( String groupId )
+    {
+        this.groupId = groupId;
+        return this;
+
+    }
+
+    public NodeBuilder ext( String ext )
+    {
+        this.ext = ext;
         return this;
     }
 
