@@ -58,23 +58,23 @@ public class FileRepositoryConnector
     {
         artifactDownloads = notNull( artifactDownloads );
         metadataDownloads = notNull( metadataDownloads );
-        
+
         CountDownLatch latch = new CountDownLatch( artifactDownloads.size() + metadataDownloads.size() );
 
         for ( ArtifactDownload artifactDownload : artifactDownloads )
         {
-            FileRepositoryWorker worker = new FileRepositoryWorker( artifactDownload, repository, session);
+            FileRepositoryWorker worker = new FileRepositoryWorker( artifactDownload, repository, session );
             worker.setLatch( latch );
             executor.execute( worker );
         }
-        
+
         for ( MetadataDownload metadataDownload : metadataDownloads )
         {
-            FileRepositoryWorker worker = new FileRepositoryWorker (metadataDownload, repository, session);
+            FileRepositoryWorker worker = new FileRepositoryWorker( metadataDownload, repository, session );
             worker.setLatch( latch );
             executor.execute( worker );
         }
-        
+
         try
         {
             latch.await();
@@ -96,22 +96,22 @@ public class FileRepositoryConnector
     {
         artifactUploads = notNull( artifactUploads );
         metadataUploads = notNull( metadataUploads );
-        
+
         CountDownLatch latch = new CountDownLatch( artifactUploads.size() + metadataUploads.size() );
-        
+
         for ( ArtifactUpload artifactUpload : artifactUploads )
         {
             FileRepositoryWorker worker = new FileRepositoryWorker( artifactUpload, repository, session );
             worker.setLatch( latch );
             executor.execute( worker );
         }
-        for ( MetadataUpload metadataUpload : metadataUploads)
+        for ( MetadataUpload metadataUpload : metadataUploads )
         {
-            FileRepositoryWorker worker = new FileRepositoryWorker (metadataUpload, repository, session);
+            FileRepositoryWorker worker = new FileRepositoryWorker( metadataUpload, repository, session );
             worker.setLatch( latch );
             executor.execute( worker );
         }
-        
+
         try
         {
             latch.await();
