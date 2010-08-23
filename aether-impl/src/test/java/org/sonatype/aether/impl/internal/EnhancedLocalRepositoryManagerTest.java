@@ -34,7 +34,7 @@ import org.sonatype.aether.test.util.FileUtil;
 public class EnhancedLocalRepositoryManagerTest
 {
 
-    Artifact artifact;
+    private Artifact artifact;
 
     private File baseDir;
 

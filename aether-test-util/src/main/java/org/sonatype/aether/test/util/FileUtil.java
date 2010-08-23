@@ -15,13 +15,10 @@ package org.sonatype.aether.test.util;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-
-import org.sonatype.aether.TransferCancelledException;
 
 public class FileUtil
 {
@@ -97,13 +94,21 @@ public class FileUtil
         finally
         {
             if ( inStream != null )
+            {
                 inStream.close();
+            }
             if ( in != null )
+            {
                 in.close();
+            }
             if ( outStream != null )
+            {
                 outStream.close();
+            }
             if ( out != null )
+            {
                 out.close();
+            }
         }
 
         return total;
@@ -123,7 +128,7 @@ public class FileUtil
                 }
             }
         }
-    
+
         return dir.delete();
     }
 
