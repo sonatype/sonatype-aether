@@ -34,17 +34,6 @@ import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.SessionData;
 import org.sonatype.aether.TransferListener;
 import org.sonatype.aether.WorkspaceReader;
-import org.sonatype.aether.util.graph.manager.ClassicDependencyManager;
-import org.sonatype.aether.util.graph.selector.AndDependencySelector;
-import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector;
-import org.sonatype.aether.util.graph.selector.OptionalDependencySelector;
-import org.sonatype.aether.util.graph.selector.ScopeDependencySelector;
-import org.sonatype.aether.util.graph.transformer.ChainedDependencyGraphTransformer;
-import org.sonatype.aether.util.graph.transformer.NearestVersionConflictResolver;
-import org.sonatype.aether.util.graph.transformer.ConflictMarker;
-import org.sonatype.aether.util.graph.transformer.JavaDependencyContextRefiner;
-import org.sonatype.aether.util.graph.transformer.JavaEffectiveScopeCalculator;
-import org.sonatype.aether.util.graph.traverser.FatArtifactTraverser;
 
 /**
  * A simple repository system session.
@@ -102,54 +91,6 @@ public class DefaultRepositorySystemSession
     private SessionData data;
 
     private RepositoryCache cache;
-
-    public static DefaultRepositorySystemSession newMavenRepositorySystemSession()
-    {
-        DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
-
-        session.setMirrorSelector( new DefaultMirrorSelector() );
-        session.setAuthenticationSelector( new DefaultAuthenticationSelector() );
-        session.setProxySelector( new DefaultProxySelector() );
-
-        DependencyTraverser depTraverser = new FatArtifactTraverser();
-        session.setDependencyTraverser( depTraverser );
-
-        DependencyManager depManager = new ClassicDependencyManager();
-        session.setDependencyManager( depManager );
-
-        DependencySelector depFilter =
-            new AndDependencySelector( new ScopeDependencySelector( "test", "provided" ),
-                                       new OptionalDependencySelector(), new ExclusionDependencySelector() );
-        session.setDependencySelector( depFilter );
-
-        DependencyGraphTransformer transformer =
-            new ChainedDependencyGraphTransformer( new ConflictMarker(), new JavaEffectiveScopeCalculator(),
-                                                   new NearestVersionConflictResolver(),
-                                                   new JavaDependencyContextRefiner() );
-        session.setDependencyGraphTransformer( transformer );
-
-        DefaultArtifactTypeRegistry stereotypes = new DefaultArtifactTypeRegistry();
-        stereotypes.add( new DefaultArtifactType( "pom" ) );
-        stereotypes.add( new DefaultArtifactType( "maven-plugin", "jar", "", "java" ) );
-        stereotypes.add( new DefaultArtifactType( "jar", "jar", "", "java" ) );
-        stereotypes.add( new DefaultArtifactType( "ejb", "jar", "", "java" ) );
-        stereotypes.add( new DefaultArtifactType( "ejb-client", "jar", "client", "java" ) );
-        stereotypes.add( new DefaultArtifactType( "test-jar", "jar", "tests", "java" ) );
-        stereotypes.add( new DefaultArtifactType( "javadoc", "jar", "javadoc", "java" ) );
-        stereotypes.add( new DefaultArtifactType( "java-source", "jar", "sources", "java", false, false ) );
-        stereotypes.add( new DefaultArtifactType( "war", "war", "", "java", false, true ) );
-        stereotypes.add( new DefaultArtifactType( "ear", "ear", "", "java", false, true ) );
-        stereotypes.add( new DefaultArtifactType( "rar", "rar", "", "java", false, true ) );
-        stereotypes.add( new DefaultArtifactType( "par", "par", "", "java", false, true ) );
-        session.setArtifactTypeRegistry( stereotypes );
-
-        session.setIgnoreInvalidArtifactDescriptor( true );
-        session.setIgnoreMissingArtifactDescriptor( true );
-
-        session.setSystemProps( System.getProperties() );
-
-        return session;
-    }
 
     /**
      * Creates an uninitialized session.

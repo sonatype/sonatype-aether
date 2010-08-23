@@ -16,6 +16,7 @@ package demo;
 import java.io.File;
 
 import org.apache.maven.repository.internal.DefaultServiceLocator;
+import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.sonatype.aether.Artifact;
 import org.sonatype.aether.ArtifactResolutionException;
@@ -35,7 +36,6 @@ import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.connector.wagon.WagonProvider;
 import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
 
 public class RepoSys
@@ -122,7 +122,7 @@ public class RepoSys
 
     private static RepositorySystemSession newSession( RepositorySystem system )
     {
-        DefaultRepositorySystemSession session = DefaultRepositorySystemSession.newMavenRepositorySystemSession();
+        MavenRepositorySystemSession session = new MavenRepositorySystemSession();
 
         LocalRepository localRepo = new LocalRepository( "target/local-repo" );
         session.setLocalRepositoryManager( system.newLocalRepositoryManager( localRepo ) );
