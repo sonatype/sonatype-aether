@@ -53,8 +53,9 @@ public class LocalArtifactRegistration
     /**
      * Creates a registration request for the specified (remotely resolved) artifact.
      * 
-     * @param artifact The artifact to query for, may be {@code null}.
-     * @param repository The remote repository or {@code null} if the artifact was locally built.
+     * @param artifact The artifact to register, may be {@code null}.
+     * @param repository The remote repository from which the artifact was resolved or {@code null} if the artifact was
+     *            locally built.
      * @param contexts The resolution contexts, may be {@code null}.
      */
     public LocalArtifactRegistration( Artifact artifact, RemoteRepository repository, Collection<String> contexts )
