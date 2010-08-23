@@ -38,7 +38,7 @@ public class FileRepositoryConnector
 
     private RemoteRepository repository;
 
-    RepositorySystemSession session;
+    private RepositorySystemSession session;
 
     public FileRepositoryConnector( RepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException
