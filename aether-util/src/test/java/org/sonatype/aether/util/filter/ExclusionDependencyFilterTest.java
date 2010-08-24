@@ -13,8 +13,7 @@ package org.sonatype.aether.util.filter;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,7 +24,7 @@ import org.junit.Test;
 import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.util.NodeBuilder;
 
-public class ExclusionDependencyFilter
+public class ExclusionDependencyFilterTest
 {
 
     @Test
