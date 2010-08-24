@@ -137,6 +137,28 @@ public class DefaultDependencyCollector
         GraphEdge edge = null;
         if ( root != null )
         {
+            VersionRangeResult rangeResult;
+            try
+            {
+                VersionRangeRequest rangeRequest =
+                    new VersionRangeRequest( root.getArtifact(), request.getRepositories(), request.getRequestContext() );
+                rangeResult = versionRangeResolver.resolveVersionRange( session, rangeRequest );
+
+                if ( rangeResult.getVersions().isEmpty() )
+                {
+                    throw new VersionRangeResolutionException( rangeResult, "No versions available for "
+                        + root.getArtifact() + " within specified range" );
+                }
+            }
+            catch ( VersionRangeResolutionException e )
+            {
+                result.addException( e );
+                throw new DependencyCollectionException( result );
+            }
+
+            Version version = rangeResult.getVersions().get( rangeResult.getVersions().size() - 1 );
+            root = root.setArtifact( root.getArtifact().setVersion( version.toString() ) );
+
             ArtifactDescriptorResult descriptorResult;
             try
             {
@@ -175,20 +197,8 @@ public class DefaultDependencyCollector
             edge.setDependency( root );
             edge.setRequestContext( request.getRequestContext() );
             edge.setRelocations( descriptorResult.getRelocations() );
-
-            VersionRangeRequest versionRequest =
-                new VersionRangeRequest( root.getArtifact(), request.getRepositories(), request.getRequestContext() );
-            try
-            {
-                VersionRangeResult versionResult = versionRangeResolver.resolveVersionRange( session, versionRequest );
-                edge.setVersionConstraint( versionResult.getVersionConstraint() );
-                edge.setVersion( versionResult.getVersions().get( 0 ) );
-            }
-            catch ( VersionRangeResolutionException e )
-            {
-                result.addException( e );
-                throw new DependencyCollectionException( result );
-            }
+            edge.setVersionConstraint( rangeResult.getVersionConstraint() );
+            edge.setVersion( version );
         }
         else
         {
