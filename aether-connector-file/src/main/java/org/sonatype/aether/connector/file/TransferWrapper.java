@@ -121,7 +121,7 @@ class TransferWrapper
             throw new IllegalStateException( "TransferWrapper holds the wrong type" );
     }
 
-    public Object getException()
+    public Exception getException()
     {
         if ( artifactTransfer != null )
             return artifactTransfer.getException();
