@@ -20,10 +20,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.sonatype.aether.DefaultArtifact;
-import org.sonatype.aether.DefaultMetadata;
-import org.sonatype.aether.Metadata;
-import org.sonatype.aether.NoRepositoryConnectorException;
+import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
@@ -33,6 +30,9 @@ import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.test.util.FileUtil;
 import org.sonatype.aether.test.util.connector.ConnectorTestContext;
 import org.sonatype.aether.test.util.connector.TransferEventTester;
+import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.artifact.DefaultArtifact;
+import org.sonatype.aether.util.metadata.DefaultMetadata;
 
 public class FileRepositoryConnectorTest
 {

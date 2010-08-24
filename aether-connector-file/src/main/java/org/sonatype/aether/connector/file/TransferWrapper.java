@@ -15,16 +15,16 @@ package org.sonatype.aether.connector.file;
 
 import java.io.File;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.ArtifactTransferException;
-import org.sonatype.aether.Metadata;
-import org.sonatype.aether.MetadataTransferException;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactTransfer;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataTransfer;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
+import org.sonatype.aether.transfer.ArtifactTransferException;
+import org.sonatype.aether.transfer.MetadataTransferException;
 
 /**
  * Wrapper object for {@link ArtifactTransfer} and {@link MetadataTransfer} objects.

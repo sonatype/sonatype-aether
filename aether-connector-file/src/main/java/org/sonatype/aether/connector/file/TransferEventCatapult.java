@@ -13,9 +13,9 @@ package org.sonatype.aether.connector.file;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.TransferCancelledException;
-import org.sonatype.aether.TransferEvent;
-import org.sonatype.aether.TransferListener;
+import org.sonatype.aether.transfer.TransferCancelledException;
+import org.sonatype.aether.transfer.TransferEvent;
+import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 
 /**

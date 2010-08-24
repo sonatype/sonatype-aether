@@ -13,8 +13,8 @@ package org.sonatype.aether.connector.file;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.Metadata;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.metadata.Metadata;
 
 /**
  * @author Benjamin Bentmann

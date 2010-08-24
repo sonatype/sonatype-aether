@@ -25,23 +25,23 @@ import java.net.MalformedURLException;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.ArtifactTransferException;
-import org.sonatype.aether.DefaultArtifact;
-import org.sonatype.aether.DefaultMetadata;
-import org.sonatype.aether.Metadata.Nature;
-import org.sonatype.aether.MetadataTransferException;
-import org.sonatype.aether.RemoteRepository;
-import org.sonatype.aether.RepositoryPolicy;
-import org.sonatype.aether.TransferCancelledException;
-import org.sonatype.aether.TransferEvent;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.metadata.Metadata.Nature;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
+import org.sonatype.aether.transfer.ArtifactTransferException;
+import org.sonatype.aether.transfer.MetadataTransferException;
+import org.sonatype.aether.transfer.TransferCancelledException;
+import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
+import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.listener.AbstractTransferListener;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
+import org.sonatype.aether.util.metadata.DefaultMetadata;
 
 import com.thoughtworks.xstream.XStream;
 
