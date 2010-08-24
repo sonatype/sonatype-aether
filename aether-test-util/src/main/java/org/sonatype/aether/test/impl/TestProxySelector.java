@@ -13,9 +13,9 @@ package org.sonatype.aether.test.impl;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.Proxy;
-import org.sonatype.aether.ProxySelector;
-import org.sonatype.aether.RemoteRepository;
+import org.sonatype.aether.repository.Proxy;
+import org.sonatype.aether.repository.ProxySelector;
+import org.sonatype.aether.repository.RemoteRepository;
 
 /**
  * A proxy selector which never returns any proxy.

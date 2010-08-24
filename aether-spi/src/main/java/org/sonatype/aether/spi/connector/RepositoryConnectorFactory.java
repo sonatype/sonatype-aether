@@ -13,9 +13,9 @@ package org.sonatype.aether.spi.connector;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.NoRepositoryConnectorException;
-import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 
 /**
  * A factory to create repository connectors. A repository connector is responsible for uploads/downloads to/from a

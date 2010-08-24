@@ -13,9 +13,9 @@ package org.sonatype.aether.util.graph.selector;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyCollectionContext;
-import org.sonatype.aether.DependencySelector;
+import org.sonatype.aether.collection.DependencyCollectionContext;
+import org.sonatype.aether.collection.DependencySelector;
+import org.sonatype.aether.graph.Dependency;
 
 /**
  * A dependency selector that always includes or excludes dependencies.

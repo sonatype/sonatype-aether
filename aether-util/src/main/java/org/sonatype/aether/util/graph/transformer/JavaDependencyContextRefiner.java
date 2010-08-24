@@ -13,11 +13,11 @@ package org.sonatype.aether.util.graph.transformer;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyGraphTransformationContext;
-import org.sonatype.aether.DependencyGraphTransformer;
-import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.RepositoryException;
+import org.sonatype.aether.collection.DependencyGraphTransformationContext;
+import org.sonatype.aether.collection.DependencyGraphTransformer;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.DependencyNode;
 
 /**
  * @author Benjamin Bentmann

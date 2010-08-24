@@ -16,19 +16,19 @@ package org.sonatype.aether.impl;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.sonatype.aether.ArtifactDescriptorException;
-import org.sonatype.aether.ArtifactDescriptorRequest;
-import org.sonatype.aether.ArtifactDescriptorResult;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.VersionRangeRequest;
-import org.sonatype.aether.VersionRangeResolutionException;
-import org.sonatype.aether.VersionRangeResult;
-import org.sonatype.aether.VersionRequest;
-import org.sonatype.aether.VersionResolutionException;
-import org.sonatype.aether.VersionResult;
 import org.sonatype.aether.impl.ArtifactDescriptorReader;
 import org.sonatype.aether.impl.internal.DefaultServiceLocator;
+import org.sonatype.aether.resolution.ArtifactDescriptorException;
+import org.sonatype.aether.resolution.ArtifactDescriptorRequest;
+import org.sonatype.aether.resolution.ArtifactDescriptorResult;
+import org.sonatype.aether.resolution.VersionRangeRequest;
+import org.sonatype.aether.resolution.VersionRangeResolutionException;
+import org.sonatype.aether.resolution.VersionRangeResult;
+import org.sonatype.aether.resolution.VersionRequest;
+import org.sonatype.aether.resolution.VersionResolutionException;
+import org.sonatype.aether.resolution.VersionResult;
 
 /**
  * @author Benjamin Bentmann

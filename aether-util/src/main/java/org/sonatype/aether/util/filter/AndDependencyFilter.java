@@ -18,8 +18,8 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import org.sonatype.aether.DependencyFilter;
-import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.graph.DependencyFilter;
+import org.sonatype.aether.graph.DependencyNode;
 
 /**
  * A dependency filter that combines zero or more other filters using a logical {@code AND}.

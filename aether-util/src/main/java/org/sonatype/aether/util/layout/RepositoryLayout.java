@@ -15,8 +15,8 @@ package org.sonatype.aether.util.layout;
 
 import java.net.URI;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.Metadata;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.metadata.Metadata;
 
 /**
  * The layout for a remote repository whose artifacts/metadata can be addressed via URIs.

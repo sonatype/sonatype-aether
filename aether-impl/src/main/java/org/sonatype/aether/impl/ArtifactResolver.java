@@ -16,10 +16,10 @@ package org.sonatype.aether.impl;
 import java.util.Collection;
 import java.util.List;
 
-import org.sonatype.aether.ArtifactRequest;
-import org.sonatype.aether.ArtifactResolutionException;
-import org.sonatype.aether.ArtifactResult;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.resolution.ArtifactRequest;
+import org.sonatype.aether.resolution.ArtifactResolutionException;
+import org.sonatype.aether.resolution.ArtifactResult;
 
 /**
  * @author Benjamin Bentmann

@@ -22,21 +22,21 @@ import java.util.ListIterator;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.util.StringUtils;
-import org.sonatype.aether.AuthenticationSelector;
-import org.sonatype.aether.MirrorSelector;
-import org.sonatype.aether.NoRepositoryConnectorException;
-import org.sonatype.aether.ProxySelector;
-import org.sonatype.aether.RemoteRepository;
-import org.sonatype.aether.RepositoryPolicy;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.UpdateCheckManager;
+import org.sonatype.aether.repository.AuthenticationSelector;
+import org.sonatype.aether.repository.MirrorSelector;
+import org.sonatype.aether.repository.ProxySelector;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 
 /**
  * @author Benjamin Bentmann

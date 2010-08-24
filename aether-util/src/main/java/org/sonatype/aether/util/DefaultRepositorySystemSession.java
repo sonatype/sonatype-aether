@@ -18,22 +18,22 @@ import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.sonatype.aether.ArtifactTypeRegistry;
-import org.sonatype.aether.AuthenticationSelector;
-import org.sonatype.aether.DependencyGraphTransformer;
-import org.sonatype.aether.DependencyManager;
-import org.sonatype.aether.DependencySelector;
-import org.sonatype.aether.DependencyTraverser;
-import org.sonatype.aether.LocalRepository;
-import org.sonatype.aether.LocalRepositoryManager;
-import org.sonatype.aether.MirrorSelector;
-import org.sonatype.aether.ProxySelector;
 import org.sonatype.aether.RepositoryCache;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.SessionData;
-import org.sonatype.aether.TransferListener;
-import org.sonatype.aether.WorkspaceReader;
+import org.sonatype.aether.artifact.ArtifactTypeRegistry;
+import org.sonatype.aether.collection.DependencyGraphTransformer;
+import org.sonatype.aether.collection.DependencyManager;
+import org.sonatype.aether.collection.DependencySelector;
+import org.sonatype.aether.collection.DependencyTraverser;
+import org.sonatype.aether.repository.AuthenticationSelector;
+import org.sonatype.aether.repository.LocalRepository;
+import org.sonatype.aether.repository.LocalRepositoryManager;
+import org.sonatype.aether.repository.MirrorSelector;
+import org.sonatype.aether.repository.ProxySelector;
+import org.sonatype.aether.repository.WorkspaceReader;
+import org.sonatype.aether.transfer.TransferListener;
 
 /**
  * A simple repository system session.

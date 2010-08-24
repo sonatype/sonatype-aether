@@ -13,9 +13,9 @@ package org.sonatype.aether.impl;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.DeployRequest;
-import org.sonatype.aether.InstallRequest;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.deployment.DeployRequest;
+import org.sonatype.aether.installation.InstallRequest;
 
 /**
  * A factory to create metadata generators. Metadata generators can contribute additional metadata during the

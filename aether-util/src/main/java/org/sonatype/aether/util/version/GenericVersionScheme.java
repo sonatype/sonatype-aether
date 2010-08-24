@@ -13,11 +13,11 @@ package org.sonatype.aether.util.version;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.InvalidVersionSpecificationException;
-import org.sonatype.aether.Version;
-import org.sonatype.aether.VersionConstraint;
-import org.sonatype.aether.VersionRange;
-import org.sonatype.aether.VersionScheme;
+import org.sonatype.aether.version.InvalidVersionSpecificationException;
+import org.sonatype.aether.version.Version;
+import org.sonatype.aether.version.VersionConstraint;
+import org.sonatype.aether.version.VersionRange;
+import org.sonatype.aether.version.VersionScheme;
 
 /**
  * A version scheme using a generic version syntax.

@@ -18,9 +18,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyCollectionContext;
-import org.sonatype.aether.DependencySelector;
+import org.sonatype.aether.collection.DependencyCollectionContext;
+import org.sonatype.aether.collection.DependencySelector;
+import org.sonatype.aether.graph.Dependency;
 
 /**
  * A dependency selector that filters transitive dependencies based on their scope. Direct dependencies are always

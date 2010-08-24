@@ -15,8 +15,8 @@ package org.sonatype.aether.impl;
 
 import java.util.Collection;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.Metadata;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.metadata.Metadata;
 
 /**
  * A metadata generator that participates in the installation/deployment of artifacts.

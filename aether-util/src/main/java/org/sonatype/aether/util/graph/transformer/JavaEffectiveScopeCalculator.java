@@ -22,12 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyGraphTransformationContext;
-import org.sonatype.aether.DependencyGraphTransformer;
-import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.RepositoryException;
-import org.sonatype.aether.util.JavaScopes;
+import org.sonatype.aether.collection.DependencyGraphTransformationContext;
+import org.sonatype.aether.collection.DependencyGraphTransformer;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.util.artifact.JavaScopes;
 
 /**
  * A dependency graph transformer that handles scope inheritance and conflict resolution among conflicting scopes. For a

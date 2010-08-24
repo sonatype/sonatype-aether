@@ -20,17 +20,17 @@ import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.DefaultArtifact;
-import org.sonatype.aether.DefaultMetadata;
-import org.sonatype.aether.InstallRequest;
-import org.sonatype.aether.InstallResult;
-import org.sonatype.aether.InstallationException;
-import org.sonatype.aether.Metadata.Nature;
 import org.sonatype.aether.RepositoryEvent;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.installation.InstallRequest;
+import org.sonatype.aether.installation.InstallResult;
+import org.sonatype.aether.installation.InstallationException;
+import org.sonatype.aether.metadata.Metadata.Nature;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.listener.AbstractRepositoryListener;
+import org.sonatype.aether.util.metadata.DefaultMetadata;
 
 public class DefaultInstallerTest
 {

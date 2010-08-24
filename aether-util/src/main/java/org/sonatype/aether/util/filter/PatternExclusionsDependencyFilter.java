@@ -16,9 +16,9 @@ package org.sonatype.aether.util.filter;
 import java.util.Collection;
 import java.util.List;
 
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyNode;
-import org.sonatype.aether.VersionScheme;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.version.VersionScheme;
 
 /**
  * A simple filter to exclude artifacts from a list of patterns. The artifact pattern syntax is of the form:

@@ -16,14 +16,14 @@ package org.sonatype.aether.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.DefaultArtifact;
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyNode;
-import org.sonatype.aether.InvalidVersionSpecificationException;
-import org.sonatype.aether.VersionScheme;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.graph.DefaultDependencyNode;
 import org.sonatype.aether.util.version.GenericVersionScheme;
+import org.sonatype.aether.version.InvalidVersionSpecificationException;
+import org.sonatype.aether.version.VersionScheme;
 
 /**
  * @author Benjamin Bentmann

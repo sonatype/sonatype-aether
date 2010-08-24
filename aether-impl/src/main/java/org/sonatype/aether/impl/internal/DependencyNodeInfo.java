@@ -16,11 +16,11 @@ package org.sonatype.aether.impl.internal;
 import java.util.Collections;
 import java.util.List;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.RemoteRepository;
-import org.sonatype.aether.Version;
-import org.sonatype.aether.VersionConstraint;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.version.Version;
+import org.sonatype.aether.version.VersionConstraint;
 
 /**
  * @author Benjamin Bentmann

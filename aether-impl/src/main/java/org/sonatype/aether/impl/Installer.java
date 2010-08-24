@@ -13,10 +13,10 @@ package org.sonatype.aether.impl;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.InstallRequest;
-import org.sonatype.aether.InstallResult;
-import org.sonatype.aether.InstallationException;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.installation.InstallRequest;
+import org.sonatype.aether.installation.InstallResult;
+import org.sonatype.aether.installation.InstallationException;
 
 /**
  * @author Benjamin Bentmann

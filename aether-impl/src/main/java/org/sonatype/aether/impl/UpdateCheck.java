@@ -15,8 +15,8 @@ package org.sonatype.aether.impl;
 
 import java.io.File;
 
-import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositoryException;
+import org.sonatype.aether.repository.RemoteRepository;
 
 /**
  * @author Benjamin Bentmann

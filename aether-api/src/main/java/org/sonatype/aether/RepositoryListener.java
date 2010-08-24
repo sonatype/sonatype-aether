@@ -13,6 +13,8 @@ package org.sonatype.aether;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import org.sonatype.aether.transfer.TransferListener;
+
 /**
  * A listener being notified of events from the repository system. The listener may be called from an arbitrary thread.
  * <em>Note:</em> Implementors are strongly advised to inherit from

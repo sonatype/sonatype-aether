@@ -16,9 +16,9 @@ package org.sonatype.aether.impl.internal;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.sonatype.aether.ArtifactType;
-import org.sonatype.aether.ArtifactTypeRegistry;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.artifact.ArtifactType;
+import org.sonatype.aether.artifact.ArtifactTypeRegistry;
 
 /**
  * A short-lived artifact type registry that caches results from a presumedly slower type registry.

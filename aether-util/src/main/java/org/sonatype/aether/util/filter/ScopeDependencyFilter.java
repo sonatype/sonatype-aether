@@ -18,9 +18,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyFilter;
-import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.DependencyFilter;
+import org.sonatype.aether.graph.DependencyNode;
 
 /**
  * A dependency filter based on dependency scopes. <em>Note:</em> This filter does not assume any relationships between

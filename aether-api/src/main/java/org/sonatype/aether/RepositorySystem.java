@@ -16,6 +16,36 @@ package org.sonatype.aether;
 import java.util.Collection;
 import java.util.List;
 
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.collection.CollectRequest;
+import org.sonatype.aether.collection.CollectResult;
+import org.sonatype.aether.collection.DependencyCollectionException;
+import org.sonatype.aether.deployment.DeployRequest;
+import org.sonatype.aether.deployment.DeployResult;
+import org.sonatype.aether.deployment.DeploymentException;
+import org.sonatype.aether.graph.DependencyFilter;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.installation.InstallRequest;
+import org.sonatype.aether.installation.InstallResult;
+import org.sonatype.aether.installation.InstallationException;
+import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.repository.LocalRepository;
+import org.sonatype.aether.repository.LocalRepositoryManager;
+import org.sonatype.aether.resolution.ArtifactDescriptorException;
+import org.sonatype.aether.resolution.ArtifactDescriptorRequest;
+import org.sonatype.aether.resolution.ArtifactDescriptorResult;
+import org.sonatype.aether.resolution.ArtifactRequest;
+import org.sonatype.aether.resolution.ArtifactResolutionException;
+import org.sonatype.aether.resolution.ArtifactResult;
+import org.sonatype.aether.resolution.MetadataRequest;
+import org.sonatype.aether.resolution.MetadataResult;
+import org.sonatype.aether.resolution.VersionRangeRequest;
+import org.sonatype.aether.resolution.VersionRangeResolutionException;
+import org.sonatype.aether.resolution.VersionRangeResult;
+import org.sonatype.aether.resolution.VersionRequest;
+import org.sonatype.aether.resolution.VersionResolutionException;
+import org.sonatype.aether.resolution.VersionResult;
+
 /**
  * The main entry point to the repository system.
  * 

@@ -13,10 +13,10 @@ package org.sonatype.aether.impl;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.CollectRequest;
-import org.sonatype.aether.CollectResult;
-import org.sonatype.aether.DependencyCollectionException;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.collection.CollectRequest;
+import org.sonatype.aether.collection.CollectResult;
+import org.sonatype.aether.collection.DependencyCollectionException;
 
 /**
  * @author Benjamin Bentmann

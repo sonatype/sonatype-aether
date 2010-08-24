@@ -18,14 +18,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyFilter;
-import org.sonatype.aether.DependencyNode;
-import org.sonatype.aether.InvalidVersionSpecificationException;
-import org.sonatype.aether.Version;
-import org.sonatype.aether.VersionRange;
-import org.sonatype.aether.VersionScheme;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.DependencyFilter;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.version.InvalidVersionSpecificationException;
+import org.sonatype.aether.version.Version;
+import org.sonatype.aether.version.VersionRange;
+import org.sonatype.aether.version.VersionScheme;
 
 /**
  * A simple filter to include artifacts from a list of patterns. The artifact pattern syntax is of the form:

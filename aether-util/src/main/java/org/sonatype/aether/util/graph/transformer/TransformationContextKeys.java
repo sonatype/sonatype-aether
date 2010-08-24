@@ -18,7 +18,7 @@ package org.sonatype.aether.util.graph.transformer;
  * transformation context.
  * 
  * @author Benjamin Bentmann
- * @see org.sonatype.aether.DependencyGraphTransformationContext#get(Object)
+ * @see org.sonatype.aether.collection.DependencyGraphTransformationContext#get(Object)
  */
 public final class TransformationContextKeys
 {

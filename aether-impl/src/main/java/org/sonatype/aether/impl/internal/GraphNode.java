@@ -18,9 +18,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.DependencyNode;
-import org.sonatype.aether.RemoteRepository;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.repository.RemoteRepository;
 
 /**
  * @author Benjamin Bentmann

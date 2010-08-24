@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.graph.DependencyNode;
 
 /**
  * @author Benjamin Bentmann

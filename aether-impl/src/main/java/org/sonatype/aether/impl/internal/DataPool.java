@@ -23,21 +23,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.ArtifactDescriptorRequest;
-import org.sonatype.aether.ArtifactDescriptorResult;
-import org.sonatype.aether.ArtifactRepository;
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyManager;
-import org.sonatype.aether.DependencySelector;
-import org.sonatype.aether.DependencyTraverser;
-import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositoryCache;
 import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.Version;
-import org.sonatype.aether.VersionConstraint;
-import org.sonatype.aether.VersionRangeRequest;
-import org.sonatype.aether.VersionRangeResult;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.collection.DependencyManager;
+import org.sonatype.aether.collection.DependencySelector;
+import org.sonatype.aether.collection.DependencyTraverser;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.repository.ArtifactRepository;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.resolution.ArtifactDescriptorRequest;
+import org.sonatype.aether.resolution.ArtifactDescriptorResult;
+import org.sonatype.aether.resolution.VersionRangeRequest;
+import org.sonatype.aether.resolution.VersionRangeResult;
+import org.sonatype.aether.version.Version;
+import org.sonatype.aether.version.VersionConstraint;
 
 /**
  * @author Benjamin Bentmann

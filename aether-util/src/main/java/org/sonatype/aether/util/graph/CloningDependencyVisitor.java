@@ -17,8 +17,8 @@ import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import org.sonatype.aether.DependencyNode;
-import org.sonatype.aether.DependencyVisitor;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.graph.DependencyVisitor;
 
 /**
  * A dependency visitor that constructs a clone of the visited dependency graph. If such a visitor is passed into a

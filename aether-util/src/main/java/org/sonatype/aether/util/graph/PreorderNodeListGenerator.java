@@ -20,9 +20,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.DependencyNode;
-import org.sonatype.aether.DependencyVisitor;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.graph.DependencyVisitor;
 
 /**
  * Generates a sequence of dependency nodes from a dependeny graph by traversing the graph in preorder. This visitor

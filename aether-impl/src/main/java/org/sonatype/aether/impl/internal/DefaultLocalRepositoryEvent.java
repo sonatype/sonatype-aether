@@ -13,10 +13,10 @@ package org.sonatype.aether.impl.internal;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.LocalRepository;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.LocalRepositoryEvent;
+import org.sonatype.aether.repository.LocalRepository;
 
 /**
  * @author Benjamin Bentmann

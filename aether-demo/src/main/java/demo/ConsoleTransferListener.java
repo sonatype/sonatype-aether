@@ -20,8 +20,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.sonatype.aether.TransferEvent;
-import org.sonatype.aether.TransferResource;
+import org.sonatype.aether.transfer.TransferEvent;
+import org.sonatype.aether.transfer.TransferResource;
 import org.sonatype.aether.util.listener.AbstractTransferListener;
 
 class ConsoleTransferListener

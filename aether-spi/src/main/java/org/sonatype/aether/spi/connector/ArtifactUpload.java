@@ -15,8 +15,8 @@ package org.sonatype.aether.spi.connector;
 
 import java.io.File;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.ArtifactTransferException;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.transfer.ArtifactTransferException;
 
 /**
  * An upload of an artifact to a remote repository. A repository connector processing this upload has to use

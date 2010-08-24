@@ -20,12 +20,12 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyGraphTransformationContext;
-import org.sonatype.aether.DependencyGraphTransformer;
-import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.RepositoryException;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.collection.DependencyGraphTransformationContext;
+import org.sonatype.aether.collection.DependencyGraphTransformer;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.DependencyNode;
 
 /**
  * A dependency graph transformer that identifies conflicting dependencies. When this transformer has executed, the

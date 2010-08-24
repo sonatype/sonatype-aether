@@ -13,9 +13,9 @@ package org.sonatype.aether.test.impl;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.Authentication;
-import org.sonatype.aether.AuthenticationSelector;
-import org.sonatype.aether.RemoteRepository;
+import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.repository.AuthenticationSelector;
+import org.sonatype.aether.repository.RemoteRepository;
 
 /**
  * A simple authentication selector that never provides authentication.

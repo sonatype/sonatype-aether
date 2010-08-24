@@ -16,9 +16,9 @@ package org.sonatype.aether.util.version;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.sonatype.aether.InvalidVersionSpecificationException;
-import org.sonatype.aether.Version;
-import org.sonatype.aether.VersionRange;
+import org.sonatype.aether.version.InvalidVersionSpecificationException;
+import org.sonatype.aether.version.Version;
+import org.sonatype.aether.version.VersionRange;
 
 public class GenericVersionRangeTest
 {

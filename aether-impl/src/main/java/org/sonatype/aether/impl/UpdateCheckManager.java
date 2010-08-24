@@ -13,11 +13,11 @@ package org.sonatype.aether.impl;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.ArtifactTransferException;
-import org.sonatype.aether.Metadata;
-import org.sonatype.aether.MetadataTransferException;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.transfer.ArtifactTransferException;
+import org.sonatype.aether.transfer.MetadataTransferException;
 
 /**
  * @author Benjamin Bentmann

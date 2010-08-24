@@ -16,9 +16,9 @@ package org.sonatype.aether.util.version;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.sonatype.aether.Version;
-import org.sonatype.aether.VersionConstraint;
-import org.sonatype.aether.VersionRange;
+import org.sonatype.aether.version.Version;
+import org.sonatype.aether.version.VersionConstraint;
+import org.sonatype.aether.version.VersionRange;
 
 /**
  * A constraint on versions for a dependency.

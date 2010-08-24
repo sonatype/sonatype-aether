@@ -15,8 +15,8 @@ package org.sonatype.aether.spi.connector;
 
 import java.io.File;
 
-import org.sonatype.aether.Metadata;
-import org.sonatype.aether.MetadataTransferException;
+import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.transfer.MetadataTransferException;
 
 /**
  * An upload of metadata to a remote repository. A repository connector processing this upload has to use

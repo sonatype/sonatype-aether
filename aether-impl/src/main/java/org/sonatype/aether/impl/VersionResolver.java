@@ -14,9 +14,9 @@ package org.sonatype.aether.impl;
  */
 
 import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.VersionRequest;
-import org.sonatype.aether.VersionResolutionException;
-import org.sonatype.aether.VersionResult;
+import org.sonatype.aether.resolution.VersionRequest;
+import org.sonatype.aether.resolution.VersionResolutionException;
+import org.sonatype.aether.resolution.VersionResult;
 
 /**
  * @author Benjamin Bentmann
