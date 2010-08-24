@@ -143,7 +143,7 @@ final class GenericVersionRange
         return upperBoundInclusive;
     }
 
-    public boolean containsSnapshots()
+    public boolean acceptsSnapshots()
     {
         return isSnapshot( lowerBound ) || isSnapshot( upperBound );
     }
