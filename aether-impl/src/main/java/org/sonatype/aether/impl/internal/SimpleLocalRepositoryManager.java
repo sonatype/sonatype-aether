@@ -20,15 +20,15 @@ import java.security.NoSuchAlgorithmException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.LocalArtifactRegistration;
-import org.sonatype.aether.LocalArtifactRequest;
-import org.sonatype.aether.LocalArtifactResult;
-import org.sonatype.aether.LocalRepository;
-import org.sonatype.aether.LocalRepositoryManager;
-import org.sonatype.aether.Metadata;
-import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.repository.LocalArtifactRegistration;
+import org.sonatype.aether.repository.LocalArtifactRequest;
+import org.sonatype.aether.repository.LocalArtifactResult;
+import org.sonatype.aether.repository.LocalRepository;
+import org.sonatype.aether.repository.LocalRepositoryManager;
+import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.log.Logger;
 
 /**

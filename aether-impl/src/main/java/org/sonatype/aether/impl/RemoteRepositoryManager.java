@@ -15,11 +15,11 @@ package org.sonatype.aether.impl;
 
 import java.util.List;
 
-import org.sonatype.aether.NoRepositoryConnectorException;
-import org.sonatype.aether.RemoteRepository;
-import org.sonatype.aether.RepositoryPolicy;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
+import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 
 /**
  * @author Benjamin Bentmann

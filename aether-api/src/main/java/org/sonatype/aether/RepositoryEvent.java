@@ -16,6 +16,10 @@ package org.sonatype.aether;
 import java.io.File;
 import java.util.List;
 
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.repository.ArtifactRepository;
+
 /**
  * An event describing an action performed by the repository system.
  * 

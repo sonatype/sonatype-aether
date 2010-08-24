@@ -13,8 +13,8 @@ package org.sonatype.aether.util.listener;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.TransferEvent;
-import org.sonatype.aether.TransferResource;
+import org.sonatype.aether.transfer.TransferEvent;
+import org.sonatype.aether.transfer.TransferResource;
 
 /**
  * @author Benjamin Bentmann

@@ -24,15 +24,15 @@ import java.util.Collections;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.DefaultArtifact;
-import org.sonatype.aether.LocalArtifactRegistration;
-import org.sonatype.aether.LocalArtifactRequest;
-import org.sonatype.aether.LocalArtifactResult;
-import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.repository.LocalArtifactRegistration;
+import org.sonatype.aether.repository.LocalArtifactRequest;
+import org.sonatype.aether.repository.LocalArtifactResult;
+import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.util.artifact.DefaultArtifact;
 
 public class EnhancedLocalRepositoryManagerTest
 {

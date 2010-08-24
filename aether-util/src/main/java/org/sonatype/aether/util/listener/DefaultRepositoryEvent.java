@@ -17,11 +17,11 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.ArtifactRepository;
-import org.sonatype.aether.Metadata;
 import org.sonatype.aether.RepositoryEvent;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.repository.ArtifactRepository;
 
 /**
  * @author Benjamin Bentmann

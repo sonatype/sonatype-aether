@@ -18,8 +18,8 @@ import java.io.IOException;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.providers.file.FileWagon;
 import org.junit.Test;
-import org.sonatype.aether.NoRepositoryConnectorException;
 import org.sonatype.aether.test.util.connector.TransferEventTester;
+import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 
 public class EventTest
 {

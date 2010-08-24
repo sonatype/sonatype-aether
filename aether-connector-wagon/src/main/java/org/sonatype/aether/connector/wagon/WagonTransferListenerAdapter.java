@@ -17,11 +17,11 @@ import java.io.File;
 
 import org.apache.maven.wagon.events.TransferEvent;
 import org.apache.maven.wagon.observers.AbstractTransferListener;
-import org.sonatype.aether.TransferCancelledException;
-import org.sonatype.aether.TransferListener;
-import org.sonatype.aether.TransferResource;
-import org.sonatype.aether.TransferEvent.EventType;
-import org.sonatype.aether.TransferEvent.RequestType;
+import org.sonatype.aether.transfer.TransferCancelledException;
+import org.sonatype.aether.transfer.TransferListener;
+import org.sonatype.aether.transfer.TransferResource;
+import org.sonatype.aether.transfer.TransferEvent.EventType;
+import org.sonatype.aether.transfer.TransferEvent.RequestType;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 

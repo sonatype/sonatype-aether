@@ -16,9 +16,9 @@ package org.sonatype.aether.impl;
 import java.util.Collection;
 import java.util.List;
 
-import org.sonatype.aether.MetadataRequest;
-import org.sonatype.aether.MetadataResult;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.resolution.MetadataRequest;
+import org.sonatype.aether.resolution.MetadataResult;
 
 /**
  * @author Benjamin Bentmann

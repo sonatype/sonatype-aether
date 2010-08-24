@@ -16,8 +16,8 @@ package org.sonatype.aether.impl.internal;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.sonatype.aether.DependencyGraphTransformationContext;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.collection.DependencyGraphTransformationContext;
 
 /**
  * @author Benjamin Bentmann

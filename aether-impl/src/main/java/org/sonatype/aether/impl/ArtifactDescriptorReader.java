@@ -13,10 +13,10 @@ package org.sonatype.aether.impl;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.ArtifactDescriptorException;
-import org.sonatype.aether.ArtifactDescriptorRequest;
-import org.sonatype.aether.ArtifactDescriptorResult;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.resolution.ArtifactDescriptorException;
+import org.sonatype.aether.resolution.ArtifactDescriptorRequest;
+import org.sonatype.aether.resolution.ArtifactDescriptorResult;
 
 /**
  * @author Benjamin Bentmann

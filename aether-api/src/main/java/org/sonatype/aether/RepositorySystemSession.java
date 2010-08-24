@@ -15,6 +15,20 @@ package org.sonatype.aether;
 
 import java.util.Map;
 
+import org.sonatype.aether.artifact.ArtifactTypeRegistry;
+import org.sonatype.aether.collection.DependencyGraphTransformer;
+import org.sonatype.aether.collection.DependencyManager;
+import org.sonatype.aether.collection.DependencySelector;
+import org.sonatype.aether.collection.DependencyTraverser;
+import org.sonatype.aether.repository.AuthenticationSelector;
+import org.sonatype.aether.repository.LocalRepository;
+import org.sonatype.aether.repository.LocalRepositoryManager;
+import org.sonatype.aether.repository.MirrorSelector;
+import org.sonatype.aether.repository.ProxySelector;
+import org.sonatype.aether.repository.RepositoryPolicy;
+import org.sonatype.aether.repository.WorkspaceReader;
+import org.sonatype.aether.transfer.TransferListener;
+
 /**
  * Defines settings and components that control the repository system.
  * 

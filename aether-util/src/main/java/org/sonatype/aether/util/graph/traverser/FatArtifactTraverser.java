@@ -13,17 +13,17 @@ package org.sonatype.aether.util.graph.traverser;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyCollectionContext;
-import org.sonatype.aether.DependencyTraverser;
-import org.sonatype.aether.util.ArtifactProperties;
+import org.sonatype.aether.collection.DependencyCollectionContext;
+import org.sonatype.aether.collection.DependencyTraverser;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.util.artifact.ArtifactProperties;
 
 /**
  * A dependency traverser that excludes the dependencies of fat artifacts from the traversal. Fat artifacts are
  * artifacts that have the property "includesDependencies" set to {@code true}.
  * 
  * @author Benjamin Bentmann
- * @see org.sonatype.aether.Artifact#getProperties()
+ * @see org.sonatype.aether.artifact.Artifact#getProperties()
  */
 public class FatArtifactTraverser
     implements DependencyTraverser

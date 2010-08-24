@@ -13,7 +13,7 @@ package org.sonatype.aether.test.util.impl;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.Artifact;
+import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 

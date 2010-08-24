@@ -17,9 +17,9 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-import org.sonatype.aether.Metadata;
-import org.sonatype.aether.MetadataTransferException;
-import org.sonatype.aether.RemoteRepository;
+import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.transfer.MetadataTransferException;
 
 /**
  * A download of metadata from a remote repository. A repository connector processing this download has to use

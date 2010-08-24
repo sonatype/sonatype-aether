@@ -15,15 +15,15 @@ package org.sonatype.aether.connector.wagon;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.aether.NoRepositoryConnectorException;
-import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 
 /**
  * A repository connector factory that uses Maven Wagon for the transfers.

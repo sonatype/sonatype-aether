@@ -16,9 +16,9 @@ package org.sonatype.aether.util.version;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.sonatype.aether.InvalidVersionSpecificationException;
-import org.sonatype.aether.Version;
-import org.sonatype.aether.VersionRange;
+import org.sonatype.aether.version.InvalidVersionSpecificationException;
+import org.sonatype.aether.version.Version;
+import org.sonatype.aether.version.VersionRange;
 
 public class GenericVersionRangeTest
 {
@@ -72,7 +72,7 @@ public class GenericVersionRangeTest
         VersionRange range = parseValid( "[1,2]" );
         assertContains( range, "1" );
         assertContains( range, "2" );
-        assertFalse( range.containsSnapshots() );
+        assertFalse( range.acceptsSnapshots() );
         assertEquals( range, parseValid( range.toString() ) );
     }
 
@@ -82,7 +82,7 @@ public class GenericVersionRangeTest
         VersionRange range = parseValid( "[1.2.3.4.5,1.2.3.4.6)" );
         assertContains( range, "1.2.3.4.5" );
         assertNotContains( range, "1.2.3.4.6" );
-        assertFalse( range.containsSnapshots() );
+        assertFalse( range.acceptsSnapshots() );
         assertEquals( range, parseValid( range.toString() ) );
     }
 
@@ -92,7 +92,7 @@ public class GenericVersionRangeTest
         VersionRange range = parseValid( "(1a,1b]" );
         assertNotContains( range, "1a" );
         assertContains( range, "1b" );
-        assertFalse( range.containsSnapshots() );
+        assertFalse( range.acceptsSnapshots() );
         assertEquals( range, parseValid( range.toString() ) );
     }
 
@@ -102,7 +102,7 @@ public class GenericVersionRangeTest
         VersionRange range = parseValid( "(1,3)" );
         assertNotContains( range, "1" );
         assertNotContains( range, "3" );
-        assertFalse( range.containsSnapshots() );
+        assertFalse( range.acceptsSnapshots() );
         assertEquals( range, parseValid( range.toString() ) );
     }
 
@@ -111,12 +111,12 @@ public class GenericVersionRangeTest
     {
         VersionRange range = parseValid( "[1]" );
         assertContains( range, "1" );
-        assertFalse( range.containsSnapshots() );
+        assertFalse( range.acceptsSnapshots() );
         assertEquals( range, parseValid( range.toString() ) );
 
         range = parseValid( "[1,1]" );
         assertContains( range, "1" );
-        assertFalse( range.containsSnapshots() );
+        assertFalse( range.acceptsSnapshots() );
         assertEquals( range, parseValid( range.toString() ) );
     }
 

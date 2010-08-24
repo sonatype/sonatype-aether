@@ -16,8 +16,8 @@ package org.sonatype.aether.util.layout;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.Metadata;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.metadata.Metadata;
 
 /**
  * The layout for a Maven remote repository of type "default".

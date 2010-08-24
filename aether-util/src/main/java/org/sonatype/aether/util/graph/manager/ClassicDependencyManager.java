@@ -19,12 +19,12 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyCollectionContext;
-import org.sonatype.aether.DependencyManagement;
-import org.sonatype.aether.DependencyManager;
-import org.sonatype.aether.Exclusion;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.collection.DependencyCollectionContext;
+import org.sonatype.aether.collection.DependencyManagement;
+import org.sonatype.aether.collection.DependencyManager;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.Exclusion;
 
 /**
  * A dependency manager that mimics the way Maven 2.x works.

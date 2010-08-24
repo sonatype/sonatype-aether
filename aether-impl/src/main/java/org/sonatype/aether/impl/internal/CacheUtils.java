@@ -16,13 +16,13 @@ package org.sonatype.aether.impl.internal;
 import java.util.Iterator;
 import java.util.List;
 
-import org.sonatype.aether.ArtifactRepository;
-import org.sonatype.aether.LocalRepository;
-import org.sonatype.aether.RemoteRepository;
-import org.sonatype.aether.RepositoryPolicy;
 import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.WorkspaceReader;
-import org.sonatype.aether.WorkspaceRepository;
+import org.sonatype.aether.repository.ArtifactRepository;
+import org.sonatype.aether.repository.LocalRepository;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.RepositoryPolicy;
+import org.sonatype.aether.repository.WorkspaceReader;
+import org.sonatype.aether.repository.WorkspaceRepository;
 
 /**
  * @author Benjamin Bentmann

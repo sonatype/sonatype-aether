@@ -15,9 +15,9 @@ package org.sonatype.aether.impl.internal;
 
 import java.util.List;
 
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyCollectionContext;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.collection.DependencyCollectionContext;
+import org.sonatype.aether.graph.Dependency;
 
 /**
  * @author Benjamin Bentmann

@@ -22,7 +22,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Stack;
 
-import org.sonatype.aether.Version;
+import org.sonatype.aether.version.Version;
 
 /**
  * Generic implementation of version comparison. Features:

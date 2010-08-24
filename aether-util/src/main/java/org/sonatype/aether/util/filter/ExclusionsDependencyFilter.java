@@ -17,9 +17,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyFilter;
-import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.DependencyFilter;
+import org.sonatype.aether.graph.DependencyNode;
 
 /**
  * A simple filter to exclude artifacts based either artifact id or group id and artifact id.

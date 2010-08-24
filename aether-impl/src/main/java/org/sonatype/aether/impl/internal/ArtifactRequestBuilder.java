@@ -16,9 +16,9 @@ package org.sonatype.aether.impl.internal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sonatype.aether.ArtifactRequest;
-import org.sonatype.aether.DependencyNode;
-import org.sonatype.aether.DependencyVisitor;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.graph.DependencyVisitor;
+import org.sonatype.aether.resolution.ArtifactRequest;
 
 /**
  * @author Benjamin Bentmann

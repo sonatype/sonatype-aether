@@ -21,7 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Test;
-import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.util.NodeBuilder;
 
 public class ExclusionDependencyFilterTest

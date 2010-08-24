@@ -15,7 +15,7 @@ package org.sonatype.aether.util.listener;
 
 import java.io.File;
 
-import org.sonatype.aether.TransferResource;
+import org.sonatype.aether.transfer.TransferResource;
 
 /**
  * @author Benjamin Bentmann

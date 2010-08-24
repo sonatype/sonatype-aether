@@ -22,23 +22,23 @@ import java.util.TimeZone;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.ArtifactNotFoundException;
-import org.sonatype.aether.ArtifactTransferException;
-import org.sonatype.aether.Authentication;
-import org.sonatype.aether.Metadata;
-import org.sonatype.aether.MetadataNotFoundException;
-import org.sonatype.aether.MetadataTransferException;
-import org.sonatype.aether.Proxy;
-import org.sonatype.aether.RemoteRepository;
-import org.sonatype.aether.RepositoryPolicy;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
+import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.repository.Proxy;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.transfer.ArtifactNotFoundException;
+import org.sonatype.aether.transfer.ArtifactTransferException;
+import org.sonatype.aether.transfer.MetadataNotFoundException;
+import org.sonatype.aether.transfer.MetadataTransferException;
 
 /**
  * @author Benjamin Bentmann

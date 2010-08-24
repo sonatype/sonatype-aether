@@ -16,9 +16,9 @@ package org.sonatype.aether.test.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sonatype.aether.TransferCancelledException;
-import org.sonatype.aether.TransferEvent;
-import org.sonatype.aether.TransferListener;
+import org.sonatype.aether.transfer.TransferCancelledException;
+import org.sonatype.aether.transfer.TransferEvent;
+import org.sonatype.aether.transfer.TransferListener;
 
 public class RecordingTransferListener
     implements TransferListener

@@ -14,7 +14,7 @@ package org.sonatype.aether.test.util.connector;
  */
 
 import static org.junit.Assert.*;
-import static org.sonatype.aether.TransferEvent.EventType.*;
+import static org.sonatype.aether.transfer.TransferEvent.EventType.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,15 +24,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import org.sonatype.aether.DefaultArtifact;
-import org.sonatype.aether.DefaultMetadata;
-import org.sonatype.aether.Metadata;
-import org.sonatype.aether.NoRepositoryConnectorException;
-import org.sonatype.aether.RemoteRepository;
 import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.TransferEvent;
-import org.sonatype.aether.TransferEvent.EventType;
-import org.sonatype.aether.TransferListener;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
@@ -43,6 +38,10 @@ import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.test.impl.RecordingTransferListener;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.transfer.TransferEvent;
+import org.sonatype.aether.transfer.TransferListener;
+import org.sonatype.aether.transfer.TransferEvent.EventType;
 
 public class TransferEventTester
 {
@@ -198,10 +197,10 @@ public class TransferEventTester
 
         for ( int i = 0; i < count; i++ )
         {
-            DefaultArtifact artifact =
-                new DefaultArtifact( "testGroup", "testArtifact", "sources", "jar", ( i + 1 ) + "-test" );
-            DefaultMetadata metadata =
-                new DefaultMetadata( "testGroup", "testArtifact", ( i + 1 ) + "test", "jar",
+            Artifact artifact =
+                new StubArtifact( "testGroup", "testArtifact", "sources", "jar", ( i + 1 ) + "-test" );
+            Metadata metadata =
+                new StubMetadata( "testGroup", "testArtifact", ( i + 1 ) + "test", "jar",
                                      Metadata.Nature.RELEASE_OR_SNAPSHOT, file );
             String context = null;
             String checksumPolicy = null;

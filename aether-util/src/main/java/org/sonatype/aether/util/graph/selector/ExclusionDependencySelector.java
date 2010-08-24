@@ -18,11 +18,11 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.Dependency;
-import org.sonatype.aether.DependencyCollectionContext;
-import org.sonatype.aether.DependencySelector;
-import org.sonatype.aether.Exclusion;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.collection.DependencyCollectionContext;
+import org.sonatype.aether.collection.DependencySelector;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.Exclusion;
 
 /**
  * A dependency selector that applies exclusions based on artifact coordinates.

@@ -16,8 +16,8 @@ package org.sonatype.aether.util.graph;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import org.sonatype.aether.DependencyNode;
-import org.sonatype.aether.DependencyVisitor;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.graph.DependencyVisitor;
 
 /**
  * A dependency visitor that delegates to another visitor if a node hasn't been visited before. In other words, this

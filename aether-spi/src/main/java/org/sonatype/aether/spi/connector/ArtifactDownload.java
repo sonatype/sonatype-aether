@@ -18,9 +18,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.ArtifactTransferException;
-import org.sonatype.aether.RemoteRepository;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.transfer.ArtifactTransferException;
 
 /**
  * A download of an artifact from a remote repository. A repository connector processing this download has to use
@@ -84,7 +84,7 @@ public class ArtifactDownload
     /**
      * Indicates whether this transfer shall only verify the existence of the artifact in the remote repository rather
      * than actually downloading the file. Just like with an actual transfer, a connector is expected to signal the
-     * non-existence of the artifact by associating an {@link org.sonatype.aether.ArtifactNotFoundException
+     * non-existence of the artifact by associating an {@link org.sonatype.aether.transfer.ArtifactNotFoundException
      * ArtifactNotFoundException} with this download.
      * 
      * @return {@code true} if only the artifact existence shall be verified, {@code false} to actually download the

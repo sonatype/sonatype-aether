@@ -20,16 +20,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.ArtifactTransferException;
-import org.sonatype.aether.Metadata;
-import org.sonatype.aether.MetadataTransferException;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.transfer.ArtifactTransferException;
+import org.sonatype.aether.transfer.MetadataTransferException;
 
 /**
  * A repository connector doing nothing but recording all get/put-requests.

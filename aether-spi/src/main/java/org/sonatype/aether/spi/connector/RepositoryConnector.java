@@ -20,7 +20,7 @@ import java.util.Collection;
  * from/to a remote repository. Besides performing the actual transfer and recording any exception encountered in the
  * provided upload/download objects, a connector must also use
  * {@link Transfer#setState(org.sonatype.aether.spi.connector.Transfer.State)} to update the state of a transfer during
- * its processing. Furthermore, the connector must notify any {@link org.sonatype.aether.TransferListener
+ * its processing. Furthermore, the connector must notify any {@link org.sonatype.aether.transfer.TransferListener
  * TransferListener} configured on its associated {@link org.sonatype.aether.RepositorySystemSession
  * RepositorySystemSession}. If applicable, a connector should obey connect/request timeouts and other relevant settings
  * from the configuration properties of the repository system session.

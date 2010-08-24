@@ -16,7 +16,7 @@ package org.sonatype.aether;
 /**
  * Caches auxiliary data used during repository access like already processed metadata. The data in the cache is meant
  * for exclusive consumption by the repository system and is opaque to the cache implementation. <strong>Note:</strong>
- * Actual cache implementions must be thread-safe.
+ * Actual cache implementations must be thread-safe.
  * 
  * @author Benjamin Bentmann
  */

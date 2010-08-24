@@ -13,9 +13,9 @@ package org.sonatype.aether.util.version;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.InvalidVersionSpecificationException;
-import org.sonatype.aether.Version;
-import org.sonatype.aether.VersionRange;
+import org.sonatype.aether.version.InvalidVersionSpecificationException;
+import org.sonatype.aether.version.Version;
+import org.sonatype.aether.version.VersionRange;
 
 /**
  * A version range inspired by mathematical range syntax. For example, "[1.0,2.0)", "[1.0,)" or "[1.0]".
@@ -143,7 +143,7 @@ final class GenericVersionRange
         return upperBoundInclusive;
     }
 
-    public boolean containsSnapshots()
+    public boolean acceptsSnapshots()
     {
         return isSnapshot( lowerBound ) || isSnapshot( upperBound );
     }

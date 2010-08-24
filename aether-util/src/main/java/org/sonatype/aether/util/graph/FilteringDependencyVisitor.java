@@ -15,9 +15,9 @@ package org.sonatype.aether.util.graph;
 
 import java.util.LinkedList;
 
-import org.sonatype.aether.DependencyFilter;
-import org.sonatype.aether.DependencyNode;
-import org.sonatype.aether.DependencyVisitor;
+import org.sonatype.aether.graph.DependencyFilter;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.graph.DependencyVisitor;
 
 /**
  * A dependency visitor that delegates to another visitor if nodes match a filter. Note that in case of a mismatching

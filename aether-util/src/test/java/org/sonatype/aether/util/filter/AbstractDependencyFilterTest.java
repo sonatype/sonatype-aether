@@ -17,9 +17,9 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-import org.sonatype.aether.Artifact;
-import org.sonatype.aether.DependencyFilter;
-import org.sonatype.aether.DependencyNode;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.graph.DependencyFilter;
+import org.sonatype.aether.graph.DependencyNode;
 
 public abstract class AbstractDependencyFilterTest
 {
