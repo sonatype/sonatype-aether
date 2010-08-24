@@ -462,7 +462,7 @@ class FileRepositoryWorker
                 resourceName = new DefaultLayout().getPath( metadata );
                 break;
         }
-        event.setResource( new DefaultTransferResource( repository.getUrl(), resourceName, transfer.getFile() ) );
+        event.setResource( new DefaultTransferResource( PathUtils.decode(repository.getUrl()), resourceName, transfer.getFile() ) );
         event.setRequestType( direction.getType() );
         return event;
     }

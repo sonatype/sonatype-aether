@@ -118,7 +118,7 @@ final class PathUtils
     }
 
     /**
-     * /** Return the protocol name. <br/>
+     * Return the protocol name. <br/>
      * E.g: for input <code>http://www.codehause.org</code> this method will return <code>http</code>
      * 
      * @param url the url
@@ -140,7 +140,6 @@ final class PathUtils
      * 
      * @param url the file-repository URL
      * @return the basedir of the repository
-     * @todo need to URL decode for spaces?
      */
     public static String basedir( String url )
     {
@@ -148,7 +147,14 @@ final class PathUtils
 
         String retValue = null;
 
-        retValue = url.substring( protocol.length() + 1 );
+        if ( protocol.length() > 0 )
+        {
+	        retValue = url.substring( protocol.length() + 1 );
+        }
+        else
+        {
+            retValue = url;
+        }
         retValue = decode( retValue );
         // special case: if omitted // on protocol, keep path as is
         if ( retValue.startsWith( "//" ) )
@@ -198,7 +204,7 @@ final class PathUtils
      * @param url The URL to decode, may be <code>null</code>.
      * @return The decoded URL or <code>null</code> if the input was <code>null</code>.
      */
-    private static String decode( String url )
+    static String decode( String url )
     {
         String decoded = url;
         if ( url != null )
@@ -217,7 +223,6 @@ final class PathUtils
         return decoded;
     }
 
-    // TODO: move to plexus-utils or use something appropriate from there
     public static String toRelative( File basedir, String absolutePath )
     {
         String relative;
