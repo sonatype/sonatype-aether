@@ -15,15 +15,19 @@ package org.sonatype.aether.util.graph;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.sonatype.aether.Artifact;
 import org.sonatype.aether.DependencyNode;
 import org.sonatype.aether.DependencyVisitor;
 
 /**
- * Generates a sequence of dependency nodes from a dependeny graph by traversing the graph in preorder.
+ * Generates a sequence of dependency nodes from a dependeny graph by traversing the graph in preorder. This visitor
+ * visits each node exactly once regardless how many paths within the dependency graph lead to the node such that the
+ * resulting node sequence is free of duplicates.
  * 
  * @author Benjamin Bentmann
  */
@@ -31,14 +35,17 @@ public class PreorderNodeListGenerator
     implements DependencyVisitor
 {
 
-    private List<DependencyNode> nodes;
+    private final Map<DependencyNode, Object> visitedNodes;
+
+    private final List<DependencyNode> nodes;
 
     /**
      * Creates a new list generator.
      */
     public PreorderNodeListGenerator()
     {
-        this.nodes = new ArrayList<DependencyNode>( 128 );
+        nodes = new ArrayList<DependencyNode>( 128 );
+        visitedNodes = new IdentityHashMap<DependencyNode, Object>( 512 );
     }
 
     /**
@@ -108,6 +115,11 @@ public class PreorderNodeListGenerator
 
     public boolean visitEnter( DependencyNode node )
     {
+        if ( visitedNodes.put( node, Boolean.TRUE ) != null )
+        {
+            return false;
+        }
+
         if ( node.getDependency() != null )
         {
             nodes.add( node );

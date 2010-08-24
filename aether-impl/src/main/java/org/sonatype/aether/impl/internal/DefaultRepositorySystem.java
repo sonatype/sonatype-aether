@@ -63,6 +63,7 @@ import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.util.graph.FilteringDependencyVisitor;
+import org.sonatype.aether.util.graph.TreeDependencyVisitor;
 
 /**
  * @author Benjamin Bentmann
@@ -248,6 +249,7 @@ public class DefaultRepositorySystem
     {
         ArtifactRequestBuilder builder = new ArtifactRequestBuilder();
         DependencyVisitor visitor = ( filter != null ) ? new FilteringDependencyVisitor( builder, filter ) : builder;
+        visitor = new TreeDependencyVisitor( visitor );
         node.accept( visitor );
         List<ArtifactRequest> requests = builder.getRequests();
 
