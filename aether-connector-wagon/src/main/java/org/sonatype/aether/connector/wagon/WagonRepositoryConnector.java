@@ -254,6 +254,10 @@ class WagonRepositoryConnector
                                          ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
         wagon.setTimeout( Math.max( connectTimeout, 0 ) );
 
+        wagon.setInteractive( ConfigurationProperties.get( session.getConfigProperties(),
+                                                           ConfigurationProperties.INTERACTIVE,
+                                                           ConfigurationProperties.DEFAULT_INTERACTIVE ) );
+
         wagon.connect( wagonRepo, wagonAuth, wagonProxy );
     }
 

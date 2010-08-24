@@ -29,6 +29,18 @@ public final class ConfigurationProperties
     private static final String PREFIX_CONNECTOR = PREFIX_AETHER + "connector.";
 
     /**
+     * A flag indicating whether interaction with the user is allowed.
+     * 
+     * @see #DEFAULT_INTERACTIVE
+     */
+    public static final String INTERACTIVE = PREFIX_AETHER + ".interactive";
+
+    /**
+     * The default interactive mode if {@link #INTERACTIVE} isn't set.
+     */
+    public static final boolean DEFAULT_INTERACTIVE = false;
+
+    /**
      * The user agent that repository connectors should reports to servers.
      * 
      * @see #DEFAULT_USER_AGENT
