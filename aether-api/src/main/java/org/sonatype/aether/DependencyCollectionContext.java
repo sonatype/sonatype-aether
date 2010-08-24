@@ -36,7 +36,8 @@ public interface DependencyCollectionContext
     /**
      * Gets the dependency whose children are to be processed next during dependency collection.
      * 
-     * @return The dependency whose children are going to be processed or {@code null}.
+     * @return The dependency whose children are going to be processed or {@code null} in case of the root node without
+     *         dependency.
      */
     Dependency getDependency();
 
