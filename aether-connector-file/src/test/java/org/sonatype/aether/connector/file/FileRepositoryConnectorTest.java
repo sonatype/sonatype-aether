@@ -44,7 +44,7 @@ public class FileRepositoryConnectorTest
         ConnectorTestContext ctx = TransferEventTester.setupTestContext();
         FileRepositoryConnector connector = new FileRepositoryConnector( ctx.getSession(), ctx.getRepository() );
 
-        int count = 1000;
+        int count = 10;
 
         byte[] pattern = "tmpFile".getBytes();
         File tmpFile = FileUtil.createTempFile( pattern, 10000 );
@@ -57,7 +57,7 @@ public class FileRepositoryConnectorTest
             ArtifactUpload artUp =
                 new ArtifactUpload( new DefaultArtifact( "testGroup", "testArtifact", "jar", i + "-test" ), tmpFile );
             MetadataUpload metaUp =
-                new MetadataUpload( new DefaultMetadata( "testGroup", "testArtifact", i + "-test", "jar",
+                new MetadataUpload( new DefaultMetadata( "testGroup", "testArtifact", i + "-test", "maven-metadata.xml",
                                                          Metadata.Nature.RELEASE_OR_SNAPSHOT ), tmpFile );
 
             artUps[i] = artUp;
@@ -74,10 +74,11 @@ public class FileRepositoryConnectorTest
         for ( int i = 0; i < count; i++ )
         {
             ArtifactDownload artDown =
-                new ArtifactDownload( new DefaultArtifact( "testGroup", "testArtifact", "jar", "1-test" ), null, null,
+                new ArtifactDownload( new DefaultArtifact( "testGroup", "testArtifact", "jar", i + "-test" ), null, FileUtil.createTempFile( "" ),
                                       null );
             MetadataDownload metaDown = new MetadataDownload();
-            metaDown.setMetadata( new DefaultMetadata( "default", Metadata.Nature.RELEASE_OR_SNAPSHOT ) );
+            metaDown.setMetadata( new DefaultMetadata( "testGroup", "testArtifact", i+ "-test", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT ) );
+            metaDown.setFile( FileUtil.createTempFile( "" ) );
 
             artDowns[i] = artDown;
             metaDowns[i] = metaDown;
