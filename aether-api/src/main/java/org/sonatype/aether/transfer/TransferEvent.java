@@ -61,7 +61,7 @@ public interface TransferEvent
     /**
      * Gets the total number of bytes that have been transferred so far during the request.
      * 
-     * @return The total number of bytes that have been transferrred.
+     * @return The total number of bytes that have been transferred.
      */
     long getTransferredBytes();
 

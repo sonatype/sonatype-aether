@@ -85,7 +85,7 @@ public interface RepositorySystem
      * @param session The repository session, must not be {@code null}.
      * @param request The descriptor request, must not be {@code null}
      * @return The descriptor result, never {@code null}.
-     * @throws ArtifactDescriptorException If the artifact descritpor could not be read.
+     * @throws ArtifactDescriptorException If the artifact descriptor could not be read.
      * @see RepositorySystemSession#isIgnoreInvalidArtifactDescriptor()
      * @see RepositorySystemSession#isIgnoreMissingArtifactDescriptor()
      */

@@ -199,7 +199,7 @@ public class RemoteRepository
     /**
      * Sets the policy to apply for snapshot/release artifacts.
      * 
-     * @param snapshot {@code true} to set the snapshot policy, {@code false} to seg the release policy.
+     * @param snapshot {@code true} to set the snapshot policy, {@code false} to set the release policy.
      * @param policy The repository policy to set, may be {@code null} to use a default policy.
      * @return This repository for chaining, never {@code null}.
      */

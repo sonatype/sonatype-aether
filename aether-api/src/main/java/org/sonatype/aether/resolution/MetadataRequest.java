@@ -180,7 +180,7 @@ public class MetadataRequest
     /**
      * Controls resolution of remote metadata when already corresponding metadata of the local repository exists. In
      * cases where the local repository's metadata is sufficient and going to be preferred, resolution of the remote
-     * metadata can be suppressed to avoid unneccessary network access.
+     * metadata can be suppressed to avoid unnecessary network access.
      * 
      * @param favorLocalRepository {@code true} to suppress resolution of remote metadata if the corresponding metadata
      *            of the local repository is up-to-date, {@code false} to resolve the remote metadata normally according

@@ -19,7 +19,7 @@ import java.util.Map;
 import org.sonatype.aether.artifact.Artifact;
 
 /**
- * An artifact whose identitiy is derived from another artifact.
+ * An artifact whose identity is derived from another artifact.
  * 
  * @author Benjamin Bentmann
  */

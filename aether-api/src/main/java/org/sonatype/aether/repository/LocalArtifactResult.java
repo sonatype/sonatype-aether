@@ -81,7 +81,7 @@ public class LocalArtifactResult
     }
 
     /**
-     * Indicates whether the requested artifact is available for use. As a mininum, the file needs to be physically
+     * Indicates whether the requested artifact is available for use. As a minimum, the file needs to be physically
      * existent in the local repository to be available. Additionally, a local repository manager can consider the list
      * of supplied remote repositories to determine whether the artifact is logically available and mark an artifact
      * unavailable if it is not known to be hosted by any of the provided repositories.

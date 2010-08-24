@@ -90,7 +90,7 @@ public class DependencyManagement
     /**
      * Gets the new exclusions to apply to the dependency. Note that this collection denotes the complete set of
      * exclusions for the dependency, i.e. the dependency manager controls whether any existing exclusions get merged
-     * with information from dependency management or overriden by it.
+     * with information from dependency management or overridden by it.
      * 
      * @return The new exclusions or {@code null} if the exclusions are not managed and the existing dependency
      *         exclusions should remain unchanged.
@@ -103,7 +103,7 @@ public class DependencyManagement
     /**
      * Sets the new exclusions to apply to the dependency. Note that this collection denotes the complete set of
      * exclusions for the dependency, i.e. the dependency manager controls whether any existing exclusions get merged
-     * with information from dependency management or overriden by it.
+     * with information from dependency management or overridden by it.
      * 
      * @param exclusions The new exclusions, may be {@code null} if the exclusions are not managed.
      * @return This management update for chaining, never {@code null}.
