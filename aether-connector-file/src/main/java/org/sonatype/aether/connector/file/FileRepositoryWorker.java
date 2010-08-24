@@ -248,13 +248,17 @@ class FileRepositoryWorker
 
             if ( transfer.isExistenceCheck() )
             {
-                if ( ! src.exists() ) {
+                if ( !src.exists() )
+                {
                     throw new FileNotFoundException( src.getAbsolutePath() );
                 }
             }
             else
             {
-                target.getParentFile().mkdirs();
+                if ( target.getParentFile() != null )
+                {
+                    target.getParentFile().mkdirs();
+                }
                 totalTransferred = copy( src, target );
 
                 Map<String, Object> crcs = ChecksumUtils.calc( src, checksumAlgos.keySet() );
@@ -336,10 +340,28 @@ class FileRepositoryWorker
             switch ( transfer.getType() )
             {
                 case ARTIFACT:
-                    transfer.setException( new ArtifactNotFoundException( transfer.getArtifact(), repository ) );
+                    ArtifactTransferException artEx;
+                    if ( Direction.DOWNLOAD.equals( direction ) )
+                    {
+                        artEx = new ArtifactNotFoundException( transfer.getArtifact(), repository );
+                    }
+                    else
+                    {
+                        artEx = new ArtifactTransferException( transfer.getArtifact(), repository, e );
+                    }
+                    transfer.setException( artEx );
                     break;
                 case METADATA:
-                    transfer.setException( new MetadataNotFoundException( transfer.getMetadata(), repository ) );
+                    MetadataTransferException mdEx;
+                    if ( Direction.DOWNLOAD.equals( direction ) )
+                    {
+                        mdEx = new MetadataNotFoundException( transfer.getMetadata(), repository );
+                    }
+                    else
+                    {
+                        mdEx = new MetadataTransferException( transfer.getMetadata(), repository, e );
+                    }
+                    transfer.setException( mdEx );
                     break;
             }
 
@@ -462,8 +484,10 @@ class FileRepositoryWorker
                 resourceName = new DefaultLayout().getPath( metadata );
                 break;
         }
-        event.setResource( new DefaultTransferResource( PathUtils.decode(repository.getUrl()), resourceName, transfer.getFile() ) );
+        event.setResource( new DefaultTransferResource( PathUtils.decode( repository.getUrl() ), resourceName,
+                                                        transfer.getFile() ) );
         event.setRequestType( direction.getType() );
+        event.setException( transfer.getException() );
         return event;
     }
 
