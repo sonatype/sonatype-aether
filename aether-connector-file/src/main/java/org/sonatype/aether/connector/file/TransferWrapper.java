@@ -30,15 +30,15 @@ import org.sonatype.aether.transfer.MetadataTransferException;
  * Wrapper object for {@link ArtifactTransfer} and {@link MetadataTransfer} objects.
  * 
  * @author Benjamin Hanzelmann
- *
  */
 class TransferWrapper
 {
-    
-    public enum Type {
+
+    public enum Type
+    {
         ARTIFACT, METADATA
     }
-    
+
     private Type type;
 
     public Type getType()
@@ -51,7 +51,7 @@ class TransferWrapper
     private ArtifactTransfer artifactTransfer;
 
     private Transfer transfer;
-    
+
     private String checksumPolicy = null;
 
     private boolean existenceCheck = false;
@@ -62,21 +62,23 @@ class TransferWrapper
         this.artifactTransfer = transfer;
         this.transfer = transfer;
         this.type = Type.ARTIFACT;
-        
-        if ( transfer instanceof ArtifactDownload ) {
+
+        if ( transfer instanceof ArtifactDownload )
+        {
             this.checksumPolicy = ( (ArtifactDownload) transfer ).getChecksumPolicy();
-            this.existenceCheck  = ( (ArtifactDownload) transfer ).isExistenceCheck();
-        } 
+            this.existenceCheck = ( (ArtifactDownload) transfer ).isExistenceCheck();
+        }
     }
-    
+
     public TransferWrapper( MetadataTransfer transfer )
     {
         super();
         this.metadataTransfer = transfer;
         this.transfer = transfer;
         this.type = Type.METADATA;
-        
-        if ( transfer instanceof MetadataDownload ) {
+
+        if ( transfer instanceof MetadataDownload )
+        {
             this.checksumPolicy = ( (MetadataDownload) transfer ).getChecksumPolicy();
         }
     }
@@ -88,12 +90,23 @@ class TransferWrapper
 
     public File getFile()
     {
+        File ret = null;
+
         if ( metadataTransfer != null )
-            return metadataTransfer.getFile();
+            ret = metadataTransfer.getFile();
         else if ( artifactTransfer != null )
-            return artifactTransfer.getFile();
-        else
-            throw new IllegalStateException( "TransferWrapper holds the wrong type" );
+            ret = artifactTransfer.getFile();
+
+        if ( ret == null )
+        {
+            if ( metadataTransfer != null )
+                ret = metadataTransfer.getMetadata().getFile();
+            else if ( artifactTransfer != null )
+                ret = artifactTransfer.getArtifact().getFile();
+        }
+
+        return ret;
+
     }
 
     public Artifact getArtifact()
@@ -144,6 +157,15 @@ class TransferWrapper
     public boolean isExistenceCheck()
     {
         return existenceCheck;
+    }
+
+    public String getRelativePath()
+    {
+        if ( artifactTransfer != null )
+            return new DefaultLayout().getPath( getArtifact() );
+        else if ( metadataTransfer != null )
+            return new DefaultLayout().getPath( getMetadata() );
+        else return null;
     }
 
 }
