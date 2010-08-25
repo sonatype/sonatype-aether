@@ -418,7 +418,7 @@ class FileRepositoryWorker
 
     private long copy( File src, File target ) throws TransferCancelledException, IOException
     {
-        return copyDef( src, target );
+        return copyNIO( src, target );
     }
 
     private long copyDef( File src, File target )
