@@ -1,0 +1,25 @@
+# graphs where effective scope is the intermediate scope (gid2:aid2)
+root:aid:jar:1
++- gid:aid:jar:2:test
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:compile
+---
+root:aid:jar:1
++- gid:aid:jar:2:provided
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:provided
+---
+root:aid:jar:1
++- gid:aid:jar:2:provided
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:compile
+---
+root:aid:jar:1
++- gid:aid:jar:2:test
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:provided
+---
+root:aid:jar:1
++- gid:aid:jar:2:provided
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:provided

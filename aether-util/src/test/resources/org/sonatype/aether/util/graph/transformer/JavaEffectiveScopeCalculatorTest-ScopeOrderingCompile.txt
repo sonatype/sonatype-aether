@@ -1,0 +1,4 @@
+root:aid:jar:1
++- gid:aid:jar:2:%s
+\- gid2:aid2:jar:3:compile
+   \- gid:aid:jar:3:%s

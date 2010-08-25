@@ -1,0 +1,54 @@
+root:aid:jar:1
++- gid:aid:jar:2:test
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:test
+---
+root:aid:jar:1
++- gid:aid:jar:2:test
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:runtime
+---
+root:aid:jar:1
++- gid:aid:jar:2:runtime
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:test
+---
+root:aid:jar:1
++- gid:aid:jar:2:runtime
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:runtime
+---
+root:aid:jar:1
++- gid:aid:jar:2:runtime
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:provided
+---
+root:aid:jar:1
++- gid:aid:jar:2:runtime
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:compile
+---
+root:aid:jar:1
++- gid:aid:jar:2:provided
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:runtime
+---
+root:aid:jar:1
++- gid:aid:jar:2:compile
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:test
+---
+root:aid:jar:1
++- gid:aid:jar:2:compile
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:runtime
+---
+root:aid:jar:1
++- gid:aid:jar:2:compile
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:provided
+---
+root:aid:jar:1
++- gid:aid:jar:2:compile
++- gid2:aid2:jar:3:runtime
+   +- gid:aid:jar:3:compile
