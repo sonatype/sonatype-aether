@@ -50,6 +50,8 @@ abstract class ParallelRepositoryConnector
 
     private long shutdownTimeout;
 
+    private boolean closed = false;
+
     /**
      * The executor to use.
      * 
@@ -97,24 +99,15 @@ abstract class ParallelRepositoryConnector
 
     public void close()
     {
-        executor.shutdown();
-        try
-        {
-            boolean terminated = executor.awaitTermination( shutdownTimeout, TimeUnit.SECONDS );
+        this.closed = true;
+    }
 
-            if ( terminated )
-            {
-                executor.shutdownNow();
-            }
+    protected void checkClosed()
+    {
+        if ( closed ) {
+            throw new IllegalStateException( "Connector is closed" );
         }
-        catch ( InterruptedException e )
-        {
-            executor.shutdownNow();
-        }
-        finally
-        {
-            executor = null;
-        }
+        
     }
 
     protected static class RepositoryConnectorThreadFactory
@@ -138,8 +131,7 @@ abstract class ParallelRepositoryConnector
         public Thread newThread( Runnable r )
         {
             Thread t = new Thread( myTG, r, tName + "-" + counter.getAndIncrement() );
-            // TODO: are daemon threads the cause for failing IT0461?
-//            t.setDaemon( true );
+            t.setDaemon( true );
             return t;
         }
 

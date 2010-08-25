@@ -56,6 +56,8 @@ public class FileRepositoryConnector
     public void get( Collection<? extends ArtifactDownload> artifactDownloads,
                      Collection<? extends MetadataDownload> metadataDownloads )
     {
+        checkClosed();
+        
         artifactDownloads = notNull( artifactDownloads );
         metadataDownloads = notNull( metadataDownloads );
 
@@ -81,8 +83,9 @@ public class FileRepositoryConnector
         }
         catch ( InterruptedException e )
         {
-            executor.shutdownNow();
-            initExecutor( true );
+            // TODO: implement cancellation scheme
+//            executor.shutdownNow();
+//            initExecutor( true );
         }
     }
 
@@ -94,6 +97,8 @@ public class FileRepositoryConnector
     public void put( Collection<? extends ArtifactUpload> artifactUploads,
                      Collection<? extends MetadataUpload> metadataUploads )
     {
+        checkClosed();
+        
         artifactUploads = notNull( artifactUploads );
         metadataUploads = notNull( metadataUploads );
 
@@ -118,8 +123,9 @@ public class FileRepositoryConnector
         }
         catch ( InterruptedException e )
         {
-            executor.shutdownNow();
-            initExecutor( true );
+            // TODO: implement cancellation scheme
+//            executor.shutdownNow();
+//            initExecutor( true );
         }
 
     }
