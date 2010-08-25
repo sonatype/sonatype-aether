@@ -414,7 +414,57 @@ class FileRepositoryWorker
 
     }
 
-    private long copy( File src, File target )
+    private long copy( File src, File target ) throws TransferCancelledException, IOException
+    {
+        return copyDef( src, target );
+    }
+
+    private long copyDef( File src, File target )
+        throws IOException, TransferCancelledException
+    {
+        FileInputStream in = null;
+        FileOutputStream out = null;
+        int totalBytes = 0;
+
+        try
+        {
+            in = new FileInputStream( src );
+            out = new FileOutputStream( target );
+            
+            int count = -1;
+            byte[] buf = new byte[32000];
+            while ( ( count = in.read( buf )) != -1)
+            {
+                out.write( buf, 0, count );
+                totalBytes += count;
+                
+                DefaultTransferEvent event = newEvent( transfer, repository );
+                event.setDataBuffer( buf );
+                event.setDataLength( count );
+                event.setDataOffset( 0 );
+                event.setTransferredBytes( totalBytes );
+                catapult.fireProgressed( event );
+            }
+            out.flush();
+            
+        }
+        finally
+        {
+            if ( in != null )
+            {
+                in.close();
+            }
+            if ( out != null )
+            {
+                out.close();
+            }
+        }
+        
+        return totalBytes;
+
+    }
+
+    private long copyNIO( File src, File target )
         throws FileNotFoundException, IOException, TransferCancelledException
     {
         FileChannel in = null;
