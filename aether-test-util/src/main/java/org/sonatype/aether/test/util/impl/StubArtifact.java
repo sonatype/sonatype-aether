@@ -201,4 +201,10 @@ public class StubArtifact
         return ( obj != null ) ? obj.hashCode() : 0;
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format("%s:%s:%s:%s", getGroupId(), getArtifactId(), getExtension(), getVersion());
+    }
+
 }
