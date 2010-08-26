@@ -122,8 +122,13 @@ See the Apache License Version 2.0 for the specific language governing permissio
           </configuration>
         </plugin>
         <plugin>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>1.1</version>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.5</version>
           <configuration>
             <links>
               <link>http://java.sun.com/javase/6/docs/api/</link>
