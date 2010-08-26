@@ -189,6 +189,12 @@ public class DefaultDeployer
                 artifactUploads.add( new ArtifactUploadEx( artifact, artifact.getFile(), catapult ) );
             }
 
+            /*
+             * NOTE: As a workaround for NXCM-2204, we flush the artifact uploads now instead of delaying them until we
+             * have all the metadata gathered.
+             */
+            connector.put( artifactUploads, null );
+
             for ( MetadataGenerator generator : generators )
             {
                 for ( Metadata metadata : generator.finish( artifacts ) )
@@ -207,7 +213,7 @@ public class DefaultDeployer
                 }
             }
 
-            connector.put( artifactUploads, metadataUploads );
+            connector.put( null, metadataUploads );
 
             for ( ArtifactUpload upload : artifactUploads )
             {

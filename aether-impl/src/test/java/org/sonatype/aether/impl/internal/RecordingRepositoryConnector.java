@@ -96,25 +96,31 @@ class RecordingRepositoryConnector
     public void put( Collection<? extends ArtifactUpload> artifactUploads,
                      Collection<? extends MetadataUpload> metadataUploads )
     {
-        for ( ArtifactUpload artifactUpload : artifactUploads )
+        if ( artifactUploads != null )
         {
-            // mimic "real" connector
-            if ( artifactUpload.getArtifact().getFile() == null )
+            for ( ArtifactUpload artifactUpload : artifactUploads )
             {
-                artifactUpload.setException( new ArtifactTransferException( artifactUpload.getArtifact(), null,
-                                                                            "no file" ) );
+                // mimic "real" connector
+                if ( artifactUpload.getArtifact().getFile() == null )
+                {
+                    artifactUpload.setException( new ArtifactTransferException( artifactUpload.getArtifact(), null,
+                                                                                "no file" ) );
+                }
+                this.actualPut.add( artifactUpload.getArtifact() );
             }
-            this.actualPut.add( artifactUpload.getArtifact() );
         }
-        for ( MetadataUpload metadataUpload : metadataUploads )
+        if ( metadataUploads != null )
         {
-            // mimic "real" connector
-            if ( metadataUpload.getMetadata().getFile() == null )
+            for ( MetadataUpload metadataUpload : metadataUploads )
             {
-                metadataUpload.setException( new MetadataTransferException( metadataUpload.getMetadata(), null,
-                                                                            "no file" ) );
+                // mimic "real" connector
+                if ( metadataUpload.getMetadata().getFile() == null )
+                {
+                    metadataUpload.setException( new MetadataTransferException( metadataUpload.getMetadata(), null,
+                                                                                "no file" ) );
+                }
+                this.actualPutMD.add( metadataUpload.getMetadata() );
             }
-            this.actualPutMD.add( metadataUpload.getMetadata() );
         }
 
     }
