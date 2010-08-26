@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.sonatype.aether.graph.DependencyNode;
-import org.sonatype.aether.util.NodeBuilder;
+import org.sonatype.aether.test.util.NodeBuilder;
 import org.sonatype.aether.util.version.GenericVersionScheme;
 import org.sonatype.aether.version.VersionScheme;
 

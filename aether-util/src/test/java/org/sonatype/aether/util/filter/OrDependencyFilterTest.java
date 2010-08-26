@@ -24,7 +24,7 @@ import java.util.List;
 import org.junit.Test;
 import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.graph.DependencyNode;
-import org.sonatype.aether.util.NodeBuilder;
+import org.sonatype.aether.test.util.NodeBuilder;
 
 public class OrDependencyFilterTest
     extends AbstractDependencyFilterTest

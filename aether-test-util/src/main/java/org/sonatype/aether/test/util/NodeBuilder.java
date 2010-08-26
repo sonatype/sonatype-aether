@@ -1,4 +1,4 @@
-package org.sonatype.aether.util;
+package org.sonatype.aether.test.util;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -19,9 +19,9 @@ import java.util.List;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyNode;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
-import org.sonatype.aether.util.graph.DefaultDependencyNode;
-import org.sonatype.aether.util.version.GenericVersionScheme;
+import org.sonatype.aether.test.util.impl.TestArtifact;
+import org.sonatype.aether.test.util.impl.TestDependencyNode;
+import org.sonatype.aether.test.util.impl.TestVersionScheme;
 import org.sonatype.aether.version.InvalidVersionSpecificationException;
 import org.sonatype.aether.version.VersionScheme;
 
@@ -51,7 +51,7 @@ public class NodeBuilder
 
     private List<Artifact> relocations = new ArrayList<Artifact>();
 
-    private VersionScheme versionScheme = new GenericVersionScheme();
+    private VersionScheme versionScheme = new TestVersionScheme();
 
     public NodeBuilder artifactId( String artifactId )
     {
@@ -99,14 +99,14 @@ public class NodeBuilder
 
     public NodeBuilder reloc( String artifactId )
     {
-        Artifact relocation = new DefaultArtifact( groupId, artifactId, classifier, ext, version );
+        Artifact relocation = new TestArtifact( groupId, artifactId, classifier, ext, version );
         relocations.add( relocation );
         return this;
     }
 
     public NodeBuilder reloc( String groupId, String artifactId, String version )
     {
-        Artifact relocation = new DefaultArtifact( groupId, artifactId, classifier, ext, version );
+        Artifact relocation = new TestArtifact( groupId, artifactId, classifier, ext, version );
         relocations.add( relocation );
         return this;
     }
@@ -114,10 +114,10 @@ public class NodeBuilder
     public DependencyNode build()
     {
         Dependency dependency = null;
-        DefaultDependencyNode node = new DefaultDependencyNode();
+        TestDependencyNode node = new TestDependencyNode();
         if ( artifactId != null && artifactId.length() > 0 )
         {
-            Artifact artifact = new DefaultArtifact( groupId, artifactId, classifier, ext, version );
+            Artifact artifact = new TestArtifact( groupId, artifactId, classifier, ext, version );
             dependency = new Dependency( artifact, scope, optional );
             node.setDependency( dependency );
             try
