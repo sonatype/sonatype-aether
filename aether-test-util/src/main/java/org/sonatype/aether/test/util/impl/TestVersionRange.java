@@ -86,7 +86,7 @@ final class TestVersionRange
                     + ", single version must be surrounded by []" );
             }
 
-            lowerBound = upperBound = new TestVersion( process.trim() );
+            lowerBound = upperBound = new StubVersion( process.trim() );
         }
         else
         {
@@ -100,8 +100,8 @@ final class TestVersionRange
                     + ", bounds may not contain additional ','" );
             }
 
-            lowerBound =  parsedLowerBound.length() > 0 ? new TestVersion( parsedLowerBound ) : null;
-            upperBound = parsedUpperBound.length() > 0 ? new TestVersion( parsedUpperBound ) : null;
+            lowerBound =  parsedLowerBound.length() > 0 ? new StubVersion( parsedLowerBound ) : null;
+            upperBound = parsedUpperBound.length() > 0 ? new StubVersion( parsedUpperBound ) : null;
 
             if ( upperBound != null && lowerBound != null )
             {

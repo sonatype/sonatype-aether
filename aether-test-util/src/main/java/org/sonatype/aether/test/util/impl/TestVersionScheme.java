@@ -32,7 +32,7 @@ public class TestVersionScheme
     public Version parseVersion( final String version )
         throws InvalidVersionSpecificationException
     {
-        return new TestVersion( version );
+        return new StubVersion( version );
     }
 
     public VersionRange parseVersionRange( final String range )
