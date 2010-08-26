@@ -249,7 +249,9 @@ public class DependencyGraphParser
 
         NodeBuilder builder = new NodeBuilder();
 
-        builder.artifactId( def.getArtifactId() ).groupId( def.getGroupId() ).ext( def.getExtension() ).version( def.getVersion() ).scope( def.getScope() );
+        builder.artifactId( def.getArtifactId() ).groupId( def.getGroupId() );
+        builder.ext( def.getExtension() ).version( def.getVersion() ).scope( def.getScope() );
+        builder.properties( ctx.getProperties() );
         DependencyNode node = builder.build();
 
         if ( parent != null )
@@ -404,7 +406,7 @@ public class DependencyGraphParser
     {
         Definition definition;
 
-        Map<String, String> properties;
+        private Map<String, String> properties;
 
         int level;
 

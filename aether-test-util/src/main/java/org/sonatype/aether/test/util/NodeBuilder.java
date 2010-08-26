@@ -14,7 +14,10 @@ package org.sonatype.aether.test.util;
  */
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.graph.Dependency;
@@ -52,6 +55,8 @@ public class NodeBuilder
     private List<Artifact> relocations = new ArrayList<Artifact>();
 
     private VersionScheme versionScheme = new TestVersionScheme();
+
+    private Map<String, String> properties = new HashMap<String, String>(0);
 
     public NodeBuilder artifactId( String artifactId )
     {
@@ -110,6 +115,12 @@ public class NodeBuilder
         relocations.add( relocation );
         return this;
     }
+    
+    public NodeBuilder properties( Map<String, String> properties )
+    {
+        this.properties = properties != null ? properties : Collections.<String, String>emptyMap();
+        return this;
+    }
 
     public DependencyNode build()
     {
@@ -117,7 +128,7 @@ public class NodeBuilder
         TestDependencyNode node = new TestDependencyNode();
         if ( artifactId != null && artifactId.length() > 0 )
         {
-            Artifact artifact = new StubArtifact( groupId, artifactId, classifier, ext, version );
+            Artifact artifact = new StubArtifact( groupId, artifactId, classifier, ext, version, properties );
             dependency = new Dependency( artifact, scope, optional );
             node.setDependency( dependency );
             try
