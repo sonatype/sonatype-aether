@@ -19,7 +19,7 @@ import java.util.List;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyNode;
-import org.sonatype.aether.test.util.impl.TestArtifact;
+import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.test.util.impl.TestDependencyNode;
 import org.sonatype.aether.test.util.impl.TestVersionScheme;
 import org.sonatype.aether.version.InvalidVersionSpecificationException;
@@ -99,14 +99,14 @@ public class NodeBuilder
 
     public NodeBuilder reloc( String artifactId )
     {
-        Artifact relocation = new TestArtifact( groupId, artifactId, classifier, ext, version );
+        Artifact relocation = new StubArtifact( groupId, artifactId, classifier, ext, version );
         relocations.add( relocation );
         return this;
     }
 
     public NodeBuilder reloc( String groupId, String artifactId, String version )
     {
-        Artifact relocation = new TestArtifact( groupId, artifactId, classifier, ext, version );
+        Artifact relocation = new StubArtifact( groupId, artifactId, classifier, ext, version );
         relocations.add( relocation );
         return this;
     }
@@ -117,7 +117,7 @@ public class NodeBuilder
         TestDependencyNode node = new TestDependencyNode();
         if ( artifactId != null && artifactId.length() > 0 )
         {
-            Artifact artifact = new TestArtifact( groupId, artifactId, classifier, ext, version );
+            Artifact artifact = new StubArtifact( groupId, artifactId, classifier, ext, version );
             dependency = new Dependency( artifact, scope, optional );
             node.setDependency( dependency );
             try

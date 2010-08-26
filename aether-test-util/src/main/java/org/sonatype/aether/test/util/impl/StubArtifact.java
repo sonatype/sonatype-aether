@@ -1,4 +1,4 @@
-package org.sonatype.aether.test.util.connector;
+package org.sonatype.aether.test.util.impl;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -24,7 +24,7 @@ import org.sonatype.aether.artifact.Artifact;
 /**
  * @author Benjamin Bentmann
  */
-class StubArtifact
+public class StubArtifact
     implements Artifact
 {
 

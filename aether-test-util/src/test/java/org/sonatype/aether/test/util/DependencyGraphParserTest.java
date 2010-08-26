@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -131,6 +132,7 @@ public class DependencyGraphParserTest
     }
     private void assertNodeProperties( DependencyNode node, String suffix )
     {
+        assertNotNull(node);
         Dependency dependency = node.getDependency();
         assertNotNull( dependency );
         if ( !"".equals( dependency.getScope() ) )
@@ -155,7 +157,6 @@ public class DependencyGraphParserTest
         
         DependencyNode node = parser.parseLiteral(def);
         
-        assertNotNull(node);
         assertNodeProperties( node, "" );
     }
     
@@ -165,7 +166,6 @@ public class DependencyGraphParserTest
     {
         String def = "(id)gid:aid:ext:ver\n\\- ^id";
         DependencyNode node = parser.parseLiteral(def);
-        assertNotNull(node);
         assertNodeProperties( node, "" );
         
         assertNotNull( node.getChildren() );
@@ -182,7 +182,6 @@ public class DependencyGraphParserTest
         String name = "testResourceLoading.def";
         
         DependencyNode node = parser.parse( prefix + name );
-        assertNotNull(node);
         assertEquals( 0, node.getChildren().size() );
         assertNodeProperties( node, "" );
     }
@@ -197,8 +196,25 @@ public class DependencyGraphParserTest
         String name = "testResourceLoading.def";
         
         DependencyNode node = parser.parse( name );
-        assertNotNull(node);
         assertEquals( 0, node.getChildren().size() );
         assertNodeProperties( node, "" );
+    }
+    
+    @Test
+    public void testProperties() throws IOException
+    {
+        String def = "gid:aid:ext:ver;test=foo;test2=fizzle";
+        DependencyNode node = parser.parseLiteral( def );
+        
+        assertNodeProperties( node, "" );
+        
+        Map<String, String> properties = node.getDependency().getArtifact().getProperties();
+        assertNotNull( properties );
+        assertEquals( 2, properties.size() );
+        
+        assertTrue(properties.containsKey( "test" ));
+        assertEquals( "foo", properties.get("test") );
+        assertTrue(properties.containsKey( "test2" ));
+        assertEquals( "fizzle", properties.get("test2") );
     }
 }

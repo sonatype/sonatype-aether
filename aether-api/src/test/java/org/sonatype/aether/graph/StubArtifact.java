@@ -42,7 +42,7 @@ class StubArtifact
 
     private final Map<String, String> properties;
 
-    public StubArtifact( String coords )
+    public StubArtifact( String coords, Map<String, String> properties )
     {
         Pattern p = Pattern.compile( "([^: ]+):([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?" );
         Matcher m = p.matcher( coords );
@@ -57,7 +57,12 @@ class StubArtifact
         extension = get( m.group( 5 ), "jar" );
         classifier = get( m.group( 7 ), "" );
         file = null;
-        properties = Collections.emptyMap();
+        this.properties = properties;
+    }
+    
+    public StubArtifact( String coords )
+    {
+        this(coords, Collections.<String, String>emptyMap());
     }
 
     private static String get( String value, String defaultValue )

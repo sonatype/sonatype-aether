@@ -185,7 +185,7 @@ public class DependencyGraphParser
                         root = node;
                         isRootNode = false;
                     }
-
+                    
                     if ( ctx.getDefinition().hasId() )
                     {
                         this.nodes.put( ctx.getDefinition().getId(), node );

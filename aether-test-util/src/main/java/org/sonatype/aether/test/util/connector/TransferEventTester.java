@@ -38,6 +38,7 @@ import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.test.impl.RecordingTransferListener;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferListener;
