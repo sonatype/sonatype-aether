@@ -368,7 +368,7 @@ public class DefaultDependencyCollector
                     Dependency originalDependency = dependency.setArtifact( originalArtifact );
                     Dependency d = originalDependency;
 
-                    List<RemoteRepository> repos = null;
+                    List<RemoteRepository> repos;
                     ArtifactRepository repo = rangeResult.getRepository( version );
                     if ( repo instanceof RemoteRepository )
                     {
@@ -377,6 +377,10 @@ public class DefaultDependencyCollector
                     else if ( repo == null )
                     {
                         repos = repositories;
+                    }
+                    else
+                    {
+                        repos = Collections.emptyList();
                     }
 
                     ArtifactDescriptorResult descriptorResult;
