@@ -14,21 +14,16 @@ package org.sonatype.aether.test.util;
  */
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
 import org.sonatype.aether.graph.DependencyNode;
-import org.sonatype.aether.test.util.DependencyGraphParser.LineContext;
 
 /**
  * Creates a dependency tree from a text description. <h2>Definition</h2> The description format is based on 'mvn
@@ -213,10 +208,6 @@ public class DependencyGraphParser
 
     }
 
-    /**
-     * @param reference
-     * @return
-     */
     private DependencyNode reference( String reference )
     {
         if ( !nodes.containsKey( reference ) )
@@ -227,19 +218,11 @@ public class DependencyGraphParser
         return this.nodes.get( reference );
     }
 
-    /**
-     * @param line
-     * @return
-     */
     private static boolean isEmpty( String line )
     {
         return line == null || line.length() == 0;
     }
 
-    /**
-     * @param line
-     * @return
-     */
     private static String cutComment( String line )
     {
         int idx = line.indexOf( '#' );
@@ -252,17 +235,6 @@ public class DependencyGraphParser
         return line;
     }
 
-    private DependencyNode build( DependencyNode parent, LineContext ctx )
-    {
-        return build( parent, ctx, false );
-    }
-
-    /**
-     * @param object
-     * @param ctx
-     * @return
-     * @throws TreeParseException
-     */
     private DependencyNode build( DependencyNode parent, LineContext ctx, boolean isRoot )
     {
         Definition def = ctx.getDefinition();
