@@ -16,6 +16,7 @@ package org.sonatype.aether.test.util;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import org.junit.Before;
@@ -43,7 +44,7 @@ public class DependencyGraphParserTest
     {
         String def = "gid:aid:jar:1:scope";
 
-        DependencyNode node = parser.parse( def );
+        DependencyNode node = parser.parseLiteral( def );
 
         assertNotNull( node );
         assertEquals( 0, node.getChildren().size() );
@@ -67,7 +68,7 @@ public class DependencyGraphParserTest
     {
         String def = "gid:aid:jar:1";
 
-        DependencyNode node = parser.parse( def );
+        DependencyNode node = parser.parseLiteral( def );
 
         assertNotNull( node );
         assertEquals( 0, node.getChildren().size() );
@@ -86,7 +87,7 @@ public class DependencyGraphParserTest
                      "+- gid2:aid2:ext2:ver2:scope2\n" +
                     "\\- gid3:aid3:ext3:ver3:scope3\n";
 
-        DependencyNode node = parser.parse( def );
+        DependencyNode node = parser.parseLiteral( def );
         assertNotNull( node );
 
         int idx = 1;
@@ -112,7 +113,7 @@ public class DependencyGraphParserTest
                      "|  \\- gid3:aid3:ext3:ver3\n" +
                      "\\- gid4:aid4:ext4:ver4:scope4";
         
-        DependencyNode node = parser.parse( def );
+        DependencyNode node = parser.parseLiteral( def );
         assertNodeProperties( node, 1 );
         
         assertEquals( 2, node.getChildren().size() );
@@ -152,7 +153,7 @@ public class DependencyGraphParserTest
     {
         String def = "# first line\n#second line\ngid:aid:ext:ver # root artifact asdf:qwer:zcxv:uip";
         
-        DependencyNode node = parser.parse(def);
+        DependencyNode node = parser.parseLiteral(def);
         
         assertNotNull(node);
         assertNodeProperties( node, "" );
@@ -163,7 +164,7 @@ public class DependencyGraphParserTest
         throws IOException
     {
         String def = "(id)gid:aid:ext:ver\n\\- ^id";
-        DependencyNode node = parser.parse(def);
+        DependencyNode node = parser.parseLiteral(def);
         assertNotNull(node);
         assertNodeProperties( node, "" );
         
@@ -171,5 +172,33 @@ public class DependencyGraphParserTest
         assertEquals( 1, node.getChildren().size() );
         
         assertSame( node, node.getChildren().get( 0 ) );
+    }
+    
+    @Test
+    public void testResourceLoading() 
+        throws UnsupportedEncodingException, IOException
+    {
+        String prefix = "org/sonatype/aether/test/util/";
+        String name = "testResourceLoading.def";
+        
+        DependencyNode node = parser.parse( prefix + name );
+        assertNotNull(node);
+        assertEquals( 0, node.getChildren().size() );
+        assertNodeProperties( node, "" );
+    }
+    
+    @Test
+    public void testResourceLoadingWithPrefix() 
+        throws UnsupportedEncodingException, IOException
+    {
+        String prefix = "org/sonatype/aether/test/util/";
+        parser = new DependencyGraphParser( prefix );
+        
+        String name = "testResourceLoading.def";
+        
+        DependencyNode node = parser.parse( name );
+        assertNotNull(node);
+        assertEquals( 0, node.getChildren().size() );
+        assertNodeProperties( node, "" );
     }
 }

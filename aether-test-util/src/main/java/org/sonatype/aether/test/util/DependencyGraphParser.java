@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -79,28 +80,56 @@ import org.sonatype.aether.test.util.DependencyGraphParser.LineContext;
 public class DependencyGraphParser
 {
     private Map<String, DependencyNode> nodes = new HashMap<String, DependencyNode>();
+    private String prefix = "";
 
-    public DependencyNode parse( String dependencyTree )
+    /**
+     * Parse the given graph definition.
+     */
+    public DependencyNode parseLiteral( String dependencyGraph )
         throws IOException
     {
 
-        StringReader reader = new StringReader( dependencyTree );
+        StringReader reader = new StringReader( dependencyGraph );
 
         return parse( reader );
     }
-
-    public DependencyNode parse( File definition )
-        throws IOException
+    
+    /**
+     * Create a parser with the given prefix.
+     * 
+     * @see DependencyGraphParser#parse(String)
+     */
+    public DependencyGraphParser(String prefix)
     {
-        Reader reader = new InputStreamReader( new FileInputStream( definition ), "UTF-8" );
-        try
-        {
-            return parse( reader );
-        }
-        finally
-        {
-            reader.close();
-        }
+        this();
+        this.prefix = prefix;
+    }
+
+    /**
+     * Create a parser with an empty prefix.
+     */
+    public DependencyGraphParser()
+    {
+        super();
+    }
+
+    /**
+     * Parse the graph definition read from the given resource.
+     * 
+     * If a prefix is set, this method will load the resource from 'prefix + resource'.
+     */
+    public DependencyNode parse( String resource ) throws IOException
+    {
+        URL res = this.getClass().getClassLoader().getResource( prefix + resource );
+        return parse(res);
+    }
+    
+    /**
+     * Parse the graph definition read from the given URL.
+     */
+    public DependencyNode parse( URL resource ) throws IOException
+    {
+        return parse(new InputStreamReader( resource.openStream(), "UTF-8" ));
     }
 
     private DependencyNode parse( Reader reader )
@@ -108,71 +137,79 @@ public class DependencyGraphParser
     {
         BufferedReader in = new BufferedReader( reader );
 
-        String line = null;
-
-        DependencyNode root = null;
-        DependencyNode node = null;
-        int prevLevel = 0;
-
-        LinkedList<DependencyNode> stack = new LinkedList<DependencyNode>();
-        boolean isRootNode = true;
-
-        while ( ( line = in.readLine() ) != null )
+        try
         {
-            line = cutComment( line );
+            String line = null;
 
-            if ( isEmpty( line ) )
+            DependencyNode root = null;
+            DependencyNode node = null;
+            int prevLevel = 0;
+
+            LinkedList<DependencyNode> stack = new LinkedList<DependencyNode>();
+            boolean isRootNode = true;
+
+            while ( ( line = in.readLine() ) != null )
             {
-                // skip empty line
-                continue;
-            }
+                line = cutComment( line );
 
-            LineContext ctx = createContext( line );
-            if ( prevLevel < ctx.getLevel() )
-            {
-                // previous node is new parent
-                stack.add( node );
-            }
-
-            // get to real parent
-            while ( prevLevel > ctx.getLevel() )
-            {
-                stack.removeLast();
-                prevLevel -= 1;
-            }
-
-            prevLevel = ctx.getLevel();
-
-            if ( ctx.getDefinition().isReference() )
-            {
-                DependencyNode child = reference( ctx.getDefinition().getReference() );
-                node.getChildren().add( child );
-                node = child;
-            }
-            else
-            {
-
-                node = build( isRootNode ? null : stack.getLast(), ctx, isRootNode );
-
-                if ( isRootNode )
+                if ( isEmpty( line ) )
                 {
-                    root = node;
-                    isRootNode = false;
+                    // skip empty line
+                    continue;
                 }
 
-                if ( ctx.getDefinition().hasId() )
+                LineContext ctx = createContext( line );
+                if ( prevLevel < ctx.getLevel() )
                 {
-                    this.nodes.put( ctx.getDefinition().getId(), node );
+                    // previous node is new parent
+                    stack.add( node );
+                }
+
+                // get to real parent
+                while ( prevLevel > ctx.getLevel() )
+                {
+                    stack.removeLast();
+                    prevLevel -= 1;
+                }
+
+                prevLevel = ctx.getLevel();
+
+                if ( ctx.getDefinition().isReference() )
+                {
+                    DependencyNode child = reference( ctx.getDefinition().getReference() );
+                    node.getChildren().add( child );
+                    node = child;
+                }
+                else
+                {
+
+                    node = build( isRootNode ? null : stack.getLast(), ctx, isRootNode );
+
+                    if ( isRootNode )
+                    {
+                        root = node;
+                        isRootNode = false;
+                    }
+
+                    if ( ctx.getDefinition().hasId() )
+                    {
+                        this.nodes.put( ctx.getDefinition().getId(), node );
+                    }
                 }
             }
-        }
 
-        this.nodes.clear();
-        if ( root == null )
-        {
-            throw new IllegalArgumentException( "No root definition found" );
+            this.nodes.clear();
+            if ( root == null )
+            {
+                throw new IllegalArgumentException( "No root definition found" );
+            }
+            
+            return root;
         }
-        return root;
+        finally
+        {
+            in.close();
+        }
 
     }
 
