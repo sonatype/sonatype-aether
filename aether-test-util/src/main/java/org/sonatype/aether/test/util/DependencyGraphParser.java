@@ -15,46 +15,73 @@ package org.sonatype.aether.test.util;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
 import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.test.util.DependencyGraphParser.LineContext;
 
 /**
- * Creates a dependency tree from a text description. The description format is based on 'mvn dependency:tree'. Line
- * format:
+ * Creates a dependency tree from a text description. <h2>Definition</h2> The description format is based on 'mvn
+ * dependency:tree'. Line format:
  * 
  * <pre>
- * [level]gid:aid:ext:ver[:scope][;key=value;key=value;...]
+ * [level](id|[(id)]gid:aid:ext:ver[:scope])[;key=value;key=value;...]
  * </pre>
  * 
- * If <code>level</code> is empty, the line defines the root node. Only one root node may be defined. A level definition
- * has to follow this format:
+ * <h2>Levels</h2> If <code>level</code> is empty, the line defines the root node. Only one root node may be defined.
+ * The level is calculated by the distance from the beginning of the line. One level is three characters. A level
+ * definition has to follow this format:
  * 
  * <pre>
  * '[| ]*[+\\]- '
  * </pre>
  * 
- * The level is then calculated by the distance from the beginning of the line. One level is three characters. Example:
+ * <h2>ID</h2> An ID may be used to reference a previously built node. An ID is of the form:
+ * 
+ * <pre>
+ * '[0-9a-zA-Z]+'
+ * </pre>
+ * 
+ * To define a node with an ID, prefix the definition with an id in parens:
+ * 
+ * <pre>
+ * (id)gid:aid:ext:ver
+ * </pre>
+ * 
+ * To insert a previously defined node into the graph, use a caret followed by the ID:
+ * 
+ * <pre>
+ * ^id
+ * </pre>
+ * 
+ * <h2>Comments</h2> A hash starts a comment. A comment ends with the end of the line. Empty lines are ignored. <h2>
+ * Example</h2>
  * 
  * <pre>
  * gid:aid:ext:ver
  * +- gid:aid2:ext:ver:scope
- * |  \- gid:aid3:ext:ver
- * \- gid:aid4:ext:ver:scope
+ * |  \- (id1)gid:aid3:ext:ver
+ * +- gid:aid4:ext:ver:scope
+ * \- ^id1
  * </pre>
  * 
  * @author Benjamin Hanzelmann
  */
 public class DependencyGraphParser
 {
-    public static DependencyNode parse( String dependencyTree )
-        throws TreeParseException
+    private Map<String, DependencyNode> nodes = new HashMap<String, DependencyNode>();
+
+    public DependencyNode parse( String dependencyTree )
+        throws IOException
     {
 
         StringReader reader = new StringReader( dependencyTree );
@@ -62,65 +89,135 @@ public class DependencyGraphParser
         return parse( reader );
     }
 
-    public static DependencyNode parse( File definition )
-        throws TreeParseException
+    public DependencyNode parse( File definition )
+        throws IOException
     {
-
+        Reader reader = new InputStreamReader( new FileInputStream( definition ), "UTF-8" );
         try
         {
-            Reader reader = new FileReader( definition );
             return parse( reader );
         }
-        catch ( IOException e )
+        finally
         {
-            throw new TreeParseException( "could not read definition: " + e.getMessage(), e );
+            reader.close();
         }
+    }
+
+    private DependencyNode parse( Reader reader )
+        throws IOException
+    {
+        BufferedReader in = new BufferedReader( reader );
+
+        String line = null;
+
+        DependencyNode root = null;
+        DependencyNode node = null;
+        int prevLevel = 0;
+
+        LinkedList<DependencyNode> stack = new LinkedList<DependencyNode>();
+        boolean isRootNode = true;
+
+        while ( ( line = in.readLine() ) != null )
+        {
+            line = cutComment( line );
+
+            if ( isEmpty( line ) )
+            {
+                // skip empty line
+                continue;
+            }
+
+            LineContext ctx = createContext( line );
+            if ( prevLevel < ctx.getLevel() )
+            {
+                // previous node is new parent
+                stack.add( node );
+            }
+
+            // get to real parent
+            while ( prevLevel > ctx.getLevel() )
+            {
+                stack.removeLast();
+                prevLevel -= 1;
+            }
+
+            prevLevel = ctx.getLevel();
+
+            if ( ctx.getDefinition().isReference() )
+            {
+                DependencyNode child = reference( ctx.getDefinition().getReference() );
+                node.getChildren().add( child );
+                node = child;
+            }
+            else
+            {
+
+                node = build( isRootNode ? null : stack.getLast(), ctx, isRootNode );
+
+                if ( isRootNode )
+                {
+                    root = node;
+                    isRootNode = false;
+                }
+
+                if ( ctx.getDefinition().hasId() )
+                {
+                    this.nodes.put( ctx.getDefinition().getId(), node );
+                }
+            }
+        }
+
+        this.nodes.clear();
+        if ( root == null )
+        {
+            throw new IllegalArgumentException( "No root definition found" );
+        }
+        return root;
 
     }
 
-    public static DependencyNode parse( Reader reader )
-        throws TreeParseException
+    /**
+     * @param reference
+     * @return
+     */
+    private DependencyNode reference( String reference )
     {
-        try
+        if ( !nodes.containsKey( reference ) )
         {
-            BufferedReader in = new BufferedReader( reader );
-
-            String line = in.readLine();
-            LineContext ctx = createContext( line );
-            DependencyNode root = build( null, ctx );
-
-            DependencyNode node = root;
-            int prevLevel = 0;
-
-            LinkedList<DependencyNode> stack = new LinkedList<DependencyNode>();
-            // stack.add( root );
-
-            while ( ( line = in.readLine() ) != null )
-            {
-                ctx = createContext( line );
-                if ( prevLevel < ctx.getLevel() )
-                {
-                    // previous node is new parent
-                    stack.add( node );
-                }
-
-                // get to real parent
-                while ( prevLevel > ctx.getLevel() )
-                {
-                    stack.removeLast();
-                    prevLevel -= 1;
-                }
-
-                prevLevel = ctx.getLevel();
-                node = build( stack.getLast(), ctx );
-            }
-            return root;
-        }
-        catch ( IOException e )
-        {
-            throw new TreeParseException( "Could not read definition: " + e.getMessage(), e );
+            throw new IllegalArgumentException( "undefined reference " + reference );
         }
 
+        return this.nodes.get( reference );
+    }
+
+    /**
+     * @param line
+     * @return
+     */
+    private static boolean isEmpty( String line )
+    {
+        return line == null || line.length() == 0;
+    }
+
+    /**
+     * @param line
+     * @return
+     */
+    private static String cutComment( String line )
+    {
+        int idx = line.indexOf( '#' );
+
+        if ( idx != -1 )
+        {
+            line = line.substring( 0, idx );
+        }
+
+        return line;
+    }
+
+    private DependencyNode build( DependencyNode parent, LineContext ctx )
+    {
+        return build( parent, ctx, false );
     }
 
     /**
@@ -129,18 +226,16 @@ public class DependencyGraphParser
      * @return
      * @throws TreeParseException
      */
-    private static DependencyNode build( DependencyNode parent, LineContext ctx )
-        throws TreeParseException
+    private DependencyNode build( DependencyNode parent, LineContext ctx, boolean isRoot )
     {
         Definition def = ctx.getDefinition();
-        if ( ctx.getLevel() != 0 && parent == null )
+        if ( !isRoot && parent == null )
         {
-            // another root? no, thanks
-            throw new TreeParseException( "dangling node: " + def );
+            throw new IllegalArgumentException( "dangling node: " + def );
         }
         else if ( ctx.getLevel() == 0 && parent != null )
         {
-            throw new TreeParseException( "inconsistent leveling (parent for level 0?): " + def );
+            throw new IllegalArgumentException( "inconsistent leveling (parent for level 0?): " + def );
         }
 
         NodeBuilder builder = new NodeBuilder();
@@ -192,25 +287,6 @@ public class DependencyGraphParser
         return ctx;
     }
 
-    /**
-     * @author Benjamin Hanzelmann
-     */
-    public static class TreeParseException
-        extends Exception
-    {
-
-        public TreeParseException( String message, Throwable cause )
-        {
-            super( message, cause );
-        }
-
-        public TreeParseException( String message )
-        {
-            super( message );
-        }
-
-    }
-
     static class Definition
     {
         private String groupId;
@@ -225,11 +301,27 @@ public class DependencyGraphParser
 
         private String definition;
 
-        public Definition( String definition )
+        private String id = null;
+
+        private String reference = null;
+
+        public Definition( String def )
         {
             super();
 
-            this.definition = definition;
+            this.definition = def.trim();
+
+            if ( definition.startsWith( "(" ) )
+            {
+                int idx = definition.indexOf( ')' );
+                this.id = definition.substring( 1, idx );
+                this.definition = definition.substring( idx + 1 );
+            }
+            else if ( definition.startsWith( "^" ) )
+            {
+                this.reference = definition.substring( 1 );
+                return;
+            }
 
             String[] split = definition.split( ":" );
             if ( split.length < 4 )
@@ -276,6 +368,26 @@ public class DependencyGraphParser
         public String toString()
         {
             return definition;
+        }
+
+        public String getId()
+        {
+            return id;
+        }
+
+        public String getReference()
+        {
+            return reference;
+        }
+
+        public boolean isReference()
+        {
+            return reference != null;
+        }
+
+        public boolean hasId()
+        {
+            return id != null;
         }
     }
 
