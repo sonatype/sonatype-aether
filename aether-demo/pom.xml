@@ -21,7 +21,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
   <parent>
     <groupId>org.sonatype.aether</groupId>
     <artifactId>aether-parent</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.1.2</version>
   </parent>
 
   <artifactId>aether-demo</artifactId>
@@ -43,7 +43,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <!-- NOTE: This module is currently only available from its sources at http://github.com/bentmann/maven-3/ -->
+      <!-- NOTE: This module is currently only available from its sources at http://svn.apache.org/repos/asf/maven/maven-3/trunk/ -->
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-aether-provider</artifactId>
       <version>3.0-SNAPSHOT</version>
