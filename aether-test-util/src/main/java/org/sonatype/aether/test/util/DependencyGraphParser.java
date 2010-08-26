@@ -75,6 +75,7 @@ import org.sonatype.aether.graph.DependencyNode;
 public class DependencyGraphParser
 {
     private Map<String, DependencyNode> nodes = new HashMap<String, DependencyNode>();
+
     private String prefix = "";
 
     /**
@@ -88,13 +89,13 @@ public class DependencyGraphParser
 
         return parse( reader );
     }
-    
+
     /**
      * Create a parser with the given prefix.
      * 
      * @see DependencyGraphParser#parse(String)
      */
-    public DependencyGraphParser(String prefix)
+    public DependencyGraphParser( String prefix )
     {
         this();
         this.prefix = prefix;
@@ -109,22 +110,27 @@ public class DependencyGraphParser
     }
 
     /**
-     * Parse the graph definition read from the given resource.
-     * 
-     * If a prefix is set, this method will load the resource from 'prefix + resource'.
+     * Parse the graph definition read from the given resource. If a prefix is set, this method will load the resource
+     * from 'prefix + resource'.
      */
-    public DependencyNode parse( String resource ) throws IOException
+    public DependencyNode parse( String resource )
+        throws IOException
     {
         URL res = this.getClass().getClassLoader().getResource( prefix + resource );
-        return parse(res);
+        if ( res == null )
+        {
+            throw new IOException( "Could not find classpath resource " + prefix + resource );
+        }
+        return parse( res );
     }
-    
+
     /**
      * Parse the graph definition read from the given URL.
      */
-    public DependencyNode parse( URL resource ) throws IOException
+    public DependencyNode parse( URL resource )
+        throws IOException
     {
-        return parse(new InputStreamReader( resource.openStream(), "UTF-8" ));
+        return parse( new InputStreamReader( resource.openStream(), "UTF-8" ) );
     }
 
     private DependencyNode parse( Reader reader )
@@ -185,7 +191,7 @@ public class DependencyGraphParser
                         root = node;
                         isRootNode = false;
                     }
-                    
+
                     if ( ctx.getDefinition().hasId() )
                     {
                         this.nodes.put( ctx.getDefinition().getId(), node );
@@ -198,7 +204,7 @@ public class DependencyGraphParser
             {
                 throw new IllegalArgumentException( "No root definition found" );
             }
-            
+
             return root;
         }
         finally
