@@ -77,15 +77,16 @@ public class FileRepositoryConnector
             executor.execute( worker );
         }
 
-        try
+        while ( latch.getCount() > 0 )
         {
-            latch.await();
-        }
-        catch ( InterruptedException e )
-        {
-            // TODO: implement cancellation scheme
-//            executor.shutdownNow();
-//            initExecutor( true );
+            try
+            {
+                latch.await();
+            }
+            catch ( InterruptedException e )
+            {
+                // ignore
+            }
         }
     }
 
@@ -117,17 +118,17 @@ public class FileRepositoryConnector
             executor.execute( worker );
         }
 
-        try
+        while ( latch.getCount() > 0 )
         {
-            latch.await();
+            try
+            {
+                latch.await();
+            }
+            catch ( InterruptedException e )
+            {
+                // ignore
+            }
         }
-        catch ( InterruptedException e )
-        {
-            // TODO: implement cancellation scheme
-//            executor.shutdownNow();
-//            initExecutor( true );
-        }
-
     }
 
 }
