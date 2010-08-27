@@ -17,6 +17,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ import org.sonatype.aether.graph.DependencyNode;
  */
 public class DependencyGraphParserTest
 {
-    
+
     private DependencyGraphParser parser;
 
     @Before
@@ -39,6 +40,7 @@ public class DependencyGraphParserTest
     {
         this.parser = new DependencyGraphParser();
     }
+
     @Test
     public void testOnlyRoot()
         throws IOException
@@ -84,9 +86,8 @@ public class DependencyGraphParserTest
     public void testWithChildren()
         throws IOException
     {
-        String def = "gid1:aid1:ext1:ver1:scope1\n" + 
-                     "+- gid2:aid2:ext2:ver2:scope2\n" +
-                    "\\- gid3:aid3:ext3:ver3:scope3\n";
+        String def =
+            "gid1:aid1:ext1:ver1:scope1\n" + "+- gid2:aid2:ext2:ver2:scope2\n" + "\\- gid3:aid3:ext3:ver3:scope3\n";
 
         DependencyNode node = parser.parseLiteral( def );
         assertNotNull( node );
@@ -102,26 +103,25 @@ public class DependencyGraphParserTest
         {
             assertNodeProperties( child, idx++ );
         }
-        
+
     }
-    
+
     @Test
-    public void testDeepChildren() 
+    public void testDeepChildren()
         throws IOException
     {
-        String def = "gid1:aid1:ext1:ver1\n" + 
-                     "+- gid2:aid2:ext2:ver2:scope2\n" +
-                     "|  \\- gid3:aid3:ext3:ver3\n" +
-                     "\\- gid4:aid4:ext4:ver4:scope4";
-        
+        String def =
+            "gid1:aid1:ext1:ver1\n" + "+- gid2:aid2:ext2:ver2:scope2\n" + "|  \\- gid3:aid3:ext3:ver3\n"
+                + "\\- gid4:aid4:ext4:ver4:scope4";
+
         DependencyNode node = parser.parseLiteral( def );
         assertNodeProperties( node, 1 );
-        
+
         assertEquals( 2, node.getChildren().size() );
         assertNodeProperties( node.getChildren().get( 1 ), 4 );
         DependencyNode lvl1Node = node.getChildren().get( 0 );
         assertNodeProperties( lvl1Node, 2 );
-        
+
         assertEquals( 1, lvl1Node.getChildren().size() );
         assertNodeProperties( lvl1Node.getChildren().get( 0 ), 3 );
     }
@@ -130,9 +130,10 @@ public class DependencyGraphParserTest
     {
         assertNodeProperties( node, String.valueOf( idx ) );
     }
+
     private void assertNodeProperties( DependencyNode node, String suffix )
     {
-        assertNotNull(node);
+        assertNotNull( node );
         Dependency dependency = node.getDependency();
         assertNotNull( dependency );
         if ( !"".equals( dependency.getScope() ) )
@@ -148,73 +149,93 @@ public class DependencyGraphParserTest
         assertEquals( "ext" + suffix, artifact.getExtension() );
         assertEquals( "ver" + suffix, artifact.getVersion() );
     }
-    
+
     @Test
     public void testComments()
         throws IOException
     {
         String def = "# first line\n#second line\ngid:aid:ext:ver # root artifact asdf:qwer:zcxv:uip";
-        
-        DependencyNode node = parser.parseLiteral(def);
-        
+
+        DependencyNode node = parser.parseLiteral( def );
+
         assertNodeProperties( node, "" );
     }
-    
+
     @Test
     public void testId()
         throws IOException
     {
         String def = "(id)gid:aid:ext:ver\n\\- ^id";
-        DependencyNode node = parser.parseLiteral(def);
+        DependencyNode node = parser.parseLiteral( def );
         assertNodeProperties( node, "" );
-        
+
         assertNotNull( node.getChildren() );
         assertEquals( 1, node.getChildren().size() );
-        
+
         assertSame( node, node.getChildren().get( 0 ) );
     }
-    
+
     @Test
-    public void testResourceLoading() 
+    public void testResourceLoading()
         throws UnsupportedEncodingException, IOException
     {
         String prefix = "org/sonatype/aether/test/util/";
         String name = "testResourceLoading.def";
-        
+
         DependencyNode node = parser.parse( prefix + name );
         assertEquals( 0, node.getChildren().size() );
         assertNodeProperties( node, "" );
     }
-    
+
     @Test
-    public void testResourceLoadingWithPrefix() 
+    public void testResourceLoadingWithPrefix()
         throws UnsupportedEncodingException, IOException
     {
         String prefix = "org/sonatype/aether/test/util/";
         parser = new DependencyGraphParser( prefix );
-        
+
         String name = "testResourceLoading.def";
-        
+
         DependencyNode node = parser.parse( name );
         assertEquals( 0, node.getChildren().size() );
         assertNodeProperties( node, "" );
     }
-    
+
     @Test
-    public void testProperties() throws IOException
+    public void testProperties()
+        throws IOException
     {
         String def = "gid:aid:ext:ver;test=foo;test2=fizzle";
         DependencyNode node = parser.parseLiteral( def );
-        
+
         assertNodeProperties( node, "" );
-        
+
         Map<String, String> properties = node.getDependency().getArtifact().getProperties();
         assertNotNull( properties );
         assertEquals( 2, properties.size() );
+
+        assertTrue( properties.containsKey( "test" ) );
+        assertEquals( "foo", properties.get( "test" ) );
+        assertTrue( properties.containsKey( "test2" ) );
+        assertEquals( "fizzle", properties.get( "test2" ) );
+    }
+
+    @Test
+    public void testSubstitutions()
+        throws IOException
+    {
+        parser.setSubstitutions( Arrays.asList( "subst1", "subst2" ) );
+        String def = "%s:%s:ext:ver";
+        DependencyNode root = parser.parseLiteral( def );
+        Artifact artifact = root.getDependency().getArtifact();
+        assertEquals( "subst2", artifact.getArtifactId() );
+        assertEquals( "subst1", artifact.getGroupId() );
         
-        assertTrue(properties.containsKey( "test" ));
-        assertEquals( "foo", properties.get("test") );
-        assertTrue(properties.containsKey( "test2" ));
-        assertEquals( "fizzle", properties.get("test2") );
+        def = "%s:aid:ext:ver\n\\- %s:aid:ext:ver";
+        root = parser.parseLiteral( def );
+
+        assertEquals( "subst1", root.getDependency().getArtifact().getGroupId() );
+        assertEquals( "subst2", root.getChildren().get( 0 ).getDependency().getArtifact().getGroupId() );
+
     }
 }

@@ -19,7 +19,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -78,6 +80,10 @@ public class DependencyGraphParser
 
     private String prefix = "";
 
+    private Collection<String> substitutions;
+
+    private Iterator<String> substitutionIterator;
+
     /**
      * Parse the given graph definition.
      */
@@ -88,6 +94,17 @@ public class DependencyGraphParser
         StringReader reader = new StringReader( dependencyGraph );
 
         return parse( reader );
+    }
+    
+    /**
+     * Create a parser with the given prefix and the given substitution strings.
+     * 
+     * @see DependencyGraphParser#parse(String)
+     */
+    public DependencyGraphParser( String prefix, Collection<String> substitutions )
+    {
+        this(prefix);
+        this.substitutions = substitutions;
     }
 
     /**
@@ -137,6 +154,11 @@ public class DependencyGraphParser
         throws IOException
     {
         BufferedReader in = new BufferedReader( reader );
+        
+        if ( substitutions != null )
+        {
+            substitutionIterator = substitutions.iterator();
+        }
 
         try
         {
@@ -157,6 +179,15 @@ public class DependencyGraphParser
                 {
                     // skip empty line
                     continue;
+                }
+                
+                while ( line.contains( "%s" ) )
+                {
+                    if ( ! substitutionIterator.hasNext() )
+                    {
+                        throw new IllegalArgumentException( "not enough substitutions to fill placeholders" );
+                    }
+                    line = line.replaceFirst( "%s", substitutionIterator.next() );
                 }
 
                 LineContext ctx = createContext( line );
@@ -445,6 +476,16 @@ public class DependencyGraphParser
         {
             this.level = level;
         }
+    }
+
+    public Collection<String> getSubstitutions()
+    {
+        return substitutions;
+    }
+
+    public void setSubstitutions( Collection<String> substitutions )
+    {
+        this.substitutions = substitutions;
     }
 
 }
