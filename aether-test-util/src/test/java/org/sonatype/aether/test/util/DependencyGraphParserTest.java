@@ -180,7 +180,7 @@ public class DependencyGraphParserTest
         throws UnsupportedEncodingException, IOException
     {
         String prefix = "org/sonatype/aether/test/util/";
-        String name = "testResourceLoading.def";
+        String name = "testResourceLoading.txt";
 
         DependencyNode node = parser.parse( prefix + name );
         assertEquals( 0, node.getChildren().size() );
@@ -243,7 +243,7 @@ public class DependencyGraphParserTest
         throws IOException
     {
         String prefix = "org/sonatype/aether/test/util/";
-        String name = "testResourceLoading.def";
+        String name = "testResourceLoading.txt";
 
         List<DependencyNode> nodes = parser.parseMultiple( prefix + name );
 
