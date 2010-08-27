@@ -194,7 +194,7 @@ public class DependencyGraphParserTest
         String prefix = "org/sonatype/aether/test/util/";
         parser = new DependencyGraphParser( prefix );
 
-        String name = "testResourceLoading.def";
+        String name = "testResourceLoading.txt";
 
         DependencyNode node = parser.parse( name );
         assertEquals( 0, node.getChildren().size() );
