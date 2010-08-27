@@ -236,6 +236,19 @@ public class DependencyGraphParserTest
 
         assertEquals( "subst1", root.getDependency().getArtifact().getGroupId() );
         assertEquals( "subst2", root.getChildren().get( 0 ).getDependency().getArtifact().getGroupId() );
+    }
 
+    @Test
+    public void testMultiple()
+        throws IOException
+    {
+        String prefix = "org/sonatype/aether/test/util/";
+        String name = "testResourceLoading.def";
+
+        List<DependencyNode> nodes = parser.parseMultiple( prefix + name );
+
+        assertEquals( 2, nodes.size() );
+        assertEquals( "aid", nodes.get( 0 ).getDependency().getArtifact().getArtifactId() );
+        assertEquals( "aid2", nodes.get( 1 ).getDependency().getArtifact().getArtifactId() );
     }
 }
