@@ -19,7 +19,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.Authenticator.RequestorType;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.LinkedHashMap;
@@ -84,8 +83,6 @@ class FileRepositoryWorker
     private TransferWrapper transfer;
 
     private RemoteRepository repository;
-
-    private DefaultLayout layout;
 
     private CountDownLatch latch = null;
 
@@ -195,7 +192,6 @@ class FileRepositoryWorker
 
         this.direction = direction;
         this.repository = repository;
-        this.layout = new DefaultLayout();
     }
 
     /**
@@ -205,8 +201,6 @@ class FileRepositoryWorker
      */
     public void run()
     {
-        // TODO check event types for mandatory values
-
         File target = null;
         long totalTransferred = -1;
         try
@@ -217,7 +211,7 @@ class FileRepositoryWorker
 
             File baseDir = new File( PathUtils.basedir( repository.getUrl() ) );
             File localFile = transfer.getFile();
-            File repoFile = new File( baseDir, transfer.getRelativePath());
+            File repoFile = new File( baseDir, transfer.getRelativePath() );
             File src = null;
 
             switch ( direction )
@@ -245,7 +239,7 @@ class FileRepositoryWorker
             }
             else
             {
-                new File(baseDir, transfer.getRelativePath()).getParentFile().mkdirs();
+                new File( baseDir, transfer.getRelativePath() ).getParentFile().mkdirs();
                 if ( target.getParentFile() != null )
                 {
                     target.getParentFile().mkdirs();
@@ -416,54 +410,10 @@ class FileRepositoryWorker
         }
     }
 
-    private long copy( File src, File target ) throws TransferCancelledException, IOException
+    private long copy( File src, File target )
+        throws TransferCancelledException, IOException
     {
         return copyNIO( src, target );
-    }
-
-    private long copyDef( File src, File target )
-        throws IOException, TransferCancelledException
-    {
-        FileInputStream in = null;
-        FileOutputStream out = null;
-        int totalBytes = 0;
-
-        try
-        {
-            in = new FileInputStream( src );
-            out = new FileOutputStream( target );
-            
-            int count = -1;
-            byte[] buf = new byte[32000];
-            while ( ( count = in.read( buf )) != -1)
-            {
-                out.write( buf, 0, count );
-                totalBytes += count;
-                
-                DefaultTransferEvent event = newEvent( transfer, repository );
-                event.setDataBuffer( buf );
-                event.setDataLength( count );
-                event.setDataOffset( 0 );
-                event.setTransferredBytes( totalBytes );
-                catapult.fireProgressed( event );
-            }
-            out.flush();
-            
-        }
-        finally
-        {
-            if ( in != null )
-            {
-                in.close();
-            }
-            if ( out != null )
-            {
-                out.close();
-            }
-        }
-        
-        return totalBytes;
-
     }
 
     private long copyNIO( File src, File target )
