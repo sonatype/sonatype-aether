@@ -519,7 +519,11 @@ class WagonRepositoryConnector
                                 wagon.removeTransferListener( sha1 );
                             }
 
-                            if ( !RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy ) )
+                            if ( RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy ) )
+                            {
+                                break;
+                            }
+                            else
                             {
                                 try
                                 {
