@@ -97,7 +97,7 @@ public class DefaultInstaller
         return this;
     }
 
-    public DefaultInstaller adLocalRepositoryMaintainer( LocalRepositoryMaintainer maintainer )
+    public DefaultInstaller addLocalRepositoryMaintainer( LocalRepositoryMaintainer maintainer )
     {
         if ( maintainer == null )
         {

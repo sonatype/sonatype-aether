@@ -145,7 +145,7 @@ public class DefaultArtifactResolver
         return this;
     }
 
-    public DefaultArtifactResolver adLocalRepositoryMaintainer( LocalRepositoryMaintainer maintainer )
+    public DefaultArtifactResolver addLocalRepositoryMaintainer( LocalRepositoryMaintainer maintainer )
     {
         if ( maintainer == null )
         {
