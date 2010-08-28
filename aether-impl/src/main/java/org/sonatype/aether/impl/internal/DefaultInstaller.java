@@ -55,8 +55,8 @@ public class DefaultInstaller
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
 
-    @Requirement( optional = true )
-    private LocalRepositoryMaintainer maintainer;
+    @Requirement( role = LocalRepositoryMaintainer.class )
+    private List<LocalRepositoryMaintainer> localRepositoryMaintainers = new ArrayList<LocalRepositoryMaintainer>();
 
     @Requirement( role = MetadataGeneratorFactory.class )
     private List<MetadataGeneratorFactory> metadataFactories = new ArrayList<MetadataGeneratorFactory>();
@@ -71,11 +71,24 @@ public class DefaultInstaller
 
     };
 
+    public DefaultInstaller()
+    {
+        // enables default constructor
+    }
+
+    public DefaultInstaller( Logger logger, List<MetadataGeneratorFactory> metadataFactories,
+                             List<LocalRepositoryMaintainer> localRepositoryMaintainers )
+    {
+        setLogger( logger );
+        setMetadataFactories( metadataFactories );
+        setLocalRepositoryMaintainers( localRepositoryMaintainers );
+    }
+
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );
-        setLocalRepositoryMaintainer( locator.getService( LocalRepositoryMaintainer.class ) );
-        metadataFactories = locator.getServices( MetadataGeneratorFactory.class );
+        setLocalRepositoryMaintainers( locator.getServices( LocalRepositoryMaintainer.class ) );
+        setMetadataFactories( locator.getServices( MetadataGeneratorFactory.class ) );
     }
 
     public DefaultInstaller setLogger( Logger logger )
@@ -84,9 +97,26 @@ public class DefaultInstaller
         return this;
     }
 
-    public DefaultInstaller setLocalRepositoryMaintainer( LocalRepositoryMaintainer maintainer )
+    public DefaultInstaller adLocalRepositoryMaintainer( LocalRepositoryMaintainer maintainer )
     {
-        this.maintainer = maintainer;
+        if ( maintainer == null )
+        {
+            throw new IllegalArgumentException( "local repository maintainer has not been specified" );
+        }
+        this.localRepositoryMaintainers.add( maintainer );
+        return this;
+    }
+
+    public DefaultInstaller setLocalRepositoryMaintainers( List<LocalRepositoryMaintainer> maintainers )
+    {
+        if ( maintainers == null )
+        {
+            this.localRepositoryMaintainers = new ArrayList<LocalRepositoryMaintainer>();
+        }
+        else
+        {
+            this.localRepositoryMaintainers = maintainers;
+        }
         return this;
     }
 
@@ -97,6 +127,19 @@ public class DefaultInstaller
             throw new IllegalArgumentException( "metadata generator factory has not been specified" );
         }
         metadataFactories.add( factory );
+        return this;
+    }
+
+    public DefaultInstaller setMetadataFactories( List<MetadataGeneratorFactory> metadataFactories )
+    {
+        if ( metadataFactories == null )
+        {
+            this.metadataFactories = new ArrayList<MetadataGeneratorFactory>();
+        }
+        else
+        {
+            this.metadataFactories = metadataFactories;
+        }
         return this;
     }
 
@@ -217,9 +260,13 @@ public class DefaultInstaller
 
             lrm.add( session, new LocalArtifactRegistration( artifact ) );
 
-            if ( maintainer != null )
+            if ( !localRepositoryMaintainers.isEmpty() )
             {
-                maintainer.artifactInstalled( new DefaultLocalRepositoryEvent( session, artifact ) );
+                DefaultLocalRepositoryEvent event = new DefaultLocalRepositoryEvent( session, artifact );
+                for ( LocalRepositoryMaintainer maintainer : localRepositoryMaintainers )
+                {
+                    maintainer.artifactInstalled( event );
+                }
             }
         }
         catch ( IOException e )

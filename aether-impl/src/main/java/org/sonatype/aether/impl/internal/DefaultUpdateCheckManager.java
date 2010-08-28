@@ -57,6 +57,16 @@ public class DefaultUpdateCheckManager
 
     private static final String NOT_FOUND = "";
 
+    public DefaultUpdateCheckManager()
+    {
+        // enables default constructor
+    }
+
+    public DefaultUpdateCheckManager( Logger logger )
+    {
+        setLogger( logger );
+    }
+
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );

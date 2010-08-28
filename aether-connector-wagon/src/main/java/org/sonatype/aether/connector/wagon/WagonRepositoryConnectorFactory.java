@@ -43,6 +43,17 @@ public class WagonRepositoryConnectorFactory
 
     private int priority;
 
+    public WagonRepositoryConnectorFactory()
+    {
+        // enables default constructor
+    }
+
+    public WagonRepositoryConnectorFactory( Logger logger, WagonProvider wagonProvider )
+    {
+        setLogger( logger );
+        setWagonProvider( wagonProvider );
+    }
+
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );

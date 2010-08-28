@@ -100,6 +100,28 @@ public class DefaultRepositorySystem
     @Requirement
     private Deployer deployer;
 
+    public DefaultRepositorySystem()
+    {
+        // enables default constructor
+    }
+
+    public DefaultRepositorySystem( Logger logger, VersionResolver versionResolver,
+                                    VersionRangeResolver versionRangeResolver, ArtifactResolver artifactResolver,
+                                    MetadataResolver metadataResolver,
+                                    ArtifactDescriptorReader artifactDescriptorReader,
+                                    DependencyCollector dependencyCollector, Installer installer, Deployer deployer )
+    {
+        setLogger( logger );
+        setVersionResolver( versionResolver );
+        setVersionRangeResolver( versionRangeResolver );
+        setArtifactResolver( artifactResolver );
+        setMetadataResolver( metadataResolver );
+        setArtifactDescriptorReader( artifactDescriptorReader );
+        setDependencyCollector( dependencyCollector );
+        setInstaller( installer );
+        setDeployer( deployer );
+    }
+
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );

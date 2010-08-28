@@ -70,6 +70,19 @@ public class DefaultMetadataResolver
     @Requirement
     private RemoteRepositoryManager remoteRepositoryManager;
 
+    public DefaultMetadataResolver()
+    {
+        // enables default constructor
+    }
+
+    public DefaultMetadataResolver( Logger logger, UpdateCheckManager updateCheckManager,
+                                    RemoteRepositoryManager remoteRepositoryManager )
+    {
+        setLogger( logger );
+        setUpdateCheckManager( updateCheckManager );
+        setRemoteRepositoryManager( remoteRepositoryManager );
+    }
+
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );

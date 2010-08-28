@@ -88,12 +88,26 @@ public class DefaultDeployer
 
     };
 
+    public DefaultDeployer()
+    {
+        // enables default constructor
+    }
+
+    public DefaultDeployer( Logger logger, RemoteRepositoryManager remoteRepositoryManager,
+                            UpdateCheckManager updateCheckManager, List<MetadataGeneratorFactory> metadataFactories )
+    {
+        setLogger( logger );
+        setRemoteRepositoryManager( remoteRepositoryManager );
+        setUpdateCheckManager( updateCheckManager );
+        setMetadataFactories( metadataFactories );
+    }
+
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );
         setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
         setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
-        metadataFactories = locator.getServices( MetadataGeneratorFactory.class );
+        setMetadataFactories( locator.getServices( MetadataGeneratorFactory.class ) );
     }
 
     public DefaultDeployer setLogger( Logger logger )
@@ -129,6 +143,19 @@ public class DefaultDeployer
             throw new IllegalArgumentException( "metadata generator factory has not been specified" );
         }
         metadataFactories.add( factory );
+        return this;
+    }
+
+    public DefaultDeployer setMetadataFactories( List<MetadataGeneratorFactory> metadataFactories )
+    {
+        if ( metadataFactories == null )
+        {
+            this.metadataFactories = new ArrayList<MetadataGeneratorFactory>();
+        }
+        else
+        {
+            this.metadataFactories = metadataFactories;
+        }
         return this;
     }
 

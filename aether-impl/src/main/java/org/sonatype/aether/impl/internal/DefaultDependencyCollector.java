@@ -74,6 +74,21 @@ public class DefaultDependencyCollector
     @Requirement
     private VersionRangeResolver versionRangeResolver;
 
+    public DefaultDependencyCollector()
+    {
+        // enables default constructor
+    }
+
+    public DefaultDependencyCollector( Logger logger, RemoteRepositoryManager remoteRepositoryManager,
+                                       ArtifactDescriptorReader artifactDescriptorReader,
+                                       VersionRangeResolver versionRangeResolver )
+    {
+        setLogger( logger );
+        setRemoteRepositoryManager( remoteRepositoryManager );
+        setArtifactDescriptorReader( artifactDescriptorReader );
+        setVersionRangeResolver( versionRangeResolver );
+    }
+
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );
