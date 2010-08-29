@@ -569,7 +569,7 @@ public class DefaultDependencyCollector
 
     private boolean isLackingDescriptor( Artifact artifact )
     {
-        return Boolean.parseBoolean( artifact.getProperty( ArtifactProperties.LACKS_DESCRIPTOR, "" ) );
+        return artifact.getProperty( ArtifactProperties.LOCAL_PATH, null ) != null;
     }
 
 }

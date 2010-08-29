@@ -25,6 +25,8 @@ import org.sonatype.aether.collection.DependencyManagement;
 import org.sonatype.aether.collection.DependencyManager;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.Exclusion;
+import org.sonatype.aether.util.artifact.ArtifactProperties;
+import org.sonatype.aether.util.artifact.JavaScopes;
 
 /**
  * A dependency manager that mimics the way Maven 2.x works.
@@ -41,6 +43,8 @@ public class ClassicDependencyManager
 
     private final Map<Object, String> managedScopes;
 
+    private final Map<Object, String> managedLocalPaths;
+
     private final Map<Object, Collection<Exclusion>> managedExclusions;
 
     /**
@@ -49,16 +53,17 @@ public class ClassicDependencyManager
     public ClassicDependencyManager()
     {
         this( 0, Collections.<Object, String> emptyMap(), Collections.<Object, String> emptyMap(),
-              Collections.<Object, Collection<Exclusion>> emptyMap() );
+              Collections.<Object, String> emptyMap(), Collections.<Object, Collection<Exclusion>> emptyMap() );
     }
 
     private ClassicDependencyManager( int depth, Map<Object, String> managedVersions,
-                                      Map<Object, String> managedScopes,
+                                      Map<Object, String> managedScopes, Map<Object, String> managedLocalPaths,
                                       Map<Object, Collection<Exclusion>> managedExclusions )
     {
         this.depth = depth;
         this.managedVersions = managedVersions;
         this.managedScopes = managedScopes;
+        this.managedLocalPaths = managedLocalPaths;
         this.managedExclusions = managedExclusions;
     }
 
@@ -70,11 +75,13 @@ public class ClassicDependencyManager
         }
         else if ( depth == 1 )
         {
-            return new ClassicDependencyManager( depth + 1, managedVersions, managedScopes, managedExclusions );
+            return new ClassicDependencyManager( depth + 1, managedVersions, managedScopes, managedLocalPaths,
+                                                 managedExclusions );
         }
 
         Map<Object, String> managedVersions = this.managedVersions;
         Map<Object, String> managedScopes = this.managedScopes;
+        Map<Object, String> managedLocalPaths = this.managedLocalPaths;
         Map<Object, Collection<Exclusion>> managedExclusions = this.managedExclusions;
 
         for ( Dependency managedDependency : context.getManagedDependencies() )
@@ -102,6 +109,16 @@ public class ClassicDependencyManager
                 managedScopes.put( key, scope );
             }
 
+            String localPath = managedDependency.getArtifact().getProperty( ArtifactProperties.LOCAL_PATH, null );
+            if ( localPath != null && !managedLocalPaths.containsKey( key ) )
+            {
+                if ( managedLocalPaths == this.managedLocalPaths )
+                {
+                    managedLocalPaths = new HashMap<Object, String>( this.managedLocalPaths );
+                }
+                managedLocalPaths.put( key, scope );
+            }
+
             Collection<Exclusion> exclusions = managedDependency.getExclusions();
             if ( !exclusions.isEmpty() )
             {
@@ -119,7 +136,8 @@ public class ClassicDependencyManager
             }
         }
 
-        return new ClassicDependencyManager( depth + 1, managedVersions, managedScopes, managedExclusions );
+        return new ClassicDependencyManager( depth + 1, managedVersions, managedScopes, managedLocalPaths,
+                                             managedExclusions );
     }
 
     public DependencyManagement manageDependency( Dependency dependency )
@@ -148,6 +166,32 @@ public class ClassicDependencyManager
                     management = new DependencyManagement();
                 }
                 management.setScope( scope );
+
+                if ( !JavaScopes.SYSTEM.equals( scope )
+                    && dependency.getArtifact().getProperty( ArtifactProperties.LOCAL_PATH, null ) != null )
+                {
+                    Map<String, String> properties =
+                        new HashMap<String, String>( dependency.getArtifact().getProperties() );
+                    properties.remove( ArtifactProperties.LOCAL_PATH );
+                    management.setProperties( properties );
+                }
+            }
+
+            if ( ( scope != null && JavaScopes.SYSTEM.equals( scope ) )
+                || ( scope == null && JavaScopes.SYSTEM.equals( dependency.getScope() ) ) )
+            {
+                String localPath = managedLocalPaths.get( key );
+                if ( localPath != null )
+                {
+                    if ( management == null )
+                    {
+                        management = new DependencyManagement();
+                    }
+                    Map<String, String> properties =
+                        new HashMap<String, String>( dependency.getArtifact().getProperties() );
+                    properties.put( ArtifactProperties.LOCAL_PATH, localPath );
+                    management.setProperties( properties );
+                }
             }
         }
 

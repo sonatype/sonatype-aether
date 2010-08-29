@@ -37,6 +37,7 @@ import org.sonatype.aether.impl.VersionResolver;
 import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.artifact.ArtifactProperties;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 import org.sonatype.aether.repository.ArtifactRepository;
 import org.sonatype.aether.repository.LocalArtifactRegistration;
@@ -196,16 +197,19 @@ public class DefaultArtifactResolver
 
             artifactResolving( session, artifact );
 
-            if ( artifact.getFile() != null )
+            String localPath = artifact.getProperty( ArtifactProperties.LOCAL_PATH, null );
+            if ( localPath != null )
             {
-                // pre-resolved (e.g. system scope), just validate file
-                if ( !artifact.getFile().isFile() )
+                // unhosted artifact, just validate file
+                File file = new File( localPath );
+                if ( !file.isFile() )
                 {
                     failures = true;
                     result.addException( new ArtifactNotFoundException( artifact, null ) );
                 }
                 else
                 {
+                    artifact = artifact.setFile( file );
                     result.setArtifact( artifact );
                 }
                 artifactResolved( session, artifact, null, result.getExceptions() );
