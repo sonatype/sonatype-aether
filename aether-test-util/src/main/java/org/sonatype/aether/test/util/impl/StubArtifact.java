@@ -152,6 +152,11 @@ public class StubArtifact
         return Collections.unmodifiableMap( properties );
     }
 
+    public Artifact setProperties( Map<String, String> properties )
+    {
+        throw new UnsupportedOperationException( "not implemented" );
+    }
+
     @Override
     public boolean equals( Object obj )
     {

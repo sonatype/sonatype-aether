@@ -332,6 +332,11 @@ public class DefaultDependencyCollector
                         premanagedVersion = artifact.getVersion();
                         dependency = dependency.setArtifact( artifact.setVersion( depMngt.getVersion() ) );
                     }
+                    if ( depMngt.getProperties() != null )
+                    {
+                        Artifact artifact = dependency.getArtifact();
+                        dependency = dependency.setArtifact( artifact.setProperties( depMngt.getProperties() ) );
+                    }
                     if ( depMngt.getScope() != null )
                     {
                         premanagedScope = dependency.getScope();

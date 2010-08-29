@@ -14,6 +14,7 @@ package org.sonatype.aether.util.artifact;
  */
 
 import java.io.File;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -91,6 +92,16 @@ public abstract class AbstractArtifact
         }
         return new DefaultArtifact( getGroupId(), getArtifactId(), getClassifier(), getExtension(), getVersion(), file,
                                     getProperties() );
+    }
+
+    public Artifact setProperties( Map<String, String> properties )
+    {
+        if ( getProperties().equals( properties ) )
+        {
+            return this;
+        }
+        return new DefaultArtifact( getGroupId(), getArtifactId(), getClassifier(), getExtension(), getVersion(),
+                                    properties, getFile() );
     }
 
     @Override

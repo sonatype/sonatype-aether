@@ -53,7 +53,7 @@ public interface Artifact
      * Sets the version of this artifact.
      * 
      * @param version The version of this artifact, may be {@code null}.
-     * @return The new artifact, never {@code null}.
+     * @return The updated artifact, never {@code null}.
      */
     Artifact setVersion( String version );
 
@@ -97,7 +97,7 @@ public interface Artifact
      * Sets the file of the artifact.
      * 
      * @param file The file of the artifact, may be {@code null}
-     * @return The new artifact, never {@code null}.
+     * @return The updated artifact, never {@code null}.
      */
     Artifact setFile( File file );
 
@@ -130,5 +130,13 @@ public interface Artifact
      * @return The (read-only) properties, never {@code null}.
      */
     Map<String, String> getProperties();
+
+    /**
+     * Sets the properties for the artifact.
+     * 
+     * @param properties The properties for the artifact, may be {@code null}.
+     * @return The updated artifact, never {@code null}.
+     */
+    Artifact setProperties( Map<String, String> properties );
 
 }

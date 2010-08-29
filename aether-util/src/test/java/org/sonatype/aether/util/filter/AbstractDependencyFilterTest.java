@@ -114,6 +114,11 @@ public abstract class AbstractDependencyFilterTest
                 return null;
             }
 
+            public Artifact setProperties( Map<String, String> properties )
+            {
+                return null;
+            }
+
         };
     }
 
@@ -178,6 +183,11 @@ public abstract class AbstractDependencyFilterTest
             }
 
             public Artifact setFile( File file )
+            {
+                return null;
+            }
+
+            public Artifact setProperties( Map<String, String> properties )
             {
                 return null;
             }
