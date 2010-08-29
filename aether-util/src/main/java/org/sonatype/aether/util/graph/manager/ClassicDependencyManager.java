@@ -116,7 +116,7 @@ public class ClassicDependencyManager
                 {
                     managedLocalPaths = new HashMap<Object, String>( this.managedLocalPaths );
                 }
-                managedLocalPaths.put( key, scope );
+                managedLocalPaths.put( key, localPath );
             }
 
             Collection<Exclusion> exclusions = managedDependency.getExclusions();
