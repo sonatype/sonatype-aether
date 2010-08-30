@@ -14,6 +14,7 @@ package org.sonatype.aether.collection;
  */
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.Exclusion;
@@ -32,6 +33,8 @@ public class DependencyManagement
     private String scope;
 
     private Collection<Exclusion> exclusions;
+
+    private Map<String, String> properties;
 
     /**
      * Creates an empty management update.
@@ -111,6 +114,33 @@ public class DependencyManagement
     public DependencyManagement setExclusions( Collection<Exclusion> exclusions )
     {
         this.exclusions = exclusions;
+        return this;
+    }
+
+    /**
+     * Gets the new properties to apply to the dependency. Note that this map denotes the complete set of properties,
+     * i.e. the dependency manager controls whether any existing properties get merged with the information from
+     * dependency management or overridden by it.
+     * 
+     * @return The new artifact properties or {@code null} if the properties are not managed and the existing properties
+     *         should remain unchanged.
+     */
+    public Map<String, String> getProperties()
+    {
+        return properties;
+    }
+
+    /**
+     * Sets the new properties to apply to the dependency. Note that this map denotes the complete set of properties,
+     * i.e. the dependency manager controls whether any existing properties get merged with the information from
+     * dependency management or overridden by it.
+     * 
+     * @param properties The new artifact properties, may be {@code null} if the properties are not managed.
+     * @return This management update for chaining, never {@code null}.
+     */
+    public DependencyManagement setProperties( Map<String, String> properties )
+    {
+        this.properties = properties;
         return this;
     }
 

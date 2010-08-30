@@ -97,4 +97,10 @@ public class DefaultTransferResource
         return startTime;
     }
 
+    @Override
+    public String toString()
+    {
+        return getRepositoryUrl() + getResourceName() + " <> " + getFile();
+    }
+
 }

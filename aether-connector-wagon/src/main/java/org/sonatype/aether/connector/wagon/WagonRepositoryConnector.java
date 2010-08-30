@@ -519,7 +519,11 @@ class WagonRepositoryConnector
                                 wagon.removeTransferListener( sha1 );
                             }
 
-                            if ( !RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy ) )
+                            if ( RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy ) )
+                            {
+                                break;
+                            }
+                            else
                             {
                                 try
                                 {
@@ -661,7 +665,19 @@ class WagonRepositoryConnector
         {
             if ( !from.renameTo( to ) )
             {
-                FileUtils.copyFile( from, to );
+                if ( !from.exists() )
+                {
+                    /*
+                     * NOTE: Wagon (1.0-beta-6) doesn't create the destination file when transferring a 0-byte resource.
+                     * So if the resource we asked for didn't cause any exception but doesn't show up in the tmp file
+                     * either, Wagon tells us in its weird way the file is empty.
+                     */
+                    FileUtils.fileWrite( to.getAbsolutePath(), "UTF-8", "" );
+                }
+                else
+                {
+                    FileUtils.copyFile( from, to );
+                }
             }
         }
 

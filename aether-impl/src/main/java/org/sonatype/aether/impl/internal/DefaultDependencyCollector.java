@@ -74,6 +74,21 @@ public class DefaultDependencyCollector
     @Requirement
     private VersionRangeResolver versionRangeResolver;
 
+    public DefaultDependencyCollector()
+    {
+        // enables default constructor
+    }
+
+    public DefaultDependencyCollector( Logger logger, RemoteRepositoryManager remoteRepositoryManager,
+                                       ArtifactDescriptorReader artifactDescriptorReader,
+                                       VersionRangeResolver versionRangeResolver )
+    {
+        setLogger( logger );
+        setRemoteRepositoryManager( remoteRepositoryManager );
+        setArtifactDescriptorReader( artifactDescriptorReader );
+        setVersionRangeResolver( versionRangeResolver );
+    }
+
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );
@@ -317,6 +332,11 @@ public class DefaultDependencyCollector
                         premanagedVersion = artifact.getVersion();
                         dependency = dependency.setArtifact( artifact.setVersion( depMngt.getVersion() ) );
                     }
+                    if ( depMngt.getProperties() != null )
+                    {
+                        Artifact artifact = dependency.getArtifact();
+                        dependency = dependency.setArtifact( artifact.setProperties( depMngt.getProperties() ) );
+                    }
                     if ( depMngt.getScope() != null )
                     {
                         premanagedScope = dependency.getScope();
@@ -368,7 +388,7 @@ public class DefaultDependencyCollector
                     Dependency originalDependency = dependency.setArtifact( originalArtifact );
                     Dependency d = originalDependency;
 
-                    List<RemoteRepository> repos = null;
+                    List<RemoteRepository> repos;
                     ArtifactRepository repo = rangeResult.getRepository( version );
                     if ( repo instanceof RemoteRepository )
                     {
@@ -377,6 +397,10 @@ public class DefaultDependencyCollector
                     else if ( repo == null )
                     {
                         repos = repositories;
+                    }
+                    else
+                    {
+                        repos = Collections.emptyList();
                     }
 
                     ArtifactDescriptorResult descriptorResult;
@@ -545,7 +569,7 @@ public class DefaultDependencyCollector
 
     private boolean isLackingDescriptor( Artifact artifact )
     {
-        return Boolean.parseBoolean( artifact.getProperty( ArtifactProperties.LACKS_DESCRIPTOR, "" ) );
+        return artifact.getProperty( ArtifactProperties.LOCAL_PATH, null ) != null;
     }
 
 }

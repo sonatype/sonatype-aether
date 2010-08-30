@@ -127,4 +127,10 @@ public class DefaultTransferEvent
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getRequestType() + " " + getType() + " " + getResource();
+    }
+
 }

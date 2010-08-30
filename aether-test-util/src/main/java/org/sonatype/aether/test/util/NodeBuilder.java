@@ -1,4 +1,4 @@
-package org.sonatype.aether.util;
+package org.sonatype.aether.test.util;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -14,14 +14,17 @@ package org.sonatype.aether.util;
  */
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyNode;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
-import org.sonatype.aether.util.graph.DefaultDependencyNode;
-import org.sonatype.aether.util.version.GenericVersionScheme;
+import org.sonatype.aether.test.util.impl.StubArtifact;
+import org.sonatype.aether.test.util.impl.TestDependencyNode;
+import org.sonatype.aether.test.util.impl.TestVersionScheme;
 import org.sonatype.aether.version.InvalidVersionSpecificationException;
 import org.sonatype.aether.version.VersionScheme;
 
@@ -51,7 +54,9 @@ public class NodeBuilder
 
     private List<Artifact> relocations = new ArrayList<Artifact>();
 
-    private VersionScheme versionScheme = new GenericVersionScheme();
+    private VersionScheme versionScheme = new TestVersionScheme();
+
+    private Map<String, String> properties = new HashMap<String, String>(0);
 
     public NodeBuilder artifactId( String artifactId )
     {
@@ -99,25 +104,31 @@ public class NodeBuilder
 
     public NodeBuilder reloc( String artifactId )
     {
-        Artifact relocation = new DefaultArtifact( groupId, artifactId, classifier, ext, version );
+        Artifact relocation = new StubArtifact( groupId, artifactId, classifier, ext, version );
         relocations.add( relocation );
         return this;
     }
 
     public NodeBuilder reloc( String groupId, String artifactId, String version )
     {
-        Artifact relocation = new DefaultArtifact( groupId, artifactId, classifier, ext, version );
+        Artifact relocation = new StubArtifact( groupId, artifactId, classifier, ext, version );
         relocations.add( relocation );
+        return this;
+    }
+    
+    public NodeBuilder properties( Map<String, String> properties )
+    {
+        this.properties = properties != null ? properties : Collections.<String, String>emptyMap();
         return this;
     }
 
     public DependencyNode build()
     {
         Dependency dependency = null;
-        DefaultDependencyNode node = new DefaultDependencyNode();
+        TestDependencyNode node = new TestDependencyNode();
         if ( artifactId != null && artifactId.length() > 0 )
         {
-            Artifact artifact = new DefaultArtifact( groupId, artifactId, classifier, ext, version );
+            Artifact artifact = new StubArtifact( groupId, artifactId, classifier, ext, version, properties );
             dependency = new Dependency( artifact, scope, optional );
             node.setDependency( dependency );
             try

@@ -1,4 +1,4 @@
-package org.sonatype.aether.test.util.connector;
+package org.sonatype.aether.test.util.impl;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -24,7 +24,7 @@ import org.sonatype.aether.artifact.Artifact;
 /**
  * @author Benjamin Bentmann
  */
-class StubArtifact
+public class StubArtifact
     implements Artifact
 {
 
@@ -42,7 +42,7 @@ class StubArtifact
 
     private final Map<String, String> properties;
 
-    public StubArtifact( String coords )
+    public StubArtifact( String coords, Map<String, String> properties )
     {
         Pattern p = Pattern.compile( "([^: ]+):([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?" );
         Matcher m = p.matcher( coords );
@@ -57,7 +57,12 @@ class StubArtifact
         extension = get( m.group( 5 ), "jar" );
         classifier = get( m.group( 7 ), "" );
         file = null;
-        properties = Collections.emptyMap();
+        this.properties = properties;
+    }
+    
+    public StubArtifact( String coords )
+    {
+        this( coords, Collections.<String, String>emptyMap());
     }
 
     private static String get( String value, String defaultValue )
@@ -65,7 +70,7 @@ class StubArtifact
         return ( value == null || value.length() <= 0 ) ? defaultValue : value;
     }
 
-    public StubArtifact( String groupId, String artifactId, String classifier, String extension, String version )
+    public StubArtifact( String groupId, String artifactId, String classifier, String extension, String version, Map<String, String> properties )
     {
         this.groupId = emptify( groupId );
         this.artifactId = emptify( artifactId );
@@ -73,7 +78,12 @@ class StubArtifact
         this.extension = emptify( extension );
         this.version = emptify( version );
         this.file = null;
-        this.properties = Collections.emptyMap();
+        this.properties = properties != null ? properties : Collections.<String, String>emptyMap();
+    }
+    
+    public StubArtifact( String groupId, String artifactId, String classifier, String extension, String version )
+    {
+        this( groupId, artifactId, classifier, extension, version, Collections.<String, String>emptyMap());
     }
 
     private static String emptify( String str )
@@ -140,6 +150,11 @@ class StubArtifact
     public Map<String, String> getProperties()
     {
         return Collections.unmodifiableMap( properties );
+    }
+
+    public Artifact setProperties( Map<String, String> properties )
+    {
+        throw new UnsupportedOperationException( "not implemented" );
     }
 
     @Override

@@ -90,13 +90,7 @@ public final class DefaultArtifact
 
     public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version )
     {
-        this.groupId = emptify( groupId );
-        this.artifactId = emptify( artifactId );
-        this.classifier = emptify( classifier );
-        this.extension = emptify( extension );
-        this.version = emptify( version );
-        this.file = null;
-        this.properties = Collections.emptyMap();
+        this( groupId, artifactId, classifier, extension, version, null, (File) null );
     }
 
     public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version,
@@ -218,7 +212,7 @@ public final class DefaultArtifact
 
     public Artifact setVersion( String version )
     {
-        if ( this.version.equals( version ) )
+        if ( this.version.equals( version ) || ( version == null && this.version.length() <= 0 ) )
         {
             return this;
         }
@@ -263,6 +257,15 @@ public final class DefaultArtifact
     public Map<String, String> getProperties()
     {
         return Collections.unmodifiableMap( properties );
+    }
+
+    public Artifact setProperties( Map<String, String> properties )
+    {
+        if ( this.properties.equals( properties ) || ( properties == null && this.properties.isEmpty() ) )
+        {
+            return this;
+        }
+        return new DefaultArtifact( groupId, artifactId, classifier, extension, version, properties, file );
     }
 
 }

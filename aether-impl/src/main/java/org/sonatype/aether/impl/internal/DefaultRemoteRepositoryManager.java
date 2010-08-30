@@ -66,6 +66,19 @@ public class DefaultRemoteRepositoryManager
 
         };
 
+    public DefaultRemoteRepositoryManager()
+    {
+        // enables default constructor
+    }
+
+    public DefaultRemoteRepositoryManager( Logger logger, UpdateCheckManager updateCheckManager,
+                                           List<RepositoryConnectorFactory> connectorFactories )
+    {
+        setLogger( logger );
+        setUpdateCheckManager( updateCheckManager );
+        setRepositoryConnectorFactories( connectorFactories );
+    }
+
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );
@@ -96,6 +109,19 @@ public class DefaultRemoteRepositoryManager
             throw new IllegalArgumentException( "repository connector factory has not been specified" );
         }
         connectorFactories.add( factory );
+        return this;
+    }
+
+    public DefaultRemoteRepositoryManager setRepositoryConnectorFactories( List<RepositoryConnectorFactory> factories )
+    {
+        if ( factories == null )
+        {
+            this.connectorFactories = new ArrayList<RepositoryConnectorFactory>();
+        }
+        else
+        {
+            this.connectorFactories = factories;
+        }
         return this;
     }
 
@@ -148,10 +174,12 @@ public class DefaultRemoteRepositoryManager
                         mergedRepository.setAuthentication( dominantRepository.getAuthentication() );
                         mergedRepository.setProxy( dominantRepository.getProxy() );
 
-                        mergedRepository.setPolicy( true, merge( session, dominantRepository.getPolicy( true ),
-                                                                 repository.getPolicy( true ) ) );
-                        mergedRepository.setPolicy( false, merge( session, dominantRepository.getPolicy( false ),
-                                                                  repository.getPolicy( false ) ) );
+                        mergedRepository.setPolicy( true,
+                                                    merge( session, dominantRepository.getPolicy( true ),
+                                                           repository.getPolicy( true ) ) );
+                        mergedRepository.setPolicy( false,
+                                                    merge( session, dominantRepository.getPolicy( false ),
+                                                           repository.getPolicy( false ) ) );
 
                         List<RemoteRepository> mirroredRepositories = dominantRepository.getMirroredRepositories();
                         String rawKey = getKey( recessiveRepository );

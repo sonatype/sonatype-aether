@@ -33,7 +33,7 @@ public final class ConfigurationProperties
      * 
      * @see #DEFAULT_INTERACTIVE
      */
-    public static final String INTERACTIVE = PREFIX_AETHER + ".interactive";
+    public static final String INTERACTIVE = PREFIX_AETHER + "interactive";
 
     /**
      * The default interactive mode if {@link #INTERACTIVE} isn't set.

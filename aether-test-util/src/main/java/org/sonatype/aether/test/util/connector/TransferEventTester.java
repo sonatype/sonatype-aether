@@ -28,6 +28,7 @@ import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
@@ -38,6 +39,7 @@ import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.test.impl.RecordingTransferListener;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferListener;
@@ -203,7 +205,7 @@ public class TransferEventTester
                 new StubMetadata( "testGroup", "testArtifact", ( i + 1 ) + "test", "jar",
                                      Metadata.Nature.RELEASE_OR_SNAPSHOT, file );
             String context = null;
-            String checksumPolicy = null;
+            String checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_IGNORE;
 
             Object obj = null;
             if ( cls.isAssignableFrom( ArtifactUpload.class ) )

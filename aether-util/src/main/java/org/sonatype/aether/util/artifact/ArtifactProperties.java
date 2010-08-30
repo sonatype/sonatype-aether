@@ -33,9 +33,12 @@ public final class ArtifactProperties
     public static final String LANGUAGE = "language";
 
     /**
-     * A boolean flag indicating whether the artifact has knowingly no accompanying artifact descriptor.
+     * The (expected) path to the artifact on the local filesystem. An artifact which has this property set is assumed
+     * to be not present in any regular repository and likewise has no artifact descriptor. Artifact resolution will
+     * verify the path and resolve the artifact if the path actually denotes an existing file. If the path isn't valid,
+     * resolution will fail and no attempts to search local/remote repositories are made.
      */
-    public static final String LACKS_DESCRIPTOR = "lacksDescriptor";
+    public static final String LOCAL_PATH = "localPath";
 
     /**
      * A boolean flag indicating whether the artifact presents some kind of bundle that physically includes its

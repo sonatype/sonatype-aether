@@ -37,6 +37,7 @@ import org.sonatype.aether.impl.VersionResolver;
 import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.artifact.ArtifactProperties;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 import org.sonatype.aether.repository.ArtifactRepository;
 import org.sonatype.aether.repository.LocalArtifactRegistration;
@@ -80,8 +81,25 @@ public class DefaultArtifactResolver
     @Requirement
     private RemoteRepositoryManager remoteRepositoryManager;
 
-    @Requirement( optional = true )
-    private LocalRepositoryMaintainer maintainer;
+    @Requirement( role = LocalRepositoryMaintainer.class )
+    private List<LocalRepositoryMaintainer> localRepositoryMaintainers = new ArrayList<LocalRepositoryMaintainer>();
+
+    public DefaultArtifactResolver()
+    {
+        // enables default constructor
+    }
+
+    public DefaultArtifactResolver( Logger logger, VersionResolver versionResolver,
+                                    UpdateCheckManager updateCheckManager,
+                                    RemoteRepositoryManager remoteRepositoryManager,
+                                    List<LocalRepositoryMaintainer> localRepositoryMaintainers )
+    {
+        setLogger( logger );
+        setVersionResolver( versionResolver );
+        setUpdateCheckManager( updateCheckManager );
+        setRemoteRepositoryManager( remoteRepositoryManager );
+        setLocalRepositoryMaintainers( localRepositoryMaintainers );
+    }
 
     public void initService( ServiceLocator locator )
     {
@@ -89,6 +107,7 @@ public class DefaultArtifactResolver
         setVersionResolver( locator.getService( VersionResolver.class ) );
         setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
         setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
+        setLocalRepositoryMaintainers( locator.getServices( LocalRepositoryMaintainer.class ) );
     }
 
     public DefaultArtifactResolver setLogger( Logger logger )
@@ -127,9 +146,26 @@ public class DefaultArtifactResolver
         return this;
     }
 
-    public DefaultArtifactResolver setLocalRepositoryMaintainer( LocalRepositoryMaintainer maintainer )
+    public DefaultArtifactResolver addLocalRepositoryMaintainer( LocalRepositoryMaintainer maintainer )
     {
-        this.maintainer = maintainer;
+        if ( maintainer == null )
+        {
+            throw new IllegalArgumentException( "local repository maintainer has not been specified" );
+        }
+        this.localRepositoryMaintainers.add( maintainer );
+        return this;
+    }
+
+    public DefaultArtifactResolver setLocalRepositoryMaintainers( List<LocalRepositoryMaintainer> maintainers )
+    {
+        if ( maintainers == null )
+        {
+            this.localRepositoryMaintainers = new ArrayList<LocalRepositoryMaintainer>();
+        }
+        else
+        {
+            this.localRepositoryMaintainers = maintainers;
+        }
         return this;
     }
 
@@ -161,16 +197,19 @@ public class DefaultArtifactResolver
 
             artifactResolving( session, artifact );
 
-            if ( artifact.getFile() != null )
+            String localPath = artifact.getProperty( ArtifactProperties.LOCAL_PATH, null );
+            if ( localPath != null )
             {
-                // pre-resolved (e.g. system scope), just validate file
-                if ( !artifact.getFile().isFile() )
+                // unhosted artifact, just validate file
+                File file = new File( localPath );
+                if ( !file.isFile() )
                 {
                     failures = true;
                     result.addException( new ArtifactNotFoundException( artifact, null ) );
                 }
                 else
                 {
+                    artifact = artifact.setFile( file );
                     result.setArtifact( artifact );
                 }
                 artifactResolved( session, artifact, null, result.getExceptions() );
@@ -391,10 +430,16 @@ public class DefaultArtifactResolver
                     }
                     lrm.add( session,
                              new LocalArtifactRegistration( artifact, group.repository, download.getSupportedContexts() ) );
-                    if ( maintainer != null )
+
+                    if ( !localRepositoryMaintainers.isEmpty() )
                     {
-                        maintainer.artifactDownloaded( new DefaultLocalRepositoryEvent( session, artifact ) );
+                        DefaultLocalRepositoryEvent event = new DefaultLocalRepositoryEvent( session, artifact );
+                        for ( LocalRepositoryMaintainer maintainer : localRepositoryMaintainers )
+                        {
+                            maintainer.artifactDownloaded( event );
+                        }
                     }
+
                     artifactResolved( session, artifact, group.repository, null );
                 }
                 else

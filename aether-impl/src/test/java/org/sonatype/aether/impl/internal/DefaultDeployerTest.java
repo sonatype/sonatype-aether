@@ -86,34 +86,36 @@ public class DefaultDeployerTest
 
         connector.assertSeenExpected();
     }
-    
-    @Test(expected=DeploymentException.class)
-    public void testNullArtifactFile() throws DeploymentException
+
+    @Test( expected = DeploymentException.class )
+    public void testNullArtifactFile()
+        throws DeploymentException
     {
-        RecordingRepositoryConnector connector = new RecordingRepositoryConnector( null, null, null, null);
+        RecordingRepositoryConnector connector = new RecordingRepositoryConnector( null, null, null, null );
         manager.setConnector( connector );
-        
+
         DefaultDeployer deployer = new DefaultDeployer();
         deployer.setRemoteRepositoryManager( manager );
         deployer.setUpdateCheckManager( new DoNothingUpdateCheckManager() );
         deployer.setLogger( new NullLogger() );
-        
+
         DeployRequest request = new DeployRequest();
         request.addArtifact( artifact.setFile( null ) );
         deployer.deploy( session, request );
     }
-    
-    @Test(expected=DeploymentException.class)
-    public void testNullMetadataFile() throws DeploymentException
+
+    @Test( expected = DeploymentException.class )
+    public void testNullMetadataFile()
+        throws DeploymentException
     {
-        RecordingRepositoryConnector connector = new RecordingRepositoryConnector( null, null, null, null);
+        RecordingRepositoryConnector connector = new RecordingRepositoryConnector( null, null, null, null );
         manager.setConnector( connector );
-        
+
         DefaultDeployer deployer = new DefaultDeployer();
         deployer.setRemoteRepositoryManager( manager );
         deployer.setUpdateCheckManager( new DoNothingUpdateCheckManager() );
         deployer.setLogger( new NullLogger() );
-        
+
         DeployRequest request = new DeployRequest();
         request.addArtifact( artifact.setFile( null ) );
         deployer.deploy( session, request );
@@ -153,11 +155,6 @@ public class DefaultDeployerTest
     {
 
         private RepositoryConnector connector;
-
-        public RepositoryConnector getConnector()
-        {
-            return connector;
-        }
 
         public void setConnector( RepositoryConnector connector )
         {
