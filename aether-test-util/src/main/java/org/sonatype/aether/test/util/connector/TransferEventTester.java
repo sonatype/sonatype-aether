@@ -100,13 +100,15 @@ public class TransferEventTester
     private static void checkEvents( Queue<TransferEvent> events, long expectedBytes )
     {
         TransferEvent currentEvent = events.poll();
-        assertNotNull( "initiate event is missing", currentEvent );
-        assertEquals( INITIATED, currentEvent.getType() );
+        String msg = "initiate event is missing";
+        assertNotNull( msg, currentEvent );
+        assertEquals( msg, INITIATED, currentEvent.getType() );
         checkProperties( currentEvent );
 
         currentEvent = events.poll();
-        assertNotNull( "start event is missing", currentEvent );
-        assertEquals( TransferEvent.EventType.STARTED, currentEvent.getType() );
+        msg = "start event is missing";
+        assertNotNull( msg, currentEvent );
+        assertEquals( msg, TransferEvent.EventType.STARTED, currentEvent.getType() );
         checkProperties( currentEvent );
 
         EventType progressed = TransferEvent.EventType.PROGRESSED;
@@ -137,29 +139,37 @@ public class TransferEventTester
         }
 
         // all events consumed
-        assertEquals( 0, events.size() );
+        assertEquals( "too many events left: " + events.toString(), 0, events.size() );
 
         // test transferred size
-        assertEquals( "progress events transferred bytes don't match", expectedBytes, dataLength );
+        assertEquals( "progress events transferred bytes don't match: data length does not add up", expectedBytes,
+                      dataLength );
         assertEquals( "succeed event transferred bytes don't match", expectedBytes, succeedEvent.getTransferredBytes() );
     }
 
     private static void checkProperties( TransferEvent event )
     {
-        assertNotNull( event.getResource() );
-        assertNotNull( event.getRequestType() );
-        assertNotNull( event.getType() );
+        assertNotNull( "resource is null for type: " + event.getType(), event.getResource() );
+        assertNotNull( "request type is null for type: " + event.getType(), event.getRequestType() );
+        assertNotNull( "type is null for type: " + event.getType(), event.getType() );
 
         if ( PROGRESSED.equals( event.getType() ) )
         {
-            assertNotNull( event.getDataBuffer() );
-            assertTrue( event.getDataLength() > -1 );
-            assertTrue( event.getDataOffset() > -1 );
-            assertTrue( event.getTransferredBytes() > -1 );
+            assertNotNull( "data buffer is null for type: " + event.getType(), event.getDataBuffer() );
+            assertTrue( "data length is not set/not positive for type: " + event.getType(), event.getDataLength() > -1 );
+            assertTrue( "data offset is not valid for type: " + event.getType(), event.getDataOffset() > -1 );
+
+            assertTrue( "invalid data offset: bigger than data length", event.getDataOffset() < event.getDataLength() );
+            assertTrue( "invalid data window: offset+data length > data buffer length",
+                        event.getDataOffset() + event.getDataLength() < event.getDataBuffer().length );
+
+            assertTrue( "transferred byte is not set/not positive for type: " + event.getType(),
+                        event.getTransferredBytes() > -1 );
         }
         else if ( SUCCEEDED.equals( event.getType() ) )
         {
-            assertTrue( event.getTransferredBytes() > -1 );
+            assertTrue( "transferred byte is not set/not positive for type: " + event.getType(),
+                        event.getTransferredBytes() > -1 );
         }
     }
 
