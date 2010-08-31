@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 
-import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.metadata.Metadata;
@@ -64,7 +63,6 @@ class FileRepositoryWorker
     implements Runnable
 {
 
-    @Requirement
     private Logger logger = NullLogger.INSTANCE;
 
     enum Direction
@@ -247,8 +245,9 @@ class FileRepositoryWorker
             }
             else
             {
-                File dir = new File( baseDir, transfer.getRelativePath() ).getParentFile();
+                File dir = target.getParentFile();
 
+                // dir = new File( baseDir, transfer.getRelativePath() ).getParentFile();
                 logger.debug( "creating dir: " + dir.getAbsolutePath() );
 
                 // mkdirs is not threadsafe, try harder
@@ -362,12 +361,20 @@ class FileRepositoryWorker
 
     private void logEvent( TransferEvent event, Throwable exception )
     {
-        // if ( ! logger.isDebugEnabled() )
-        // {
-        // return;
-        // }
+        if ( !logger.isDebugEnabled() )
+        {
+            return;
+        }
         
-        logger.debug( event.getType() + ": " + event.getResource(), exception );
+        String msg = event.getType() + ": " + event.getResource();
+        if ( exception != null )
+        {
+            logger.debug( msg, exception );
+        }
+        else
+        {
+            logger.debug( msg );
+        }
     }
 
 
@@ -528,6 +535,11 @@ class FileRepositoryWorker
         event.setRequestType( direction.getType() );
         event.setException( transfer.getException() );
         return event;
+    }
+
+    public void setLogger( Logger logger )
+    {
+        this.logger = logger;
     }
 
 }
