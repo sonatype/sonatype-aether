@@ -177,4 +177,9 @@ public class TestRepositorySystemSession
     {
         this.repositoryListener = repositoryListener;
     }
+
+    public void setTransferListener( TransferListener listener )
+    {
+        this.listener = listener;
+    }
 }
