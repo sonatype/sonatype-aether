@@ -49,6 +49,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-component-annotations</artifactId>
       <version>1.5.4</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
@@ -67,10 +68,10 @@ See the Apache License Version 2.0 for the specific language governing permissio
       <artifactId>junit</artifactId>
     </dependency>
     <dependency>
-    	<groupId>org.sonatype.aether</groupId>
-    	<artifactId>aether-test-util</artifactId>
-    	<version>${project.version}</version>
-    	<scope>test</scope>
+      <groupId>org.sonatype.aether</groupId>
+      <artifactId>aether-test-util</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
