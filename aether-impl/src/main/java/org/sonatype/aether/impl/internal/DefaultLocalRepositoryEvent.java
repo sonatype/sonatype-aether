@@ -13,6 +13,8 @@ package org.sonatype.aether.impl.internal;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import java.io.File;
+
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.LocalRepositoryEvent;
@@ -31,11 +33,14 @@ class DefaultLocalRepositoryEvent
 
     private final Artifact artifact;
 
-    public DefaultLocalRepositoryEvent( RepositorySystemSession session, Artifact artifact )
+    private final File file;
+
+    public DefaultLocalRepositoryEvent( RepositorySystemSession session, Artifact artifact, File file )
     {
         this.session = session;
         this.repository = session.getLocalRepository();
         this.artifact = artifact;
+        this.file = file;
     }
 
     public RepositorySystemSession getSession()
@@ -51,6 +56,11 @@ class DefaultLocalRepositoryEvent
     public Artifact getArtifact()
     {
         return artifact;
+    }
+
+    public File getFile()
+    {
+        return file;
     }
 
 }

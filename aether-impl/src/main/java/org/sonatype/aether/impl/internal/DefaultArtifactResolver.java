@@ -433,7 +433,8 @@ public class DefaultArtifactResolver
 
                     if ( !localRepositoryMaintainers.isEmpty() )
                     {
-                        DefaultLocalRepositoryEvent event = new DefaultLocalRepositoryEvent( session, artifact );
+                        DefaultLocalRepositoryEvent event =
+                            new DefaultLocalRepositoryEvent( session, artifact, artifact.getFile() );
                         for ( LocalRepositoryMaintainer maintainer : localRepositoryMaintainers )
                         {
                             maintainer.artifactDownloaded( event );

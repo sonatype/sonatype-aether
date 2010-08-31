@@ -13,6 +13,8 @@ package org.sonatype.aether.impl;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import java.io.File;
+
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.repository.LocalRepository;
@@ -41,10 +43,18 @@ public interface LocalRepositoryEvent
     LocalRepository getRepository();
 
     /**
-     * Gets the artifact that was updated.
+     * Gets the artifact that was updated. Note that the file associated with this artifact need not point at the
+     * artifact's location within the local repository, use {@link #getFile()} to query this path.
      * 
      * @return The artifact, never {@code null}.
      */
     Artifact getArtifact();
+
+    /**
+     * Gets the path to the artifact within the local repository.
+     * 
+     * @return The path to the artifact in the local repository, never {@code null}.
+     */
+    File getFile();
 
 }

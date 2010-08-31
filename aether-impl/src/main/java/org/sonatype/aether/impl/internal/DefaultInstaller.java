@@ -262,7 +262,7 @@ public class DefaultInstaller
 
             if ( !localRepositoryMaintainers.isEmpty() )
             {
-                DefaultLocalRepositoryEvent event = new DefaultLocalRepositoryEvent( session, artifact );
+                DefaultLocalRepositoryEvent event = new DefaultLocalRepositoryEvent( session, artifact, dstFile );
                 for ( LocalRepositoryMaintainer maintainer : localRepositoryMaintainers )
                 {
                     maintainer.artifactInstalled( event );
