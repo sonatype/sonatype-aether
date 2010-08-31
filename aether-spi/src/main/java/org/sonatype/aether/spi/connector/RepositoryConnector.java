@@ -23,7 +23,9 @@ import java.util.Collection;
  * its processing. Furthermore, the connector must notify any {@link org.sonatype.aether.transfer.TransferListener
  * TransferListener} configured on its associated {@link org.sonatype.aether.RepositorySystemSession
  * RepositorySystemSession}. If applicable, a connector should obey connect/request timeouts and other relevant settings
- * from the configuration properties of the repository system session.
+ * from the configuration properties of the repository system session. While a connector itself can use multiple threads
+ * internally to performs the transfers, clients must not call a connector concurrently, i.e. connectors are generally
+ * not thread-safe.
  * 
  * @author Benjamin Bentmann
  * @see org.sonatype.aether.RepositorySystemSession#getConfigProperties()
@@ -33,7 +35,8 @@ public interface RepositoryConnector
 
     /**
      * Performs the specified downloads. Any error encountered during a transfer can later be queried via
-     * {@link ArtifactDownload#getException()} and {@link MetadataDownload#getException()}, respectively.
+     * {@link ArtifactDownload#getException()} and {@link MetadataDownload#getException()}, respectively. The connector
+     * may performs the transfers concurrently and in any order.
      * 
      * @param artifactDownloads The artifact downloads to perform, may be {@code null} or empty.
      * @param metadataDownloads The metadata downloads to perform, may be {@code null} or empty.
@@ -43,7 +46,8 @@ public interface RepositoryConnector
 
     /**
      * Performs the specified uploads. Any error encountered during a transfer can later be queried via
-     * {@link ArtifactDownload#getException()} and {@link MetadataDownload#getException()}, respectively.
+     * {@link ArtifactDownload#getException()} and {@link MetadataDownload#getException()}, respectively. The connector
+     * may performs the transfers concurrently and in any order.
      * 
      * @param artifactUploads The artifact uploads to perform, may be {@code null} or empty.
      * @param metadataUploads The metadata uploads to perform, may be {@code null} or empty.
