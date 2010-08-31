@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.metadata.Metadata;
@@ -40,6 +41,8 @@ import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
+import org.sonatype.aether.spi.log.Logger;
+import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.ChecksumFailureException;
@@ -60,6 +63,9 @@ import org.sonatype.aether.util.listener.DefaultTransferResource;
 class FileRepositoryWorker
     implements Runnable
 {
+
+    @Requirement
+    private Logger logger = NullLogger.INSTANCE;
 
     enum Direction
     {
@@ -208,6 +214,7 @@ class FileRepositoryWorker
             transfer.setState( State.NEW );
             DefaultTransferEvent event = newEvent( transfer, repository );
             catapult.fireInitiated( event );
+            logEvent( event, null );
 
             File baseDir = new File( PathUtils.basedir( repository.getUrl() ) );
             File localFile = transfer.getFile();
@@ -232,6 +239,7 @@ class FileRepositoryWorker
 
             if ( transfer.isExistenceCheck() )
             {
+                logger.debug( "existence check: " + src.getAbsolutePath() + ", " + src.exists() );
                 if ( !src.exists() )
                 {
                     throw new FileNotFoundException( src.getAbsolutePath() );
@@ -239,12 +247,23 @@ class FileRepositoryWorker
             }
             else
             {
-                new File( baseDir, transfer.getRelativePath() ).getParentFile().mkdirs();
-                if ( target.getParentFile() != null )
+                File dir = new File( baseDir, transfer.getRelativePath() ).getParentFile();
+
+                logger.debug( "creating dir: " + dir.getAbsolutePath() );
+
+                // mkdirs is not threadsafe, try harder
+                int i = 0;
+                while ( !dir.exists() && !dir.mkdirs() )
                 {
-                    target.getParentFile().mkdirs();
+                    if ( i++ >= 5 )
+                    {
+                        throw new FileNotFoundException( "Could not create directory: " + dir.getAbsolutePath() );
+                    }
                 }
+
                 totalTransferred = copy( src, target );
+
+                logger.debug( "total transferred: " + totalTransferred );
 
                 switch ( direction )
                 {
@@ -259,6 +278,7 @@ class FileRepositoryWorker
         }
         catch ( FileNotFoundException e )
         {
+            logger.debug( "file not found: " + e.getMessage(), e );
             switch ( transfer.getType() )
             {
                 case ARTIFACT:
@@ -290,6 +310,7 @@ class FileRepositoryWorker
         }
         catch ( Throwable t )
         {
+            logger.debug( t.getMessage(), t );
             switch ( transfer.getType() )
             {
                 case ARTIFACT:
@@ -310,6 +331,7 @@ class FileRepositoryWorker
                     DefaultTransferEvent event = newEvent( transfer, repository );
                     event.setTransferredBytes( (int) totalTransferred );
                     catapult.fireSucceeded( event );
+                    logEvent( event, null );
                 }
                 else
                 {
@@ -323,7 +345,10 @@ class FileRepositoryWorker
                     }
                     if ( target != null )
                         target.delete();
-                    catapult.fireFailed( newEvent( transfer, repository ) );
+
+                    DefaultTransferEvent event = newEvent( transfer, repository );
+                    catapult.fireFailed( event );
+                    logEvent( event, event.getException() );
                 }
             }
             finally
@@ -334,6 +359,17 @@ class FileRepositoryWorker
         }
 
     }
+
+    private void logEvent( TransferEvent event, Throwable exception )
+    {
+        // if ( ! logger.isDebugEnabled() )
+        // {
+        // return;
+        // }
+        
+        logger.debug( event.getType() + ": " + event.getResource(), exception );
+    }
+
 
     private void writeChecksum( File src, String targetPath )
         throws IOException, Throwable
