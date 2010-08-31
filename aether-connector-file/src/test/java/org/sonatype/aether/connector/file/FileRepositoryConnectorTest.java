@@ -31,6 +31,7 @@ import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
+import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.test.util.FileUtil;
 import org.sonatype.aether.test.util.connector.ConnectorTestContext;
 import org.sonatype.aether.test.util.connector.TransferEventTester;
@@ -49,8 +50,33 @@ public class FileRepositoryConnectorTest
     public void setup()
         throws NoRepositoryConnectorException
     {
+        Logger logger = new Logger()
+        {
+
+            public boolean isDebugEnabled()
+            {
+                // return true;
+                return false;
+            }
+
+            public void debug( String msg, Throwable error )
+            {
+                System.err.println( msg );
+                if ( error != null )
+                {
+                    error.printStackTrace();
+                }
+
+            }
+
+            public void debug( String msg )
+            {
+                System.out.println( msg );
+            }
+        };
+
         ctx = TransferEventTester.setupTestContext();
-        connector = new FileRepositoryConnector( ctx.getSession(), ctx.getRepository() );
+        connector = new FileRepositoryConnector( ctx.getSession(), ctx.getRepository(), logger );
     }
 
     @After

@@ -212,7 +212,6 @@ class FileRepositoryWorker
             transfer.setState( State.NEW );
             DefaultTransferEvent event = newEvent( transfer, repository );
             catapult.fireInitiated( event );
-            logEvent( event, null );
 
             File baseDir = new File( PathUtils.basedir( repository.getUrl() ) );
             File localFile = transfer.getFile();
@@ -262,7 +261,7 @@ class FileRepositoryWorker
 
                 totalTransferred = copy( src, target );
 
-                logger.debug( "total transferred: " + totalTransferred );
+                logger.debug( "total transferred bytes: " + totalTransferred );
 
                 switch ( direction )
                 {
@@ -330,7 +329,6 @@ class FileRepositoryWorker
                     DefaultTransferEvent event = newEvent( transfer, repository );
                     event.setTransferredBytes( (int) totalTransferred );
                     catapult.fireSucceeded( event );
-                    logEvent( event, null );
                 }
                 else
                 {
@@ -347,7 +345,6 @@ class FileRepositoryWorker
 
                     DefaultTransferEvent event = newEvent( transfer, repository );
                     catapult.fireFailed( event );
-                    logEvent( event, event.getException() );
                 }
             }
             finally
@@ -358,25 +355,6 @@ class FileRepositoryWorker
         }
 
     }
-
-    private void logEvent( TransferEvent event, Throwable exception )
-    {
-        if ( !logger.isDebugEnabled() )
-        {
-            return;
-        }
-        
-        String msg = event.getType() + ": " + event.getResource();
-        if ( exception != null )
-        {
-            logger.debug( msg, exception );
-        }
-        else
-        {
-            logger.debug( msg );
-        }
-    }
-
 
     private void writeChecksum( File src, String targetPath )
         throws IOException, Throwable

@@ -14,10 +14,13 @@ package org.sonatype.aether.connector.file;
  */
 
 import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
+import org.sonatype.aether.spi.log.Logger;
+import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 
 /**
@@ -31,6 +34,9 @@ public class FileRepositoryConnectorFactory
     implements RepositoryConnectorFactory
 {
 
+    @Requirement
+    private Logger logger = NullLogger.INSTANCE;
+
     private static final int FRCF_PRIORITY = 1;
 
     public static final String CFG_PREFIX = "aether.connector.file";
@@ -41,7 +47,7 @@ public class FileRepositoryConnectorFactory
 
         if ( "file".equalsIgnoreCase( repository.getProtocol() ) )
         {
-            FileRepositoryConnector connector = new FileRepositoryConnector( session, repository );
+            FileRepositoryConnector connector = new FileRepositoryConnector( session, repository, logger );
             return connector;
         }
         else

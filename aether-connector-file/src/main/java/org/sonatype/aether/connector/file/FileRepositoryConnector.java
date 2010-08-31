@@ -24,6 +24,8 @@ import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
+import org.sonatype.aether.spi.log.Logger;
+import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 
 /**
@@ -40,7 +42,9 @@ public class FileRepositoryConnector
 
     private RepositorySystemSession session;
 
-    public FileRepositoryConnector( RepositorySystemSession session, RemoteRepository repository )
+    private Logger logger = NullLogger.INSTANCE;
+
+    public FileRepositoryConnector( RepositorySystemSession session, RemoteRepository repository, Logger logger )
         throws NoRepositoryConnectorException
     {
         super( session.getConfigProperties() );
@@ -51,6 +55,7 @@ public class FileRepositoryConnector
 
         this.session = session;
         this.repository = repository;
+        this.logger = logger;
     }
 
     public void get( Collection<? extends ArtifactDownload> artifactDownloads,
@@ -67,6 +72,7 @@ public class FileRepositoryConnector
         {
             FileRepositoryWorker worker = new FileRepositoryWorker( artifactDownload, repository, session );
             worker.setLatch( latch );
+            worker.setLogger( logger );
             executor.execute( worker );
         }
 
@@ -74,11 +80,14 @@ public class FileRepositoryConnector
         {
             FileRepositoryWorker worker = new FileRepositoryWorker( metadataDownload, repository, session );
             worker.setLatch( latch );
+            worker.setLogger( logger );
             executor.execute( worker );
         }
 
+
         while ( latch.getCount() > 0 )
         {
+            logger.debug( "Waiting for " + latch.getCount() + " transfers..." );
             try
             {
                 latch.await();
@@ -109,17 +118,20 @@ public class FileRepositoryConnector
         {
             FileRepositoryWorker worker = new FileRepositoryWorker( artifactUpload, repository, session );
             worker.setLatch( latch );
+            worker.setLogger( logger );
             executor.execute( worker );
         }
         for ( MetadataUpload metadataUpload : metadataUploads )
         {
             FileRepositoryWorker worker = new FileRepositoryWorker( metadataUpload, repository, session );
             worker.setLatch( latch );
+            worker.setLogger( logger );
             executor.execute( worker );
         }
 
         while ( latch.getCount() > 0 )
         {
+            logger.debug( "Waiting for " + latch.getCount() + " transfers..." );
             try
             {
                 latch.await();
