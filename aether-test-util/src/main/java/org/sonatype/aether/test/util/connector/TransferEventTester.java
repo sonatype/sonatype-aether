@@ -42,8 +42,8 @@ import org.sonatype.aether.test.util.FileUtil;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.transfer.TransferEvent;
-import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.transfer.TransferEvent.EventType;
+import org.sonatype.aether.transfer.TransferListener;
 
 public class TransferEventTester
 {
@@ -188,6 +188,7 @@ public class TransferEventTester
         }
 
         TestRepositorySystemSession session = new TestRepositorySystemSession();
+        session.setTransferListener( listener );
 
         return new ConnectorTestContext( repository, session );
 
