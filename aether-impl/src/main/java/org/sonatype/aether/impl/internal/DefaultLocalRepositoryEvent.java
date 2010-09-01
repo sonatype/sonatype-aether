@@ -63,4 +63,10 @@ class DefaultLocalRepositoryEvent
         return file;
     }
 
+    @Override
+    public String toString()
+    {
+        return getArtifact() + " > " + getFile();
+    }
+
 }
