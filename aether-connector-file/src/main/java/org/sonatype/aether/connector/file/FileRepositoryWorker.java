@@ -236,7 +236,6 @@ class FileRepositoryWorker
 
             if ( transfer.isExistenceCheck() )
             {
-                logger.debug( "existence check: " + src.getAbsolutePath() + ", " + src.exists() );
                 if ( !src.exists() )
                 {
                     throw new FileNotFoundException( src.getAbsolutePath() );
@@ -247,7 +246,6 @@ class FileRepositoryWorker
                 File dir = target.getParentFile();
 
                 // dir = new File( baseDir, transfer.getRelativePath() ).getParentFile();
-                logger.debug( "creating dir: " + dir.getAbsolutePath() );
 
                 // mkdirs is not threadsafe, try harder
                 int i = 0;
@@ -261,7 +259,6 @@ class FileRepositoryWorker
 
                 totalTransferred = copy( src, target );
 
-                logger.debug( "total transferred bytes: " + totalTransferred );
 
                 switch ( direction )
                 {
@@ -276,7 +273,6 @@ class FileRepositoryWorker
         }
         catch ( FileNotFoundException e )
         {
-            logger.debug( "file not found: " + e.getMessage(), e );
             switch ( transfer.getType() )
             {
                 case ARTIFACT:

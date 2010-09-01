@@ -87,7 +87,6 @@ public class FileRepositoryConnector
 
         while ( latch.getCount() > 0 )
         {
-            logger.debug( "Waiting for " + latch.getCount() + " transfers..." );
             try
             {
                 latch.await();
@@ -131,7 +130,6 @@ public class FileRepositoryConnector
 
         while ( latch.getCount() > 0 )
         {
-            logger.debug( "Waiting for " + latch.getCount() + " transfers..." );
             try
             {
                 latch.await();
