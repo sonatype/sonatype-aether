@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -49,22 +48,12 @@ public class TransferEventTester
 {
     // TODO: test failed/interrupted transfers
 
-    public static void testTransferEvents( RepositoryConnectorFactory factory )
-        throws IOException, NoRepositoryConnectorException
+    public static void testSuccessfulTransferEvents( RepositoryConnectorFactory factory,
+                                                     TestRepositorySystemSession session, RemoteRepository repository )
+        throws NoRepositoryConnectorException, IOException
     {
-
-        RecordingTransferListener listener = new RecordingTransferListener();
-
-        ConnectorTestContext ctx = setupTestContext( listener );
-        testTransferEvents( factory, ctx );
-    }
-
-    public static void testTransferEvents( RepositoryConnectorFactory factory, ConnectorTestContext ctx )
-        throws IOException, NoRepositoryConnectorException
-    {
-        RepositorySystemSession session = ctx.getSession();
-        RemoteRepository repository = ctx.getRepository();
-        RecordingTransferListener listener = ctx.getRecordingTransferListener();
+        RecordingTransferListener listener = new RecordingTransferListener( session.getTransferListener() );
+        session.setTransferListener( listener );
 
         RepositoryConnector connector = factory.newInstance( session, repository );
 
