@@ -207,6 +207,12 @@ public class SimpleLocalRepositoryManager
         // noop
     }
 
+    @Override
+    public String toString()
+    {
+        return String.valueOf( getRepository() );
+    }
+
     static class SafeDigest
     {
 

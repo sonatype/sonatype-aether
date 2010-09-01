@@ -415,6 +415,12 @@ class WagonRepositoryConnector
         }
     }
 
+    @Override
+    public String toString()
+    {
+        return String.valueOf( repository );
+    }
+
     class GetTask<T extends Transfer>
         implements Runnable
     {

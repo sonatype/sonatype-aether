@@ -143,4 +143,10 @@ public class FileRepositoryConnector
         }
     }
 
+    @Override
+    public String toString()
+    {
+        return String.valueOf( repository );
+    }
+
 }
