@@ -28,7 +28,6 @@ import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
-import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
 import org.sonatype.aether.spi.log.Logger;
@@ -99,6 +98,7 @@ public class FileRepositoryConnectorTest
         
         for ( int j = 0; j < 1000; j++ )
         {
+            System.err.println( j );
 
             Collection<ArtifactUpload> artUps = Arrays.asList( artUp );
             Collection<MetadataUpload> metaUps = Arrays.asList( metaUp );
@@ -181,13 +181,5 @@ public class FileRepositoryConnectorTest
         }
     }
 
-    @Test
-    public void testSuccededTransferEvents()
-        throws IOException, NoRepositoryConnectorException
-    {
-        RepositoryConnectorFactory factory = new FileRepositoryConnectorFactory();
-
-        TransferEventTester.testTransferEvents( factory );
-    }
 
 }
