@@ -150,7 +150,7 @@ public class TransferEventTester
 
             assertTrue( "invalid data offset: bigger than data length", event.getDataOffset() < event.getDataLength() );
             assertTrue( "invalid data window: offset+data length > data buffer length",
-                        event.getDataOffset() + event.getDataLength() < event.getDataBuffer().length );
+                        event.getDataOffset() + event.getDataLength() <= event.getDataBuffer().length );
 
             assertTrue( "transferred byte is not set/not positive for type: " + event.getType(),
                         event.getTransferredBytes() > -1 );
