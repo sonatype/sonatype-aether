@@ -23,6 +23,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonatype.aether.artifact.Artifact;
@@ -33,74 +34,15 @@ import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
+import org.sonatype.aether.test.util.FileUtil;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.MetadataTransferException;
-import org.sonatype.aether.transfer.TransferCancelledException;
-import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
-import org.sonatype.aether.util.listener.AbstractTransferListener;
-import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.metadata.DefaultMetadata;
-
-import com.thoughtworks.xstream.XStream;
 
 public class ArtifactWorkerTest
 {
-
-    private static final class PrintTransferListener
-        extends AbstractTransferListener
-    {
-
-        private XStream xstream;
-
-        @Override
-        public void transferInitiated( TransferEvent event )
-            throws TransferCancelledException
-        {
-            super.transferInitiated( event );
-            print( event );
-        }
-
-        private void print( TransferEvent event )
-        {
-            String out =
-                String.format( "%s %s :: %s", event.getRequestType(), event.getResource().getResourceName(),
-                               event.getType() );
-            System.out.println( out );
-            System.out.println( xstream.toXML( event ) );
-        }
-
-        public PrintTransferListener()
-        {
-            super();
-            this.xstream = new XStream();
-            xstream.omitField( DefaultTransferEvent.class, "dataBuffer" );
-        }
-
-        @Override
-        public void transferStarted( TransferEvent event )
-            throws TransferCancelledException
-        {
-            super.transferStarted( event );
-            print( event );
-        }
-
-        @Override
-        public void transferSucceeded( TransferEvent event )
-        {
-            super.transferSucceeded( event );
-            print( event );
-        }
-
-        @Override
-        public void transferProgressed( TransferEvent event )
-            throws TransferCancelledException
-        {
-            super.transferProgressed( event );
-            print( event );
-        }
-    }
 
     private static RemoteRepository repository;
 
@@ -115,8 +57,14 @@ public class ArtifactWorkerTest
         repository =
             new RemoteRepository( "test", "default", new File( "target/test-repository" ).toURI().toURL().toString() );
         session = new DefaultRepositorySystemSession();
-        session.setTransferListener( new PrintTransferListener() );
         layout = new DefaultLayout();
+    }
+
+    @After
+    public void cleanup()
+    {
+        File dir = new File( "target/test-repository" );
+        FileUtil.deleteDir( dir );
     }
 
     @Test
