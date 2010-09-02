@@ -45,9 +45,7 @@ import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.Authentication;
-import org.sonatype.aether.repository.AuthenticationSelector;
 import org.sonatype.aether.repository.Proxy;
-import org.sonatype.aether.repository.ProxySelector;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
@@ -135,8 +133,8 @@ class WagonRepositoryConnector
             throw new NoRepositoryConnectorException( repository );
         }
 
-        wagonAuth = getAuthenticationInfo( repository, session.getAuthenticationSelector() );
-        wagonProxy = getProxy( repository, session.getProxySelector() );
+        wagonAuth = getAuthenticationInfo( repository );
+        wagonProxy = getProxy( repository );
 
         int threads =
             ConfigurationProperties.get( session.getConfigProperties(), "aether.connector.wagon.threads",
@@ -166,52 +164,46 @@ class WagonRepositoryConnector
         checksumAlgos.put( "MD5", ".md5" );
     }
 
-    private AuthenticationInfo getAuthenticationInfo( RemoteRepository repository, AuthenticationSelector selector )
+    private AuthenticationInfo getAuthenticationInfo( RemoteRepository repository )
     {
         AuthenticationInfo auth = null;
 
-        if ( selector != null )
+        Authentication a = repository.getAuthentication();
+        if ( a != null )
         {
-            Authentication a = selector.getAuthentication( repository );
-            if ( a != null )
-            {
-                auth = new AuthenticationInfo();
-                auth.setUserName( a.getUsername() );
-                auth.setPassword( a.getPassword() );
-                auth.setPrivateKey( a.getPrivateKeyFile() );
-                auth.setPassphrase( a.getPassphrase() );
-            }
+            auth = new AuthenticationInfo();
+            auth.setUserName( a.getUsername() );
+            auth.setPassword( a.getPassword() );
+            auth.setPrivateKey( a.getPrivateKeyFile() );
+            auth.setPassphrase( a.getPassphrase() );
         }
 
         return auth;
     }
 
-    private ProxyInfoProvider getProxy( RemoteRepository repository, ProxySelector selector )
+    private ProxyInfoProvider getProxy( RemoteRepository repository )
     {
         ProxyInfoProvider proxy = null;
 
-        if ( selector != null )
+        Proxy p = repository.getProxy();
+        if ( p != null )
         {
-            Proxy p = selector.getProxy( repository );
-            if ( p != null )
+            final ProxyInfo prox = new ProxyInfo();
+            prox.setType( p.getType() );
+            prox.setHost( p.getHost() );
+            prox.setPort( p.getPort() );
+            if ( p.getAuthentication() != null )
             {
-                final ProxyInfo prox = new ProxyInfo();
-                prox.setType( p.getType() );
-                prox.setHost( p.getHost() );
-                prox.setPort( p.getPort() );
-                if ( p.getAuthentication() != null )
-                {
-                    prox.setUserName( p.getAuthentication().getUsername() );
-                    prox.setPassword( p.getAuthentication().getPassword() );
-                }
-                proxy = new ProxyInfoProvider()
-                {
-                    public ProxyInfo getProxyInfo( String protocol )
-                    {
-                        return prox;
-                    }
-                };
+                prox.setUserName( p.getAuthentication().getUsername() );
+                prox.setPassword( p.getAuthentication().getPassword() );
             }
+            proxy = new ProxyInfoProvider()
+            {
+                public ProxyInfo getProxyInfo( String protocol )
+                {
+                    return prox;
+                }
+            };
         }
 
         return proxy;

@@ -163,23 +163,31 @@ public interface RepositorySystemSession
     Map<String, Object> getConfigProperties();
 
     /**
-     * Gets the mirror selector to use for repositories discovered in artifact descriptors.
+     * Gets the mirror selector to use for repositories discovered in artifact descriptors. Note that this selector is
+     * not used for remote repositories which are passed as request parameters to the repository system, those
+     * repositories are supposed to denote the effective repositories.
      * 
      * @return The mirror selector to use, never {@code null}.
      */
     MirrorSelector getMirrorSelector();
 
     /**
-     * Gets the proxy selector to use for repositories discovered in artifact descriptors.
+     * Gets the proxy selector to use for repositories discovered in artifact descriptors. Note that this selector is
+     * not used for remote repositories which are passed as request parameters to the repository system, those
+     * repositories are supposed to have their proxy (if any) already set.
      * 
      * @return The proxy selector to use, never {@code null}.
+     * @see org.sonatype.aether.repository.RemoteRepository#getProxy()
      */
     ProxySelector getProxySelector();
 
     /**
-     * Gets the authentication selector to use for repositories discovered in artifact descriptors.
+     * Gets the authentication selector to use for repositories discovered in artifact descriptors. Note that this
+     * selector is not used for remote repositories which are passed as request parameters to the repository system,
+     * those repositories are supposed to have their authentication (if any) already set.
      * 
      * @return The authentication selector to use, never {@code null}.
+     * @see org.sonatype.aether.repository.RemoteRepository#getAuthentication()
      */
     AuthenticationSelector getAuthenticationSelector();
 
