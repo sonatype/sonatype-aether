@@ -107,7 +107,7 @@ class WagonRepositoryConnector
 
     private boolean closed;
 
-    private Map<String, String> checksumAlgos;
+    private final Map<String, String> checksumAlgos;
 
     public WagonRepositoryConnector( WagonProvider wagonProvider, RemoteRepository repository,
                                      RepositorySystemSession session, Logger logger )
