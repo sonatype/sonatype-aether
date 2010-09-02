@@ -88,18 +88,15 @@ public class FileRepositoryConnectorTest
     public void testMkdirConcurrencyBug()
         throws IOException
     {
-        int i = 1;
         File tmpFile = FileUtil.createTempFile( "mkdirsBug" );
         ArtifactUpload artUp =
-            new ArtifactUpload( new DefaultArtifact( "testGroup", "testArtifact", "jar", i + "-test" ), tmpFile );
+            new ArtifactUpload( new DefaultArtifact( "testGroup", "testArtifact", "jar", 1 + "-test" ), tmpFile );
         MetadataUpload metaUp =
-            new MetadataUpload( new DefaultMetadata( "testGroup", "testArtifact", i + "-test", "maven-metadata.xml",
+            new MetadataUpload( new DefaultMetadata( "testGroup", "testArtifact", 1 + "-test", "maven-metadata.xml",
                                                      Metadata.Nature.RELEASE_OR_SNAPSHOT ), tmpFile );
         
-        for ( int j = 0; j < 1000; j++ )
+        for ( int i = 0; i < 100; i++ )
         {
-            System.err.println( j );
-
             Collection<ArtifactUpload> artUps = Arrays.asList( artUp );
             Collection<MetadataUpload> metaUps = Arrays.asList( metaUp );
 
@@ -120,10 +117,10 @@ public class FileRepositoryConnectorTest
         throws NoRepositoryConnectorException, IOException
     {
 
-        int count = 1000;
+        int count = 10;
 
         byte[] pattern = "tmpFile".getBytes();
-        File tmpFile = FileUtil.createTempFile( pattern, 10000 );
+        File tmpFile = FileUtil.createTempFile( pattern, 100000 );
 
         ArtifactUpload[] artUps = new ArtifactUpload[count];
         MetadataUpload[] metaUps = new MetadataUpload[count];
