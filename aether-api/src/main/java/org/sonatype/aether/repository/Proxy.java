@@ -22,6 +22,16 @@ package org.sonatype.aether.repository;
 public final class Proxy
 {
 
+    /**
+     * Type denoting a proxy for HTTP transfers.
+     */
+    public static final String TYPE_HTTP = "http";
+
+    /**
+     * Type denoting a proxy for HTTPS transfers.
+     */
+    public static final String TYPE_HTTPS = "https";
+
     private final String type;
 
     private final String host;
