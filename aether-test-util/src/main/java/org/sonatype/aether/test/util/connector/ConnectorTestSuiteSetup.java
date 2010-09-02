@@ -12,6 +12,8 @@
  */
 package org.sonatype.aether.test.util.connector;
 
+import static org.junit.Assert.*;
+
 import java.util.Map;
 
 import org.junit.After;
