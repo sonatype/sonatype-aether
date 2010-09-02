@@ -66,11 +66,6 @@ public class ConnectorTestSuiteSetup
         implements ConnectorTestSetup
     {
 
-        public RemoteRepository before( RepositorySystemSession session, Map<String, Object> context )
-        {
-            return null;
-        }
-
         public Map<String, Object> beforeClass( RepositorySystemSession session )
         {
             return null;
