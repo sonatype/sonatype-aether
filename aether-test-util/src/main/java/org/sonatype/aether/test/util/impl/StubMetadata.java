@@ -1,4 +1,4 @@
-package org.sonatype.aether.test.util.connector;
+package org.sonatype.aether.test.util.impl;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -20,7 +20,7 @@ import org.sonatype.aether.metadata.Metadata;
 /**
  * @author Benjamin Bentmann
  */
-final class StubMetadata
+public final class StubMetadata
     implements Metadata
 {
 
