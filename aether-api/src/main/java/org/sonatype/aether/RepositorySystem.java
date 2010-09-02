@@ -108,8 +108,9 @@ public interface RepositorySystem
         throws DependencyCollectionException;
 
     /**
-     * Resolves the paths for the artifacts referenced by the specified dependency graph. Artifacts will be downloaded
-     * if necessary. Artifacts that are already resolved will be skipped and are not re-resolved.
+     * Resolves the paths for the artifacts referenced by the specified dependency graph. The dependency graph will be
+     * updated to reflect each successfully resolved artifact. Artifacts will be downloaded if necessary. Artifacts that
+     * are already resolved will be skipped and are not re-resolved.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param node The root node of the dependency graph whose artifacts shall be resolved, must not be {@code null}

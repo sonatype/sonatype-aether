@@ -275,8 +275,24 @@ public class DefaultRepositorySystem
         node.accept( visitor );
         List<ArtifactRequest> requests = builder.getRequests();
 
-        List<ArtifactResult> results = resolveArtifacts( session, requests );
+        try
+        {
+            List<ArtifactResult> results = resolveArtifacts( session, requests );
 
+            updateNodesWithResolvedArtifacts( results );
+
+            return results;
+        }
+        catch ( ArtifactResolutionException e )
+        {
+            updateNodesWithResolvedArtifacts( e.getResults() );
+
+            throw e;
+        }
+    }
+
+    private void updateNodesWithResolvedArtifacts( List<ArtifactResult> results )
+    {
         for ( ArtifactResult result : results )
         {
             Artifact artifact = result.getArtifact();
@@ -285,8 +301,6 @@ public class DefaultRepositorySystem
                 result.getRequest().getDependencyNode().setArtifact( artifact );
             }
         }
-
-        return results;
     }
 
     public List<ArtifactResult> resolveDependencies( RepositorySystemSession session, CollectRequest request,
