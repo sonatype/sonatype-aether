@@ -53,7 +53,7 @@ public class JavaEffectiveScopeCalculatorTest
             for ( Scope scope2 : scopes )
             {
                 parser.setSubstitutions( scope1.toString(), scope2.toString() );
-                DependencyNode root = parser.parse( "ScopeOrderingCompile.txt" );
+                DependencyNode root = parser.parse( "ordering-compile.txt" );
 
                 String expected = scope1.compareTo( scope2 ) > 0 ? scope1.toString() : scope2.toString();
                 root = transform( root );
@@ -81,7 +81,7 @@ public class JavaEffectiveScopeCalculatorTest
     public void testScopeInheritanceProvided()
         throws IOException, RepositoryException
     {
-        String resource = "ScopeInheritance.txt";
+        String resource = "inheritance.txt";
 
         String expected = "provided";
         int[] coords = new int[] { 0, 0 };
@@ -126,7 +126,7 @@ public class JavaEffectiveScopeCalculatorTest
                 parser.setSubstitutions( scope1.toString(), scope2.toString() );
                 String expected = scope1.compareTo( scope2 ) > 0 ? scope1.toString() : scope2.toString();
 
-                DependencyNode root = parser.parse( "ScopeInheritance.txt" );
+                DependencyNode root = parser.parse( "inheritance.txt" );
                 System.out.println( parser.dump( root ) );
                 root = transform( root );
                 System.out.println( parser.dump( root ) );
@@ -147,8 +147,7 @@ public class JavaEffectiveScopeCalculatorTest
     @Before
     public void setup()
     {
-        parser =
-            new DependencyGraphParser( "org/sonatype/aether/util/graph/transformer/JavaEffectiveScopeCalculatorTest-" );
+        parser = new DependencyGraphParser( "org/sonatype/aether/util/graph/transformer/scope/" );
         ctx = new SimpleDependencyGraphTransformationContext();
     }
 
