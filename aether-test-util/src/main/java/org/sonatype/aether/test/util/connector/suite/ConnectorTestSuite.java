@@ -29,6 +29,7 @@ import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
 import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.connector.TestConnectorPathUtil;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.test.util.impl.StubMetadata;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
@@ -49,7 +50,7 @@ public abstract class ConnectorTestSuite
     public void testSuccessfulEvents()
         throws NoRepositoryConnectorException, IOException
     {
-        TransferEventTester.testSuccessfulTransferEvents( factory, session, repository );
+        TransferEventTester.testSuccessfulTransferEvents( factory(), session, repository );
     }
 
     @Test
@@ -132,7 +133,7 @@ public abstract class ConnectorTestSuite
             assertEquals( State.DONE, artUp.getState() );
             assertEquals( State.DONE, metaUp.getState() );
     
-            FileUtil.deleteDir( new File( PathUtil.basedir( repository.getUrl() ) ) );
+            FileUtil.deleteDir( new File( TestConnectorPathUtil.basedir( repository.getUrl() ) ) );
         }
     
     }

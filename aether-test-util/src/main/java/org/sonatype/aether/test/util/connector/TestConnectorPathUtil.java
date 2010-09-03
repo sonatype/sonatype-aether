@@ -1,4 +1,4 @@
-package org.sonatype.aether.test.util.connector.suite;
+package org.sonatype.aether.test.util.connector;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -21,10 +21,10 @@ import java.util.StringTokenizer;
  * 
  * @author Benjamin Hanzelmann
  */
-final class PathUtil
+public final class TestConnectorPathUtil
 {
 
-    private PathUtil()
+    private TestConnectorPathUtil()
     {
     }
 
@@ -53,7 +53,7 @@ final class PathUtil
 
     public static String[] dirnames( final String path )
     {
-        final String dirname = PathUtil.dirname( path );
+        final String dirname = TestConnectorPathUtil.dirname( path );
         return split( dirname, "/", -1 );
 
     }
@@ -143,7 +143,7 @@ final class PathUtil
      */
     public static String basedir( String url )
     {
-        String protocol = PathUtil.protocol( url );
+        String protocol = TestConnectorPathUtil.protocol( url );
 
         String retValue = null;
 

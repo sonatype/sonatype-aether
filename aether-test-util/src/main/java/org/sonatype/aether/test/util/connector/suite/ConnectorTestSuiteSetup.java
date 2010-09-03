@@ -37,7 +37,7 @@ public abstract class ConnectorTestSuiteSetup
 
     private static Map<String, Object> context;
 
-    protected static RepositoryConnectorFactory factory;
+    private static RepositoryConnectorFactory factory;
 
     private boolean doClassInit = true;
 
@@ -46,40 +46,6 @@ public abstract class ConnectorTestSuiteSetup
         super();
         connectorSetup = setup;
         factory = setup.factory();
-    }
-
-    public static interface ConnectorTestSetup
-    {
-        public RemoteRepository before( RepositorySystemSession session, Map<String, Object> context );
-
-        public Map<String, Object> beforeClass( RepositorySystemSession session );
-
-        public void after( RepositorySystemSession session, RemoteRepository repository, Map<String, Object> context );
-
-        public void afterClass( RepositorySystemSession session, RemoteRepository repository,
-                                Map<String, Object> context );
-
-        public RepositoryConnectorFactory factory();
-    }
-
-    public static abstract class AbstractConnectorTestSetup
-        implements ConnectorTestSetup
-    {
-
-        public Map<String, Object> beforeClass( RepositorySystemSession session )
-        {
-            return null;
-        }
-
-        public void after( RepositorySystemSession session, RemoteRepository repository, Map<String, Object> context )
-        {
-        }
-
-        public void afterClass( RepositorySystemSession session, RemoteRepository repository,
-                                Map<String, Object> context )
-        {
-        }
-
     }
 
     @BeforeClass
@@ -108,7 +74,7 @@ public abstract class ConnectorTestSuiteSetup
     @AfterClass
     public static void afterClass()
     {
-        connectorSetup.afterClass( session, repository, context );
+        connectorSetup.afterClass( session, context );
     }
 
     protected static RepositoryConnectorFactory factory()
