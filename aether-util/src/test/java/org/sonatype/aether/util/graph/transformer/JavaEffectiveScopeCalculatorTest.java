@@ -85,10 +85,10 @@ public class JavaEffectiveScopeCalculatorTest
 
         String expected = "provided";
         int[] coords = new int[] { 0, 0 };
-        expect( expected, coords, transform( parse( resource, "provided", "test" ) ) );
+        expect( expected, transform( parse( resource, "provided", "test" ) ), coords );
     }
 
-    private void expect( String expected, int[] coords, DependencyNode root )
+    private void expect( String expected, DependencyNode root, int... coords )
     {
         try
         {
@@ -98,7 +98,7 @@ public class JavaEffectiveScopeCalculatorTest
                 node = node.getChildren().get( coords[i] );
             }
 
-            assertEquals( expected, node.getDependency().getScope() );
+            assertEquals( node.toString(), expected, node.getDependency().getScope() );
         }
         catch ( IndexOutOfBoundsException e )
         {
