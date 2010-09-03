@@ -12,22 +12,31 @@
  */
 package org.sonatype.aether.test.util;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
-import org.ini4j.Ini;
-import org.ini4j.Profile.Section;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.Exclusion;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.test.util.impl.StubArtifact;
 
 /**
  * @author Benjamin Hanzelmann
  */
 public class IniArtifactDataReader
 {
-    
+
     private String prefix = "";
 
     public IniArtifactDataReader()
@@ -38,7 +47,7 @@ public class IniArtifactDataReader
     public IniArtifactDataReader( String prefix )
     {
         this.prefix = prefix;
-        
+
     }
 
     public ArtifactDescription parse( String resource )
@@ -66,274 +75,200 @@ public class IniArtifactDataReader
         return parse( reader );
     }
 
+    private enum State
+    {
+        NONE, RELOCATIONS, DEPENDENCIES, MANAGEDDEPENDENCIES, REPOSITORIES
+    }
+
     private ArtifactDescription parse( Reader reader )
         throws IOException
     {
-        ArtifactDescription description = new ArtifactDescription();
 
-        ArtifactData self = new ArtifactData();
+        String line = null;
 
-        Ini ini = new Ini( reader );
-        
-        // self section is mandatory
-        ini.get( "self" ).to( self );
-        description.setSelfData( self );
+        BufferedReader in = new BufferedReader( reader );
 
-        ArtifactData parent = new ArtifactData();
-        loadSection( ini, "parent", parent);
-        description.setParentData( parent );
+        State state = State.NONE;
 
-        DependencyData dependency = new DependencyData();
-        loadSection( ini, "dependencies", dependency );
-        description.setDependencyData( dependency );
-        
+        Map<State, List<String>> sections = new HashMap<State, List<String>>();
+
+        while ( ( line = in.readLine() ) != null )
+        {
+
+            line = cutComment( line );
+            if ( isEmpty( line ) )
+            {
+                continue;
+            }
+
+            if ( line.startsWith( "[" ) )
+            {
+                state = State.valueOf( line.substring( 1, line.length() - 1 ).toUpperCase( Locale.ENGLISH ) );
+                sections.put( state, new ArrayList<String>() );
+            }
+            else
+            {
+                sections.get( state ).add( line.trim() );
+            }
+        }
+
+        List<Artifact> relocations = relocations( sections.get( State.RELOCATIONS ) );
+        List<Dependency> dependencies = dependencies( sections.get( State.DEPENDENCIES ) );
+        List<Dependency> managedDependencies = dependencies( sections.get( State.MANAGEDDEPENDENCIES ) );
+        List<RemoteRepository> repositories = repositories( sections.get( State.REPOSITORIES ) );
+
+        ArtifactDescription description =
+            new ArtifactDescription( relocations, dependencies, managedDependencies, repositories );
         return description;
     }
 
-    private void loadSection( Ini ini, String section, Object bean )
+    /**
+     * @param list
+     * @return
+     */
+    private List<RemoteRepository> repositories( List<String> list )
     {
-        Section parentSection = ini.get( section );
-        if ( parentSection != null )
+        ArrayList<RemoteRepository> ret = new ArrayList<RemoteRepository>();
+        if ( list == null )
         {
-            parentSection.to( bean );
+            return ret;
         }
+        for ( String coords : list )
+        {
+            String[] split = coords.split( ":", 3 );
+            String id = split[0];
+            String type = split[1];
+            String url = split[2];
+
+            ret.add( new RemoteRepository( id, type, url ) );
+        }
+        return ret;
     }
 
-    public static class ArtifactDescription
+    /**
+     * @param list
+     * @return
+     */
+    private List<Dependency> dependencies( List<String> list )
     {
-        private ArtifactData selfData;
-
-        private ArtifactData parentData;
-        
-        private DependencyData dependencyData;
-
-        public ArtifactData getSelfData()
+        List<Dependency> ret = new ArrayList<Dependency>();
+        if ( list == null )
         {
-            return selfData;
+            return ret;
         }
 
-        public void setSelfData( ArtifactData selfData )
+        Collection<Exclusion> exclusions = new ArrayList<Exclusion>();
+
+        boolean optional = false;
+        Artifact artifact = null;
+        String scope = null;
+
+        for ( String coords : list )
         {
-            this.selfData = selfData;
-        }
-
-        public ArtifactData getParentData()
-        {
-            return parentData;
-        }
-
-        public void setParentData( ArtifactData parentData )
-        {
-            this.parentData = parentData;
-        }
-
-        public DependencyData getDependencyData()
-        {
-            return dependencyData;
-        }
-
-        public void setDependencyData( DependencyData dependencyData )
-        {
-            this.dependencyData = dependencyData;
-        }
-
-    }
-
-    public static class ArtifactData
-    {
-        private String artifactId;
-
-        private String groupId;
-
-        private String version;
-
-        private String packaging;
-
-        public String getArtifactId()
-        {
-            return artifactId;
-        }
-
-        public void setArtifactId( String artifactId )
-        {
-            this.artifactId = artifactId;
-        }
-
-        public String getGroupId()
-        {
-            return groupId;
-        }
-
-        public void setGroupId( String groupId )
-        {
-            this.groupId = groupId;
-        }
-
-        public String getVersion()
-        {
-            return version;
-        }
-
-        public void setVersion( String version )
-        {
-            this.version = version;
-        }
-
-        public String getPackaging()
-        {
-            return packaging;
-        }
-
-        public void setPackaging( String packaging )
-        {
-            this.packaging = packaging;
-        }
-
-    }
-    
-    public static class Dependency
-    {
-        private String artifactId;
-
-        private String groupId;
-
-        private String version;
-
-        private String scope;
-
-        private String type;
-
-        private boolean optional;
-
-        public String getArtifactId()
-        {
-            return artifactId;
-        }
-
-        public void setArtifactId( String artifactId )
-        {
-            this.artifactId = artifactId;
-        }
-
-        public String getGroupId()
-        {
-            return groupId;
-        }
-
-        public void setGroupId( String groupId )
-        {
-            this.groupId = groupId;
-        }
-
-        public String getVersion()
-        {
-            return version;
-        }
-
-        public void setVersion( String version )
-        {
-            this.version = version;
-        }
-
-        public String getScope()
-        {
-            return scope;
-        }
-
-        public void setScope( String scope )
-        {
-            this.scope = scope;
-        }
-
-        public String getType()
-        {
-            return type;
-        }
-
-        public void setType( String type )
-        {
-            this.type = type;
-        }
-
-        public boolean isOptional()
-        {
-            return optional;
-        }
-
-        public void setOptional( boolean optional )
-        {
-            this.optional = optional;
-        }
-
-    }
-
-    public static class DependencyData
-    {
-        private String[] dependency;
-
-        private ArrayList<Dependency> dependencies;
-
-        public void setDependency( String[] dependency )
-        {
-            this.dependency = dependency;
-            dependencies = null;
-        }
-        
-        public ArrayList<Dependency> getDependencies()
-        {
-            if ( dependencies == null )
+            if ( coords.startsWith( "-" ) )
             {
-                convertDependencies();
+                coords = coords.substring( 1 );
+                String[] split = coords.split( ":" );
+                exclusions.add( new Exclusion( split[0], split[1], "", "" ) );
             }
-            return dependencies;
-        }
-
-        private void convertDependencies()
-        {
-            dependencies = new ArrayList<Dependency>();
-            for ( int i = 0; i < dependency.length; i++ )
+            else
             {
-                Definition def = new Definition( dependency[i] );
-                Dependency dep = new Dependency();
-                dep.setArtifactId( def.getArtifactId() );
-                dep.setGroupId( def.getGroupId() );
-                dep.setVersion( def.getVersion() );
-                dep.setType( def.getType() );
-                dep.setScope( def.getScope() );
+                if ( artifact != null )
+                {
+                    // commit dependency
+                    Dependency dep = new Dependency( artifact, scope, optional, exclusions );
+                    ret.add( dep );
 
-                dep.setOptional( def.isOptional() );
+                    exclusions = new ArrayList<Exclusion>();
+                }
 
-                dependencies.add( dep );
+                optional = coords.endsWith( "optional" );
+                if ( optional )
+                {
+                    coords.substring( 0, coords.length() - ":optional".length() );
+                }
+
+                String[] split = coords.split( ":" );
+
+                scope = "compile";
+                if ( split.length >= 5 )
+                {
+                    scope = split[4];
+                }
+                coords = coords.replace( ":" + scope, "" );
+
+                artifact = new StubArtifact( coords );
             }
         }
+            if ( artifact != null )
+            {
+                // commit dependency
+                Dependency dep = new Dependency( artifact, scope, optional, exclusions );
+                ret.add( dep );
+
+                exclusions = new ArrayList<Exclusion>();
+            }
+
+        return ret;
+    }
+
+    private List<Artifact> relocations( List<String> list )
+    {
+        List<Artifact> ret = new ArrayList<Artifact>();
+        if ( list == null )
+        {
+            return ret;
+        }
+        for ( String coords : list )
+        {
+            ret.add( new StubArtifact( coords ) );
+        }
+        return ret;
+    }
+
+    private static boolean isEmpty( String line )
+    {
+        return line == null || line.length() == 0;
+    }
+
+    private static String cutComment( String line )
+    {
+        int idx = line.indexOf( '#' );
+
+        if ( idx != -1 )
+        {
+            line = line.substring( 0, idx );
+        }
+
+        return line;
     }
 
     static class Definition
     {
         private String groupId;
-    
+
         private String artifactId;
-    
+
         private String extension;
-    
+
         private String version;
-    
+
         private String scope = "";
-    
+
         private String definition;
-    
+
         private String id = null;
-    
+
         private String reference = null;
 
         private boolean optional = false;
-    
+
         public Definition( String def )
         {
             super();
-    
+
             this.definition = def.trim();
-    
+
             if ( definition.startsWith( "(" ) )
             {
                 int idx = definition.indexOf( ')' );
@@ -345,7 +280,7 @@ public class IniArtifactDataReader
                 this.reference = definition.substring( 1 );
                 return;
             }
-    
+
             String[] split = definition.split( ":" );
             if ( split.length < 4 )
             {
@@ -365,53 +300,53 @@ public class IniArtifactDataReader
                 optional = true;
             }
         }
-    
+
         public String getGroupId()
         {
             return groupId;
         }
-    
+
         public String getArtifactId()
         {
             return artifactId;
         }
-    
+
         public String getType()
         {
             return extension;
         }
-    
+
         public String getVersion()
         {
             return version;
         }
-    
+
         public String getScope()
         {
             return scope;
         }
-    
+
         @Override
         public String toString()
         {
             return definition;
         }
-    
+
         public String getId()
         {
             return id;
         }
-    
+
         public String getReference()
         {
             return reference;
         }
-    
+
         public boolean isReference()
         {
             return reference != null;
         }
-    
+
         public boolean hasId()
         {
             return id != null;

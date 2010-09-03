@@ -15,13 +15,14 @@ package org.sonatype.aether.test.util;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.sonatype.aether.test.util.IniArtifactDataReader.ArtifactData;
-import org.sonatype.aether.test.util.IniArtifactDataReader.ArtifactDescription;
-import org.sonatype.aether.test.util.IniArtifactDataReader.Dependency;
-import org.sonatype.aether.test.util.IniArtifactDataReader.DependencyData;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.Exclusion;
 
 /**
  * @author Benjamin Hanzelmann
@@ -39,61 +40,111 @@ public class IniArtifactDataReaderTest
     }
 
     @Test
-    public void testSimple()
+    public void testRelocations()
         throws IOException
     {
-        String def = "[artifact]\n artifactId = aid\n groupId = gid\n version = ver\n";
-        ArtifactData description = parser.parseLiteral( def ).getSelfData();
+        String def = "[relocations]\ngid:aid:ver:ext\ngid2:aid2:ver2:ext2";
 
-        assertEquals( "aid", description.getArtifactId() );
-        assertEquals( "gid", description.getGroupId() );
-        assertEquals( "ver", description.getVersion() );
+        ArtifactDescription description = parser.parseLiteral( def );
 
+        List<Artifact> relocations = description.getRelocations();
+        assertNotNull( relocations );
+        assertEquals( 2, relocations.size() );
+
+        Artifact artifact = relocations.get( 0 );
+        assertEquals( "aid", artifact.getArtifactId() );
+        assertEquals( "gid", artifact.getGroupId() );
+        assertEquals( "ver", artifact.getVersion() );
+        assertEquals( "ext", artifact.getExtension() );
+
+        artifact = relocations.get( 1 );
+        assertEquals( "aid2", artifact.getArtifactId() );
+        assertEquals( "gid2", artifact.getGroupId() );
+        assertEquals( "ver2", artifact.getVersion() );
+        assertEquals( "ext2", artifact.getExtension() );
     }
 
     @Test
-    public void testResource()
+    public void testDependencies()
         throws IOException
     {
-        String resource = "ArtifactDataReaderTest.ini";
-        ArtifactDescription description = parser.parse( resource );
+        String def = "[dependencies]\ngid:aid:ver:ext\n-exclusion:aid\ngid2:aid2:ver2:ext2";
 
-        ArtifactData self = description.getSelfData();
+        ArtifactDescription description = parser.parseLiteral( def );
 
-        assertNotNull( self );
-        assertEquals( "aid", self.getArtifactId() );
-        assertEquals( "gid", self.getGroupId() );
-        assertEquals( "ver", self.getVersion() );
-        assertEquals( "ext", self.getPackaging() );
-
-        ArtifactData parent = description.getParentData();
-        assertNotNull( parent );
-        assertEquals( "aid2", parent.getArtifactId() );
-        assertEquals( "gid", parent.getGroupId() );
-        assertEquals( "ver", parent.getVersion() );
-
-        DependencyData dependencies = description.getDependencyData();
+        List<Dependency> dependencies = description.getDependencies();
         assertNotNull( dependencies );
+        assertEquals( 2, dependencies.size() );
 
-        assertNotNull( dependencies.getDependencies() );
-        assertEquals( 2, dependencies.getDependencies().size() );
-        
-        Dependency dep = dependencies.getDependencies().get( 0 );
-        assertEquals( "gid", dep.getGroupId() );
-        assertEquals( "aid", dep.getArtifactId() );
-        assertEquals( "ext", dep.getType() );
-        assertEquals( "ver", dep.getVersion() );
-        assertEquals( "scope", dep.getScope() );
-        assertTrue( dep.isOptional() );
+        Dependency dependency = dependencies.get( 0 );
+        assertNotNull( dependency.getArtifact() );
 
-        dep = dependencies.getDependencies().get( 1 );
-        assertEquals( "gid2", dep.getGroupId() );
-        assertEquals( "aid2", dep.getArtifactId() );
-        assertEquals( "ext", dep.getType() );
-        assertEquals( "ver", dep.getVersion() );
-        assertEquals( "scope", dep.getScope() );
-        assertFalse( dep.isOptional() );
+        Artifact artifact = dependency.getArtifact();
+        assertEquals( "aid", artifact.getArtifactId() );
+        assertEquals( "gid", artifact.getGroupId() );
+        assertEquals( "ver", artifact.getVersion() );
+        assertEquals( "ext", artifact.getExtension() );
 
+        Collection<Exclusion> exclusions = dependency.getExclusions();
+        assertNotNull( exclusions );
+        assertEquals( 1, exclusions.size() );
+        Exclusion exclusion = exclusions.iterator().next();
+        assertEquals( "exclusion", exclusion.getGroupId() );
+        assertEquals( "aid", exclusion.getArtifactId() );
+
+        dependency = dependencies.get( 1 );
+        assertNotNull( dependency.getArtifact() );
+
+        artifact = dependency.getArtifact();
+        assertEquals( "aid2", artifact.getArtifactId() );
+        assertEquals( "gid2", artifact.getGroupId() );
+        assertEquals( "ver2", artifact.getVersion() );
+        assertEquals( "ext2", artifact.getExtension() );
     }
+
+    // @Test
+    // public void testResource()
+    // throws IOException
+    // {
+    // String resource = "ArtifactDataReaderTest.ini";
+    // ArtifactDescription description = parser.parse( resource );
+    //
+    // ArtifactData self = description.getSelfData();
+    //
+    // assertNotNull( self );
+    // assertEquals( "aid", self.getArtifactId() );
+    // assertEquals( "gid", self.getGroupId() );
+    // assertEquals( "ver", self.getVersion() );
+    // assertEquals( "ext", self.getPackaging() );
+    //
+    // ArtifactData parent = description.getParentData();
+    // assertNotNull( parent );
+    // assertEquals( "aid2", parent.getArtifactId() );
+    // assertEquals( "gid", parent.getGroupId() );
+    // assertEquals( "ver", parent.getVersion() );
+    //
+    // DependencyData dependencies = description.getDependencyData();
+    // assertNotNull( dependencies );
+    //
+    // assertNotNull( dependencies.getDependencies() );
+    // assertEquals( 2, dependencies.getDependencies().size() );
+    //
+    // Dependency dep = dependencies.getDependencies().get( 0 );
+    // assertEquals( "gid", dep.getGroupId() );
+    // assertEquals( "aid", dep.getArtifactId() );
+    // assertEquals( "ext", dep.getType() );
+    // assertEquals( "ver", dep.getVersion() );
+    // assertEquals( "scope", dep.getScope() );
+    // assertTrue( dep.isOptional() );
+    //
+    // dep = dependencies.getDependencies().get( 1 );
+    // assertEquals( "gid2", dep.getGroupId() );
+    // assertEquals( "aid2", dep.getArtifactId() );
+    // assertEquals( "ext", dep.getType() );
+    // assertEquals( "ver", dep.getVersion() );
+    // assertEquals( "scope", dep.getScope() );
+    // assertFalse( dep.isOptional() );
+    //
+    // }
 
 }
