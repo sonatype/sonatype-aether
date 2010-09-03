@@ -32,6 +32,54 @@ import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 
 /**
+ * A parser for an artifact description in an INI-like format.
+ * <p>
+ * Possible sections are:
+ * <ul>
+ * <li>relocations</li>
+ * <li>dependencies</li>
+ * <li>managedDependencies</li>
+ * <li>repositories</li>
+ * </ul>
+ * The relocation- and dependency-sections contain artifact coordinates of the form:
+ * 
+ * <pre>
+ * gid:aid:ver:ext[:scope][:optional]
+ * </pre>
+ * 
+ * The dependency-sections may specify exclusions:
+ * 
+ * <pre>
+ * -gid:aid
+ * </pre>
+ * 
+ * A repository definition is of the form:
+ * 
+ * <pre>
+ * id:type:url
+ * </pre>
+ * 
+ * <h2>Example</h2>
+ * 
+ * <pre>
+ * [relocation]
+ * gid:aid:ver:ext
+ * 
+ * [dependencies]
+ * gid:aid:ver:ext:scope
+ * -exclusion:aid
+ * gid:aid2:ver:ext:scope:optional
+ * 
+ * [managed-dependencies]
+ * gid:aid2:ver2:ext:scope
+ * -gid:aid
+ * -gid:aid
+ * 
+ * [repositories]
+ * id:type:file:///test-repo
+ * </pre>
+ * 
+ * @see IniArtifactDescriptorReader
  * @author Benjamin Hanzelmann
  */
 public class IniArtifactDataReader
@@ -39,17 +87,28 @@ public class IniArtifactDataReader
 
     private String prefix = "";
 
+    /**
+     * Constructs a data reader with the prefix <code>""</code>.
+     */
     public IniArtifactDataReader()
     {
         this( "" );
     }
 
+    /**
+     * Constructs a data reader with the given prefix.
+     * 
+     * @param prefix the prefix to use for loading resources from the classpath.
+     */
     public IniArtifactDataReader( String prefix )
     {
         this.prefix = prefix;
 
     }
 
+    /**
+     * Load an artifact description from the classpath and parse it.
+     */
     public ArtifactDescription parse( String resource )
         throws IOException
     {
@@ -62,12 +121,18 @@ public class IniArtifactDataReader
         return parse( res );
     }
 
+    /**
+     * Open the given URL and parse ist.
+     */
     public ArtifactDescription parse( URL res )
         throws IOException
     {
         return parse( new InputStreamReader( res.openStream(), "UTF-8" ) );
     }
 
+    /**
+     * Parse the given String.
+     */
     public ArtifactDescription parseLiteral( String description )
         throws IOException
     {
@@ -122,10 +187,6 @@ public class IniArtifactDataReader
         return description;
     }
 
-    /**
-     * @param list
-     * @return
-     */
     private List<RemoteRepository> repositories( List<String> list )
     {
         ArrayList<RemoteRepository> ret = new ArrayList<RemoteRepository>();
