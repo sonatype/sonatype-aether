@@ -1,4 +1,4 @@
-package org.sonatype.aether.test.util.connector;
+package org.sonatype.aether.test.util.connector.suite;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -38,6 +38,7 @@ import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.test.impl.RecordingTransferListener;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.connector.ConnectorTestContext;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.test.util.impl.StubMetadata;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;

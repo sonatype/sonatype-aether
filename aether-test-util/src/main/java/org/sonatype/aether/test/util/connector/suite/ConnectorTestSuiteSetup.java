@@ -10,9 +10,7 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.aether.test.util.connector;
-
-import static org.junit.Assert.*;
+package org.sonatype.aether.test.util.connector.suite;
 
 import java.util.Map;
 
@@ -28,7 +26,7 @@ import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 /**
  * @author Benjamin Hanzelmann
  */
-public class ConnectorTestSuiteSetup
+public abstract class ConnectorTestSuiteSetup
 {
 
     private static ConnectorTestSetup connectorSetup;
@@ -98,7 +96,7 @@ public class ConnectorTestSuiteSetup
             context = connectorSetup.beforeClass( session );
             doClassInit = false;
         }
-        this.repository = connectorSetup.before( session, context );
+        repository = connectorSetup.before( session, context );
     }
 
     @After
