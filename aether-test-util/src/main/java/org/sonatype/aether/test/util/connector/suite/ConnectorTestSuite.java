@@ -35,6 +35,11 @@ import org.sonatype.aether.test.util.impl.StubMetadata;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 
 /**
+ * The ConnectorTestSuite bundles standard tests for {@link RepositoryConnector}s.
+ * <p>
+ * To use these tests, provide a (Junit4-)class extending this class, and provide a default constructor calling
+ * {@link ConnectorTestSuite#ConnectorTestSuite(ConnectorTestSetup)} with a self-implemented {@link ConnectorTestSetup}.
+ * 
  * @author Benjamin Hanzelmann
  */
 public abstract class ConnectorTestSuite
