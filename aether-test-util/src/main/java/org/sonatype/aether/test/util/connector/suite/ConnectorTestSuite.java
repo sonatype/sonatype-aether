@@ -54,6 +54,40 @@ public abstract class ConnectorTestSuite
     }
 
     @Test
+    public void testFileHandleLeakage()
+        throws IOException, NoRepositoryConnectorException
+    {
+
+        StubArtifact artifact = new StubArtifact( "testGroup", "testArtifact", "jar", "", "1-test" );
+        StubMetadata metadata =
+            new StubMetadata( "testGroup", "testArtifact", "1-test", "maven-metadata.xml",
+                              Metadata.Nature.RELEASE_OR_SNAPSHOT );
+
+        RepositoryConnector connector = factory().newInstance( session, repository );
+
+        File tmpFile = FileUtil.createTempFile( "testFileHandleLeakage" );
+        ArtifactUpload artUp = new ArtifactUpload( artifact, tmpFile );
+        connector.put( Arrays.asList( artUp ), null );
+        assertTrue( "Leaking file handle in artifact upload", tmpFile.delete() );
+
+        tmpFile = FileUtil.createTempFile( "testFileHandleLeakage" );
+        MetadataUpload metaUp = new MetadataUpload( metadata, tmpFile );
+        connector.put( null, Arrays.asList( metaUp ) );
+        assertTrue( "Leaking file handle in metadata upload", tmpFile.delete() );
+
+        tmpFile = FileUtil.createTempFile( "testFileHandleLeakage" );
+        ArtifactDownload artDown = new ArtifactDownload( artifact, null, tmpFile, null );
+        connector.get( Arrays.asList( artDown ), null );
+        assertTrue( "Leaking file handle in artifact download", tmpFile.delete() );
+
+        tmpFile = FileUtil.createTempFile( "testFileHandleLeakage" );
+        MetadataDownload metaDown = new MetadataDownload( metadata, null, tmpFile, null );
+        connector.get( null, Arrays.asList( metaDown ) );
+        assertTrue( "Leaking file handle in metadata download", tmpFile.delete() );
+
+    }
+
+    @Test
     public void testBlocking()
         throws NoRepositoryConnectorException, IOException
     {
