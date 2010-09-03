@@ -65,12 +65,12 @@ public class TestRepositorySystemSession
 
     public boolean isTransferErrorCachingEnabled()
     {
-        throw new UnsupportedOperationException( "isTransferErrorCachingEnabled()" );
+        return false;
     }
 
     public boolean isNotFoundCachingEnabled()
     {
-        throw new UnsupportedOperationException( "isNotFoundCachingEnabled()" );
+        return false;
     }
 
     public boolean isIgnoreMissingArtifactDescriptor()
@@ -105,7 +105,8 @@ public class TestRepositorySystemSession
 
     public WorkspaceReader getWorkspaceReader()
     {
-        throw new UnsupportedOperationException( "getWorkspaceReader()" );
+        // throw new UnsupportedOperationException( "getWorkspaceReader()" );
+        return null;
     }
 
     public RepositoryListener getRepositoryListener()

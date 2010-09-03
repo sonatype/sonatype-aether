@@ -32,7 +32,7 @@ import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 
 /**
- * A repository connector doing nothing but recording all get/put-requests.
+ * A repository connector recording all get/put-requests and faking the results.
  * 
  * @author Benjamin Hanzelmann
  */

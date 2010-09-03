@@ -38,7 +38,7 @@ public class StubArtifact
 
     private final String classifier;
 
-    private final File file;
+    private File file;
 
     private final Map<String, String> properties;
 
@@ -108,7 +108,12 @@ public class StubArtifact
 
     public Artifact setVersion( String version )
     {
-        throw new UnsupportedOperationException( "not implemented" );
+        if ( getVersion().equals( version ) )
+        {
+            return this;
+        }
+        
+        return new StubArtifact( getGroupId(), getArtifactId(), getClassifier(), getExtension(), version );
     }
 
     public String getBaseVersion()
@@ -138,7 +143,8 @@ public class StubArtifact
 
     public Artifact setFile( File file )
     {
-        throw new UnsupportedOperationException( "not implemented" );
+        this.file = file;
+        return this;
     }
 
     public String getProperty( String key, String defaultValue )
@@ -154,7 +160,14 @@ public class StubArtifact
 
     public Artifact setProperties( Map<String, String> properties )
     {
-        throw new UnsupportedOperationException( "not implemented" );
+        if ( properties.equals( getProperties() ) )
+        {
+            return this;
+        }
+        else
+        {
+            return new StubArtifact( groupId, artifactId, classifier, extension, version, properties );
+        }
     }
 
     @Override
@@ -204,7 +217,7 @@ public class StubArtifact
     @Override
     public String toString()
     {
-        return String.format("%s:%s:%s:%s", getGroupId(), getArtifactId(), getExtension(), getVersion());
+        return String.format( "%s:%s:%s:%s", getGroupId(), getArtifactId(), getVersion(), getExtension() );
     }
 
 }

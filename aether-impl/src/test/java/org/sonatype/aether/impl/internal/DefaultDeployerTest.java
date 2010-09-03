@@ -14,28 +14,18 @@ package org.sonatype.aether.impl.internal;
  */
 
 import java.io.IOException;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.deployment.DeployRequest;
 import org.sonatype.aether.deployment.DeploymentException;
-import org.sonatype.aether.impl.RemoteRepositoryManager;
-import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.metadata.Metadata.Nature;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.repository.RepositoryPolicy;
-import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.FileUtil;
-import org.sonatype.aether.transfer.ArtifactTransferException;
-import org.sonatype.aether.transfer.MetadataTransferException;
-import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.metadata.DefaultMetadata;
 
@@ -48,7 +38,7 @@ public class DefaultDeployerTest
 
     private TestRepositorySystemSession session;
 
-    private TestRemoteRepositoryManager manager;
+    private StubRemoteRepositoryManager manager;
 
     @Before
     public void setup()
@@ -61,7 +51,7 @@ public class DefaultDeployerTest
                                  FileUtil.createTempFile( "metadata" ) );
 
         session = new TestRepositorySystemSession();
-        manager = new TestRemoteRepositoryManager();
+        manager = new StubRemoteRepositoryManager();
     }
 
     @Test
@@ -119,68 +109,5 @@ public class DefaultDeployerTest
         DeployRequest request = new DeployRequest();
         request.addArtifact( artifact.setFile( null ) );
         deployer.deploy( session, request );
-    }
-
-    private final class DoNothingUpdateCheckManager
-        implements UpdateCheckManager
-    {
-        public void touchMetadata( RepositorySystemSession session,
-                                   UpdateCheck<Metadata, MetadataTransferException> check )
-        {
-        }
-
-        public void touchArtifact( RepositorySystemSession session,
-                                   UpdateCheck<Artifact, ArtifactTransferException> check )
-        {
-        }
-
-        public String getEffectiveUpdatePolicy( RepositorySystemSession session, String policy1, String policy2 )
-        {
-            return null;
-        }
-
-        public void checkMetadata( RepositorySystemSession session,
-                                   UpdateCheck<Metadata, MetadataTransferException> check )
-        {
-        }
-
-        public void checkArtifact( RepositorySystemSession session,
-                                   UpdateCheck<Artifact, ArtifactTransferException> check )
-        {
-        }
-    }
-
-    private static class TestRemoteRepositoryManager
-        implements RemoteRepositoryManager
-    {
-
-        private RepositoryConnector connector;
-
-        public void setConnector( RepositoryConnector connector )
-        {
-            this.connector = connector;
-        }
-
-        public List<RemoteRepository> aggregateRepositories( RepositorySystemSession session,
-                                                             List<RemoteRepository> dominantRepositories,
-                                                             List<RemoteRepository> recessiveRepositories,
-                                                             boolean recessiveIsRaw )
-        {
-            throw new UnsupportedOperationException( "aggregateRepositories" );
-        }
-
-        public RepositoryPolicy getPolicy( RepositorySystemSession session, RemoteRepository repository,
-                                           boolean releases, boolean snapshots )
-        {
-            return new RepositoryPolicy( true, RepositoryPolicy.UPDATE_POLICY_ALWAYS,
-                                         RepositoryPolicy.CHECKSUM_POLICY_FAIL );
-        }
-
-        public RepositoryConnector getRepositoryConnector( RepositorySystemSession session, RemoteRepository repository )
-            throws NoRepositoryConnectorException
-        {
-            return connector;
-        }
-
     }
 }
