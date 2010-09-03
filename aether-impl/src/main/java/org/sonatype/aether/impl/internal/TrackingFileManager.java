@@ -57,8 +57,6 @@ class TrackingFileManager
                 channel = stream.getChannel();
                 lock = channel.lock( 0, channel.size(), true );
 
-                logger.debug( "Reading resolution tracking file " + file );
-
                 Properties props = new Properties();
                 props.load( stream );
 
