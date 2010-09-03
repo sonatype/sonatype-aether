@@ -337,7 +337,7 @@ public class DependencyGraphParser
 
     private DependencyNode build( DependencyNode parent, LineContext ctx, boolean isRoot )
     {
-        Definition def = ctx.getDefinition();
+        ArtifactDefinition def = ctx.getDefinition();
         if ( !isRoot && parent == null )
         {
             throw new IllegalArgumentException( "dangling node: " + def );
@@ -482,7 +482,7 @@ public class DependencyGraphParser
         }
 
         split = definition.split( ";" );
-        ctx.setDefinition( new Definition( split[0] ) );
+        ctx.setDefinition( new ArtifactDefinition( split[0] ) );
 
         if ( split.length > 1 ) // properties
         {
@@ -500,124 +500,20 @@ public class DependencyGraphParser
         return ctx;
     }
 
-    static class Definition
-    {
-        private String groupId;
-
-        private String artifactId;
-
-        private String extension;
-
-        private String version;
-
-        private String scope = "";
-
-        private String definition;
-
-        private String id = null;
-
-        private String reference = null;
-
-        public Definition( String def )
-        {
-            super();
-
-            this.definition = def.trim();
-
-            if ( definition.startsWith( "(" ) )
-            {
-                int idx = definition.indexOf( ')' );
-                this.id = definition.substring( 1, idx );
-                this.definition = definition.substring( idx + 1 );
-            }
-            else if ( definition.startsWith( "^" ) )
-            {
-                this.reference = definition.substring( 1 );
-                return;
-            }
-
-            String[] split = definition.split( ":" );
-            if ( split.length < 4 )
-            {
-                throw new IllegalArgumentException( "Need definition like 'gid:aid:ext:ver[:scope]', but was: "
-                    + definition );
-            }
-            groupId = split[0];
-            artifactId = split[1];
-            extension = split[2];
-            version = split[3];
-            if ( split.length > 4 )
-            {
-                scope = split[4];
-            }
-        }
-
-        public String getGroupId()
-        {
-            return groupId;
-        }
-
-        public String getArtifactId()
-        {
-            return artifactId;
-        }
-
-        public String getExtension()
-        {
-            return extension;
-        }
-
-        public String getVersion()
-        {
-            return version;
-        }
-
-        public String getScope()
-        {
-            return scope;
-        }
-
-        @Override
-        public String toString()
-        {
-            return definition;
-        }
-
-        public String getId()
-        {
-            return id;
-        }
-
-        public String getReference()
-        {
-            return reference;
-        }
-
-        public boolean isReference()
-        {
-            return reference != null;
-        }
-
-        public boolean hasId()
-        {
-            return id != null;
-        }
-    }
-
     static class LineContext
     {
-        Definition definition;
+        ArtifactDefinition definition;
 
         private Map<String, String> properties;
 
         int level;
 
-        public Definition getDefinition()
+        public ArtifactDefinition getDefinition()
         {
             return definition;
         }
 
-        public void setDefinition( Definition definition )
+        public void setDefinition( ArtifactDefinition definition )
         {
             this.definition = definition;
         }
