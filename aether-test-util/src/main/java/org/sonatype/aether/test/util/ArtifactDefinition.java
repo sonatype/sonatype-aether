@@ -31,6 +31,8 @@ class ArtifactDefinition
 
     private String reference = null;
 
+    private boolean optional = false;
+
     public ArtifactDefinition( String def )
     {
         super();
@@ -57,11 +59,15 @@ class ArtifactDefinition
         }
         groupId = split[0];
         artifactId = split[1];
-        extension = split[2];
-        version = split[3];
+        version = split[2];
+        extension = split[3];
         if ( split.length > 4 )
         {
             scope = split[4];
+        }
+        if ( split.length > 5 && "optional".equalsIgnoreCase( split[5] ) )
+        {
+            optional = true;
         }
     }
 
@@ -114,5 +120,10 @@ class ArtifactDefinition
     public boolean hasId()
     {
         return id != null;
+    }
+
+    public boolean isOptional()
+    {
+        return optional;
     }
 }

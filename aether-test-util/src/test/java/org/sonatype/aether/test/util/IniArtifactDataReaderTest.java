@@ -102,49 +102,4 @@ public class IniArtifactDataReaderTest
         assertEquals( "ext2", artifact.getExtension() );
     }
 
-    // @Test
-    // public void testResource()
-    // throws IOException
-    // {
-    // String resource = "ArtifactDataReaderTest.ini";
-    // ArtifactDescription description = parser.parse( resource );
-    //
-    // ArtifactData self = description.getSelfData();
-    //
-    // assertNotNull( self );
-    // assertEquals( "aid", self.getArtifactId() );
-    // assertEquals( "gid", self.getGroupId() );
-    // assertEquals( "ver", self.getVersion() );
-    // assertEquals( "ext", self.getPackaging() );
-    //
-    // ArtifactData parent = description.getParentData();
-    // assertNotNull( parent );
-    // assertEquals( "aid2", parent.getArtifactId() );
-    // assertEquals( "gid", parent.getGroupId() );
-    // assertEquals( "ver", parent.getVersion() );
-    //
-    // DependencyData dependencies = description.getDependencyData();
-    // assertNotNull( dependencies );
-    //
-    // assertNotNull( dependencies.getDependencies() );
-    // assertEquals( 2, dependencies.getDependencies().size() );
-    //
-    // Dependency dep = dependencies.getDependencies().get( 0 );
-    // assertEquals( "gid", dep.getGroupId() );
-    // assertEquals( "aid", dep.getArtifactId() );
-    // assertEquals( "ext", dep.getType() );
-    // assertEquals( "ver", dep.getVersion() );
-    // assertEquals( "scope", dep.getScope() );
-    // assertTrue( dep.isOptional() );
-    //
-    // dep = dependencies.getDependencies().get( 1 );
-    // assertEquals( "gid2", dep.getGroupId() );
-    // assertEquals( "aid2", dep.getArtifactId() );
-    // assertEquals( "ext", dep.getType() );
-    // assertEquals( "ver", dep.getVersion() );
-    // assertEquals( "scope", dep.getScope() );
-    // assertFalse( dep.isOptional() );
-    //
-    // }
-
 }

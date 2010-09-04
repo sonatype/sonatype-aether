@@ -1,7 +1,5 @@
 package org.sonatype.aether.test.util;
 
-import java.io.IOException;
-
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.resolution.ArtifactDescriptorException;
@@ -51,8 +49,8 @@ public class IniArtifactDescriptorReader
     {
         Artifact artifact = request.getArtifact();
         String resourceName =
-            String.format( "%s_%s_%s_%s.ini", artifact.getGroupId(), artifact.getArtifactId(), artifact.getExtension(),
-                           artifact.getVersion() );
+            String.format( "%s_%s_%s_%s.ini", artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
+                           artifact.getExtension() );
 
         ArtifactDescriptorResult result = new ArtifactDescriptorResult( request );
         result.setArtifact( artifact );
@@ -66,7 +64,7 @@ public class IniArtifactDescriptorReader
             result.setRelocations( data.getRelocations() );
             return result;
         }
-        catch ( IOException e )
+        catch ( Throwable e )
         {
             throw new ArtifactDescriptorException( result, e.getMessage() );
         }

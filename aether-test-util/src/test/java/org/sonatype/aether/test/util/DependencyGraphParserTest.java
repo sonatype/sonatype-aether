@@ -45,7 +45,7 @@ public class DependencyGraphParserTest
     public void testOnlyRoot()
         throws IOException
     {
-        String def = "gid:aid:jar:1:scope";
+        String def = "gid:aid:1:jar:scope";
 
         DependencyNode node = parser.parseLiteral( def );
 
@@ -69,7 +69,7 @@ public class DependencyGraphParserTest
     public void testOptionalScope()
         throws IOException
     {
-        String def = "gid:aid:jar:1";
+        String def = "gid:aid:1:jar";
 
         DependencyNode node = parser.parseLiteral( def );
 
@@ -87,7 +87,7 @@ public class DependencyGraphParserTest
         throws IOException
     {
         String def =
-            "gid1:aid1:ext1:ver1:scope1\n" + "+- gid2:aid2:ext2:ver2:scope2\n" + "\\- gid3:aid3:ext3:ver3:scope3\n";
+            "gid1:aid1:ver1:ext1:scope1\n" + "+- gid2:aid2:ver2:ext2:scope2\n" + "\\- gid3:aid3:ver3:ext3:scope3\n";
 
         DependencyNode node = parser.parseLiteral( def );
         assertNotNull( node );
@@ -111,8 +111,8 @@ public class DependencyGraphParserTest
         throws IOException
     {
         String def =
-            "gid1:aid1:ext1:ver1\n" + "+- gid2:aid2:ext2:ver2:scope2\n" + "|  \\- gid3:aid3:ext3:ver3\n"
-                + "\\- gid4:aid4:ext4:ver4:scope4";
+            "gid1:aid1:ver1:ext1\n" + "+- gid2:aid2:ver2:ext2:scope2\n" + "|  \\- gid3:aid3:ver3:ext3\n"
+                + "\\- gid4:aid4:ver4:ext4:scope4";
 
         DependencyNode node = parser.parseLiteral( def );
         assertNodeProperties( node, 1 );
@@ -154,7 +154,7 @@ public class DependencyGraphParserTest
     public void testComments()
         throws IOException
     {
-        String def = "# first line\n#second line\ngid:aid:ext:ver # root artifact asdf:qwer:zcxv:uip";
+        String def = "# first line\n#second line\ngid:aid:ver:ext # root artifact asdf:qwer:zcxv:uip";
 
         DependencyNode node = parser.parseLiteral( def );
 
@@ -165,7 +165,7 @@ public class DependencyGraphParserTest
     public void testId()
         throws IOException
     {
-        String def = "(id)gid:aid:ext:ver\n\\- ^id";
+        String def = "(id)gid:aid:ver:ext\n\\- ^id";
         DependencyNode node = parser.parseLiteral( def );
         assertNodeProperties( node, "" );
 
@@ -205,7 +205,7 @@ public class DependencyGraphParserTest
     public void testProperties()
         throws IOException
     {
-        String def = "gid:aid:ext:ver;test=foo;test2=fizzle";
+        String def = "gid:aid:ver:ext;test=foo;test2=fizzle";
         DependencyNode node = parser.parseLiteral( def );
 
         assertNodeProperties( node, "" );
@@ -225,13 +225,13 @@ public class DependencyGraphParserTest
         throws IOException
     {
         parser.setSubstitutions( Arrays.asList( "subst1", "subst2" ) );
-        String def = "%s:%s:ext:ver";
+        String def = "%s:%s:ver:ext";
         DependencyNode root = parser.parseLiteral( def );
         Artifact artifact = root.getDependency().getArtifact();
         assertEquals( "subst2", artifact.getArtifactId() );
         assertEquals( "subst1", artifact.getGroupId() );
         
-        def = "%s:aid:ext:ver\n\\- %s:aid:ext:ver";
+        def = "%s:aid:ver:ext\n\\- %s:aid:ver:ext";
         root = parser.parseLiteral( def );
 
         assertEquals( "subst1", root.getDependency().getArtifact().getGroupId() );
