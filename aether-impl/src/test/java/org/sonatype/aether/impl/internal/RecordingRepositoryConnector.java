@@ -78,6 +78,9 @@ class RecordingRepositoryConnector
                     this.actualGet.add( artifact );
                     artifactDownload.setFile( FileUtil.createTempFile( artifact.toString() ) );
                 }
+            }
+            if ( metadataDownloads != null )
+            {
                 for ( MetadataDownload metadataDownload : metadataDownloads )
                 {
                     Metadata metadata = metadataDownload.getMetadata();
