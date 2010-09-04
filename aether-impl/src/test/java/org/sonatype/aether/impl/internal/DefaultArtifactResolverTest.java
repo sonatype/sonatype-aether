@@ -27,6 +27,7 @@ import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.DependencyGraphParser;
 import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.util.artifact.ArtifactProperties;
 
@@ -93,7 +94,7 @@ public class DefaultArtifactResolverTest
 
     }
 
-    @Test( expected = ArtifactResolutionException.class )
+    @Test
     public void testResolveLocalArtifactUnsuccessful()
         throws IOException, ArtifactResolutionException
     {
@@ -108,12 +109,27 @@ public class DefaultArtifactResolverTest
         tmpFile.delete();
 
         ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
-        ArtifactResult result = resolver.resolveArtifact( session, request );
 
-        assertTrue( result.getExceptions().isEmpty() );
+        try
+        {
+            resolver.resolveArtifact( session, request );
+            fail( "expected exception" );
+        }
+        catch ( ArtifactResolutionException e )
+        {
+            assertNotNull( e.getResults() );
+            assertEquals( 1, e.getResults().size() );
 
-        Artifact resolved = result.getArtifact();
-        assertEquals( artifact, resolved );
+            ArtifactResult result = e.getResults().get( 0 );
+
+            assertEquals( request, result.getRequest() );
+
+            assertFalse( result.getExceptions().isEmpty() );
+            assertTrue( result.getExceptions().get( 0 ) instanceof ArtifactNotFoundException );
+
+            Artifact resolved = result.getArtifact();
+            assertNull( resolved );
+        }
 
     }
 
@@ -141,13 +157,15 @@ public class DefaultArtifactResolverTest
         connector.assertSeenExpected();
     }
 
-    @Test( expected = ArtifactResolutionException.class )
+    @Test
     public void testResolveRemoteArtifactUnsuccessful()
         throws IOException, ArtifactResolutionException
     {
         DependencyNode node = parser.parseLiteral( "gid:aid:ext:ver" );
         Artifact artifact = node.getDependency().getArtifact();
-        RecordingRepositoryConnector connector = new RecordingRepositoryConnector( null, null, null, null )
+        RecordingRepositoryConnector connector =
+            new RecordingRepositoryConnector( Collections.singleton( artifact ).toArray( new Artifact[0] ), null, null,
+                                              null )
         {
 
             @Override
@@ -157,7 +175,7 @@ public class DefaultArtifactResolverTest
                 super.get( artifactDownloads, metadataDownloads );
                 ArtifactDownload download = artifactDownloads.iterator().next();
                 ArtifactTransferException exception =
-                    new ArtifactTransferException( download.getArtifact(), null, "not found" );
+                    new ArtifactNotFoundException( download.getArtifact(), null, "not found" );
                 download.setException( exception );
             }
 
@@ -167,12 +185,27 @@ public class DefaultArtifactResolverTest
         ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
         request.addRepository( new RemoteRepository( "id", "default", "file:///" ) );
 
-        ArtifactResult result = resolver.resolveArtifact( session, request );
+        try
+        {
+            resolver.resolveArtifact( session, request );
+            fail( "expected exception" );
+        }
+        catch ( ArtifactResolutionException e )
+        {
+            connector.assertSeenExpected();
+            assertNotNull( e.getResults() );
+            assertEquals( 1, e.getResults().size() );
 
-        assertTrue( result.getExceptions().isEmpty() );
+            ArtifactResult result = e.getResults().get( 0 );
 
-        Artifact resolved = result.getArtifact();
-        assertEquals( artifact, resolved );
+            assertEquals( request, result.getRequest() );
+
+            assertFalse( result.getExceptions().isEmpty() );
+            assertTrue( result.getExceptions().get( 0 ) instanceof ArtifactNotFoundException );
+
+            Artifact resolved = result.getArtifact();
+            assertNull( resolved );
+        }
 
     }
 }
