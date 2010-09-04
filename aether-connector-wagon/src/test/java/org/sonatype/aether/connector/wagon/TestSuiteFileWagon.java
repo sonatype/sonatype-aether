@@ -32,7 +32,7 @@ import org.sonatype.aether.transfer.NoRepositoryConnectorException;
  * @author Benjamin Hanzelmann
  *
  */
-public class FileWagonTestSuite
+public class TestSuiteFileWagon
     extends ConnectorTestSuite
 {
 
@@ -92,7 +92,7 @@ public class FileWagonTestSuite
         }
     };
 
-    public FileWagonTestSuite()
+    public TestSuiteFileWagon()
     {
         super( setup );
     }
