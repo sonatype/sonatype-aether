@@ -86,13 +86,13 @@ class FileRepositoryWorker
 
     private TransferWrapper transfer;
 
-    private RemoteRepository repository;
+    private final RemoteRepository repository;
 
     private CountDownLatch latch = null;
 
-    private TransferEventCatapult catapult;
+    private final TransferEventCatapult catapult;
 
-    private Direction direction;
+    private final Direction direction;
 
     /**
      * Set the latch to count down after all work is done.
@@ -245,17 +245,7 @@ class FileRepositoryWorker
             {
                 File dir = target.getParentFile();
 
-                // dir = new File( baseDir, transfer.getRelativePath() ).getParentFile();
-
-                // mkdirs is not threadsafe, try harder
-                int i = 0;
-                while ( !dir.exists() && !dir.mkdirs() )
-                {
-                    if ( i++ >= 5 )
-                    {
-                        throw new FileNotFoundException( "Could not create directory: " + dir.getAbsolutePath() );
-                    }
-                }
+                mkdirs( dir );
 
                 totalTransferred = copy( src, target );
 
@@ -337,7 +327,9 @@ class FileRepositoryWorker
                         }
                     }
                     if ( target != null )
+                    {
                         target.delete();
+                    }
 
                     DefaultTransferEvent event = newEvent( transfer, repository );
                     catapult.fireFailed( event );
@@ -346,10 +338,35 @@ class FileRepositoryWorker
             finally
             {
                 if ( latch != null )
+                {
                     latch.countDown();
+                }
             }
         }
 
+    }
+
+    public void mkdirs( File dir )
+        throws FileNotFoundException
+    {
+
+        // we do not want to split on '\' (special char)
+        String regexSafePath = dir.getAbsolutePath().replace( File.separator, "_" );
+
+        // maximum number of possible failures (plus number of '_' in the filename, does not matter)
+
+        int maxFail = regexSafePath.split( "_" ).length;
+        // dir = new File( baseDir, transfer.getRelativePath() ).getParentFile();
+
+        // mkdirs is not threadsafe, try harder
+        int i = 0;
+        while ( !dir.exists() && !dir.mkdirs() )
+        {
+            if ( i++ >= maxFail )
+            {
+                throw new FileNotFoundException( "Could not create directory: " + dir.getAbsolutePath() );
+            }
+        }
     }
 
     private void writeChecksum( File src, String targetPath )
@@ -477,13 +494,21 @@ class FileRepositoryWorker
         finally
         {
             if ( inStream != null )
+            {
                 inStream.close();
+            }
             if ( in != null )
+            {
                 in.close();
+            }
             if ( outStream != null )
+            {
                 outStream.close();
+            }
             if ( out != null )
+            {
                 out.close();
+            }
         }
 
         return total;
