@@ -349,13 +349,9 @@ class FileRepositoryWorker
     public void mkdirs( File dir )
         throws FileNotFoundException
     {
-
-        // we do not want to split on '\' (special char)
-        String regexSafePath = dir.getAbsolutePath().replace( File.separator, "_" );
-
-        // maximum number of possible failures (plus number of '_' in the filename, does not matter)
-
-        int maxFail = regexSafePath.split( "_" ).length;
+        // maximum number of possible failures
+        int maxFail = dir.getAbsolutePath().split( "\\Q" + File.separator + "\\E" ).length;
+        
         // dir = new File( baseDir, transfer.getRelativePath() ).getParentFile();
 
         // mkdirs is not threadsafe, try harder
