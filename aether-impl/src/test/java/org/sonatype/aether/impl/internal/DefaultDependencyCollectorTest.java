@@ -156,6 +156,7 @@ public class DefaultDependencyCollectorTest
         expect = parser.parseLiteral( "gid:aid2:ver:ext:compile" );
         assertEquals( expect.getDependency(), path( newRoot, 1 ).getDependency() );
         assertEquals( expect.getDependency(), path( newRoot, 0, 0 ).getDependency() );
+        assertEquals( path( newRoot, 1 ).getDependency(), path( newRoot, 0, 0 ).getDependency() );
     }
 
     @Test

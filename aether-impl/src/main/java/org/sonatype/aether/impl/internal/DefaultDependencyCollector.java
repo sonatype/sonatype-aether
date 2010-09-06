@@ -38,9 +38,6 @@ import org.sonatype.aether.impl.ArtifactDescriptorReader;
 import org.sonatype.aether.impl.DependencyCollector;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.VersionRangeResolver;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
-import org.sonatype.aether.util.artifact.ArtifactProperties;
-import org.sonatype.aether.version.Version;
 import org.sonatype.aether.repository.ArtifactRepository;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.resolution.ArtifactDescriptorException;
@@ -53,6 +50,9 @@ import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.util.DefaultRepositorySystemSession;
+import org.sonatype.aether.util.artifact.ArtifactProperties;
+import org.sonatype.aether.version.Version;
 
 /**
  * @author Benjamin Bentmann
@@ -385,8 +385,7 @@ public class DefaultDependencyCollector
                 for ( Version version : versions )
                 {
                     Artifact originalArtifact = dependency.getArtifact().setVersion( version.toString() );
-                    Dependency originalDependency = dependency.setArtifact( originalArtifact );
-                    Dependency d = originalDependency;
+                    Dependency d = dependency.setArtifact( originalArtifact );
 
                     List<RemoteRepository> repos;
                     ArtifactRepository repo = rangeResult.getRepository( version );
@@ -502,8 +501,8 @@ public class DefaultDependencyCollector
                     GraphNode node = edges.getFirst().getTarget();
 
                     GraphEdge edge = new GraphEdge( node, child );
-                    edge.setDependency( originalDependency );
-                    edge.setScope( originalDependency.getScope() );
+                    edge.setDependency( d );
+                    edge.setScope( d.getScope() );
                     edge.setPremanagedScope( premanagedScope );
                     edge.setPremanagedVersion( premanagedVersion );
                     edge.setRelocations( relocations );
