@@ -45,9 +45,10 @@ public class TestRepositorySystemSession
 {
 
     private SessionData data = new TestSessionData();
-    private TransferListener listener = new RecordingTransferListener();
 
-    private RepositoryListener repositoryListener = new RecordingRepositoryListener();
+    private TransferListener listener;
+
+    private RepositoryListener repositoryListener;
 
     private AuthenticationSelector authenticator = new TestAuthenticationSelector();
 

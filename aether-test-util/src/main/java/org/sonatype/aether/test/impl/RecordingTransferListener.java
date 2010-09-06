@@ -14,6 +14,7 @@ package org.sonatype.aether.test.impl;
  */
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.sonatype.aether.transfer.TransferCancelledException;
@@ -24,9 +25,9 @@ public class RecordingTransferListener
     implements TransferListener
 {
 
-    private List<TransferEvent> events = new ArrayList<TransferEvent>();
+    private List<TransferEvent> events = Collections.synchronizedList( new ArrayList<TransferEvent>() );
 
-    private List<TransferEvent> progressEvents = new ArrayList<TransferEvent>();
+    private List<TransferEvent> progressEvents = Collections.synchronizedList( new ArrayList<TransferEvent>() );
 
     private TransferListener realListener;
 

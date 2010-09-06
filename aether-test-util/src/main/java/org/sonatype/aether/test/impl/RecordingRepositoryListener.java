@@ -14,6 +14,7 @@ package org.sonatype.aether.test.impl;
  */
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.sonatype.aether.RepositoryEvent;
@@ -23,7 +24,7 @@ public class RecordingRepositoryListener
     implements RepositoryListener
 {
 
-    private List<RepositoryEvent> events = new ArrayList<RepositoryEvent>();
+    private List<RepositoryEvent> events = Collections.synchronizedList( new ArrayList<RepositoryEvent>() );
 
     private RepositoryListener realListener;
 
