@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.graph.DependencyVisitor;
 
@@ -56,6 +57,31 @@ public class PreorderNodeListGenerator
     public List<DependencyNode> getNodes()
     {
         return nodes;
+    }
+
+    /**
+     * Gets the dependencies seen during the graph traversal.
+     * 
+     * @param includeUnresolved Whether unresolved dependencies shall be included in the result or not.
+     * @return The list of dependencies in preorder, never {@code null}.
+     */
+    public List<Dependency> getDependencies( boolean includeUnresolved )
+    {
+        List<Dependency> dependencies = new ArrayList<Dependency>( getNodes().size() );
+
+        for ( DependencyNode node : getNodes() )
+        {
+            Dependency dependency = node.getDependency();
+            if ( dependency != null )
+            {
+                if ( includeUnresolved || dependency.getArtifact().getFile() != null )
+                {
+                    dependencies.add( dependency );
+                }
+            }
+        }
+
+        return dependencies;
     }
 
     /**
