@@ -26,6 +26,17 @@ class StubRemoteRepositoryManager
     implements RemoteRepositoryManager
 {
 
+    public StubRemoteRepositoryManager( RepositoryConnector connector )
+    {
+        super();
+        setConnector( connector );
+    }
+
+    public StubRemoteRepositoryManager()
+    {
+        super();
+    }
+
     private RepositoryConnector connector;
 
     public void setConnector( RepositoryConnector connector )

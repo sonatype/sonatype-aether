@@ -65,6 +65,10 @@ class RecordingRepositoryConnector
         this.expectPutMD = expectPutMD;
     }
 
+    public RecordingRepositoryConnector()
+    {
+    }
+
     public void get( Collection<? extends ArtifactDownload> artifactDownloads,
                      Collection<? extends MetadataDownload> metadataDownloads )
     {
@@ -173,6 +177,26 @@ class RecordingRepositoryConnector
     public List<Metadata> getActualMetadataPutRequests()
     {
         return actualPutMD;
+    }
+
+    public void setExpectGet( Artifact... expectGet )
+    {
+        this.expectGet = expectGet;
+    }
+
+    public void setExpectPut( Artifact... expectPut )
+    {
+        this.expectPut = expectPut;
+    }
+
+    public void setExpectGet( Metadata... expectGetMD )
+    {
+        this.expectGetMD = expectGetMD;
+    }
+
+    public void setExpectPut( Metadata... expectPutMD )
+    {
+        this.expectPutMD = expectPutMD;
     }
 
 }

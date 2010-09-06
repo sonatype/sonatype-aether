@@ -42,10 +42,12 @@ final class DoNothingUpdateCheckManager
     public void checkMetadata( RepositorySystemSession session,
                                UpdateCheck<Metadata, MetadataTransferException> check )
     {
+        check.setRequired( true );
     }
 
     public void checkArtifact( RepositorySystemSession session,
                                UpdateCheck<Artifact, ArtifactTransferException> check )
     {
+        check.setRequired( true );
     }
 }

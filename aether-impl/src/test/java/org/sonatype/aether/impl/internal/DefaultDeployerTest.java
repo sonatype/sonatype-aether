@@ -81,7 +81,7 @@ public class DefaultDeployerTest
     public void testNullArtifactFile()
         throws DeploymentException
     {
-        RecordingRepositoryConnector connector = new RecordingRepositoryConnector( null, null, null, null );
+        RecordingRepositoryConnector connector = new RecordingRepositoryConnector();
         manager.setConnector( connector );
 
         DefaultDeployer deployer = new DefaultDeployer();
@@ -98,7 +98,7 @@ public class DefaultDeployerTest
     public void testNullMetadataFile()
         throws DeploymentException
     {
-        RecordingRepositoryConnector connector = new RecordingRepositoryConnector( null, null, null, null );
+        RecordingRepositoryConnector connector = new RecordingRepositoryConnector();
         manager.setConnector( connector );
 
         DefaultDeployer deployer = new DefaultDeployer();

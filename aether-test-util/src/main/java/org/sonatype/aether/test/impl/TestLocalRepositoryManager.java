@@ -13,6 +13,7 @@ package org.sonatype.aether.test.impl;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,6 +26,7 @@ import org.sonatype.aether.repository.LocalArtifactResult;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.LocalRepositoryManager;
 import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.test.util.FileUtil;
 
 public class TestLocalRepositoryManager
     implements LocalRepositoryManager
@@ -33,6 +35,12 @@ public class TestLocalRepositoryManager
     private LocalRepository localRepository = new LocalRepository( "target/test-local-repository" );
 
     private Set<Artifact> registration = new HashSet<Artifact>();
+
+    public TestLocalRepositoryManager()
+    {
+        super();
+        FileUtil.deleteDir( new File( "target/test-local-repository" ) );
+    }
 
     public LocalRepository getRepository()
     {
