@@ -76,9 +76,9 @@ public class NearestVersionConflictResolver
         Map<DependencyNode, Integer> depths = new IdentityHashMap<DependencyNode, Integer>( conflictIds.size() );
         for ( ConflictId id : sorted )
         {
-            ConflictGroup group = new ConflictGroup( id );
+            ConflictGroup group = new ConflictGroup( id.key );
             depths.clear();
-            selectVersion( node, null, 0, depths, group, conflictIds, ids );
+            selectVersion( node, null, 0, depths, group, conflictIds );
             pruneNonSelectedVersions( group, conflictIds );
         }
 
@@ -185,8 +185,7 @@ public class NearestVersionConflictResolver
     }
 
     private void selectVersion( DependencyNode node, DependencyNode parent, int depth,
-                                Map<DependencyNode, Integer> depths, ConflictGroup group, Map<?, ?> conflictIds,
-                                Map<?, ConflictId> ids )
+                                Map<DependencyNode, Integer> depths, ConflictGroup group, Map<?, ?> conflictIds )
         throws RepositoryException
     {
         Integer smallestDepth = depths.get( node );
@@ -200,7 +199,7 @@ public class NearestVersionConflictResolver
         }
 
         Object key = conflictIds.get( node );
-        if ( group.id.key.equals( key ) )
+        if ( group.key.equals( key ) )
         {
             Position pos = new Position( parent, depth );
             if ( parent != null )
@@ -254,7 +253,7 @@ public class NearestVersionConflictResolver
                     {
                         versions.add( constraint.toString() );
                     }
-                    throw new UnsolvableVersionConflictException( group.id.key, versions );
+                    throw new UnsolvableVersionConflictException( group.key, versions );
                 }
             }
         }
@@ -263,7 +262,7 @@ public class NearestVersionConflictResolver
 
         for ( DependencyNode child : node.getChildren() )
         {
-            selectVersion( child, node, depth, depths, group, conflictIds, ids );
+            selectVersion( child, node, depth, depths, group, conflictIds );
         }
     }
 
@@ -290,7 +289,7 @@ public class NearestVersionConflictResolver
 
                 Object key = conflictIds.get( child );
 
-                if ( group.id.key.equals( key ) )
+                if ( group.key.equals( key ) )
                 {
                     if ( !group.pruned && group.position.depth == pos.depth
                         && group.version.equals( child.getVersion() ) )
@@ -364,7 +363,7 @@ public class NearestVersionConflictResolver
     static final class ConflictGroup
     {
 
-        final ConflictId id;
+        final Object key;
 
         final Collection<VersionConstraint> constraints = new HashSet<VersionConstraint>();
 
@@ -378,9 +377,9 @@ public class NearestVersionConflictResolver
 
         boolean pruned;
 
-        public ConflictGroup( ConflictId id )
+        public ConflictGroup( Object key )
         {
-            this.id = id;
+            this.key = key;
             this.position = new Position( null, Integer.MAX_VALUE );
         }
 
@@ -399,7 +398,7 @@ public class NearestVersionConflictResolver
         @Override
         public String toString()
         {
-            return id + " > " + version;
+            return key + " > " + version;
         }
 
     }
