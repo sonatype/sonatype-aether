@@ -16,6 +16,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Before;
@@ -23,6 +24,7 @@ import org.junit.Test;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.Exclusion;
+import org.sonatype.aether.repository.RemoteRepository;
 
 /**
  * @author Benjamin Hanzelmann
@@ -100,6 +102,86 @@ public class IniArtifactDataReaderTest
         assertEquals( "gid2", artifact.getGroupId() );
         assertEquals( "ver2", artifact.getVersion() );
         assertEquals( "ext2", artifact.getExtension() );
+    }
+
+    @Test
+    public void testResource()
+        throws IOException
+    {
+        ArtifactDescription description = parser.parse( "ArtifactDataReaderTest.ini" );
+
+        assertEquals( 1, description.getRelocations().size() );
+        Artifact artifact = description.getRelocations().get( 0 );
+        assertEquals( "gid", artifact.getGroupId() );
+        assertEquals( "aid", artifact.getArtifactId() );
+        assertEquals( "ver", artifact.getVersion() );
+        assertEquals( "ext", artifact.getExtension() );
+
+        assertEquals( 1, description.getRepositories().size() );
+        RemoteRepository repo = description.getRepositories().get( 0 );
+        assertEquals( "id", repo.getId() );
+        assertEquals( "type", repo.getContentType() );
+        assertEquals( "protocol://some/url?for=testing", repo.getUrl() );
+
+        assertDependencies( description.getDependencies() );
+        assertDependencies( description.getManagedDependencies() );
+
+    }
+
+    private void assertDependencies( List<Dependency> deps )
+    {
+        assertEquals( 4, deps.size() );
+
+        Dependency dep = deps.get( 0 );
+        assertEquals( "scope", dep.getScope() );
+        assertEquals( false, dep.isOptional() );
+        assertEquals( 2, dep.getExclusions().size() );
+        Iterator<Exclusion> it = dep.getExclusions().iterator();
+        Exclusion excl = it.next();
+        assertEquals( "gid3", excl.getGroupId() );
+        assertEquals( "aid", excl.getArtifactId() );
+        excl = it.next();
+        assertEquals( "gid2", excl.getGroupId() );
+        assertEquals( "aid2", excl.getArtifactId() );
+
+        Artifact art = dep.getArtifact();
+        assertEquals( "gid", art.getGroupId() );
+        assertEquals( "aid", art.getArtifactId() );
+        assertEquals( "ver", art.getVersion() );
+        assertEquals( "ext", art.getExtension() );
+        
+        dep = deps.get( 1 );
+        assertEquals( "scope", dep.getScope() );
+        assertEquals( true, dep.isOptional() );
+        assertEquals( 0, dep.getExclusions().size() );
+
+        art = dep.getArtifact();
+        assertEquals( "gid", art.getGroupId() );
+        assertEquals( "aid2", art.getArtifactId() );
+        assertEquals( "ver", art.getVersion() );
+        assertEquals( "ext", art.getExtension() );
+
+        dep = deps.get( 2 );
+        assertEquals( "scope", dep.getScope() );
+        assertEquals( true, dep.isOptional() );
+        assertEquals( 0, dep.getExclusions().size() );
+
+        art = dep.getArtifact();
+        assertEquals( "gid", art.getGroupId() );
+        assertEquals( "aid", art.getArtifactId() );
+        assertEquals( "ver3", art.getVersion() );
+        assertEquals( "ext", art.getExtension() );
+
+        dep = deps.get( 3 );
+        assertEquals( "scope5", dep.getScope() );
+        assertEquals( true, dep.isOptional() );
+        assertEquals( 0, dep.getExclusions().size() );
+
+        art = dep.getArtifact();
+        assertEquals( "gid1", art.getGroupId() );
+        assertEquals( "aid", art.getArtifactId() );
+        assertEquals( "ver", art.getVersion() );
+        assertEquals( "ext", art.getExtension() );
     }
 
 }

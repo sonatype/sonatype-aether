@@ -168,8 +168,15 @@ public class IniArtifactDataReader
 
             if ( line.startsWith( "[" ) )
             {
-                state = State.valueOf( line.substring( 1, line.length() - 1 ).toUpperCase( Locale.ENGLISH ) );
-                sections.put( state, new ArrayList<String>() );
+                try
+                {
+                    state = State.valueOf( line.substring( 1, line.length() - 1 ).toUpperCase( Locale.ENGLISH ) );
+                    sections.put( state, new ArrayList<String>() );
+                }
+                catch ( IllegalArgumentException e )
+                {
+                    throw new IllegalArgumentException( "unknown section: " + line, e );
+                }
             }
             else
             {
