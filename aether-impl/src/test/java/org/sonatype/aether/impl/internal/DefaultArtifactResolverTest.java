@@ -90,6 +90,9 @@ public class DefaultArtifactResolverTest
         assertTrue( result.getExceptions().isEmpty() );
 
         Artifact resolved = result.getArtifact();
+        assertNotNull( resolved.getFile() );
+        resolved = resolved.setFile( null );
+
         assertEquals( artifact, resolved );
 
     }
@@ -152,6 +155,9 @@ public class DefaultArtifactResolverTest
         assertTrue( result.getExceptions().isEmpty() );
 
         Artifact resolved = result.getArtifact();
+        assertNotNull( resolved.getFile() );
+
+        resolved = resolved.setFile( null );
         assertEquals( artifact, resolved );
 
         connector.assertSeenExpected();

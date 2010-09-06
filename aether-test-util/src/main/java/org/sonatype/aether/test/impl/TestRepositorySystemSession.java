@@ -17,19 +17,26 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.sonatype.aether.RepositoryCache;
+import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.SessionData;
 import org.sonatype.aether.artifact.ArtifactTypeRegistry;
+import org.sonatype.aether.collection.DependencyCollectionContext;
+import org.sonatype.aether.collection.DependencyGraphTransformationContext;
 import org.sonatype.aether.collection.DependencyGraphTransformer;
+import org.sonatype.aether.collection.DependencyManagement;
 import org.sonatype.aether.collection.DependencyManager;
 import org.sonatype.aether.collection.DependencySelector;
 import org.sonatype.aether.collection.DependencyTraverser;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.repository.AuthenticationSelector;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.LocalRepositoryManager;
 import org.sonatype.aether.repository.MirrorSelector;
 import org.sonatype.aether.repository.ProxySelector;
+import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.repository.WorkspaceReader;
 import org.sonatype.aether.transfer.TransferListener;
 
@@ -75,22 +82,22 @@ public class TestRepositorySystemSession
 
     public boolean isIgnoreMissingArtifactDescriptor()
     {
-        throw new UnsupportedOperationException( "isIgnoreMissingArtifactDescriptor()" );
+        return false;
     }
 
     public boolean isIgnoreInvalidArtifactDescriptor()
     {
-        throw new UnsupportedOperationException( "isIgnoreInvalidArtifactDescriptor()" );
+        return false;
     }
 
     public String getChecksumPolicy()
     {
-        throw new UnsupportedOperationException( "getChecksumPolicy()" );
+        return RepositoryPolicy.CHECKSUM_POLICY_FAIL;
     }
 
     public String getUpdatePolicy()
     {
-        throw new UnsupportedOperationException( "getUpdatePolicy()" );
+        return RepositoryPolicy.UPDATE_POLICY_ALWAYS;
     }
 
     public LocalRepository getLocalRepository()
@@ -116,17 +123,17 @@ public class TestRepositorySystemSession
 
     public Map<String, String> getSystemProperties()
     {
-        throw new UnsupportedOperationException( "String>" );
+        return Collections.emptyMap();
     }
 
     public Map<String, String> getUserProperties()
     {
-        throw new UnsupportedOperationException( "String>" );
+        return Collections.emptyMap();
     }
 
     public MirrorSelector getMirrorSelector()
     {
-        throw new UnsupportedOperationException( "getMirrorSelector()" );
+        return null;
     }
 
     public ProxySelector getProxySelector()
@@ -141,27 +148,71 @@ public class TestRepositorySystemSession
 
     public ArtifactTypeRegistry getArtifactTypeRegistry()
     {
-        throw new UnsupportedOperationException( "getArtifactTypeRegistry()" );
+        return null;
     }
 
     public DependencyTraverser getDependencyTraverser()
     {
-        throw new UnsupportedOperationException( "getDependencyTraverser()" );
+        return new DependencyTraverser()
+        {
+
+            public boolean traverseDependency( Dependency dependency )
+            {
+                return true;
+            }
+
+            public DependencyTraverser deriveChildTraverser( DependencyCollectionContext context )
+            {
+                return this;
+            }
+        };
     }
 
     public DependencyManager getDependencyManager()
     {
-        throw new UnsupportedOperationException( "getDependencyManager()" );
+        return new DependencyManager()
+        {
+
+            public DependencyManagement manageDependency( Dependency dependency )
+            {
+                return null;
+            }
+
+            public DependencyManager deriveChildManager( DependencyCollectionContext context )
+            {
+                return this;
+            }
+        };
     }
 
     public DependencySelector getDependencySelector()
     {
-        throw new UnsupportedOperationException( "getDependencySelector()" );
+        return new DependencySelector()
+        {
+
+            public boolean selectDependency( Dependency dependency )
+            {
+                return true;
+            }
+
+            public DependencySelector deriveChildSelector( DependencyCollectionContext context )
+            {
+                return this;
+            }
+        };
     }
 
     public DependencyGraphTransformer getDependencyGraphTransformer()
     {
-        throw new UnsupportedOperationException( "getDependencyGraphTransformer()" );
+        return new DependencyGraphTransformer()
+        {
+
+            public DependencyNode transformGraph( DependencyNode node, DependencyGraphTransformationContext context )
+                throws RepositoryException
+            {
+                return node;
+            }
+        };
     }
 
     public SessionData getData()

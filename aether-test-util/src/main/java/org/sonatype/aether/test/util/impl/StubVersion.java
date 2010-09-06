@@ -20,7 +20,7 @@ import org.sonatype.aether.version.Version;
  * 
  * @author Benjamin Hanzelmann
  */
-final class StubVersion
+public final class StubVersion
     implements Version
 {
 

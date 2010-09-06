@@ -38,7 +38,7 @@ class StubRemoteRepositoryManager
                                                          List<RemoteRepository> recessiveRepositories,
                                                          boolean recessiveIsRaw )
     {
-        throw new UnsupportedOperationException( "aggregateRepositories" );
+        return dominantRepositories;
     }
 
     public RepositoryPolicy getPolicy( RepositorySystemSession session, RemoteRepository repository,
