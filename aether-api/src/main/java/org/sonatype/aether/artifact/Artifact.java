@@ -89,7 +89,7 @@ public interface Artifact
     /**
      * Gets the file of this artifact. Note that only resolved artifacts have a file associated with them.
      * 
-     * @return The file or {@code null} if none.
+     * @return The file or {@code null} if the artifact isn't resolved.
      */
     File getFile();
 
