@@ -84,6 +84,30 @@ public class PreorderNodeListGenerator
     }
 
     /**
+     * Gets the files of resolved artifacts seen during the graph traversal.
+     * 
+     * @return The list of artifact files in preorder, never {@code null}.
+     */
+    public List<File> getFiles()
+    {
+        List<File> files = new ArrayList<File>( getNodes().size() );
+
+        for ( DependencyNode node : getNodes() )
+        {
+            if ( node.getDependency() != null )
+            {
+                File file = node.getDependency().getArtifact().getFile();
+                if ( file != null )
+                {
+                    files.add( file );
+                }
+            }
+        }
+
+        return files;
+    }
+
+    /**
      * Gets a class path by concatenating the artifact files of the visited dependency nodes. Nodes with unresolved
      * artifacts are automatically skipped.
      * 
