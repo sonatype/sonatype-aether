@@ -177,7 +177,7 @@ public class ArtifactWorkerTest
         String repoDir = "target/%72%65%70%6F";
         repository = new RemoteRepository( "test", "default", repoDir );
 
-        Artifact artifact = new DefaultArtifact( "gid:aid:ver:jar" );
+        Artifact artifact = new DefaultArtifact( "gid", "aid", "jar", "ver" );
         String content = "test content";
         uploadArtifact( artifact, content );
 

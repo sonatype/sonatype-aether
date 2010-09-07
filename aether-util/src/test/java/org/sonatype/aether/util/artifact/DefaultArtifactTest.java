@@ -36,25 +36,32 @@ public class DefaultArtifactTest
         assertEquals( "jar", a.getExtension() );
         assertEquals( "", a.getClassifier() );
 
-        a = new DefaultArtifact( "gid:aid:ver:ext" );
+        a = new DefaultArtifact( "gid:aid:ext:ver" );
         assertEquals( "gid", a.getGroupId() );
         assertEquals( "aid", a.getArtifactId() );
         assertEquals( "ver", a.getVersion() );
         assertEquals( "ext", a.getExtension() );
         assertEquals( "", a.getClassifier() );
 
-        a = new DefaultArtifact( "gid:aid:ver:ext:cls" );
+        a = new DefaultArtifact( "gid:aid:ext:cls:ver" );
         assertEquals( "gid", a.getGroupId() );
         assertEquals( "aid", a.getArtifactId() );
         assertEquals( "ver", a.getVersion() );
         assertEquals( "ext", a.getExtension() );
         assertEquals( "cls", a.getClassifier() );
 
-        a = new DefaultArtifact( "gid:aid:ver::cls" );
+        a = new DefaultArtifact( "gid:aid::cls:ver" );
         assertEquals( "gid", a.getGroupId() );
         assertEquals( "aid", a.getArtifactId() );
         assertEquals( "ver", a.getVersion() );
         assertEquals( "jar", a.getExtension() );
+        assertEquals( "cls", a.getClassifier() );
+
+        a = new DefaultArtifact( new DefaultArtifact( "gid:aid:ext:cls:ver" ).toString() );
+        assertEquals( "gid", a.getGroupId() );
+        assertEquals( "aid", a.getArtifactId() );
+        assertEquals( "ver", a.getVersion() );
+        assertEquals( "ext", a.getExtension() );
         assertEquals( "cls", a.getClassifier() );
     }
 
