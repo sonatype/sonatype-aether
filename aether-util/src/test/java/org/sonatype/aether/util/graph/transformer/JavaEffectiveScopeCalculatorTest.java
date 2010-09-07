@@ -43,33 +43,6 @@ public class JavaEffectiveScopeCalculatorTest
         }
     }
 
-    @Test
-    public void testScopeOrderingWithConflict()
-        throws RepositoryException, IOException
-    {
-        Scope[] scopes = Scope.values();
-        for ( Scope scope1 : scopes )
-        {
-            for ( Scope scope2 : scopes )
-            {
-                parser.setSubstitutions( scope1.toString(), scope2.toString() );
-                DependencyNode root = parser.parse( "ordering-compile.txt" );
-
-                String expected = scope1.compareTo( scope2 ) > 0 ? scope1.toString() : scope2.toString();
-                root = transform( root );
-
-                List<DependencyNode> rootChildren = root.getChildren();
-                assertEquals( 2, rootChildren.size() );
-
-                List<DependencyNode> deepChildren = rootChildren.get( 1 ).getChildren();
-                assertEquals( 1, deepChildren.size() );
-
-                assertEquals( expected, rootChildren.get( 0 ).getDependency().getScope() );
-                assertEquals( expected, deepChildren.get( 0 ).getDependency().getScope() );
-            }
-        }
-    }
-
     private DependencyNode parse( String name, String... substitutions )
         throws IOException
     {
@@ -142,6 +115,28 @@ public class JavaEffectiveScopeCalculatorTest
 
             }
         }
+    }
+
+    @Test
+    public void testConflictWinningScopeGetsUsedForInheritance()
+        throws Exception
+    {
+        DependencyNode root = parser.parse( "conflict-and-inheritance.txt" );
+        root = transform( root );
+
+        expect( "compile", root, 0, 0 );
+        expect( "compile", root, 0, 0, 0 );
+    }
+
+    @Test
+    public void testScopeOfDirectDependencyWinsConflictAndGetsUsedForInheritanceToChildrenEverywhereInGraph()
+        throws Exception
+    {
+        DependencyNode root = parser.parse( "direct-with-conflict-and-inheritance.txt" );
+        root = transform( root );
+
+        expect( "test", root, 0, 0 );
+        expect( "test", root, 1, 0, 0 );
     }
 
     @Before

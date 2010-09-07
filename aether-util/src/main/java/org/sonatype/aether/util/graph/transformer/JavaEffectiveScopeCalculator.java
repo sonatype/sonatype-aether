@@ -14,7 +14,6 @@ package org.sonatype.aether.util.graph.transformer;
  */
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -25,15 +24,15 @@ import java.util.Set;
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.collection.DependencyGraphTransformationContext;
 import org.sonatype.aether.collection.DependencyGraphTransformer;
-import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.util.artifact.JavaScopes;
 
 /**
  * A dependency graph transformer that handles scope inheritance and conflict resolution among conflicting scopes as
- * seen in Maven 2.x. For a given set of conflicting nodes, the strongest scope will be assigned to all of the nodes.
- * Note: This transformer assumes conflict groups have already been marked by a previous graph transformer like
- * {@link ConflictMarker}.
+ * seen in Maven 2.x. For a given set of conflicting nodes, a single scope will be chosen and assigned to all of the
+ * nodes. This transformer will query the keys {@link TransformationContextKeys#CONFLICT_IDS} and
+ * {@link TransformationContextKeys#SORTED_CONFLICT_IDS} for existing information about conflict ids. In absence of this
+ * information, it will automatically invoke the {@link ConflictIdSorter} to calculate it.
  * 
  * @author Benjamin Bentmann
  */
@@ -44,184 +43,231 @@ public class JavaEffectiveScopeCalculator
     public DependencyNode transformGraph( DependencyNode node, DependencyGraphTransformationContext context )
         throws RepositoryException
     {
+        List<?> sortedConflictIds = (List<?>) context.get( TransformationContextKeys.SORTED_CONFLICT_IDS );
+        if ( sortedConflictIds == null )
+        {
+            ConflictIdSorter sorter = new ConflictIdSorter();
+            sorter.transformGraph( node, context );
+
+            sortedConflictIds = (List<?>) context.get( TransformationContextKeys.SORTED_CONFLICT_IDS );
+        }
+
         Map<?, ?> conflictIds = (Map<?, ?>) context.get( TransformationContextKeys.CONFLICT_IDS );
         if ( conflictIds == null )
         {
             throw new RepositoryException( "conflict groups have not been identified" );
         }
 
-        Map<DependencyNode, Collection<String>> scopes = new IdentityHashMap<DependencyNode, Collection<String>>( 1024 );
-        Map<Object, DependencyGroup> groups = new HashMap<Object, DependencyGroup>( 1024 );
+        Map<Object, ConflictGroup> groups = new HashMap<Object, ConflictGroup>();
 
-        analyze( node, "", scopes, groups, conflictIds );
+        buildConflictGroups( groups, node, null, conflictIds );
 
-        Map<DependencyNode, Object> directNodes = new IdentityHashMap<DependencyNode, Object>();
-        if ( node.getDependency() == null )
+        String rootScope = "";
+        if ( node.getDependency() != null )
         {
-            for ( DependencyNode child : node.getChildren() )
-            {
-                directNodes.put( child, null );
-            }
+            Object key = conflictIds.get( node );
+            groups.get( key ).scope = rootScope = node.getDependency().getScope();
         }
-        else
+        for ( DependencyNode child : node.getChildren() )
         {
-            directNodes.put( node, null );
+            Object key = conflictIds.get( child );
+            groups.get( key ).scope = getInheritedScope( rootScope, child.getDependency().getScope() );
         }
 
-        resolve( scopes, groups.values(), directNodes.keySet() );
+        for ( Object key : sortedConflictIds )
+        {
+            ConflictGroup group = groups.get( key );
+            resolve( group );
+        }
 
         return node;
     }
 
-    private void analyze( DependencyNode node, String parentScope, Map<DependencyNode, Collection<String>> scopes,
-                          Map<Object, DependencyGroup> groups, Map<?, ?> conflictIds )
+    private void buildConflictGroups( Map<Object, ConflictGroup> groups, DependencyNode node, DependencyNode parent,
+                                      Map<?, ?> conflictIds )
     {
-        String scope;
+        Object key = conflictIds.get( node );
 
-        Dependency dependency = node.getDependency();
-        if ( dependency != null )
+        ConflictGroup group = groups.get( key );
+        if ( group == null )
         {
-            scope = dependency.getScope();
-            if ( node.getPremanagedScope() == null )
-            {
-                scope = getInheritedScope( parentScope, scope );
-            }
-
-            Collection<String> nodeScopes = scopes.get( node );
-            if ( nodeScopes == null )
-            {
-                nodeScopes = new HashSet<String>();
-                scopes.put( node, nodeScopes );
-            }
-            if ( !nodeScopes.add( scope ) )
-            {
-                return;
-            }
-
-            if ( nodeScopes.size() == 1 )
-            {
-                Object key = conflictIds.get( node );
-                DependencyGroup group = groups.get( key );
-                if ( group == null )
-                {
-                    group = new DependencyGroup();
-                    groups.put( key, group );
-                }
-                group.nodes.add( node );
-            }
-        }
-        else
-        {
-            scope = parentScope;
+            group = new ConflictGroup( key );
+            groups.put( key, group );
         }
 
-        for ( DependencyNode childNode : node.getChildren() )
+        List<DependencyNode> parents = group.parents.get( node );
+        boolean visited = parents != null;
+
+        if ( parents == null )
         {
-            analyze( childNode, scope, scopes, groups, conflictIds );
+            parents = new ArrayList<DependencyNode>( 4 );
+            group.parents.put( node, parents );
+        }
+
+        if ( parent != null )
+        {
+            parents.add( parent );
+        }
+
+        if ( !visited )
+        {
+            parent = ( node.getDependency() != null ) ? node : null;
+            for ( DependencyNode child : node.getChildren() )
+            {
+                buildConflictGroups( groups, child, parent, conflictIds );
+            }
         }
     }
 
-    private void resolve( Map<DependencyNode, Collection<String>> scopes, Collection<DependencyGroup> groups,
-                          Collection<DependencyNode> directNodes )
+    private void resolve( ConflictGroup group )
     {
-        for ( DependencyGroup group : groups )
+        if ( group.scope == null )
         {
-            String effectiveScope = null;
+            Set<String> inheritedScopes = getInheritedScopes( group );
+            group.scope = chooseEffectiveScope( inheritedScopes );
+        }
 
-            Set<String> groupScopes = new HashSet<String>();
-
-            for ( DependencyNode node : group.nodes )
-            {
-                groupScopes.addAll( scopes.get( node ) );
-
-                if ( directNodes.contains( node ) )
-                {
-                    effectiveScope = node.getDependency().getScope();
-                }
-            }
-
-            if ( effectiveScope == null )
-            {
-                if ( groupScopes.size() > 1 )
-                {
-                    groupScopes.remove( JavaScopes.SYSTEM );
-                }
-
-                if ( groupScopes.size() == 1 )
-                {
-                    effectiveScope = groupScopes.iterator().next();
-                }
-                else if ( groupScopes.contains( JavaScopes.COMPILE ) )
-                {
-                    effectiveScope = JavaScopes.COMPILE;
-                }
-                else if ( groupScopes.contains( JavaScopes.RUNTIME ) )
-                {
-                    effectiveScope = JavaScopes.RUNTIME;
-                }
-                else if ( groupScopes.contains( JavaScopes.PROVIDED ) )
-                {
-                    effectiveScope = JavaScopes.PROVIDED;
-                }
-                else if ( groupScopes.contains( JavaScopes.TEST ) )
-                {
-                    effectiveScope = JavaScopes.TEST;
-                }
-                else
-                {
-                    continue;
-                }
-            }
-
-            for ( DependencyNode node : group.nodes )
+        for ( DependencyNode node : group.parents.keySet() )
+        {
+            if ( node.getPremanagedScope() == null )
             {
                 String scope = node.getDependency().getScope();
-                if ( !effectiveScope.equals( scope ) && !JavaScopes.SYSTEM.equals( scope ) )
+                if ( !group.scope.equals( scope ) && !JavaScopes.SYSTEM.equals( scope ) )
                 {
-                    node.setScope( effectiveScope );
+                    node.setScope( group.scope );
                 }
             }
         }
+    }
+
+    private Set<String> getInheritedScopes( ConflictGroup group )
+    {
+        Set<String> inheritedScopes = new HashSet<String>();
+
+        for ( Map.Entry<DependencyNode, List<DependencyNode>> entry : group.parents.entrySet() )
+        {
+            String childScope = entry.getKey().getDependency().getScope();
+
+            if ( entry.getValue().isEmpty() )
+            {
+                inheritedScopes.add( childScope );
+            }
+            else
+            {
+                for ( DependencyNode parent : entry.getValue() )
+                {
+                    String parentScope = parent.getDependency().getScope();
+                    String inheritedScope = getInheritedScope( parentScope, childScope );
+                    inheritedScopes.add( inheritedScope );
+                }
+            }
+        }
+
+        return inheritedScopes;
     }
 
     private String getInheritedScope( String parentScope, String childScope )
     {
-        String result;
+        String inheritedScope;
 
         if ( JavaScopes.SYSTEM.equals( childScope ) || JavaScopes.TEST.equals( childScope ) )
         {
-            result = childScope;
+            inheritedScope = childScope;
         }
         else if ( parentScope == null || parentScope.length() <= 0 || JavaScopes.COMPILE.equals( parentScope ) )
         {
-            result = childScope;
+            inheritedScope = childScope;
         }
         else if ( JavaScopes.TEST.equals( parentScope ) || JavaScopes.RUNTIME.equals( parentScope ) )
         {
-            result = parentScope;
+            inheritedScope = parentScope;
         }
         else if ( JavaScopes.SYSTEM.equals( parentScope ) || JavaScopes.PROVIDED.equals( parentScope ) )
         {
-            result = JavaScopes.PROVIDED;
+            inheritedScope = JavaScopes.PROVIDED;
         }
         else
         {
-            result = JavaScopes.RUNTIME;
+            inheritedScope = JavaScopes.RUNTIME;
         }
 
-        return result;
+        return inheritedScope;
     }
 
-    static class DependencyGroup
+    private String chooseEffectiveScope( Set<String> scopes )
     {
-
-        List<DependencyNode> nodes;
-
-        public DependencyGroup()
+        if ( scopes.size() > 1 )
         {
-            nodes = new ArrayList<DependencyNode>();
+            scopes.remove( JavaScopes.SYSTEM );
         }
 
+        String effectiveScope = "";
+
+        if ( scopes.size() == 1 )
+        {
+            effectiveScope = scopes.iterator().next();
+        }
+        else if ( scopes.contains( JavaScopes.COMPILE ) )
+        {
+            effectiveScope = JavaScopes.COMPILE;
+        }
+        else if ( scopes.contains( JavaScopes.RUNTIME ) )
+        {
+            effectiveScope = JavaScopes.RUNTIME;
+        }
+        else if ( scopes.contains( JavaScopes.PROVIDED ) )
+        {
+            effectiveScope = JavaScopes.PROVIDED;
+        }
+        else if ( scopes.contains( JavaScopes.TEST ) )
+        {
+            effectiveScope = JavaScopes.TEST;
+        }
+
+        return effectiveScope;
+    }
+
+    static final class ConflictGroup
+    {
+
+        final Object key;
+
+        final Map<DependencyNode, List<DependencyNode>> parents;
+
+        String scope;
+
+        public ConflictGroup( Object key )
+        {
+            this.key = key;
+            this.parents = new IdentityHashMap<DependencyNode, List<DependencyNode>>();
+        }
+
+        @Override
+        public boolean equals( Object obj )
+        {
+            if ( this == obj )
+            {
+                return true;
+            }
+            else if ( !( obj instanceof ConflictGroup ) )
+            {
+                return false;
+            }
+            ConflictGroup that = (ConflictGroup) obj;
+            return this.key.equals( that.key );
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return key.hashCode();
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.valueOf( key );
+        }
     }
 
 }

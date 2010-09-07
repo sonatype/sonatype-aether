@@ -27,8 +27,18 @@ public final class TransformationContextKeys
      * The key in the graph transformation context where a {@code Map<DependencyNode, Object>} is stored which maps
      * dependency nodes to their conflict ids. All nodes that map to an equal conflict id belong to the same group of
      * conflicting dependencies. Note that the map keys use reference equality.
+     * 
+     * @see ConflictMarker
      */
     public static final Object CONFLICT_IDS = "conflictIds";
+
+    /**
+     * The key in the graph transformation context where a {@code List<Object>} is stored that denotes a topological
+     * sorting of the conflict ids.
+     * 
+     * @see ConflictIdSorter
+     */
+    public static final Object SORTED_CONFLICT_IDS = "sortedConflictIds";
 
     private TransformationContextKeys()
     {
