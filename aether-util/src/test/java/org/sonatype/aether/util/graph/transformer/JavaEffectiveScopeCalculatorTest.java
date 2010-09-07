@@ -139,6 +139,32 @@ public class JavaEffectiveScopeCalculatorTest
         expect( "test", root, 1, 0, 0 );
     }
 
+    @Test
+    public void testCycleA()
+        throws Exception
+    {
+        DependencyNode root = parser.parse( "cycle-a.txt" );
+        root = transform( root );
+
+        expect( "compile", root, 0 );
+        expect( "runtime", root, 0, 0 );
+        expect( "runtime", root, 1 );
+        expect( "compile", root, 1, 0 );
+    }
+
+    @Test
+    public void testCycleB()
+        throws Exception
+    {
+        DependencyNode root = parser.parse( "cycle-b.txt" );
+        root = transform( root );
+
+        expect( "runtime", root, 0 );
+        expect( "compile", root, 0, 0 );
+        expect( "compile", root, 1 );
+        expect( "runtime", root, 1, 0 );
+    }
+
     @Before
     public void setup()
     {
