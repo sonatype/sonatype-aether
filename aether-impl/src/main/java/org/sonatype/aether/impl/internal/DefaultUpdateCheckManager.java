@@ -121,6 +121,13 @@ public class DefaultUpdateCheckManager
         Artifact artifact = check.getItem();
         RemoteRepository repository = check.getRepository();
 
+        if ( check.getFile() == null )
+        {
+            check.setException( new ArtifactTransferException( artifact, repository,
+                                                               "The artifact had no file attached" ) );
+            return;
+        }
+
         File touchFile = getTouchFile( artifact, check.getFile() );
         Properties props = read( touchFile, logger );
 
@@ -128,6 +135,7 @@ public class DefaultUpdateCheckManager
         String key = getRepoKey( repository );
 
         long lastUpdated = fileExists ? check.getFile().lastModified() : getLastUpdated( props, key, logger );
+        check.setLocalLastUpdated( lastUpdated );
 
         if ( lastUpdated == 0 )
         {
@@ -193,6 +201,13 @@ public class DefaultUpdateCheckManager
         Metadata metadata = check.getItem();
         RemoteRepository repository = check.getRepository();
 
+        if ( check.getFile() == null )
+        {
+            check.setException( new MetadataTransferException( metadata, repository,
+                                                               "The metadata had no file attached" ) );
+            return;
+        }
+
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
         Properties props = read( touchFile, logger );
 
@@ -200,6 +215,7 @@ public class DefaultUpdateCheckManager
         String key = fileExists ? check.getFile().getName() : ( getRepoKey( repository ) + '.' + metadata.getType() );
 
         long lastUpdated = getLastUpdated( props, key, logger );
+        check.setLocalLastUpdated( lastUpdated );
 
         if ( lastUpdated == 0 )
         {
@@ -305,6 +321,11 @@ public class DefaultUpdateCheckManager
     private boolean isUpdatedRequired( long lastModified, String policy )
     {
         boolean checkForUpdates;
+
+        if ( policy == null )
+        {
+            policy = "";
+        }
 
         if ( RepositoryPolicy.UPDATE_POLICY_ALWAYS.equals( policy ) )
         {
