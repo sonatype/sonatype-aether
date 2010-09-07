@@ -37,9 +37,17 @@ import org.sonatype.aether.graph.DependencyNode;
  * dependency:tree'. Line format:
  * 
  * <pre>
- * [level](id|[(id)]gid:aid:ext:ver[:scope])[;key=value;key=value;...]
+ * [level]dependencyDefinition[;key=value;key=value;...]
  * </pre>
  * 
+ * A <code>dependencyDefinition</code> is of the form:
+ * 
+ * <pre>
+ * (id|[(id)]gid:aid:ext:ver[:scope])
+ * </pre>
+ * 
+ * It may also be <code>(null)</code> to indicate an "empty" node with no dependency.
+ * <p>
  * <h2>Levels</h2>
  * <p>
  * If <code>level</code> is empty, the line defines the root node. Only one root node may be defined. The level is
@@ -273,7 +281,7 @@ public class DependencyGraphParser
 
             prevLevel = ctx.getLevel();
 
-            if ( ctx.getDefinition().isReference() )
+            if ( ctx.getDefinition() != null && ctx.getDefinition().isReference() )
             {
                 DependencyNode child = reference( ctx.getDefinition().getReference() );
                 node.getChildren().add( child );
@@ -290,7 +298,7 @@ public class DependencyGraphParser
                     isRootNode = false;
                 }
 
-                if ( ctx.getDefinition().hasId() )
+                if ( ctx.getDefinition() != null && ctx.getDefinition().hasId() )
                 {
                     this.nodes.put( ctx.getDefinition().getId(), node );
                 }
@@ -349,9 +357,12 @@ public class DependencyGraphParser
 
         NodeBuilder builder = new NodeBuilder();
 
-        builder.artifactId( def.getArtifactId() ).groupId( def.getGroupId() );
-        builder.ext( def.getExtension() ).version( def.getVersion() ).scope( def.getScope() );
-        builder.properties( ctx.getProperties() );
+        if ( def != null )
+        {
+            builder.artifactId( def.getArtifactId() ).groupId( def.getGroupId() );
+            builder.ext( def.getExtension() ).version( def.getVersion() ).scope( def.getScope() );
+            builder.properties( ctx.getProperties() );
+        }
         DependencyNode node = builder.build();
 
         if ( parent != null )
@@ -479,6 +490,11 @@ public class DependencyGraphParser
         {
             ctx.setLevel( (int) Math.ceil( (double) split[0].length() / (double) 3 ) );
             definition = split[1];
+        }
+
+        if ( "(null)".equalsIgnoreCase( definition ) )
+        {
+            return ctx;
         }
 
         split = definition.split( ";" );

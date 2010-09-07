@@ -251,4 +251,27 @@ public class DependencyGraphParserTest
         assertEquals( "aid", nodes.get( 0 ).getDependency().getArtifact().getArtifactId() );
         assertEquals( "aid2", nodes.get( 1 ).getDependency().getArtifact().getArtifactId() );
     }
+
+    @Test
+    public void testRootNullDependency()
+        throws IOException
+    {
+        String literal = "(null)\n+- gid:aid:ext:ver";
+        DependencyNode root = parser.parseLiteral( literal );
+
+        assertNull( root.getDependency() );
+        assertEquals( 1, root.getChildren().size() );
+    }
+
+    @Test
+    public void testChildNullDependency()
+        throws IOException
+    {
+        String literal = "gid:aid:ext:ver\n+- (null)";
+        DependencyNode root = parser.parseLiteral( literal );
+
+        assertNotNull( root.getDependency() );
+        assertEquals( 1, root.getChildren().size() );
+        assertNull( root.getChildren().get( 0 ).getDependency() );
+    }
 }
