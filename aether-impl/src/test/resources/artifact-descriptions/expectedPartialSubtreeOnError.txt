@@ -1,5 +1,5 @@
-subtree:comparison:error:ext
-+- duplicate:transitive:dependency:ext:compile
-   +- gid:aid:ver:ext:compile
-   |  \- gid:aid2:ver:ext:compile
-   \- gid:aid2:ver:ext:compile
+subtree:comparison:ext:error
++- duplicate:transitive:ext:dependency:compile
+   +- gid:aid:ext:ver:compile
+   |  \- gid:aid2:ext:ver:compile
+   \- gid:aid2:ext:ver:compile

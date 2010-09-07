@@ -86,7 +86,7 @@ public class DefaultDependencyCollectorTest
     public void testSimpleCollection()
         throws IOException, DependencyCollectionException
     {
-        DependencyNode root = parser.parseLiteral( "gid:aid:ver:ext" );
+        DependencyNode root = parser.parseLiteral( "gid:aid:ext:ver" );
         Dependency dependency = root.getDependency();
         CollectRequest request = new CollectRequest( dependency, Arrays.asList( repository ) );
         CollectResult result = collector.collectDependencies( session, request );
@@ -101,7 +101,7 @@ public class DefaultDependencyCollectorTest
 
         assertEquals( 1, newRoot.getChildren().size() );
 
-        DependencyNode expect = parser.parseLiteral( "gid:aid2:ver:ext:compile" );
+        DependencyNode expect = parser.parseLiteral( "gid:aid2:ext:ver:compile" );
         assertEquals( expect.getDependency(), newRoot.getChildren().get( 0 ).getDependency() );
 
     }
@@ -110,7 +110,7 @@ public class DefaultDependencyCollectorTest
     public void testMissingDependencyDescription()
         throws IOException
     {
-        DependencyNode root = parser.parseLiteral( "missing:description:ver:ext" );
+        DependencyNode root = parser.parseLiteral( "missing:description:ext:ver" );
         CollectRequest request = new CollectRequest( root.getDependency(), Arrays.asList( repository ) );
         try
         {
@@ -134,7 +134,7 @@ public class DefaultDependencyCollectorTest
     public void testDuplicates()
         throws IOException, DependencyCollectionException
     {
-        DependencyNode root = parser.parseLiteral( "duplicate:transitive:dependency:ext" );
+        DependencyNode root = parser.parseLiteral( "duplicate:transitive:ext:dependency" );
         Dependency dependency = root.getDependency();
         CollectRequest request = new CollectRequest( dependency, Arrays.asList( repository ) );
 
@@ -150,10 +150,10 @@ public class DefaultDependencyCollectorTest
 
         assertEquals( 2, newRoot.getChildren().size() );
 
-        DependencyNode expect = parser.parseLiteral( "gid:aid:ver:ext:compile" );
+        DependencyNode expect = parser.parseLiteral( "gid:aid:ext:ver:compile" );
         assertEquals( expect.getDependency(), newRoot.getChildren().get( 0 ).getDependency() );
 
-        expect = parser.parseLiteral( "gid:aid2:ver:ext:compile" );
+        expect = parser.parseLiteral( "gid:aid2:ext:ver:compile" );
         assertEquals( expect.getDependency(), path( newRoot, 1 ).getDependency() );
         assertEquals( expect.getDependency(), path( newRoot, 0, 0 ).getDependency() );
         assertEquals( path( newRoot, 1 ).getDependency(), path( newRoot, 0, 0 ).getDependency() );

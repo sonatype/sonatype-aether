@@ -45,7 +45,7 @@ public class IniArtifactDataReaderTest
     public void testRelocations()
         throws IOException
     {
-        String def = "[relocations]\ngid:aid:ver:ext\ngid2:aid2:ver2:ext2";
+        String def = "[relocations]\ngid:aid:ext:ver\ngid2:aid2:ext2:ver2";
 
         ArtifactDescription description = parser.parseLiteral( def );
 
@@ -70,7 +70,7 @@ public class IniArtifactDataReaderTest
     public void testDependencies()
         throws IOException
     {
-        String def = "[dependencies]\ngid:aid:ver:ext\n-exclusion:aid\ngid2:aid2:ver2:ext2";
+        String def = "[dependencies]\ngid:aid:ext:ver\n-exclusion:aid\ngid2:aid2:ext2:ver2";
 
         ArtifactDescription description = parser.parseLiteral( def );
 

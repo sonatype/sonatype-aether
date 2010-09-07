@@ -59,8 +59,8 @@ class ArtifactDefinition
         }
         groupId = split[0];
         artifactId = split[1];
-        version = split[2];
-        extension = split[3];
+        extension = split[2];
+        version = split[3];
         if ( split.length > 4 )
         {
             scope = split[4];
