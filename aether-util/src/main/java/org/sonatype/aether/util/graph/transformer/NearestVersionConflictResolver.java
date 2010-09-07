@@ -13,18 +13,13 @@ package org.sonatype.aether.util.graph.transformer;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.collection.DependencyGraphTransformationContext;
@@ -37,8 +32,9 @@ import org.sonatype.aether.version.VersionConstraint;
 /**
  * A dependency graph transformer that resolves version conflicts using the nearest-wins strategy. For a given set of
  * conflicting nodes, one node will be chosen as the winner and the other nodes are removed from the dependency graph.
- * Note: This transformer assumes conflict groups have already been marked by a previous graph transformer like
- * {@link ConflictMarker}.
+ * This transformer will query the keys {@link TransformationContextKeys#CONFLICT_IDS} and
+ * {@link TransformationContextKeys#SORTED_CONFLICT_IDS} for existing information about conflict ids. In absence of this
+ * information, it will automatically invoke the {@link ConflictIdSorter} to calculate it.
  * 
  * @author Benjamin Bentmann
  */
@@ -49,139 +45,31 @@ public class NearestVersionConflictResolver
     public DependencyNode transformGraph( DependencyNode node, DependencyGraphTransformationContext context )
         throws RepositoryException
     {
+        List<?> sortedConflictIds = (List<?>) context.get( TransformationContextKeys.SORTED_CONFLICT_IDS );
+        if ( sortedConflictIds == null )
+        {
+            ConflictIdSorter sorter = new ConflictIdSorter();
+            sorter.transformGraph( node, context );
+
+            sortedConflictIds = (List<?>) context.get( TransformationContextKeys.SORTED_CONFLICT_IDS );
+        }
+
         Map<?, ?> conflictIds = (Map<?, ?>) context.get( TransformationContextKeys.CONFLICT_IDS );
         if ( conflictIds == null )
         {
             throw new RepositoryException( "conflict groups have not been identified" );
         }
 
-        Map<Object, ConflictId> ids = new LinkedHashMap<Object, ConflictId>();
-
-        {
-            ConflictId id = null;
-            Object key = conflictIds.get( node );
-            if ( key != null )
-            {
-                id = new ConflictId( key );
-                ids.put( key, id );
-            }
-
-            Map<DependencyNode, Object> visited = new IdentityHashMap<DependencyNode, Object>( conflictIds.size() );
-
-            buildConflitIdDAG( ids, node, id, visited, conflictIds );
-        }
-
-        List<ConflictId> sorted = topsortConflictIds( ids.values() );
-
         Map<DependencyNode, Integer> depths = new IdentityHashMap<DependencyNode, Integer>( conflictIds.size() );
-        for ( ConflictId id : sorted )
+        for ( Object key : sortedConflictIds )
         {
-            ConflictGroup group = new ConflictGroup( id.key );
+            ConflictGroup group = new ConflictGroup( key );
             depths.clear();
             selectVersion( node, null, 0, depths, group, conflictIds );
             pruneNonSelectedVersions( group, conflictIds );
         }
 
         return node;
-    }
-
-    private void buildConflitIdDAG( Map<Object, ConflictId> ids, DependencyNode node, ConflictId id,
-                                    Map<DependencyNode, Object> visited, Map<?, ?> conflictIds )
-    {
-        if ( visited.put( node, Boolean.TRUE ) != null )
-        {
-            return;
-        }
-
-        ConflictId parentId = id;
-
-        for ( DependencyNode child : node.getChildren() )
-        {
-            Object key = conflictIds.get( child );
-            ConflictId childId = ids.get( key );
-            if ( childId == null )
-            {
-                childId = new ConflictId( key );
-                ids.put( key, childId );
-            }
-
-            if ( parentId != null )
-            {
-                parentId.add( childId );
-            }
-
-            buildConflitIdDAG( ids, child, childId, visited, conflictIds );
-        }
-    }
-
-    private List<ConflictId> topsortConflictIds( Collection<ConflictId> conflictIds )
-    {
-        List<ConflictId> sorted = new ArrayList<ConflictId>( conflictIds.size() );
-
-        Queue<ConflictId> roots = new LinkedList<ConflictId>();
-        for ( ConflictId id : conflictIds )
-        {
-            if ( id.inDegree <= 0 )
-            {
-                roots.add( id );
-            }
-        }
-
-        while ( !roots.isEmpty() )
-        {
-            ConflictId root = roots.remove();
-
-            sorted.add( root );
-
-            for ( ConflictId child : root.children )
-            {
-                child.inDegree--;
-                if ( child.inDegree == 0 )
-                {
-                    roots.add( child );
-                }
-            }
-        }
-
-        while ( sorted.size() < conflictIds.size() )
-        {
-            // cycle -> deal gracefully with nodes still having positive in-degree
-            roots.clear();
-
-            ConflictId nearest = null;
-            for ( ConflictId id : conflictIds )
-            {
-                if ( id.inDegree <= 0 )
-                {
-                    continue;
-                }
-                if ( nearest == null || id.inDegree < nearest.inDegree )
-                {
-                    nearest = id;
-                }
-            }
-
-            nearest.inDegree = 0;
-            roots.add( nearest );
-
-            while ( !roots.isEmpty() )
-            {
-                ConflictId root = roots.remove();
-
-                sorted.add( root );
-
-                for ( ConflictId child : root.children )
-                {
-                    child.inDegree--;
-                    if ( child.inDegree == 0 )
-                    {
-                        roots.add( child );
-                    }
-                }
-            }
-        }
-
-        return sorted;
     }
 
     private void selectVersion( DependencyNode node, DependencyNode parent, int depth,
@@ -303,61 +191,6 @@ public class NearestVersionConflictResolver
                 }
             }
         }
-    }
-
-    static final class ConflictId
-    {
-
-        final Object key;
-
-        Collection<ConflictId> children = Collections.emptySet();
-
-        int inDegree;
-
-        public ConflictId( Object key )
-        {
-            this.key = key;
-        }
-
-        public void add( ConflictId child )
-        {
-            if ( children.isEmpty() )
-            {
-                children = new HashSet<ConflictId>();
-            }
-            if ( children.add( child ) )
-            {
-                child.inDegree++;
-            }
-        }
-
-        @Override
-        public boolean equals( Object obj )
-        {
-            if ( this == obj )
-            {
-                return true;
-            }
-            else if ( !( obj instanceof ConflictId ) )
-            {
-                return false;
-            }
-            ConflictId that = (ConflictId) obj;
-            return this.key.equals( that.key );
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return key.hashCode();
-        }
-
-        @Override
-        public String toString()
-        {
-            return key + " <" + inDegree;
-        }
-
     }
 
     static final class ConflictGroup
