@@ -1,3 +1,5 @@
+package org.sonatype.aether.util.graph.transformer;
+
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
  *
@@ -10,7 +12,6 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.aether.util.graph.transformer;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -36,22 +37,28 @@ class SimpleConflictMarker
     {
         Dependency dependency = node.getDependency();
         Artifact artifact = dependency.getArtifact();
-        
-        String key = String.format("%s:%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(), artifact.getExtension());
-        
-        Map<DependencyNode, Object> nodes = null;
-        if ( ( nodes = (Map<DependencyNode, Object>) context.get( TransformationContextKeys.CONFLICT_IDS )) == null )
+
+        String key =
+            String.format( "%s:%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(),
+                           artifact.getExtension() );
+
+        @SuppressWarnings( "unchecked" )
+        Map<DependencyNode, Object> nodes =
+            (Map<DependencyNode, Object>) context.get( TransformationContextKeys.CONFLICT_IDS );
+        if ( nodes == null )
         {
-	        nodes = new IdentityHashMap<DependencyNode, Object>();
-	        context.put( TransformationContextKeys.CONFLICT_IDS, nodes );
+            nodes = new IdentityHashMap<DependencyNode, Object>();
+            context.put( TransformationContextKeys.CONFLICT_IDS, nodes );
         }
-        
+
         nodes.put( node, key );
-        
-        for (DependencyNode child : node.getChildren() ) {
-            transformGraph(child, context);
+
+        for ( DependencyNode child : node.getChildren() )
+        {
+            transformGraph( child, context );
         }
-        
+
         return node;
     }
+
 }
