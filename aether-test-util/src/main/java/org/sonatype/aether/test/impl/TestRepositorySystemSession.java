@@ -56,6 +56,10 @@ public class TestRepositorySystemSession
 
     private LocalRepositoryManager localRepositoryManager = new TestLocalRepositoryManager();
 
+    private boolean transferErrorCaching;
+
+    private boolean notFoundCaching;
+
     public TransferListener getTransferListener()
     {
         return listener;
@@ -73,12 +77,12 @@ public class TestRepositorySystemSession
 
     public boolean isTransferErrorCachingEnabled()
     {
-        return false;
+        return transferErrorCaching;
     }
 
     public boolean isNotFoundCachingEnabled()
     {
-        return false;
+        return notFoundCaching;
     }
 
     public boolean isIgnoreMissingArtifactDescriptor()
@@ -234,5 +238,22 @@ public class TestRepositorySystemSession
     public void setTransferListener( TransferListener listener )
     {
         this.listener = listener;
+    }
+
+    /**
+     * @param b
+     */
+    public void setTransferErrorCachingEnabled( boolean b )
+    {
+        this.transferErrorCaching = b;
+
+    }
+
+    /**
+     * @param b
+     */
+    public void setNotFoundCachingEnabled( boolean b )
+    {
+        this.notFoundCaching = b;
     }
 }

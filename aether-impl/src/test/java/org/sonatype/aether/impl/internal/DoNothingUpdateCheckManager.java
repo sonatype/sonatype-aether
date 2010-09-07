@@ -36,7 +36,7 @@ final class DoNothingUpdateCheckManager
 
     public String getEffectiveUpdatePolicy( RepositorySystemSession session, String policy1, String policy2 )
     {
-        return null;
+        return policy1;
     }
 
     public void checkMetadata( RepositorySystemSession session,

@@ -141,7 +141,7 @@ public class StubArtifact
         return file;
     }
 
-    public Artifact setFile( File file )
+    public StubArtifact setFile( File file )
     {
         if ( this.file != null && this.file.equals( file )) 
         {
@@ -150,7 +150,7 @@ public class StubArtifact
         return new StubArtifact( groupId, artifactId, classifier, extension, version, properties ).internalSetFile( file );
     }
 
-    protected Artifact internalSetFile( File file )
+    protected StubArtifact internalSetFile( File file )
     {
         this.file = file;
         return this;
