@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -216,6 +217,27 @@ public class DefaultDependencyCollectorTest
             assertEqualSubtree( root, result.getRoot() );
         }
 
+    }
+
+    @Test
+    public void testCollectMultipleDependencies()
+        throws IOException, DependencyCollectionException
+    {
+        DependencyNode root1 = parser.parseLiteral( "gid:aid:ext:ver:compile" );
+        DependencyNode root2 = parser.parseLiteral( "gid:aid2:ext:ver:compile" );
+        List<Dependency> dependencies = Arrays.asList( root1.getDependency(), root2.getDependency() );
+        CollectRequest request = new CollectRequest( dependencies, null, Arrays.asList( repository ) );
+        CollectResult result = collector.collectDependencies( session, request );
+
+        assertEquals( 0, result.getExceptions().size() );
+        assertEquals( 2, result.getRoot().getChildren().size() );
+        assertEquals( root1.getDependency(), path( result.getRoot(), 0 ).getDependency() );
+
+        assertEquals( 1, path( result.getRoot(), 0 ).getChildren().size() );
+        assertEquals( root2.getDependency(), path( result.getRoot(), 0, 0 ).getDependency() );
+
+        assertEquals( 0, path( result.getRoot(), 1 ).getChildren().size() );
+        assertEquals( root2.getDependency(), path( result.getRoot(), 1 ).getDependency() );
     }
 
     private DependencyNode path( DependencyNode root, int... coords )
