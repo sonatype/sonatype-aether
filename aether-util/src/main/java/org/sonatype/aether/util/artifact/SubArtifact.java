@@ -42,15 +42,26 @@ public final class SubArtifact
      * used to refer to the GPG signature of an artifact.
      * 
      * @param mainArtifact The artifact from which to derive the identity, must not be {@code null}.
-     * @param classifier The classifier for this artifact, may be {@code null}.
-     * @param extension The extension for this artifact, may be {@code null}.
+     * @param classifier The classifier for this artifact, may be {@code null} if none.
+     * @param extension The extension for this artifact, may be {@code null} if none.
      */
     public SubArtifact( Artifact mainArtifact, String classifier, String extension )
     {
         this( mainArtifact, classifier, extension, null );
     }
 
-    private SubArtifact( Artifact mainArtifact, String classifier, String extension, File file )
+    /**
+     * Creates a new sub artifact. The classifier and extension specified for this artifact may use the asterisk
+     * character "*" to refer to the corresponding property of the main artifact. For instance, the classifier
+     * "*-sources" can be used to refer to the source attachment of an artifact. Likewise, the extension "*.asc" can be
+     * used to refer to the GPG signature of an artifact.
+     * 
+     * @param mainArtifact The artifact from which to derive the identity, must not be {@code null}.
+     * @param classifier The classifier for this artifact, may be {@code null} if none.
+     * @param extension The extension for this artifact, may be {@code null} if none.
+     * @param file The file for this artifact, may be {@code null} if unresolved.
+     */
+    public SubArtifact( Artifact mainArtifact, String classifier, String extension, File file )
     {
         if ( mainArtifact == null )
         {
