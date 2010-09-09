@@ -20,19 +20,53 @@ import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 
 /**
+ * Determines if updates of artifact and metadata from remote repositories are needed.
+ * 
  * @author Benjamin Bentmann
  */
 public interface UpdateCheckManager
 {
 
+    /**
+     * Returns the policy with the shorter update interval.
+     * 
+     * @param session The repository system session during which the request is made, must not be {@code null}.
+     * @param policy1 A policy to compare.
+     * @param policy2 A policy to compare.
+     * @return The policy with the shorter update interval.
+     */
     String getEffectiveUpdatePolicy( RepositorySystemSession session, String policy1, String policy2 );
 
+    /**
+     * Checks whether an artifact has to be updated from a remote repository.
+     * 
+     * @param session The repository system session during which the request is made, must not be {@code null}.
+     * @param check The update check request, must not be {@code null}.
+     */
     void checkArtifact( RepositorySystemSession session, UpdateCheck<Artifact, ArtifactTransferException> check );
 
+    /**
+     * Updates the timestamp for the artifact contained in the update check.
+     * 
+     * @param session The repository system session during which the request is made, must not be {@code null}.
+     * @param check The update check request, must not be {@code null}.
+     */
     void touchArtifact( RepositorySystemSession session, UpdateCheck<Artifact, ArtifactTransferException> check );
 
+    /**
+     * Checks whether metadata has to be updated from a remote repository.
+     * 
+     * @param session The repository system session during which the request is made, must not be {@code null}.
+     * @param check The update check request, must not be {@code null}.
+     */
     void checkMetadata( RepositorySystemSession session, UpdateCheck<Metadata, MetadataTransferException> check );
 
+    /**
+     * Updates the timestamp for the metadata contained in the update check.
+     * 
+     * @param session The repository system session during which the request is made, must not be {@code null}.
+     * @param check The update check request, must not be {@code null}.
+     */
     void touchMetadata( RepositorySystemSession session, UpdateCheck<Metadata, MetadataTransferException> check );
 
 }

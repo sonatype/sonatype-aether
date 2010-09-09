@@ -123,9 +123,7 @@ public class DefaultUpdateCheckManager
 
         if ( check.getFile() == null )
         {
-            check.setException( new ArtifactTransferException( artifact, repository,
-                                                               "The artifact had no file attached" ) );
-            return;
+            throw new IllegalArgumentException( String.format( "The artifact '%s' had no file attached", artifact ) );
         }
 
         File touchFile = getTouchFile( artifact, check.getFile() );
@@ -135,7 +133,6 @@ public class DefaultUpdateCheckManager
         String key = getRepoKey( repository );
 
         long lastUpdated = fileExists ? check.getFile().lastModified() : getLastUpdated( props, key, logger );
-        check.setLocalLastUpdated( lastUpdated );
 
         if ( lastUpdated == 0 )
         {
@@ -203,9 +200,7 @@ public class DefaultUpdateCheckManager
 
         if ( check.getFile() == null )
         {
-            check.setException( new MetadataTransferException( metadata, repository,
-                                                               "The metadata had no file attached" ) );
-            return;
+            throw new IllegalArgumentException( String.format( "The metadata '%s' had no file attached", metadata ) );
         }
 
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
@@ -215,7 +210,6 @@ public class DefaultUpdateCheckManager
         String key = fileExists ? check.getFile().getName() : ( getRepoKey( repository ) + '.' + metadata.getType() );
 
         long lastUpdated = getLastUpdated( props, key, logger );
-        check.setLocalLastUpdated( lastUpdated );
 
         if ( lastUpdated == 0 )
         {

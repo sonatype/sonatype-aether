@@ -68,7 +68,7 @@ public class DefaultUpdateCheckManagerTest
         artifact = new StubArtifact( "gid", "aid", "", "ext", "ver" ).setFile( FileUtil.createTempFile( "artifact" ) );
     }
 
-    @Test
+    @Test( expected = IllegalArgumentException.class )
     public void testCheckMetadataFailOnNoFile()
     {
         UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
@@ -76,8 +76,6 @@ public class DefaultUpdateCheckManagerTest
         check.setFile( null );
 
         manager.checkMetadata( session, check );
-        assertNotNull( check.getException() );
-        assertEquals( 0, check.getLocalLastUpdated() );
     }
 
     @Test
@@ -162,7 +160,6 @@ public class DefaultUpdateCheckManagerTest
 
         manager.checkMetadata( session, check );
         assertEquals( false, check.isRequired() );
-        assertEquals( lastUpdate, check.getLocalLastUpdated() );
 
         // no local file, no repo timestamp
         check.setLocalLastUpdated( 0 );
@@ -170,7 +167,6 @@ public class DefaultUpdateCheckManagerTest
         manager.checkMetadata( session, check );
         assertEquals( true, check.isRequired() );
         // (! file.exists && ! repoKey) -> no timestamp
-        assertEquals( 0, check.getLocalLastUpdated() );
 
     }
 
@@ -329,7 +325,7 @@ public class DefaultUpdateCheckManagerTest
         artifact.getFile().delete();
     }
 
-    @Test
+    @Test( expected = IllegalArgumentException.class )
     public void testCheckArtifactFailOnNoFile()
     {
         UpdateCheck<Artifact, ArtifactTransferException> check = newArtifactCheck();
@@ -411,7 +407,6 @@ public class DefaultUpdateCheckManagerTest
         // never checked before
         manager.checkArtifact( session, check );
         assertEquals( true, check.isRequired() );
-        assertEquals( fifteenMinutes, check.getLocalLastUpdated() );
 
         // just checked
         check.setLocalLastUpdated( 0 );
@@ -421,15 +416,12 @@ public class DefaultUpdateCheckManagerTest
 
         manager.checkArtifact( session, check );
         assertEquals( false, check.isRequired() );
-        assertEquals( lastUpdate, check.getLocalLastUpdated() );
 
         // no local file, no repo timestamp
         check.setLocalLastUpdated( 0 );
         check.getFile().delete();
         manager.checkArtifact( session, check );
         assertEquals( true, check.isRequired() );
-        // (! file.exists && ! repoKey) -> no timestamp
-        assertEquals( 0, check.getLocalLastUpdated() );
     }
 
     @Test
@@ -552,5 +544,6 @@ public class DefaultUpdateCheckManagerTest
         assertEquals( true, check.isRequired() );
         assertNull( check.getException() );
     }
+
 
 }
