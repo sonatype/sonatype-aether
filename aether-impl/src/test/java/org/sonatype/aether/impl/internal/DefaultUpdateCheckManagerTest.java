@@ -545,5 +545,23 @@ public class DefaultUpdateCheckManagerTest
         assertNull( check.getException() );
     }
 
+    @Test
+    public void testTouchMetadata()
+        throws IOException
+    {
+        long previous = new Date().getTime() - ( 2 * 60 * 60 * 1000 );
+        UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
+
+        artifact.getFile().setLastModified( previous );
+        check.setPolicy( RepositoryPolicy.UPDATE_POLICY_INTERVAL + ":60" );
+        manager.checkMetadata( session, check );
+        assertTrue( "check is marked as not required, but should be", check.isRequired() );
+        manager.touchMetadata( session, check );
+
+        check = newMetadataCheck();
+        check.setPolicy( RepositoryPolicy.UPDATE_POLICY_INTERVAL + ":60" );
+        manager.checkMetadata( session, check );
+        assertFalse( "check is marked as required directly after touchMetadata()", check.isRequired() );
+    }
 
 }
