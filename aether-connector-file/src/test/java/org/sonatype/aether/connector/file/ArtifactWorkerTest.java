@@ -34,10 +34,10 @@ import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
+import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.FileUtil;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.MetadataTransferException;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.metadata.DefaultMetadata;
 
@@ -46,7 +46,7 @@ public class ArtifactWorkerTest
 
     private static RemoteRepository repository;
 
-    private static DefaultRepositorySystemSession session;
+    private static TestRepositorySystemSession session;
 
     private static DefaultLayout layout;
 
@@ -56,7 +56,7 @@ public class ArtifactWorkerTest
     {
         repository =
             new RemoteRepository( "test", "default", new File( "target/test-repository" ).toURI().toURL().toString() );
-        session = new DefaultRepositorySystemSession();
+        session = new TestRepositorySystemSession();
         layout = new DefaultLayout();
     }
 
@@ -165,7 +165,9 @@ public class ArtifactWorkerTest
         String content = null;
         String actualContent = "";
         while ( ( content = r.readLine() ) != null )
+        {
             actualContent += content;
+        }
 
         assertEquals( expectedContent, actualContent );
     }
