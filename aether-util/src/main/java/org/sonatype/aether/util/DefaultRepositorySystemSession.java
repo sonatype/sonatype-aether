@@ -22,18 +22,26 @@ import org.sonatype.aether.RepositoryCache;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.SessionData;
+import org.sonatype.aether.artifact.ArtifactType;
 import org.sonatype.aether.artifact.ArtifactTypeRegistry;
 import org.sonatype.aether.collection.DependencyGraphTransformer;
 import org.sonatype.aether.collection.DependencyManager;
 import org.sonatype.aether.collection.DependencySelector;
 import org.sonatype.aether.collection.DependencyTraverser;
+import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.repository.AuthenticationSelector;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.LocalRepositoryManager;
 import org.sonatype.aether.repository.MirrorSelector;
+import org.sonatype.aether.repository.Proxy;
 import org.sonatype.aether.repository.ProxySelector;
+import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.WorkspaceReader;
 import org.sonatype.aether.transfer.TransferListener;
+import org.sonatype.aether.util.graph.manager.NoopDependencyManager;
+import org.sonatype.aether.util.graph.selector.StaticDependencySelector;
+import org.sonatype.aether.util.graph.transformer.NoopDependencyGraphTransformer;
+import org.sonatype.aether.util.graph.traverser.StaticDependencyTraverser;
 
 /**
  * A simple repository system session.
@@ -43,6 +51,14 @@ import org.sonatype.aether.transfer.TransferListener;
 public class DefaultRepositorySystemSession
     implements RepositorySystemSession
 {
+
+    private static final DependencyTraverser TRAVERSER = new StaticDependencyTraverser( true );
+
+    private static final DependencyManager MANAGER = NoopDependencyManager.INSTANCE;
+
+    private static final DependencySelector SELECTOR = new StaticDependencySelector( true );
+
+    private static final DependencyGraphTransformer TRANSFORMER = NoopDependencyGraphTransformer.INSTANCE;
 
     private boolean offline;
 
@@ -72,23 +88,23 @@ public class DefaultRepositorySystemSession
 
     private Map<String, Object> configProperties = new HashMap<String, Object>();
 
-    private MirrorSelector mirrorSelector;
+    private MirrorSelector mirrorSelector = NullMirrorSelector.INSTANCE;
 
-    private ProxySelector proxySelector;
+    private ProxySelector proxySelector = NullProxySelector.INSTANCE;
 
-    private AuthenticationSelector authenticationSelector;
+    private AuthenticationSelector authenticationSelector = NullAuthenticationSelector.INSTANCE;
 
-    private ArtifactTypeRegistry artifactTypeRegistry;
+    private ArtifactTypeRegistry artifactTypeRegistry = NullArtifactTypeRegistry.INSTANCE;
 
-    private DependencyTraverser dependencyTraverser;
+    private DependencyTraverser dependencyTraverser = TRAVERSER;
 
-    private DependencyManager dependencyManager;
+    private DependencyManager dependencyManager = MANAGER;
 
-    private DependencySelector dependencySelector;
+    private DependencySelector dependencySelector = SELECTOR;
 
-    private DependencyGraphTransformer dependencyGraphTransformer;
+    private DependencyGraphTransformer dependencyGraphTransformer = TRANSFORMER;
 
-    private SessionData data;
+    private SessionData data = new DefaultSessionData();
 
     private RepositoryCache cache;
 
@@ -404,6 +420,10 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession setMirrorSelector( MirrorSelector mirrorSelector )
     {
         this.mirrorSelector = mirrorSelector;
+        if ( this.mirrorSelector == null )
+        {
+            this.mirrorSelector = NullMirrorSelector.INSTANCE;
+        }
         return this;
     }
 
@@ -415,6 +435,10 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession setProxySelector( ProxySelector proxySelector )
     {
         this.proxySelector = proxySelector;
+        if ( this.proxySelector == null )
+        {
+            this.proxySelector = NullProxySelector.INSTANCE;
+        }
         return this;
     }
 
@@ -426,6 +450,10 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession setAuthenticationSelector( AuthenticationSelector authenticationSelector )
     {
         this.authenticationSelector = authenticationSelector;
+        if ( this.authenticationSelector == null )
+        {
+            this.authenticationSelector = NullAuthenticationSelector.INSTANCE;
+        }
         return this;
     }
 
@@ -437,6 +465,10 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession setArtifactTypeRegistry( ArtifactTypeRegistry artifactTypeRegistry )
     {
         this.artifactTypeRegistry = artifactTypeRegistry;
+        if ( this.artifactTypeRegistry == null )
+        {
+            this.artifactTypeRegistry = NullArtifactTypeRegistry.INSTANCE;
+        }
         return this;
     }
 
@@ -448,6 +480,10 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession setDependencyTraverser( DependencyTraverser dependencyTraverser )
     {
         this.dependencyTraverser = dependencyTraverser;
+        if ( this.dependencyTraverser == null )
+        {
+            this.dependencyTraverser = TRAVERSER;
+        }
         return this;
     }
 
@@ -459,6 +495,10 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession setDependencyManager( DependencyManager dependencyManager )
     {
         this.dependencyManager = dependencyManager;
+        if ( this.dependencyManager == null )
+        {
+            this.dependencyManager = MANAGER;
+        }
         return this;
     }
 
@@ -470,6 +510,10 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession setDependencySelector( DependencySelector dependencySelector )
     {
         this.dependencySelector = dependencySelector;
+        if ( this.dependencySelector == null )
+        {
+            this.dependencySelector = SELECTOR;
+        }
         return this;
     }
 
@@ -481,6 +525,10 @@ public class DefaultRepositorySystemSession
     public DefaultRepositorySystemSession setDependencyGraphTransformer( DependencyGraphTransformer dependencyGraphTransformer )
     {
         this.dependencyGraphTransformer = dependencyGraphTransformer;
+        if ( this.dependencyGraphTransformer == null )
+        {
+            this.dependencyGraphTransformer = TRANSFORMER;
+        }
         return this;
     }
 
@@ -504,6 +552,58 @@ public class DefaultRepositorySystemSession
     {
         this.cache = cache;
         return this;
+    }
+
+    static class NullProxySelector
+        implements ProxySelector
+    {
+
+        public static final ProxySelector INSTANCE = new NullProxySelector();
+
+        public Proxy getProxy( RemoteRepository repository )
+        {
+            return null;
+        }
+
+    }
+
+    static class NullMirrorSelector
+        implements MirrorSelector
+    {
+
+        public static final MirrorSelector INSTANCE = new NullMirrorSelector();
+
+        public RemoteRepository getMirror( RemoteRepository repository )
+        {
+            return null;
+        }
+
+    }
+
+    static class NullAuthenticationSelector
+        implements AuthenticationSelector
+    {
+
+        public static final AuthenticationSelector INSTANCE = new NullAuthenticationSelector();
+
+        public Authentication getAuthentication( RemoteRepository repository )
+        {
+            return null;
+        }
+
+    }
+
+    static class NullArtifactTypeRegistry
+        implements ArtifactTypeRegistry
+    {
+
+        public static final ArtifactTypeRegistry INSTANCE = new NullArtifactTypeRegistry();
+
+        public ArtifactType get( String typeId )
+        {
+            return null;
+        }
+
     }
 
 }
