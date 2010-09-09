@@ -283,6 +283,10 @@ public class DefaultArtifactResolver
                 }
                 continue;
             }
+            else if ( local.getFile() != null )
+            {
+                logger.debug( "Verifying availability of " + local.getFile() + " from " + repos );
+            }
 
             if ( session.isOffline() )
             {
