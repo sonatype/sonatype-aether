@@ -15,6 +15,9 @@ package org.sonatype.aether.util.artifact;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+import java.util.HashMap;
+
 import org.junit.Test;
 import org.sonatype.aether.artifact.Artifact;
 
@@ -69,6 +72,19 @@ public class DefaultArtifactTest
     public void testDefaultArtifactBadString()
     {
         new DefaultArtifact( "gid:aid" );
+    }
+
+    @Test
+    public void testImmutability()
+    {
+        String coords = "gid:aid:ext:cls:ver";
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put( "someProperty", "someValue" );
+
+        Artifact a = new DefaultArtifact( coords );
+        assertNotSame( a, a.setFile( new File( "file" ) ) );
+        assertNotSame( a, a.setVersion( "otherVersion" ));
+        assertNotSame( a, a.setProperties( map ) );
     }
 
 }
