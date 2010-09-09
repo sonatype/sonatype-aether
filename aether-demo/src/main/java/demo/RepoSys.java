@@ -36,6 +36,7 @@ import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.installation.InstallRequest;
 import org.sonatype.aether.installation.InstallationException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
+import org.sonatype.aether.util.artifact.SubArtifact;
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
 
 public class RepoSys
@@ -92,15 +93,17 @@ public class RepoSys
         System.out.println( "------------------------------------------------------------" );
         System.out.println( "Deployment into repository" );
 
-        Artifact projectOutput = new DefaultArtifact( "test", "test", "", "jar", "0.1-SNAPSHOT" );
-        projectOutput = projectOutput.setFile( new File( "pom.xml" ) );
+        Artifact projectOutput = new DefaultArtifact( "test", "demo", "", "jar", "0.1-SNAPSHOT" );
+        projectOutput = projectOutput.setFile( new File( "demo.jar" ) );
+        Artifact projectPom = new SubArtifact( projectOutput, "", "pom" );
+        projectPom = projectPom.setFile( new File( "pom.xml" ) );
 
         InstallRequest installRequest = new InstallRequest();
-        installRequest.addArtifact( projectOutput );
+        installRequest.addArtifact( projectOutput ).addArtifact( projectPom );
         repoSystem.install( session, installRequest );
 
         DeployRequest deployRequest = new DeployRequest();
-        deployRequest.addArtifact( projectOutput );
+        deployRequest.addArtifact( projectOutput ).addArtifact( projectPom );
         deployRequest.setRepository( new RemoteRepository( "nexus", "default",
             new File( "target/dist-repo" ).toURI().toString() ) );
         repoSystem.deploy( session, deployRequest );
