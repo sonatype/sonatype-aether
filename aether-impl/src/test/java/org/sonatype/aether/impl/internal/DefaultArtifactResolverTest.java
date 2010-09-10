@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +13,6 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.impl.LocalRepositoryMaintainer;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.impl.VersionResolver;
@@ -30,6 +28,7 @@ import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.DependencyGraphParser;
 import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.util.artifact.ArtifactProperties;
@@ -60,6 +59,10 @@ public class DefaultArtifactResolverTest
 
     private StubRemoteRepositoryManager remoteRepositoryManager;
 
+    private Artifact artifact;
+
+    private RecordingRepositoryConnector connector;
+
     @Before
     public void setup()
     {
@@ -73,15 +76,17 @@ public class DefaultArtifactResolverTest
                                          remoteRepositoryManager, localRepositoryMaintainers );
 
         parser = new DependencyGraphParser();
+
+        artifact = new StubArtifact( "gid", "aid", "", "ext", "ver" );
+
+        connector = new RecordingRepositoryConnector();
+        remoteRepositoryManager.setConnector( connector );
     }
 
     @Test
     public void testResolveLocalArtifactSuccessful()
         throws IOException, ArtifactResolutionException
     {
-        DependencyNode node = parser.parseLiteral( "gid:aid:ext:ver" );
-        Artifact artifact = node.getDependency().getArtifact();
-
         File tmpFile = FileUtil.createTempFile( "tmp" );
         Map<String, String> properties = new HashMap<String, String>();
         properties.put( ArtifactProperties.LOCAL_PATH, tmpFile.getAbsolutePath() );
@@ -97,16 +102,12 @@ public class DefaultArtifactResolverTest
         resolved = resolved.setFile( null );
 
         assertEquals( artifact, resolved );
-
     }
 
     @Test
     public void testResolveLocalArtifactUnsuccessful()
         throws IOException, ArtifactResolutionException
     {
-        DependencyNode node = parser.parseLiteral( "gid:aid:ext:ver" );
-        Artifact artifact = node.getDependency().getArtifact();
-
         File tmpFile = FileUtil.createTempFile( "tmp" );
         Map<String, String> properties = new HashMap<String, String>();
         properties.put( ArtifactProperties.LOCAL_PATH, tmpFile.getAbsolutePath() );
@@ -143,12 +144,7 @@ public class DefaultArtifactResolverTest
     public void testResolveRemoteArtifact()
         throws IOException, ArtifactResolutionException
     {
-        DependencyNode node = parser.parseLiteral( "gid:aid:ext:ver" );
-        Artifact artifact = node.getDependency().getArtifact();
-        RecordingRepositoryConnector connector =
-            new RecordingRepositoryConnector( Collections.singleton( artifact ).toArray( new Artifact[0] ), null, null,
-                                              null );
-        remoteRepositoryManager.setConnector( connector );
+        connector.setExpectGet( artifact );
 
         ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
         request.addRepository( new RemoteRepository( "id", "default", "file:///" ) );
@@ -170,11 +166,7 @@ public class DefaultArtifactResolverTest
     public void testResolveRemoteArtifactUnsuccessful()
         throws IOException, ArtifactResolutionException
     {
-        DependencyNode node = parser.parseLiteral( "gid:aid:ext:ver" );
-        Artifact artifact = node.getDependency().getArtifact();
-        RecordingRepositoryConnector connector =
-            new RecordingRepositoryConnector( Collections.singleton( artifact ).toArray( new Artifact[0] ), null, null,
-                                              null )
+        RecordingRepositoryConnector connector = new RecordingRepositoryConnector()
         {
 
             @Override
@@ -189,6 +181,8 @@ public class DefaultArtifactResolverTest
             }
 
         };
+
+        connector.setExpectGet( artifact );
         remoteRepositoryManager.setConnector( connector );
 
         ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
@@ -229,17 +223,17 @@ public class DefaultArtifactResolverTest
             {
                 return new WorkspaceReader()
                 {
-                    
+
                     public WorkspaceRepository getRepository()
                     {
                         return new WorkspaceRepository( "default" );
                     }
-                    
+
                     public List<String> findVersions( Artifact artifact )
                     {
                         return Arrays.asList( artifact.getVersion() );
                     }
-                    
+
                     public File findArtifact( Artifact artifact )
                     {
                         try
@@ -254,11 +248,6 @@ public class DefaultArtifactResolverTest
                 };
             }
         };
-
-        DependencyNode node = parser.parseLiteral( "gid:aid:ext:ver" );
-        Artifact artifact = node.getDependency().getArtifact();
-        RecordingRepositoryConnector connector = new RecordingRepositoryConnector();
-        remoteRepositoryManager.setConnector( connector );
 
         ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
         request.addRepository( new RemoteRepository( "id", "default", "file:///" ) );
@@ -306,9 +295,6 @@ public class DefaultArtifactResolverTest
             }
         };
 
-        DependencyNode node = parser.parseLiteral( "gid:aid:ext:ver" );
-        Artifact artifact = node.getDependency().getArtifact();
-        RecordingRepositoryConnector connector = new RecordingRepositoryConnector();
         connector.setExpectGet( artifact );
         remoteRepositoryManager.setConnector( connector );
 
@@ -327,4 +313,5 @@ public class DefaultArtifactResolverTest
 
         connector.assertSeenExpected();
     }
+
 }
