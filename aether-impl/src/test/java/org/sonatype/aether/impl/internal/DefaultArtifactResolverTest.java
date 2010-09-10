@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,6 +19,8 @@ import org.sonatype.aether.impl.LocalRepositoryMaintainer;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.impl.VersionResolver;
 import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.WorkspaceReader;
+import org.sonatype.aether.repository.WorkspaceRepository;
 import org.sonatype.aether.resolution.ArtifactRequest;
 import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.resolution.ArtifactResult;
@@ -213,5 +216,115 @@ public class DefaultArtifactResolverTest
             assertNull( resolved );
         }
 
+    }
+
+    @Test
+    public void testResolveFromWorkspace()
+        throws IOException, ArtifactResolutionException
+    {
+        session = new TestRepositorySystemSession()
+        {
+            @Override
+            public WorkspaceReader getWorkspaceReader()
+            {
+                return new WorkspaceReader()
+                {
+                    
+                    public WorkspaceRepository getRepository()
+                    {
+                        return new WorkspaceRepository( "default" );
+                    }
+                    
+                    public List<String> findVersions( Artifact artifact )
+                    {
+                        return Arrays.asList( artifact.getVersion() );
+                    }
+                    
+                    public File findArtifact( Artifact artifact )
+                    {
+                        try
+                        {
+                            return FileUtil.createTempFile( artifact.toString() );
+                        }
+                        catch ( IOException e )
+                        {
+                            throw new RuntimeException( e.getMessage(), e );
+                        }
+                    }
+                };
+            }
+        };
+
+        DependencyNode node = parser.parseLiteral( "gid:aid:ext:ver" );
+        Artifact artifact = node.getDependency().getArtifact();
+        RecordingRepositoryConnector connector = new RecordingRepositoryConnector();
+        remoteRepositoryManager.setConnector( connector );
+
+        ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
+        request.addRepository( new RemoteRepository( "id", "default", "file:///" ) );
+
+        ArtifactResult result = resolver.resolveArtifact( session, request );
+
+        assertTrue( result.getExceptions().isEmpty() );
+
+        Artifact resolved = result.getArtifact();
+        assertNotNull( resolved.getFile() );
+
+        resolved = resolved.setFile( null );
+        assertEquals( artifact, resolved );
+
+        connector.assertSeenExpected();
+    }
+
+    @Test
+    public void testResolveFromWorkspaceFallbackToRepository()
+        throws IOException, ArtifactResolutionException
+    {
+        session = new TestRepositorySystemSession()
+        {
+            @Override
+            public WorkspaceReader getWorkspaceReader()
+            {
+                return new WorkspaceReader()
+                {
+
+                    public WorkspaceRepository getRepository()
+                    {
+                        return new WorkspaceRepository( "default" );
+                    }
+
+                    public List<String> findVersions( Artifact artifact )
+                    {
+                        return Arrays.asList( artifact.getVersion() );
+                    }
+
+                    public File findArtifact( Artifact artifact )
+                    {
+                        return null;
+                    }
+                };
+            }
+        };
+
+        DependencyNode node = parser.parseLiteral( "gid:aid:ext:ver" );
+        Artifact artifact = node.getDependency().getArtifact();
+        RecordingRepositoryConnector connector = new RecordingRepositoryConnector();
+        connector.setExpectGet( artifact );
+        remoteRepositoryManager.setConnector( connector );
+
+        ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
+        request.addRepository( new RemoteRepository( "id", "default", "file:///" ) );
+
+        ArtifactResult result = resolver.resolveArtifact( session, request );
+
+        assertTrue( result.getExceptions().isEmpty() );
+
+        Artifact resolved = result.getArtifact();
+        assertNotNull( resolved.getFile() );
+
+        resolved = resolved.setFile( null );
+        assertEquals( artifact, resolved );
+
+        connector.assertSeenExpected();
     }
 }
