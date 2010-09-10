@@ -238,10 +238,11 @@ public class DefaultUpdateCheckManagerTest
         out.close();
 
         // ! file.exists && ! updateRequired -> artifact not found in remote repo
+        // ignore NotFoundCaching-setting, don't check if update policy does not say so for metadata
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
         manager.checkMetadata( session, check );
-        assertEquals( true, check.isRequired() );
-        assertNull( check.getException() );
+        assertEquals( false, check.isRequired() );
+        assertNotNull( check.getException() );
     }
 
     @Test
