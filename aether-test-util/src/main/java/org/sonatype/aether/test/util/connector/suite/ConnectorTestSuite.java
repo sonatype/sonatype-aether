@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.junit.Test;
 import org.sonatype.aether.metadata.Metadata;
@@ -104,41 +105,24 @@ public abstract class ConnectorTestSuite
         byte[] pattern = "tmpFile".getBytes();
         File tmpFile = FileUtil.createTempFile( pattern, 100000 );
     
-        ArtifactUpload[] artUps = new ArtifactUpload[count];
-        MetadataUpload[] metaUps = new MetadataUpload[count];
-        ArtifactDownload[] artDowns = new ArtifactDownload[count];
-        MetadataDownload[] metaDowns = new MetadataDownload[count];
+        List<ArtifactUpload> artUps = ConnectorTestUtil.createTransfers( ArtifactUpload.class, count, tmpFile );
+        List<MetadataUpload> metaUps = ConnectorTestUtil.createTransfers( MetadataUpload.class, count, tmpFile );
+        List<ArtifactDownload> artDowns =
+            ConnectorTestUtil.createTransfers( ArtifactDownload.class, count, null );
+        List<MetadataDownload> metaDowns =
+            ConnectorTestUtil.createTransfers( MetadataDownload.class, count, null );
+        
+    
+        // this should block until all transfers are done - racing condition, better way to test this?
+        connector.put( artUps, metaUps );
+        connector.get( artDowns, metaDowns );
     
         for ( int i = 0; i < count; i++ )
         {
-            StubArtifact artifact = new StubArtifact( "testGroup", "testArtifact", "jar", "", i + "-test" );
-            StubMetadata metadata =
-                new StubMetadata( "testGroup", "testArtifact", i + "-test", "maven-metadata.xml",
-                                  Metadata.Nature.RELEASE_OR_SNAPSHOT );
-    
-            ArtifactUpload artUp = new ArtifactUpload( artifact, tmpFile );
-            MetadataUpload metaUp = new MetadataUpload( metadata, tmpFile );
-            ArtifactDownload artDown = new ArtifactDownload( artifact, null, FileUtil.createTempFile( "" ), null );
-            MetadataDownload metaDown = new MetadataDownload( metadata, null, FileUtil.createTempFile( "" ), null );
-    
-            artUps[i] = artUp;
-            metaUps[i] = metaUp;
-            artDowns[i] = artDown;
-            metaDowns[i] = metaDown;
-        }
-    
-        // this should block until all transfers are done - racing condition, better way to test this?
-        connector.put( Arrays.asList( artUps ), Arrays.asList( metaUps ) );
-    
-        // this should block until all transfers are done - racing condition, better way to test this?
-        connector.get( Arrays.asList( artDowns ), Arrays.asList( metaDowns ) );
-    
-        for ( int i = 0; i < count; i++ )
-        {
-            ArtifactUpload artUp = artUps[i];
-            MetadataUpload metaUp = metaUps[i];
-            ArtifactDownload artDown = artDowns[i];
-            MetadataDownload metaDown = metaDowns[i];
+            ArtifactUpload artUp = artUps.get( i );
+            MetadataUpload metaUp = metaUps.get( i );
+            ArtifactDownload artDown = artDowns.get( i );
+            MetadataDownload metaDown = metaDowns.get( i );
     
             assertTrue( Transfer.State.DONE.equals( artUp.getState() ) );
             assertTrue( Transfer.State.DONE.equals( artDown.getState() ) );
