@@ -60,6 +60,13 @@ public abstract class ConnectorTestSuite
     }
 
     @Test
+    public void testFailedEvents()
+        throws NoRepositoryConnectorException, IOException
+    {
+        TransferEventTester.testFailedTransferEvents( factory(), session, repository );
+    }
+
+    @Test
     public void testFileHandleLeakage()
         throws IOException, NoRepositoryConnectorException
     {

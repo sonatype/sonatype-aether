@@ -7,9 +7,9 @@ import java.util.List;
 
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.metadata.Metadata;
-import org.sonatype.aether.metadata.Metadata.Nature;
 import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
+import org.sonatype.aether.spi.connector.ArtifactTransfer;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
@@ -37,32 +37,43 @@ import org.sonatype.aether.test.util.impl.StubMetadata;
 public class ConnectorTestUtil
 {
 
+    /**
+     * Creates transfer objects according to the given class. If the file parameter is {@code null}, a new temporary
+     * file will be created for uploads. Downloads will just use the parameter as it is.
+     */
     public static <T extends Transfer> List<T> createTransfers( Class<T> cls, int count, File file )
     {
         ArrayList<T> ret = new ArrayList<T>();
-    
+        Object item;
+        if ( ArtifactTransfer.class.isAssignableFrom( cls ) )
+        {
+            item = new StubArtifact( "testGroup", "testArtifact", "sources", "jar", "will be replaced" );
+        }
+        else
+        {
+            item =
+                new StubMetadata( "testGroup", "testArtifact", "will be replaced", "jar",
+                                  Metadata.Nature.RELEASE_OR_SNAPSHOT, file );
+        }
+
         for ( int i = 0; i < count; i++ )
         {
-            Artifact artifact =
-                new StubArtifact( "testGroup", "testArtifact", "sources", "jar", ( i + 1 ) + "-test" );
-            Metadata metadata =
-                new StubMetadata( "testGroup", "testArtifact", ( i + 1 ) + "test", "jar",
-                                     Metadata.Nature.RELEASE_OR_SNAPSHOT, file );
             String context = null;
             String checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_IGNORE;
-    
+
             Object obj = null;
             if ( cls.isAssignableFrom( ArtifactUpload.class ) )
             {
+                Artifact artifact = ( (Artifact) item ).setVersion( ( i + 1 ) + "-test" );
                 obj = new ArtifactUpload( artifact, file );
             }
             else if ( cls.isAssignableFrom( ArtifactDownload.class ) )
             {
                 try
                 {
-                    obj =
-                        new ArtifactDownload( artifact, context, file == null ? FileUtil.createTempFile( "" ) : file,
-                                              checksumPolicy );
+                    Artifact artifact = ( (Artifact) item ).setVersion( ( i + 1 ) + "-test" );
+                    file = file == null ? FileUtil.createTempFile( "" ) : file;
+                    obj = new ArtifactDownload( artifact, context, file, checksumPolicy );
                 }
                 catch ( IOException e )
                 {
@@ -71,25 +82,26 @@ public class ConnectorTestUtil
             }
             else if ( cls.isAssignableFrom( MetadataUpload.class ) )
             {
+                Metadata metadata = ( (StubMetadata) item ).setVersion( ( i + 1 ) + "-test" );
                 obj = new MetadataUpload( metadata, file );
             }
             else if ( cls.isAssignableFrom( MetadataDownload.class ) )
             {
                 try
                 {
-                    obj =
-                        new MetadataDownload( metadata, context, file == null ? FileUtil.createTempFile( "" ) : file,
-                                              checksumPolicy );
+                    Metadata metadata = ( (StubMetadata) item ).setVersion( ( i + 1 ) + "-test" );
+                    file = file == null ? FileUtil.createTempFile( "" ) : file;
+                    obj = new MetadataDownload( metadata, context, file, checksumPolicy );
                 }
                 catch ( IOException e )
                 {
                     throw new RuntimeException( e.getMessage(), e );
                 }
             }
-    
+
             ret.add( cls.cast( obj ) );
         }
-    
+
         return ret;
     }
 

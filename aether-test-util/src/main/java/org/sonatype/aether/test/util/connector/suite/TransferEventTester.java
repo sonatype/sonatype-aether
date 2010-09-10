@@ -32,10 +32,20 @@ import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.test.impl.RecordingTransferListener;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.transfer.ArtifactNotFoundException;
+import org.sonatype.aether.transfer.ArtifactTransferException;
+import org.sonatype.aether.transfer.MetadataNotFoundException;
+import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferEvent.EventType;
 
+/**
+ * Utility class for connector tests. Provides methods to check the emitted transfer events for artifact and metadata
+ * up- and downloads.
+ * 
+ * @author Benjamin Hanzelmann
+ */
 public class TransferEventTester
 {
     public static void testSuccessfulTransferEvents( RepositoryConnectorFactory factory,
@@ -109,8 +119,9 @@ public class TransferEventTester
             }
             else
             {
-                assertTrue( progressed.equals( currentType ) );
-                assertTrue( currentEvent.getTransferredBytes() > transferredBytes );
+                assertTrue( "event is not 'succeeded' and not 'progressed'", progressed.equals( currentType ) );
+                assertTrue( "wrong order of progressed events (transferredSize got smaller)",
+                            currentEvent.getTransferredBytes() > transferredBytes );
                 transferredBytes = currentEvent.getTransferredBytes();
                 dataLength += currentEvent.getDataLength();
                 checkProperties( currentEvent );
@@ -150,5 +161,75 @@ public class TransferEventTester
             assertTrue( "transferred byte is not set/not positive for type: " + event.getType(),
                         event.getTransferredBytes() > -1 );
         }
+    }
+
+    public static void testFailedTransferEvents( RepositoryConnectorFactory factory,
+                                                 TestRepositorySystemSession session, RemoteRepository repository )
+        throws NoRepositoryConnectorException, IOException
+    {
+        RecordingTransferListener listener = new RecordingTransferListener( session.getTransferListener() );
+        session.setTransferListener( listener );
+
+        RepositoryConnector connector = factory.newInstance( session, repository );
+
+        byte[] pattern = "tmpFile".getBytes();
+        File tmpFile = FileUtil.createTempFile( pattern, 10000 );
+
+        Collection<ArtifactUpload> artUps = ConnectorTestUtil.createTransfers( ArtifactUpload.class, 1, null );
+        Collection<ArtifactDownload> artDowns = ConnectorTestUtil.createTransfers( ArtifactDownload.class, 1, tmpFile );
+        Collection<MetadataUpload> metaUps = ConnectorTestUtil.createTransfers( MetadataUpload.class, 1, null );
+        Collection<MetadataDownload> metaDowns = ConnectorTestUtil.createTransfers( MetadataDownload.class, 1, tmpFile );
+
+        connector.put( artUps, null );
+        LinkedList<TransferEvent> events = new LinkedList<TransferEvent>( listener.getEvents() );
+        checkFailedEvents( events, ArtifactTransferException.class );
+        listener.clear();
+
+        connector.get( artDowns, null );
+        events = new LinkedList<TransferEvent>( listener.getEvents() );
+        checkFailedEvents( events, ArtifactNotFoundException.class );
+        listener.clear();
+
+        connector.put( null, metaUps );
+        events = new LinkedList<TransferEvent>( listener.getEvents() );
+        checkFailedEvents( events, MetadataTransferException.class );
+        listener.clear();
+
+        connector.get( null, metaDowns );
+        events = new LinkedList<TransferEvent>( listener.getEvents() );
+        checkFailedEvents( events, MetadataNotFoundException.class );
+    }
+
+    private static void checkFailedEvents( Queue<TransferEvent> events, Class<? extends Throwable> expectedError )
+    {
+        if ( expectedError == null )
+        {
+            expectedError = Throwable.class;
+        }
+
+        TransferEvent currentEvent = events.poll();
+        String msg = "initiate event is missing";
+        assertNotNull( msg, currentEvent );
+        assertEquals( msg, INITIATED, currentEvent.getType() );
+        checkProperties( currentEvent );
+
+        currentEvent = events.poll();
+        msg = "start event is missing";
+        assertNotNull( msg, currentEvent );
+        assertEquals( msg, TransferEvent.EventType.STARTED, currentEvent.getType() );
+        checkProperties( currentEvent );
+
+        currentEvent = events.poll();
+        msg = "fail event is missing";
+        assertNotNull( msg, currentEvent );
+        assertEquals( msg, TransferEvent.EventType.FAILED, currentEvent.getType() );
+        checkProperties( currentEvent );
+        assertNotNull("exception is missing for fail event", currentEvent.getException() );
+        Exception exception = currentEvent.getException();
+        assertTrue( "exception is of wrong type, should be instance of " + expectedError.getClass(),
+                    expectedError.isAssignableFrom( exception.getClass() ) );
+
+        // all events consumed
+        assertEquals( "too many events left: " + events.toString(), 0, events.size() );
     }
 }
