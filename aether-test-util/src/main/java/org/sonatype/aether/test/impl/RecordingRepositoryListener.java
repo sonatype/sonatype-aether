@@ -254,5 +254,15 @@ public class RecordingRepositoryListener
         {
             return event;
         }
+
+        @Override
+        public String toString()
+        {
+            Object item = event.getException();
+            item = item == null ? event.getArtifact() : item;
+            item = item == null ? event.getMetadata() : item;
+            return type.toString() + " (" + item + ")";
+        }
+
     }
 }
