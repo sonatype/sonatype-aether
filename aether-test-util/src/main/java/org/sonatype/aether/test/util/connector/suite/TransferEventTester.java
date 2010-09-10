@@ -32,10 +32,6 @@ import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.test.impl.RecordingTransferListener;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.FileUtil;
-import org.sonatype.aether.transfer.ArtifactNotFoundException;
-import org.sonatype.aether.transfer.ArtifactTransferException;
-import org.sonatype.aether.transfer.MetadataNotFoundException;
-import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferEvent.EventType;
@@ -182,22 +178,22 @@ public class TransferEventTester
 
         connector.put( artUps, null );
         LinkedList<TransferEvent> events = new LinkedList<TransferEvent>( listener.getEvents() );
-        checkFailedEvents( events, ArtifactTransferException.class );
+        checkFailedEvents( events, null );
         listener.clear();
 
         connector.get( artDowns, null );
         events = new LinkedList<TransferEvent>( listener.getEvents() );
-        checkFailedEvents( events, ArtifactNotFoundException.class );
+        checkFailedEvents( events, null );
         listener.clear();
 
         connector.put( null, metaUps );
         events = new LinkedList<TransferEvent>( listener.getEvents() );
-        checkFailedEvents( events, MetadataTransferException.class );
+        checkFailedEvents( events, null );
         listener.clear();
 
         connector.get( null, metaDowns );
         events = new LinkedList<TransferEvent>( listener.getEvents() );
-        checkFailedEvents( events, MetadataNotFoundException.class );
+        checkFailedEvents( events, null );
     }
 
     private static void checkFailedEvents( Queue<TransferEvent> events, Class<? extends Throwable> expectedError )
@@ -214,22 +210,18 @@ public class TransferEventTester
         checkProperties( currentEvent );
 
         currentEvent = events.poll();
-        msg = "start event is missing";
-        assertNotNull( msg, currentEvent );
-        assertEquals( msg, TransferEvent.EventType.STARTED, currentEvent.getType() );
-        checkProperties( currentEvent );
-
-        currentEvent = events.poll();
         msg = "fail event is missing";
         assertNotNull( msg, currentEvent );
         assertEquals( msg, TransferEvent.EventType.FAILED, currentEvent.getType() );
         checkProperties( currentEvent );
         assertNotNull("exception is missing for fail event", currentEvent.getException() );
         Exception exception = currentEvent.getException();
-        assertTrue( "exception is of wrong type, should be instance of " + expectedError.getClass(),
+        assertTrue( "exception is of wrong type, should be instance of " + expectedError + " but was "
+                        + exception.getClass(),
                     expectedError.isAssignableFrom( exception.getClass() ) );
 
         // all events consumed
         assertEquals( "too many events left: " + events.toString(), 0, events.size() );
+
     }
 }
