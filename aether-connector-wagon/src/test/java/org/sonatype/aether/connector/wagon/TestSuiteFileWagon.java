@@ -24,6 +24,7 @@ import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.test.util.FileUtil;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSetup.AbstractConnectorTestSetup;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSuite;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
@@ -90,6 +91,13 @@ public class TestSuiteFileWagon
                 throw new RuntimeException( e.getMessage(), e );
             }
         }
+
+        @Override
+        public void after( RepositorySystemSession session, RemoteRepository repository, Map<String, Object> context )
+        {
+            FileUtil.deleteDir( new File( "target/test-filewagon" ) );
+        }
+
     };
 
     public TestSuiteFileWagon()
