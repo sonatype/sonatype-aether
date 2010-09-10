@@ -24,7 +24,26 @@ public class RecordingRepositoryListener
     implements RepositoryListener
 {
 
-    private List<RepositoryEvent> events = Collections.synchronizedList( new ArrayList<RepositoryEvent>() );
+    public enum Type
+    {
+        METADATA_DEPLOYED,
+        METADATA_DEPLOYING,
+        ARTIFACT_DEPLOYED,
+        ARTIFACT_DEPLOYING,
+        METADATA_INSTALLED,
+        METADATA_INSTALLING,
+        ARTIFACT_INSTALLED,
+        ARTIFACT_INSTALLING,
+        METADATA_RESOLVED,
+        METADATA_RESOLVING,
+        ARTIFACT_RESOLVED,
+        ARTIFACT_RESOLVING,
+        METADATA_INVALID,
+        ARTIFACT_DESCRIPTOR_MISSING,
+        ARTIFACT_DESCRIPTOR_INVALID
+    }
+
+    private List<EventWrapper> events = Collections.synchronizedList( new ArrayList<EventWrapper>() );
 
     private RepositoryListener realListener;
 
@@ -38,7 +57,7 @@ public class RecordingRepositoryListener
         this.realListener = listener;
     }
 
-    public List<RepositoryEvent> getEvents()
+    public List<EventWrapper> getEvents()
     {
         return events;
     }
@@ -50,7 +69,8 @@ public class RecordingRepositoryListener
 
     public void artifactDescriptorInvalid( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.ARTIFACT_DESCRIPTOR_INVALID;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.artifactDescriptorInvalid( event );
@@ -60,7 +80,8 @@ public class RecordingRepositoryListener
 
     public void artifactDescriptorMissing( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.ARTIFACT_DESCRIPTOR_MISSING;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.artifactDescriptorMissing( event );
@@ -70,7 +91,8 @@ public class RecordingRepositoryListener
 
     public void metadataInvalid( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.METADATA_INVALID;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.metadataInvalid( event );
@@ -80,7 +102,8 @@ public class RecordingRepositoryListener
 
     public void artifactResolving( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.ARTIFACT_RESOLVING;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.artifactResolving( event );
@@ -90,7 +113,8 @@ public class RecordingRepositoryListener
 
     public void artifactResolved( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.ARTIFACT_RESOLVED;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.artifactResolved( event );
@@ -100,7 +124,8 @@ public class RecordingRepositoryListener
 
     public void metadataResolving( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.METADATA_RESOLVING;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.metadataResolving( event );
@@ -110,7 +135,8 @@ public class RecordingRepositoryListener
 
     public void metadataResolved( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.METADATA_RESOLVED;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.metadataResolved( event );
@@ -120,7 +146,8 @@ public class RecordingRepositoryListener
 
     public void artifactInstalling( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.ARTIFACT_INSTALLING;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.artifactInstalling( event );
@@ -130,7 +157,8 @@ public class RecordingRepositoryListener
 
     public void artifactInstalled( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.ARTIFACT_INSTALLED;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.artifactInstalled( event );
@@ -140,7 +168,8 @@ public class RecordingRepositoryListener
 
     public void metadataInstalling( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.METADATA_INSTALLING;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.metadataInstalling( event );
@@ -150,7 +179,8 @@ public class RecordingRepositoryListener
 
     public void metadataInstalled( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.METADATA_INSTALLED;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.metadataInstalled( event );
@@ -160,7 +190,8 @@ public class RecordingRepositoryListener
 
     public void artifactDeploying( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.ARTIFACT_DEPLOYING;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.artifactDeploying( event );
@@ -170,7 +201,8 @@ public class RecordingRepositoryListener
 
     public void artifactDeployed( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.ARTIFACT_DEPLOYED;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.artifactDeployed( event );
@@ -180,7 +212,8 @@ public class RecordingRepositoryListener
 
     public void metadataDeploying( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.METADATA_DEPLOYING;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.metadataDeploying( event );
@@ -190,11 +223,36 @@ public class RecordingRepositoryListener
 
     public void metadataDeployed( RepositoryEvent event )
     {
-        this.events.add( event );
+        Type type = Type.METADATA_DEPLOYED;
+        this.events.add( new EventWrapper( type, event ) );
         if ( realListener != null )
         {
             realListener.metadataDeployed( event );
         }
 
+    }
+
+    public class EventWrapper
+    {
+        Type type;
+
+        RepositoryEvent event;
+
+        public EventWrapper( Type type, RepositoryEvent event )
+        {
+            super();
+            this.type = type;
+            this.event = event;
+        }
+
+        public Type getType()
+        {
+            return type;
+        }
+
+        public RepositoryEvent getEvent()
+        {
+            return event;
+        }
     }
 }
