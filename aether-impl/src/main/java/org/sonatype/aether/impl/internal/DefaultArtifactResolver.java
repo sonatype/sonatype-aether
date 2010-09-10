@@ -34,11 +34,6 @@ import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.impl.VersionResolver;
-import org.sonatype.aether.transfer.ArtifactNotFoundException;
-import org.sonatype.aether.transfer.ArtifactTransferException;
-import org.sonatype.aether.transfer.NoRepositoryConnectorException;
-import org.sonatype.aether.util.artifact.ArtifactProperties;
-import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 import org.sonatype.aether.repository.ArtifactRepository;
 import org.sonatype.aether.repository.LocalArtifactRegistration;
 import org.sonatype.aether.repository.LocalArtifactRequest;
@@ -60,6 +55,11 @@ import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.transfer.ArtifactNotFoundException;
+import org.sonatype.aether.transfer.ArtifactTransferException;
+import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.artifact.ArtifactProperties;
+import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 
 /**
  * @author Benjamin Bentmann
@@ -211,8 +211,8 @@ public class DefaultArtifactResolver
                 {
                     artifact = artifact.setFile( file );
                     result.setArtifact( artifact );
+                    artifactResolved( session, artifact, null, result.getExceptions() );
                 }
-                artifactResolved( session, artifact, null, result.getExceptions() );
                 continue;
             }
 
@@ -225,7 +225,6 @@ public class DefaultArtifactResolver
             catch ( VersionResolutionException e )
             {
                 result.addException( e );
-                artifactResolved( session, artifact, null, result.getExceptions() );
                 continue;
             }
 
