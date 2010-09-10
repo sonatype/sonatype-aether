@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.LocalRepositoryMaintainer;
 import org.sonatype.aether.impl.UpdateCheckManager;
@@ -22,11 +23,16 @@ import org.sonatype.aether.repository.WorkspaceRepository;
 import org.sonatype.aether.resolution.ArtifactRequest;
 import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.resolution.ArtifactResult;
+import org.sonatype.aether.resolution.VersionRequest;
+import org.sonatype.aether.resolution.VersionResolutionException;
+import org.sonatype.aether.resolution.VersionResult;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.test.impl.RecordingRepositoryListener;
+import org.sonatype.aether.test.impl.RecordingRepositoryListener.EventWrapper;
+import org.sonatype.aether.test.impl.RecordingRepositoryListener.Type;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
-import org.sonatype.aether.test.util.DependencyGraphParser;
 import org.sonatype.aether.test.util.FileUtil;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.transfer.ArtifactNotFoundException;
@@ -55,8 +61,6 @@ public class DefaultArtifactResolverTest
 
     private TestRepositorySystemSession session;
 
-    private DependencyGraphParser parser;
-
     private StubRemoteRepositoryManager remoteRepositoryManager;
 
     private Artifact artifact;
@@ -74,8 +78,6 @@ public class DefaultArtifactResolverTest
         resolver =
             new DefaultArtifactResolver( NullLogger.INSTANCE, versionResolver, updateCheckManager,
                                          remoteRepositoryManager, localRepositoryMaintainers );
-
-        parser = new DependencyGraphParser();
 
         artifact = new StubArtifact( "gid", "aid", "", "ext", "ver" );
 
@@ -312,6 +314,222 @@ public class DefaultArtifactResolverTest
         assertEquals( artifact, resolved );
 
         connector.assertSeenExpected();
+    }
+
+    @Test
+    public void testRepositoryEventsSuccessfulLocal()
+        throws ArtifactResolutionException, IOException
+    {
+        RecordingRepositoryListener listener = new RecordingRepositoryListener();
+        session.setRepositoryListener( listener );
+
+        File tmpFile = FileUtil.createTempFile( "tmp" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put( ArtifactProperties.LOCAL_PATH, tmpFile.getAbsolutePath() );
+        artifact = artifact.setProperties( properties );
+
+        ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
+        resolver.resolveArtifact( session, request );
+
+        List<EventWrapper> events = listener.getEvents();
+        assertEquals( 2, events.size() );
+        EventWrapper event = events.get( 0 );
+        assertEquals( RecordingRepositoryListener.Type.ARTIFACT_RESOLVING, event.getType() );
+        assertNull( event.getEvent().getException() );
+        assertEquals( artifact, event.getEvent().getArtifact() );
+
+        event = events.get( 1 );
+        assertEquals( RecordingRepositoryListener.Type.ARTIFACT_RESOLVED, event.getType() );
+        assertNull( event.getEvent().getException() );
+        assertEquals( artifact, event.getEvent().getArtifact().setFile( null ) );
+    }
+
+    @Test
+    public void testRepositoryEventsUnsuccessfulLocal()
+        throws IOException
+    {
+        RecordingRepositoryListener listener = new RecordingRepositoryListener();
+        session.setRepositoryListener( listener );
+
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put( ArtifactProperties.LOCAL_PATH, "doesnotexist" );
+        artifact = artifact.setProperties( properties );
+
+        ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
+        try
+        {
+            resolver.resolveArtifact( session, request );
+            fail( "expected exception" );
+        }
+        catch ( ArtifactResolutionException e )
+        {
+        }
+
+        List<EventWrapper> events = listener.getEvents();
+        assertEquals( 2, events.size() );
+
+        EventWrapper event = events.get( 0 );
+        assertEquals( artifact, event.getEvent().getArtifact() );
+        assertEquals( Type.ARTIFACT_RESOLVING, event.getType() );
+
+        event = events.get( 1 );
+        assertEquals( artifact, event.getEvent().getArtifact() );
+        assertEquals( Type.ARTIFACT_RESOLVED, event.getType() );
+        assertNotNull( event.getEvent().getException() );
+        assertEquals( 1, event.getEvent().getExceptions().size() );
+
+    }
+
+    @Test
+    public void testRepositoryEventsSuccessfulRemote()
+        throws ArtifactResolutionException
+    {
+        RecordingRepositoryListener listener = new RecordingRepositoryListener();
+        session.setRepositoryListener( listener );
+
+        ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
+        request.addRepository( new RemoteRepository( "id", "default", "file:///" ) );
+
+        resolver.resolveArtifact( session, request );
+
+        List<EventWrapper> events = listener.getEvents();
+        assertEquals( 2, events.size() );
+        EventWrapper event = events.get( 0 );
+        assertEquals( RecordingRepositoryListener.Type.ARTIFACT_RESOLVING, event.getType() );
+        assertNull( event.getEvent().getException() );
+        assertEquals( artifact, event.getEvent().getArtifact() );
+
+        event = events.get( 1 );
+        assertEquals( RecordingRepositoryListener.Type.ARTIFACT_RESOLVED, event.getType() );
+        assertNull( event.getEvent().getException() );
+        assertEquals( artifact, event.getEvent().getArtifact().setFile( null ) );
+    }
+
+    @Test
+    public void testRepositoryEventsUnsuccessfulRemote()
+        throws IOException, ArtifactResolutionException
+    {
+        RecordingRepositoryConnector connector = new RecordingRepositoryConnector()
+        {
+
+            @Override
+            public void get( Collection<? extends ArtifactDownload> artifactDownloads,
+                             Collection<? extends MetadataDownload> metadataDownloads )
+            {
+                super.get( artifactDownloads, metadataDownloads );
+                ArtifactDownload download = artifactDownloads.iterator().next();
+                ArtifactTransferException exception =
+                    new ArtifactNotFoundException( download.getArtifact(), null, "not found" );
+                download.setException( exception );
+            }
+
+        };
+        remoteRepositoryManager.setConnector( connector );
+
+        RecordingRepositoryListener listener = new RecordingRepositoryListener();
+        session.setRepositoryListener( listener );
+
+        ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
+        request.addRepository( new RemoteRepository( "id", "default", "file:///" ) );
+
+        try
+        {
+            resolver.resolveArtifact( session, request );
+            fail( "expected exception" );
+        }
+        catch ( ArtifactResolutionException e )
+        {
+        }
+
+        List<EventWrapper> events = listener.getEvents();
+        assertEquals( 2, events.size() );
+
+        EventWrapper event = events.get( 0 );
+        assertEquals( artifact, event.getEvent().getArtifact() );
+        assertEquals( Type.ARTIFACT_RESOLVING, event.getType() );
+
+        event = events.get( 1 );
+        assertEquals( artifact, event.getEvent().getArtifact() );
+        assertEquals( Type.ARTIFACT_RESOLVED, event.getType() );
+        assertNotNull( event.getEvent().getException() );
+        assertEquals( 1, event.getEvent().getExceptions().size() );
+    }
+
+    @Test
+    public void testVersionResolverFails()
+    {
+        resolver.setVersionResolver( new VersionResolver()
+        {
+
+            public VersionResult resolveVersion( RepositorySystemSession session, VersionRequest request )
+                throws VersionResolutionException
+            {
+                throw new VersionResolutionException( new VersionResult( request ) );
+            }
+        } );
+
+        ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
+        try
+        {
+            resolver.resolveArtifact( session, request );
+            fail( "expected exception" );
+        }
+        catch ( ArtifactResolutionException e )
+        {
+            connector.assertSeenExpected();
+            assertNotNull( e.getResults() );
+            assertEquals( 1, e.getResults().size() );
+
+            ArtifactResult result = e.getResults().get( 0 );
+
+            assertEquals( request, result.getRequest() );
+
+            assertFalse( result.getExceptions().isEmpty() );
+            assertTrue( result.getExceptions().get( 0 ) instanceof VersionResolutionException );
+
+            Artifact resolved = result.getArtifact();
+            assertNull( resolved );
+        }
+    }
+    
+    @Test
+    public void testRepositoryEventsOnVersionResolverFail()
+    {
+        resolver.setVersionResolver( new VersionResolver()
+        {
+
+            public VersionResult resolveVersion( RepositorySystemSession session, VersionRequest request )
+                throws VersionResolutionException
+            {
+                throw new VersionResolutionException( new VersionResult( request ) );
+            }
+        } );
+
+        RecordingRepositoryListener listener = new RecordingRepositoryListener();
+        session.setRepositoryListener( listener );
+
+        ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
+        try
+        {
+            resolver.resolveArtifact( session, request );
+            fail( "expected exception" );
+        }
+        catch ( ArtifactResolutionException e )
+        {
+        }
+
+        List<EventWrapper> events = listener.getEvents();
+        assertEquals( 2, events.size() );
+
+        EventWrapper event = events.get( 0 );
+        assertEquals( artifact, event.getEvent().getArtifact() );
+        assertEquals( Type.ARTIFACT_RESOLVING, event.getType() );
+
+        event = events.get( 1 );
+        assertEquals( artifact, event.getEvent().getArtifact() );
+        assertEquals( Type.ARTIFACT_RESOLVED, event.getType() );
+        assertNotNull( event.getEvent().getException() );
+        assertEquals( 1, event.getEvent().getExceptions().size() );
     }
 
 }
