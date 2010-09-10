@@ -230,10 +230,6 @@ class FileRepositoryWorker
                     break;
             }
 
-            transfer.setState( State.ACTIVE );
-            event = newEvent( transfer, repository );
-            catapult.fireStarted( event );
-
             if ( transfer.isExistenceCheck() )
             {
                 if ( !src.exists() )
@@ -465,12 +461,17 @@ class FileRepositoryWorker
             ByteBuffer buf = ByteBuffer.allocate( (int) count );
 
             buf.clear();
+
+            transfer.setState( State.ACTIVE );
+            DefaultTransferEvent event = newEvent( transfer, repository );
+            catapult.fireStarted( event );
+
             int transferred;
             while ( ( transferred = in.read( buf ) ) >= 0 || buf.position() != 0 )
             {
                 total += transferred;
 
-                DefaultTransferEvent event = newEvent( transfer, repository );
+                event = newEvent( transfer, repository );
                 event.setDataBuffer( buf.array() );
                 event.setDataLength( buf.position() );
                 event.setDataOffset( 0 );
