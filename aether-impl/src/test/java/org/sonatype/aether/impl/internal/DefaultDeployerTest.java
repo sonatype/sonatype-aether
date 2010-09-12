@@ -13,19 +13,34 @@ package org.sonatype.aether.impl.internal;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import static org.junit.Assert.*;
+import static org.sonatype.aether.test.impl.RecordingRepositoryListener.Type.*;
+
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.sonatype.aether.RepositoryEvent;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.deployment.DeployRequest;
 import org.sonatype.aether.deployment.DeploymentException;
 import org.sonatype.aether.impl.UpdateCheckManager;
-import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.metadata.Metadata.Nature;
+import org.sonatype.aether.spi.connector.ArtifactDownload;
+import org.sonatype.aether.spi.connector.ArtifactUpload;
+import org.sonatype.aether.spi.connector.MetadataDownload;
+import org.sonatype.aether.spi.connector.MetadataUpload;
+import org.sonatype.aether.spi.connector.Transfer.State;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.test.impl.RecordingRepositoryListener;
+import org.sonatype.aether.test.impl.RecordingRepositoryListener.EventWrapper;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.transfer.ArtifactTransferException;
+import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.metadata.DefaultMetadata;
 
@@ -40,6 +55,14 @@ public class DefaultDeployerTest
 
     private StubRemoteRepositoryManager manager;
 
+    private DefaultDeployer deployer;
+
+    private DeployRequest request;
+
+    private RecordingRepositoryConnector connector;
+
+    private RecordingRepositoryListener listener;
+
     @Before
     public void setup()
         throws IOException
@@ -52,26 +75,32 @@ public class DefaultDeployerTest
 
         session = new TestRepositorySystemSession();
         manager = new StubRemoteRepositoryManager();
+
+        deployer = new DefaultDeployer();
+        deployer.setRemoteRepositoryManager( manager );
+        UpdateCheckManager updateCheckManager = new DoNothingUpdateCheckManager();
+        deployer.setUpdateCheckManager( updateCheckManager );
+        deployer.setLogger( new NullLogger() );
+
+        request = new DeployRequest();
+        connector = new RecordingRepositoryConnector();
+        manager.setConnector( connector );
+
+        listener = new RecordingRepositoryListener();
+        session.setRepositoryListener( listener );
     }
 
     @Test
     public void testSuccessfulDeploy()
         throws DeploymentException
     {
-        Artifact[] expectPut = new Artifact[] { artifact };
-        Metadata[] expectPutMD = new Metadata[] { metadata };
-        RecordingRepositoryConnector connector = new RecordingRepositoryConnector( null, expectPut, null, expectPutMD );
-        manager.setConnector( connector );
 
-        DefaultDeployer deployer = new DefaultDeployer();
-        deployer.setRemoteRepositoryManager( manager );
-        UpdateCheckManager updateCheckManager = new DoNothingUpdateCheckManager();
-        deployer.setUpdateCheckManager( updateCheckManager );
-        deployer.setLogger( new NullLogger() );
+        connector.setExpectPut( artifact );
+        connector.setExpectPut( metadata );
 
-        DeployRequest request = new DeployRequest();
         request.addArtifact( artifact );
         request.addMetadata( metadata );
+
         deployer.deploy( session, request );
 
         connector.assertSeenExpected();
@@ -81,15 +110,6 @@ public class DefaultDeployerTest
     public void testNullArtifactFile()
         throws DeploymentException
     {
-        RecordingRepositoryConnector connector = new RecordingRepositoryConnector();
-        manager.setConnector( connector );
-
-        DefaultDeployer deployer = new DefaultDeployer();
-        deployer.setRemoteRepositoryManager( manager );
-        deployer.setUpdateCheckManager( new DoNothingUpdateCheckManager() );
-        deployer.setLogger( new NullLogger() );
-
-        DeployRequest request = new DeployRequest();
         request.addArtifact( artifact.setFile( null ) );
         deployer.deploy( session, request );
     }
@@ -98,16 +118,313 @@ public class DefaultDeployerTest
     public void testNullMetadataFile()
         throws DeploymentException
     {
-        RecordingRepositoryConnector connector = new RecordingRepositoryConnector();
-        manager.setConnector( connector );
-
-        DefaultDeployer deployer = new DefaultDeployer();
-        deployer.setRemoteRepositoryManager( manager );
-        deployer.setUpdateCheckManager( new DoNothingUpdateCheckManager() );
-        deployer.setLogger( new NullLogger() );
-
-        DeployRequest request = new DeployRequest();
         request.addArtifact( artifact.setFile( null ) );
         deployer.deploy( session, request );
+    }
+
+    @Test
+    public void testSuccessfulArtifactEvents()
+        throws DeploymentException
+    {
+        // internal: DefaultDeployer depends on Connector setting state to fire events
+        connector = new RecordingRepositoryConnector()
+        {
+
+            @Override
+            public void get( Collection<? extends ArtifactDownload> artifactDownloads,
+                             Collection<? extends MetadataDownload> metadataDownloads )
+            {
+                metadataDownloads =
+                    metadataDownloads == null ? Collections.<MetadataDownload> emptyList() : metadataDownloads;
+                artifactDownloads =
+                    artifactDownloads == null ? Collections.<ArtifactDownload> emptyList() : artifactDownloads;
+                for ( MetadataDownload d : metadataDownloads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setState( State.DONE );
+                }
+                for ( ArtifactDownload d : artifactDownloads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setState( State.DONE );
+                }
+            }
+
+            @Override
+            public void put( Collection<? extends ArtifactUpload> artifactUploads,
+                             Collection<? extends MetadataUpload> metadataUploads )
+            {
+                metadataUploads = metadataUploads == null ? Collections.<MetadataUpload> emptyList() : metadataUploads;
+                artifactUploads = artifactUploads == null ? Collections.<ArtifactUpload> emptyList() : artifactUploads;
+                for ( MetadataUpload d : metadataUploads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setState( State.DONE );
+                }
+                for ( ArtifactUpload d : artifactUploads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setState( State.DONE );
+                }
+            }
+
+        };
+
+        manager.setConnector( connector );
+
+        request.addArtifact( artifact );
+
+        deployer.deploy( session, request );
+
+        List<EventWrapper> events = listener.getEvents();
+        assertEquals( 2, events.size() );
+
+        EventWrapper wrapper = events.get( 0 );
+        assertEquals( ARTIFACT_DEPLOYING, wrapper.getType() );
+
+        RepositoryEvent event = wrapper.getEvent();
+        assertEquals( artifact, event.getArtifact() );
+        assertNull( event.getException() );
+
+        wrapper = events.get( 1 );
+        assertEquals( ARTIFACT_DEPLOYED, wrapper.getType() );
+
+        event = wrapper.getEvent();
+        assertEquals( artifact, event.getArtifact() );
+        assertNull( event.getException() );
+    }
+
+    @Test
+    public void testFailingArtifactEvents()
+    {
+        // internal: DefaultDeployer depends on Connector setting state to fire events
+        connector = new RecordingRepositoryConnector()
+        {
+
+            @Override
+            public void get( Collection<? extends ArtifactDownload> artifactDownloads,
+                             Collection<? extends MetadataDownload> metadataDownloads )
+            {
+                metadataDownloads =
+                    metadataDownloads == null ? Collections.<MetadataDownload> emptyList() : metadataDownloads;
+                artifactDownloads =
+                    artifactDownloads == null ? Collections.<ArtifactDownload> emptyList() : artifactDownloads;
+                for ( MetadataDownload d : metadataDownloads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setException( new MetadataTransferException( d.getMetadata(), null, "failed" ) );
+                    d.setState( State.DONE );
+                }
+                for ( ArtifactDownload d : artifactDownloads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setException( new ArtifactTransferException( d.getArtifact(), null, "failed" ) );
+                    d.setState( State.DONE );
+                }
+            }
+
+            @Override
+            public void put( Collection<? extends ArtifactUpload> artifactUploads,
+                             Collection<? extends MetadataUpload> metadataUploads )
+            {
+                metadataUploads = metadataUploads == null ? Collections.<MetadataUpload> emptyList() : metadataUploads;
+                artifactUploads = artifactUploads == null ? Collections.<ArtifactUpload> emptyList() : artifactUploads;
+                for ( MetadataUpload d : metadataUploads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setException( new MetadataTransferException( d.getMetadata(), null, "failed" ) );
+                    d.setState( State.DONE );
+                }
+                for ( ArtifactUpload d : artifactUploads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setException( new ArtifactTransferException( d.getArtifact(), null, "failed" ) );
+                    d.setState( State.DONE );
+                }
+            }
+
+        };
+
+        manager.setConnector( connector );
+
+        request.addArtifact( artifact );
+
+        try
+        {
+            deployer.deploy( session, request );
+            fail( "expected exception" );
+        }
+        catch ( DeploymentException e )
+        {
+            List<EventWrapper> events = listener.getEvents();
+            assertEquals( 2, events.size() );
+
+            EventWrapper wrapper = events.get( 0 );
+            assertEquals( ARTIFACT_DEPLOYING, wrapper.getType() );
+
+            RepositoryEvent event = wrapper.getEvent();
+            assertEquals( artifact, event.getArtifact() );
+            assertNull( event.getException() );
+
+            wrapper = events.get( 1 );
+            assertEquals( ARTIFACT_DEPLOYED, wrapper.getType() );
+
+            event = wrapper.getEvent();
+            assertEquals( artifact, event.getArtifact() );
+            assertNotNull( event.getException() );
+        }
+    }
+
+    @Test
+    public void testSuccessfulMetadataEvents()
+        throws DeploymentException
+    {
+        // internal: DefaultDeployer depends on Connector setting state to fire events
+        connector = new RecordingRepositoryConnector()
+        {
+
+            @Override
+            public void get( Collection<? extends ArtifactDownload> artifactDownloads,
+                             Collection<? extends MetadataDownload> metadataDownloads )
+            {
+                metadataDownloads =
+                    metadataDownloads == null ? Collections.<MetadataDownload> emptyList() : metadataDownloads;
+                artifactDownloads =
+                    artifactDownloads == null ? Collections.<ArtifactDownload> emptyList() : artifactDownloads;
+                for ( MetadataDownload d : metadataDownloads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setState( State.DONE );
+                }
+                for ( ArtifactDownload d : artifactDownloads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setState( State.DONE );
+                }
+            }
+
+            @Override
+            public void put( Collection<? extends ArtifactUpload> artifactUploads,
+                             Collection<? extends MetadataUpload> metadataUploads )
+            {
+                metadataUploads = metadataUploads == null ? Collections.<MetadataUpload> emptyList() : metadataUploads;
+                artifactUploads = artifactUploads == null ? Collections.<ArtifactUpload> emptyList() : artifactUploads;
+                for ( MetadataUpload d : metadataUploads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setState( State.DONE );
+                }
+                for ( ArtifactUpload d : artifactUploads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setState( State.DONE );
+                }
+            }
+
+        };
+
+        manager.setConnector( connector );
+
+        request.addMetadata( metadata );
+
+        deployer.deploy( session, request );
+
+        List<EventWrapper> events = listener.getEvents();
+        assertEquals( 2, events.size() );
+
+        EventWrapper wrapper = events.get( 0 );
+        assertEquals( METADATA_DEPLOYING, wrapper.getType() );
+
+        RepositoryEvent event = wrapper.getEvent();
+        assertEquals( metadata, event.getMetadata() );
+        assertNull( event.getException() );
+
+        wrapper = events.get( 1 );
+        assertEquals( METADATA_DEPLOYED, wrapper.getType() );
+
+        event = wrapper.getEvent();
+        assertEquals( metadata, event.getMetadata() );
+        assertNull( event.getException() );
+    }
+
+    @Test
+    public void testFailingMetdataEvents()
+    {
+        // internal: DefaultDeployer depends on Connector setting state to fire events
+        connector = new RecordingRepositoryConnector()
+        {
+
+            @Override
+            public void get( Collection<? extends ArtifactDownload> artifactDownloads,
+                             Collection<? extends MetadataDownload> metadataDownloads )
+            {
+                metadataDownloads =
+                    metadataDownloads == null ? Collections.<MetadataDownload> emptyList() : metadataDownloads;
+                artifactDownloads =
+                    artifactDownloads == null ? Collections.<ArtifactDownload> emptyList() : artifactDownloads;
+                for ( MetadataDownload d : metadataDownloads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setException( new MetadataTransferException( d.getMetadata(), null, "failed" ) );
+                    d.setState( State.DONE );
+                }
+                for ( ArtifactDownload d : artifactDownloads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setException( new ArtifactTransferException( d.getArtifact(), null, "failed" ) );
+                    d.setState( State.DONE );
+                }
+            }
+
+            @Override
+            public void put( Collection<? extends ArtifactUpload> artifactUploads,
+                             Collection<? extends MetadataUpload> metadataUploads )
+            {
+                metadataUploads = metadataUploads == null ? Collections.<MetadataUpload> emptyList() : metadataUploads;
+                artifactUploads = artifactUploads == null ? Collections.<ArtifactUpload> emptyList() : artifactUploads;
+                for ( MetadataUpload d : metadataUploads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setException( new MetadataTransferException( d.getMetadata(), null, "failed" ) );
+                    d.setState( State.DONE );
+                }
+                for ( ArtifactUpload d : artifactUploads )
+                {
+                    d.setState( State.ACTIVE );
+                    d.setException( new ArtifactTransferException( d.getArtifact(), null, "failed" ) );
+                    d.setState( State.DONE );
+                }
+            }
+
+        };
+
+        manager.setConnector( connector );
+
+        request.addMetadata( metadata );
+
+        try
+        {
+            deployer.deploy( session, request );
+            fail( "expected exception" );
+        }
+        catch ( DeploymentException e )
+        {
+            List<EventWrapper> events = listener.getEvents();
+            assertEquals( 2, events.size() );
+
+            EventWrapper wrapper = events.get( 0 );
+            assertEquals( METADATA_DEPLOYING, wrapper.getType() );
+
+            RepositoryEvent event = wrapper.getEvent();
+            assertEquals( metadata, event.getMetadata() );
+            assertNull( event.getException() );
+
+            wrapper = events.get( 1 );
+            assertEquals( METADATA_DEPLOYED, wrapper.getType() );
+
+            event = wrapper.getEvent();
+            assertEquals( metadata, event.getMetadata() );
+            assertNotNull( event.getException() );
+        }
     }
 }
