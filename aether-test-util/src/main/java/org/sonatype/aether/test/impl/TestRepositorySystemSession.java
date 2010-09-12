@@ -107,7 +107,7 @@ public class TestRepositorySystemSession
 
     public LocalRepository getLocalRepository()
     {
-        throw new UnsupportedOperationException( "getLocalRepository()" );
+        return this.localRepositoryManager.getRepository();
     }
 
     public LocalRepositoryManager getLocalRepositoryManager()

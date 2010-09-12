@@ -14,10 +14,13 @@ package org.sonatype.aether.impl.internal;
  */
 
 import static org.junit.Assert.*;
+import static org.sonatype.aether.test.impl.RecordingRepositoryListener.Type.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonatype.aether.RepositoryEvent;
@@ -25,7 +28,10 @@ import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.installation.InstallRequest;
 import org.sonatype.aether.installation.InstallResult;
 import org.sonatype.aether.installation.InstallationException;
+import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.metadata.Metadata.Nature;
+import org.sonatype.aether.test.impl.RecordingRepositoryListener;
+import org.sonatype.aether.test.impl.RecordingRepositoryListener.EventWrapper;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.FileUtil;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
@@ -45,6 +51,12 @@ public class DefaultInstallerTest
 
     private String localMetadataPath;
 
+    private DefaultInstaller installer;
+
+    private InstallRequest request;
+
+    private RecordingRepositoryListener listener;
+
     @Before
     public void setup()
         throws IOException
@@ -59,6 +71,17 @@ public class DefaultInstallerTest
         localArtifactPath = session.getLocalRepositoryManager().getPathForLocalArtifact( artifact );
         localMetadataPath = session.getLocalRepositoryManager().getPathForLocalMetadata( metadata );
 
+        installer = new DefaultInstaller();
+        request = new InstallRequest();
+        listener = new RecordingRepositoryListener();
+        session.setRepositoryListener( listener );
+
+    }
+
+    @After
+    public void teardown()
+    {
+        FileUtil.deleteDir( session.getLocalRepository().getBasedir() );
     }
 
     @Test
@@ -73,11 +96,9 @@ public class DefaultInstallerTest
         artifactFile.delete();
         metadataFile.delete();
 
-        InstallRequest request = new InstallRequest();
         request.addArtifact( artifact );
         request.addMetadata( metadata );
 
-        DefaultInstaller installer = new DefaultInstaller();
         InstallResult result = installer.install( session, request );
 
         assertTrue( artifactFile.exists() );
@@ -117,8 +138,32 @@ public class DefaultInstallerTest
         installer.install( session, request );
     }
 
+    @Test( expected = InstallationException.class )
+    public void testArtifactExistsAsDir()
+        throws InstallationException
+    {
+        String path = session.getLocalRepositoryManager().getPathForLocalArtifact( artifact );
+        assertTrue( "failed to setup test: could not create " + path,
+                    new File( session.getLocalRepository().getBasedir(), path ).mkdirs() );
+
+        request.addArtifact( artifact );
+        new DefaultInstaller().install( session, request );
+    }
+
+    @Test( expected = InstallationException.class )
+    public void testMetadataExistsAsDir()
+        throws InstallationException
+    {
+        String path = session.getLocalRepositoryManager().getPathForLocalMetadata( metadata );
+        assertTrue( "failed to setup test: could not create " + path,
+                    new File( session.getLocalRepository().getBasedir(), path ).mkdirs() );
+
+        request.addMetadata( metadata );
+        new DefaultInstaller().install( session, request );
+    }
+
     @Test
-    public void testEvents()
+    public void testSuccessfulEvents()
         throws InstallationException
     {
         InstallRequest request = new InstallRequest();
@@ -140,6 +185,7 @@ public class DefaultInstallerTest
                 assertTrue( seenArtifactInstalling );
                 assertEquals( artifactFile, event.getFile() );
                 assertEquals( event.getArtifact(), artifact );
+                assertNull( event.getException() );
             }
 
             @Override
@@ -151,6 +197,7 @@ public class DefaultInstallerTest
 
                 assertEquals( artifactFile, event.getFile() );
                 assertEquals( event.getArtifact(), artifact );
+                assertNull( event.getException() );
             }
 
             @Override
@@ -162,6 +209,7 @@ public class DefaultInstallerTest
                 assertTrue( seenMetadataInstalling );
                 assertEquals( metadataFile, event.getFile() );
                 assertEquals( event.getMetadata(), metadata );
+                assertNull( event.getException() );
             }
 
             @Override
@@ -173,11 +221,102 @@ public class DefaultInstallerTest
 
                 assertEquals( metadataFile, event.getFile() );
                 assertEquals( event.getMetadata(), metadata );
+                assertNull( event.getException() );
             }
 
         } );
 
         DefaultInstaller installer = new DefaultInstaller();
         installer.install( session, request );
+    }
+
+
+    @Test
+    public void testFailingEventsNullArtifactFile()
+    {
+        checkFailedEvents( "null artifact file", this.artifact.setFile( null ) );
+    }
+
+    @Test
+    public void testFailingEventsNullMetadataFile()
+    {
+        checkFailedEvents( "null metadata file", this.metadata.setFile( null ) );
+    }
+
+    @Test
+    public void testFailingEventsArtifactExistsAsDir()
+    {
+        String path = session.getLocalRepositoryManager().getPathForLocalArtifact( artifact );
+        assertTrue( "failed to setup test: could not create " + path,
+                    new File( session.getLocalRepository().getBasedir(), path ).mkdirs() );
+        checkFailedEvents( "target exists as dir", artifact );
+    }
+
+    @Test
+    public void testFailingEventsMetadataExistsAsDir()
+    {
+        String path = session.getLocalRepositoryManager().getPathForLocalMetadata( metadata );
+        assertTrue( "failed to setup test: could not create " + path,
+                    new File( session.getLocalRepository().getBasedir(), path ).mkdirs() );
+        checkFailedEvents( "target exists as dir", metadata );
+    }
+
+    private void checkFailedEvents( String msg, Metadata metadata )
+    {
+        InstallRequest request = new InstallRequest().addMetadata( metadata );
+        msg = "Repository events problem (case: " + msg + ")";
+
+        try
+        {
+            installer.install( session, request );
+            fail( "expected exception" );
+        }
+        catch ( InstallationException e )
+        {
+            List<EventWrapper> events = listener.getEvents();
+            assertEquals( msg, 2, events.size() );
+            EventWrapper wrapper = events.get( 0 );
+            assertEquals( msg, METADATA_INSTALLING, wrapper.getType() );
+
+            RepositoryEvent event = wrapper.getEvent();
+            assertEquals( msg, metadata, event.getMetadata() );
+            assertNull( msg, event.getException() );
+
+            wrapper = events.get( 1 );
+            assertEquals( msg, METADATA_INSTALLED, wrapper.getType() );
+            event = wrapper.getEvent();
+            assertEquals( msg, metadata, event.getMetadata() );
+            assertNotNull( msg, event.getException() );
+        }
+
+    }
+
+    private void checkFailedEvents( String msg, Artifact artifact )
+    {
+        InstallRequest request = new InstallRequest().addArtifact( artifact );
+        msg = "Repository events problem (case: " + msg + ")";
+
+        try
+        {
+            installer.install( session, request );
+            fail( "expected exception" );
+        }
+        catch ( InstallationException e )
+        {
+            List<EventWrapper> events = listener.getEvents();
+            assertEquals( msg, 2, events.size() );
+            EventWrapper wrapper = events.get( 0 );
+            assertEquals( msg, ARTIFACT_INSTALLING, wrapper.getType() );
+            
+            RepositoryEvent event = wrapper.getEvent();
+            assertEquals( msg, artifact, event.getArtifact() );
+            assertNull( msg, event.getException() );
+            
+            wrapper = events.get( 1 );
+            assertEquals( msg, ARTIFACT_INSTALLED, wrapper.getType() );
+            event = wrapper.getEvent();
+            assertEquals( msg, artifact, event.getArtifact() );
+            assertNotNull( msg, event.getException() );
+        }
     }
 }
