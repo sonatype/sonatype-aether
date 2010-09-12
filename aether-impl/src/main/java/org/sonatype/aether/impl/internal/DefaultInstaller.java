@@ -14,7 +14,6 @@ package org.sonatype.aether.impl.internal;
  */
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -36,13 +35,13 @@ import org.sonatype.aether.installation.InstallResult;
 import org.sonatype.aether.installation.InstallationException;
 import org.sonatype.aether.metadata.MergeableMetadata;
 import org.sonatype.aether.metadata.Metadata;
-import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 import org.sonatype.aether.repository.LocalArtifactRegistration;
 import org.sonatype.aether.repository.LocalRepositoryManager;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 
 /**
  * @author Benjamin Bentmann
@@ -227,10 +226,6 @@ public class DefaultInstaller
 
         File srcFile = artifact.getFile();
 
-        if ( srcFile == null )
-        {
-            throw new InstallationException( "Failed to install artifact " + artifact + ": no file attached." );
-        }
 
         File dstFile = new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalArtifact( artifact ) );
 
@@ -269,7 +264,7 @@ public class DefaultInstaller
                 }
             }
         }
-        catch ( IOException e )
+        catch ( Exception e )
         {
             exception = e;
             throw new InstallationException( "Failed to install artifact " + artifact + ": " + e.getMessage(), e );
