@@ -151,7 +151,7 @@ public class JavaEffectiveScopeCalculatorTest
     @Before
     public void setup()
     {
-        parser = new DependencyGraphParser( "org/sonatype/aether/util/graph/transformer/scope/" );
+        parser = new DependencyGraphParser( "scope-calculator-test/" );
         ctx = new SimpleDependencyGraphTransformationContext();
     }
 
