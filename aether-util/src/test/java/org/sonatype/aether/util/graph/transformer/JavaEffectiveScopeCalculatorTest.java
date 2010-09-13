@@ -37,6 +37,7 @@ public class JavaEffectiveScopeCalculatorTest
     {
         TEST, PROVIDED, RUNTIME, COMPILE;
 
+        @Override
         public String toString()
         {
             return super.name().toLowerCase( Locale.ENGLISH );
@@ -58,20 +59,24 @@ public class JavaEffectiveScopeCalculatorTest
 
         String expected = "provided";
         int[] coords = new int[] { 0, 0 };
-        expect( expected, transform( parse( resource, "provided", "test" ) ), coords );
+        expectScope( expected, transform( parse( resource, "provided", "test" ) ), coords );
     }
 
-    private void expect( String expected, DependencyNode root, int... coords )
+    private void expectScope( String expected, DependencyNode root, int... coords )
     {
+        expectScope( "", expected, root, coords );
+    }
+
+    private void expectScope( String msg, String expected, DependencyNode root, int... coords )
+    {
+
         try
         {
             DependencyNode node = root;
-            for ( int i = 0; i < coords.length; i++ )
-            {
-                node = node.getChildren().get( coords[i] );
-            }
+            node = path( node, coords );
 
-            assertEquals( node.toString(), expected, node.getDependency().getScope() );
+            assertEquals( msg + "\nculprit: " + node.toString() + "\n", expected,
+                          node.getDependency().getScope() );
         }
         catch ( IndexOutOfBoundsException e )
         {
@@ -82,6 +87,15 @@ public class JavaEffectiveScopeCalculatorTest
             throw new IllegalArgumentException( "Illegal coordinates for child", e );
         }
 
+    }
+
+    private DependencyNode path( DependencyNode node, int... coords )
+    {
+        for ( int i = 0; i < coords.length; i++ )
+        {
+            node = node.getChildren().get( coords[i] );
+        }
+        return node;
     }
 
     // @Test
@@ -124,8 +138,8 @@ public class JavaEffectiveScopeCalculatorTest
         DependencyNode root = parser.parse( "conflict-and-inheritance.txt" );
         root = transform( root );
 
-        expect( "compile", root, 0, 0 );
-        expect( "compile", root, 0, 0, 0 );
+        expectScope( "compile", root, 0, 0 );
+        expectScope( "compile", root, 0, 0, 0 );
     }
 
     @Test
@@ -135,8 +149,8 @@ public class JavaEffectiveScopeCalculatorTest
         DependencyNode root = parser.parse( "direct-with-conflict-and-inheritance.txt" );
         root = transform( root );
 
-        expect( "test", root, 0, 0 );
-        expect( "test", root, 1, 0, 0 );
+        expectScope( "test", root, 0, 0 );
+        expectScope( "test", root, 1, 0, 0 );
     }
 
     @Test
@@ -146,10 +160,10 @@ public class JavaEffectiveScopeCalculatorTest
         DependencyNode root = parser.parse( "cycle-a.txt" );
         root = transform( root );
 
-        expect( "compile", root, 0 );
-        expect( "runtime", root, 0, 0 );
-        expect( "runtime", root, 1 );
-        expect( "compile", root, 1, 0 );
+        expectScope( "compile", root, 0 );
+        expectScope( "runtime", root, 0, 0 );
+        expectScope( "runtime", root, 1 );
+        expectScope( "compile", root, 1, 0 );
     }
 
     @Test
@@ -159,10 +173,10 @@ public class JavaEffectiveScopeCalculatorTest
         DependencyNode root = parser.parse( "cycle-b.txt" );
         root = transform( root );
 
-        expect( "runtime", root, 0 );
-        expect( "compile", root, 0, 0 );
-        expect( "compile", root, 1 );
-        expect( "runtime", root, 1, 0 );
+        expectScope( "runtime", root, 0 );
+        expectScope( "compile", root, 0, 0 );
+        expectScope( "compile", root, 1 );
+        expectScope( "runtime", root, 1, 0 );
     }
 
     @Before
@@ -180,4 +194,26 @@ public class JavaEffectiveScopeCalculatorTest
         return root;
     }
 
+    @Test
+    public void testDirectNodesAlwaysWin()
+        throws IOException, RepositoryException
+    {
+
+        for ( Scope directScope : Scope.values() )
+        {
+            String direct = directScope.toString();
+
+            parser.setSubstitutions( direct );
+            DependencyNode root = transform( parser.parse( "direct-nodes-winning.txt" ) );
+
+            String msg =
+                String.format( "direct node should be setting scope ('%s') for all nodes.\n" + parser.dump( root ),
+                               direct );
+            expectScope( msg, direct, root, 0 );
+            expectScope( msg, direct, root, 1, 0 );
+            expectScope( msg, direct, root, 2, 0 );
+            expectScope( msg, direct, root, 3, 0 );
+            expectScope( msg, direct, root, 4, 0 );
+        }
+    }
 }
