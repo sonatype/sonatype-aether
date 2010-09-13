@@ -36,22 +36,25 @@ class SimpleConflictMarker
         throws RepositoryException
     {
         Dependency dependency = node.getDependency();
-        Artifact artifact = dependency.getArtifact();
-
-        String key =
-            String.format( "%s:%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(),
-                           artifact.getExtension() );
-
-        @SuppressWarnings( "unchecked" )
-        Map<DependencyNode, Object> nodes =
-            (Map<DependencyNode, Object>) context.get( TransformationContextKeys.CONFLICT_IDS );
-        if ( nodes == null )
+        if ( dependency != null )
         {
-            nodes = new IdentityHashMap<DependencyNode, Object>();
-            context.put( TransformationContextKeys.CONFLICT_IDS, nodes );
-        }
+            Artifact artifact = dependency.getArtifact();
 
-        nodes.put( node, key );
+            String key =
+                String.format( "%s:%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(),
+                               artifact.getClassifier(), artifact.getExtension() );
+
+            @SuppressWarnings( "unchecked" )
+            Map<DependencyNode, Object> nodes =
+                (Map<DependencyNode, Object>) context.get( TransformationContextKeys.CONFLICT_IDS );
+            if ( nodes == null )
+            {
+                nodes = new IdentityHashMap<DependencyNode, Object>();
+                context.put( TransformationContextKeys.CONFLICT_IDS, nodes );
+            }
+
+            nodes.put( node, key );
+        }
 
         for ( DependencyNode child : node.getChildren() )
         {
