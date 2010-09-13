@@ -406,21 +406,28 @@ public class DependencyGraphParser
 
         NodeEntry entry = new NodeEntry();
         Dependency dependency = root.getDependency();
-        Artifact artifact = dependency.getArtifact();
-
-        StringBuilder defBuilder =
-            new StringBuilder().append( artifact.getGroupId() ).append( ":" ).append( artifact.getArtifactId() ).append( ":" ).append( artifact.getExtension() ).append( ":" ).append( artifact.getVersion() );
-        if ( dependency.getScope() != null && ( !"".equals( dependency.getScope() ) ) )
+        StringBuilder defBuilder = new StringBuilder();
+        if ( dependency == null )
         {
-            defBuilder.append( ":" ).append( dependency.getScope() );
+            defBuilder.append( "(null)" );
         }
-
-        Map<String, String> properties = artifact.getProperties();
-        if ( !( properties == null || properties.isEmpty() ) )
+        else
         {
-            for ( Map.Entry<String, String> prop : properties.entrySet() )
+            Artifact artifact = dependency.getArtifact();
+
+            defBuilder.append( artifact.getGroupId() ).append( ":" ).append( artifact.getArtifactId() ).append( ":" ).append( artifact.getExtension() ).append( ":" ).append( artifact.getVersion() );
+            if ( dependency.getScope() != null && ( !"".equals( dependency.getScope() ) ) )
             {
-                defBuilder.append( ";" ).append( prop.getKey() ).append( "=" ).append( prop.getValue() );
+                defBuilder.append( ":" ).append( dependency.getScope() );
+            }
+
+            Map<String, String> properties = artifact.getProperties();
+            if ( !( properties == null || properties.isEmpty() ) )
+            {
+                for ( Map.Entry<String, String> prop : properties.entrySet() )
+                {
+                    defBuilder.append( ";" ).append( prop.getKey() ).append( "=" ).append( prop.getValue() );
+                }
             }
         }
 
