@@ -17,7 +17,6 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 
 import org.junit.Before;
@@ -64,12 +63,15 @@ public class JavaEffectiveScopeCalculatorTest
 
     private void expectScope( String expected, DependencyNode root, int... coords )
     {
-        expectScope( "", expected, root, coords );
+        expectScope( null, expected, root, coords );
     }
 
     private void expectScope( String msg, String expected, DependencyNode root, int... coords )
     {
-
+        if ( msg == null )
+        {
+            msg = "";
+        }
         try
         {
             DependencyNode node = root;
@@ -96,39 +98,6 @@ public class JavaEffectiveScopeCalculatorTest
             node = node.getChildren().get( coords[i] );
         }
         return node;
-    }
-
-    // @Test
-    /**
-     * Does not work yet, provide/test are not ordered
-     */
-    public void testScopeInheritance()
-        throws IOException, RepositoryException
-    {
-        Scope[] scopes = Scope.values();
-        for ( Scope scope1 : scopes )
-        {
-            for ( Scope scope2 : scopes )
-            {
-                parser.setSubstitutions( scope1.toString(), scope2.toString() );
-                String expected = scope1.compareTo( scope2 ) > 0 ? scope1.toString() : scope2.toString();
-
-                DependencyNode root = parser.parse( "inheritance.txt" );
-                System.out.println( parser.dump( root ) );
-                root = transform( root );
-                System.out.println( parser.dump( root ) );
-
-                List<DependencyNode> rootChildren = root.getChildren();
-                assertEquals( 1, rootChildren.size() );
-
-                List<DependencyNode> deepChildren = rootChildren.get( 0 ).getChildren();
-                assertEquals( 1, deepChildren.size() );
-
-                assertEquals( expected, rootChildren.get( 0 ).getDependency().getScope() );
-                assertEquals( expected, deepChildren.get( 0 ).getDependency().getScope() );
-
-            }
-        }
     }
 
     @Test
@@ -227,8 +196,30 @@ public class JavaEffectiveScopeCalculatorTest
             {
                 parser.setSubstitutions( scope1.toString(), scope2.toString() );
                 DependencyNode root = transform( parser.parse( "multiple-inheritance.txt" ) );
+
                 String expected = scope1.compareTo( scope2 ) >= 0 ? scope1.toString() : scope2.toString();
                 String msg = String.format( "expected '%s' to win\n" + parser.dump( root ), expected );
+
+                expectScope( msg, expected, root, 0, 0 );
+                expectScope( msg, expected, root, 1, 0 );
+            }
+        }
+    }
+
+    @Test
+    public void testConflictScopeOrdering()
+        throws RepositoryException, IOException
+    {
+        for ( Scope scope1 : Scope.values() )
+        {
+            for ( Scope scope2 : Scope.values() )
+            {
+                parser.setSubstitutions( scope1.toString(), scope2.toString() );
+                DependencyNode root = transform( parser.parse( "dueling-scopes.txt" ) );
+
+                String expected = scope1.compareTo( scope2 ) >= 0 ? scope1.toString() : scope2.toString();
+                String msg = String.format( "expected '%s' to win\n" + parser.dump( root ), expected );
+
                 expectScope( msg, expected, root, 0, 0 );
                 expectScope( msg, expected, root, 1, 0 );
             }

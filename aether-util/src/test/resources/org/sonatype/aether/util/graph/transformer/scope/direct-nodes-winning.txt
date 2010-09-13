@@ -1,10 +1,10 @@
 (null)
 +- gid:aid:ext:ver:%s
-+- gid:aid2:ext:ver:compile
-|  \- gid:aid:ext:ver2:provided
-+- gid:aid3:ext:ver:compile
-|  \- gid:aid:ext:ver2:runtime
-+- gid:aid3:ext:ver:compile
-|  \- gid:aid:ext:ver2:test
-\- gid:aid3:ext:ver:compile
-   \- gid:aid:ext:ver2:compile
++- gid:aid2:ext:ver
+|  \- gid:aid:ext:ver:provided
++- gid:aid3:ext:ver
+|  \- gid:aid:ext:ver:runtime
++- gid:aid3:ext:ver
+|  \- gid:aid:ext:ver:test
+\- gid:aid3:ext:ver
+   \- gid:aid:ext:ver:compile
