@@ -216,4 +216,23 @@ public class JavaEffectiveScopeCalculatorTest
             expectScope( msg, direct, root, 4, 0 );
         }
     }
+
+    @Test
+    public void testNonDirectMultipleInheritance()
+        throws RepositoryException, IOException
+    {
+        for ( Scope scope1 : Scope.values() )
+        {
+            for ( Scope scope2 : Scope.values() )
+            {
+                parser.setSubstitutions( scope1.toString(), scope2.toString() );
+                DependencyNode root = transform( parser.parse( "multiple-inheritance.txt" ) );
+                String expected = scope1.compareTo( scope2 ) >= 0 ? scope1.toString() : scope2.toString();
+                String msg = String.format( "expected '%s' to win\n" + parser.dump( root ), expected );
+                expectScope( msg, expected, root, 0, 0 );
+                expectScope( msg, expected, root, 1, 0 );
+            }
+        }
+    }
+
 }
