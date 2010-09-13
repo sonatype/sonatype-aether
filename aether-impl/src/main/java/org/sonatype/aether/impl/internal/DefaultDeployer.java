@@ -41,10 +41,6 @@ import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.metadata.MergeableMetadata;
 import org.sonatype.aether.metadata.Metadata;
-import org.sonatype.aether.transfer.MetadataNotFoundException;
-import org.sonatype.aether.transfer.MetadataTransferException;
-import org.sonatype.aether.transfer.NoRepositoryConnectorException;
-import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 import org.sonatype.aether.repository.LocalRepositoryManager;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.RepositoryPolicy;
@@ -57,6 +53,11 @@ import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.transfer.ArtifactTransferException;
+import org.sonatype.aether.transfer.MetadataNotFoundException;
+import org.sonatype.aether.transfer.MetadataTransferException;
+import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 
 /**
  * @author Benjamin Bentmann
@@ -400,7 +401,7 @@ public class DefaultDeployer
             }
         }
 
-        public void artifactDeployed( Artifact artifact, File file )
+        public void artifactDeployed( Artifact artifact, File file, ArtifactTransferException exception )
         {
             RepositoryListener listener = session.getRepositoryListener();
             if ( listener != null )
@@ -408,6 +409,7 @@ public class DefaultDeployer
                 DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
                 event.setRepository( repository );
                 event.setFile( file );
+                event.setException( exception );
                 listener.artifactDeployed( event );
             }
         }
@@ -424,7 +426,7 @@ public class DefaultDeployer
             }
         }
 
-        public void metadataDeployed( Metadata metadata, File file )
+        public void metadataDeployed( Metadata metadata, File file, Exception exception )
         {
             RepositoryListener listener = session.getRepositoryListener();
             if ( listener != null )
@@ -432,6 +434,7 @@ public class DefaultDeployer
                 DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
                 event.setRepository( repository );
                 event.setFile( file );
+                event.setException( exception );
                 listener.metadataDeployed( event );
             }
         }
@@ -461,7 +464,7 @@ public class DefaultDeployer
             }
             else if ( State.DONE.equals( state ) )
             {
-                catapult.artifactDeployed( getArtifact(), getFile() );
+                catapult.artifactDeployed( getArtifact(), getFile(), getException() );
             }
 
             return this;
@@ -492,7 +495,7 @@ public class DefaultDeployer
             }
             else if ( State.DONE.equals( state ) )
             {
-                catapult.metadataDeployed( getMetadata(), getFile() );
+                catapult.metadataDeployed( getMetadata(), getFile(), getException() );
             }
 
             return this;
