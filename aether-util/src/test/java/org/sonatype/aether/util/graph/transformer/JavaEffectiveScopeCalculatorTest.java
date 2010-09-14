@@ -173,11 +173,14 @@ public class JavaEffectiveScopeCalculatorTest
             String direct = directScope.toString();
 
             parser.setSubstitutions( direct );
-            DependencyNode root = transform( parser.parse( "direct-nodes-winning.txt" ) );
+            DependencyNode root = parser.parse( "direct-nodes-winning.txt" );
 
             String msg =
                 String.format( "direct node should be setting scope ('%s') for all nodes.\n" + parser.dump( root ),
                                direct );
+            root = transform( root );
+            msg += "\ntransformed:\n" + parser.dump( root );
+
             expectScope( msg, direct, root, 0 );
             expectScope( msg, direct, root, 1, 0 );
             expectScope( msg, direct, root, 2, 0 );
@@ -195,10 +198,13 @@ public class JavaEffectiveScopeCalculatorTest
             for ( Scope scope2 : Scope.values() )
             {
                 parser.setSubstitutions( scope1.toString(), scope2.toString() );
-                DependencyNode root = transform( parser.parse( "multiple-inheritance.txt" ) );
+                DependencyNode root = parser.parse( "multiple-inheritance.txt" );
 
                 String expected = scope1.compareTo( scope2 ) >= 0 ? scope1.toString() : scope2.toString();
                 String msg = String.format( "expected '%s' to win\n" + parser.dump( root ), expected );
+
+                root = transform( root );
+                msg += "\ntransformed:\n" + parser.dump( root );
 
                 expectScope( msg, expected, root, 0, 0 );
                 expectScope( msg, expected, root, 1, 0 );
@@ -215,10 +221,13 @@ public class JavaEffectiveScopeCalculatorTest
             for ( Scope scope2 : Scope.values() )
             {
                 parser.setSubstitutions( scope1.toString(), scope2.toString() );
-                DependencyNode root = transform( parser.parse( "dueling-scopes.txt" ) );
+                DependencyNode root = parser.parse( "dueling-scopes.txt" );
 
                 String expected = scope1.compareTo( scope2 ) >= 0 ? scope1.toString() : scope2.toString();
                 String msg = String.format( "expected '%s' to win\n" + parser.dump( root ), expected );
+
+                root = transform( root );
+                msg += "\ntransformed:\n" + parser.dump( root );
 
                 expectScope( msg, expected, root, 0, 0 );
                 expectScope( msg, expected, root, 1, 0 );
