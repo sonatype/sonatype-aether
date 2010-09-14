@@ -235,4 +235,30 @@ public class JavaEffectiveScopeCalculatorTest
         }
     }
 
+    /**
+     * obscure case (illegal maven POM). Current behavior: last mentioned wins.
+     */
+    @Test
+    public void testConflictingDirectNodes()
+        throws RepositoryException, IOException
+    {
+        for ( Scope scope1 : Scope.values() )
+        {
+            for ( Scope scope2 : Scope.values() )
+            {
+                parser.setSubstitutions( scope1.toString(), scope2.toString() );
+                DependencyNode root = parser.parse( "conflicting-direct-nodes.txt" );
+
+                String expected = scope2.toString();
+                String msg = String.format( "expected '%s' to win\n" + parser.dump( root ), expected );
+
+                root = transform( root );
+                msg += "\ntransformed:\n" + parser.dump( root );
+
+                expectScope( msg, expected, root, 0 );
+                expectScope( msg, expected, root, 1 );
+            }
+        }
+    }
+
 }
