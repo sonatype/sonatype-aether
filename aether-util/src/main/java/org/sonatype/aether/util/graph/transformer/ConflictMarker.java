@@ -41,6 +41,12 @@ public class ConflictMarker
 
     private final Object SEEN = Boolean.TRUE;
 
+    /**
+     * After the execution of this method, every DependencyNode with an attached dependency is member of one conflict
+     * group.
+     * 
+     * @see DependencyGraphTransformer#transformGraph(DependencyNode, DependencyGraphTransformationContext)
+     */
     public DependencyNode transformGraph( DependencyNode node, DependencyGraphTransformationContext context )
         throws RepositoryException
     {
