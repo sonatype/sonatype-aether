@@ -31,12 +31,12 @@ import org.sonatype.aether.graph.DependencyNode;
 
 /**
  * A dependency graph transformer that creates a topological sorting of the conflict ids which have been assigned to the
- * dependency nodes. Conflict ids are are sorted according to the dependency relation induced by the dependency graph.
- * This transformer will query the key {@link TransformationContextKeys#CONFLICT_IDS} in the transformation context for
- * an existing mapping of nodes to their conflicts ids. In absence of this map, the transformer will automatically
- * invoke the {@link ConflictMarker} to calculate the conflict ids. When this transformer has executed, the
- * transformation context holds a {@code List<Object>} that denotes the topologically sorted conflict ids. The list will
- * be stored using the key {@link TransformationContextKeys#SORTED_CONFLICT_IDS}.
+ * dependency nodes. Conflict ids are sorted according to the dependency relation induced by the dependency graph. This
+ * transformer will query the key {@link TransformationContextKeys#CONFLICT_IDS} in the transformation context for an
+ * existing mapping of nodes to their conflicts ids. In absence of this map, the transformer will automatically invoke
+ * the {@link ConflictMarker} to calculate the conflict ids. When this transformer has executed, the transformation
+ * context holds a {@code List<Object>} that denotes the topologically sorted conflict ids. The list will be stored
+ * using the key {@link TransformationContextKeys#SORTED_CONFLICT_IDS}.
  * 
  * @author Benjamin Bentmann
  */
