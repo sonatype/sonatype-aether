@@ -14,7 +14,14 @@ package org.sonatype.aether.util;
  */
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
+
+import org.sonatype.aether.transfer.TransferCancelledException;
 
 /**
  * A utility class helping with file-based operations.
@@ -56,6 +63,50 @@ public class FileUtils
 
         File parent = canonFile.getParentFile();
         return ( parent != null && ( mkdirs( parent ) || parent.exists() ) && canonFile.mkdir() );
+    }
+
+    public static long copy( File src, File target )
+        throws FileNotFoundException, IOException, TransferCancelledException
+    {
+        FileInputStream inStream = new FileInputStream( src );
+        FileOutputStream outStream = new FileOutputStream( target );
+        try
+        {
+            return copy( inStream.getChannel(), outStream.getChannel() );
+        }
+        finally
+        {
+            inStream.close();
+            outStream.close();
+        }
+    }
+
+    public static long copy( FileChannel in, WritableByteChannel out )
+        throws IOException
+    {
+        long total = 0;
+        try
+        {
+            long count = 200000L;
+
+            while ( ( total += ( in.transferTo( total, count, out ) ) ) < in.size() )
+            {
+                // copy all
+            }
+        }
+        finally
+        {
+            if ( in != null )
+            {
+                in.close();
+            }
+            if ( out != null )
+            {
+                out.close();
+            }
+        }
+
+        return total;
     }
 
 }

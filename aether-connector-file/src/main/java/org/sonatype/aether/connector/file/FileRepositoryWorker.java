@@ -21,6 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -421,7 +422,22 @@ class FileRepositoryWorker
     private long copy( File src, File target )
         throws TransferCancelledException, IOException
     {
-        return copyNIO( src, target );
+        FileInputStream inStream = new FileInputStream( src );
+        FileOutputStream outStream = new FileOutputStream( target );
+        final FileChannel delegate = outStream.getChannel();
+        long size;
+
+        try
+        {
+            size = FileUtils.copy( inStream.getChannel(), new TransferEventChannel( delegate ) );
+        }
+        finally
+        {
+            delegate.close();
+            inStream.close();
+            outStream.close();
+        }
+        return size;
     }
 
     private long copyNIO( File src, File target )
@@ -518,6 +534,52 @@ class FileRepositoryWorker
     public void setLogger( Logger logger )
     {
         this.logger = logger;
+    }
+
+    private final class TransferEventChannel
+        implements WritableByteChannel
+    {
+        private final FileChannel delegate;
+
+        long total = 0;
+
+        private TransferEventChannel( FileChannel delegate )
+        {
+            this.delegate = delegate;
+        }
+
+        public boolean isOpen()
+        {
+            return delegate.isOpen();
+        }
+
+        public void close()
+            throws IOException
+        {
+            delegate.close();
+        }
+
+        public int write( ByteBuffer src )
+            throws IOException
+        {
+            int pos = src.position();
+            int count = delegate.write( src );
+            total += count;
+            DefaultTransferEvent event = newEvent( transfer, repository );
+            // event.setDataBuffer( src.array() );
+            event.setDataLength( src.limit() );
+            // event.setDataOffset( src.arrayOffset() + pos );
+            event.setTransferredBytes( total );
+            try
+            {
+                catapult.fireProgressed( event );
+            }
+            catch ( TransferCancelledException e )
+            {
+                throw new IOException( "Transfer was cancelled: " + e.getMessage() );
+            }
+            return count;
+        }
     }
 
 }
