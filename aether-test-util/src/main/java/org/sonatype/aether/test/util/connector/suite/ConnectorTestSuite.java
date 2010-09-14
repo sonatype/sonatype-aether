@@ -17,7 +17,6 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import org.junit.Test;
@@ -142,42 +141,77 @@ public abstract class ConnectorTestSuite
     {
         RepositoryConnector connector = factory().newInstance( session, repository );
         File tmpFile = FileUtil.createTempFile( "mkdirsBug" );
-        StubArtifact art = new StubArtifact( "testGroup", "testArtifact", "jar", "", 1 + "-test" );
-        StubMetadata meta =
-            new StubMetadata( "testGroup", "testArtifact", 1 + "-test", "maven-metadata.xml",
-                              Metadata.Nature.RELEASE_OR_SNAPSHOT );
 
-        ArtifactUpload artUp = new ArtifactUpload( art, tmpFile );
-        MetadataUpload metaUp = new MetadataUpload( meta, tmpFile );
+        int numTransfers = 2;
 
-        Collection<ArtifactUpload> artUps = Arrays.asList( artUp );
-        Collection<MetadataUpload> metaUps = Arrays.asList( metaUp );
-        connector.put( artUps, null );
-        connector.put( null, metaUps );
+        ArtifactUpload[] artUps = new ArtifactUpload[numTransfers];
+        MetadataUpload[] metaUps = new MetadataUpload[numTransfers];
 
-        File artFile =
-            new File(
-                      "target/connector-test-suite/dir/with/many/sub/directories/to/test/concurrent/directory/creation/artifact.file" );
-        File metaFile =
-            new File(
-                      "target/connector-test-suite/dir/with/many/sub/directories/to/test/concurrent/directory/creation/metadata.file" );
 
-        for ( int i = 0; i < 100; i++ )
+        for ( int i = 0; i < numTransfers; i++ )
         {
-            ArtifactDownload artDown = new ArtifactDownload( art, null, artFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
-            MetadataDownload metaDown =
-                new MetadataDownload( meta, null, metaFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
-            Collection<ArtifactDownload> artDowns = Arrays.asList( artDown );
-            Collection<MetadataDownload> metaDowns = Arrays.asList( metaDown );
+            StubArtifact art = new StubArtifact( "testGroup", "testArtifact", "jar", "", i + "-test" );
+            StubMetadata meta =
+                new StubMetadata( "testGroup", "testArtifact", i + "-test", "maven-metadata.xml",
+                                  Metadata.Nature.RELEASE_OR_SNAPSHOT );
 
-            connector.get( artDowns, metaDowns );
+            ArtifactUpload artUp = new ArtifactUpload( art, tmpFile );
+            MetadataUpload metaUp = new MetadataUpload( meta, tmpFile );
 
-            assertNull( "artifact download had exception: " + artDown.getException(), artDown.getException() );
-            assertNull( "metadata download had exception: " + metaDown.getException(), metaDown.getException() );
-            assertEquals( State.DONE, artDown.getState() );
-            assertEquals( State.DONE, metaDown.getState() );
+            artUps[i] = artUp;
+            metaUps[i] = metaUp;
+        }
 
-            FileUtil.deleteDir( new File( "target/connector-test-suite" ) );
+        connector.put( Arrays.asList( artUps ), null );
+        connector.put( null, Arrays.asList( metaUps ) );
+
+        File localRepo = new File( "target/con-test" );
+
+        StringBuilder localPath = new StringBuilder( localRepo.getAbsolutePath() );
+
+        for ( int i = 0; i < 50; i++ )
+        {
+            localPath.append( "/d" );
+        }
+
+        ArtifactDownload[] artDowns = new ArtifactDownload[numTransfers];
+        MetadataDownload[] metaDowns = new MetadataDownload[numTransfers];
+
+        for ( int m = 0; m < 30; m++ )
+        {
+            for ( int i = 0; i < numTransfers; i++ )
+            {
+                File artFile = new File( localPath.toString() + "/a" + i );
+                File metaFile = new File( localPath.toString() + "/m" + i );
+
+                StubArtifact art = new StubArtifact( "testGroup", "testArtifact", "jar", "", i + "-test" );
+                StubMetadata meta =
+                    new StubMetadata( "testGroup", "testArtifact", i + "-test", "maven-metadata.xml",
+                                      Metadata.Nature.RELEASE_OR_SNAPSHOT );
+
+                ArtifactDownload artDown =
+                    new ArtifactDownload( art, null, artFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
+                MetadataDownload metaDown =
+                    new MetadataDownload( meta, null, metaFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
+
+                artDowns[i] = artDown;
+                metaDowns[i] = metaDown;
+            }
+
+            connector.get( Arrays.asList( artDowns ), Arrays.asList( metaDowns ) );
+
+            for ( int j = 0; j < numTransfers; j++ )
+            {
+                ArtifactDownload artDown = artDowns[j];
+                MetadataDownload metaDown = metaDowns[j];
+
+                assertNull( "artifact download had exception: " + artDown.getException(), artDown.getException() );
+                assertNull( "metadata download had exception: " + metaDown.getException(), metaDown.getException() );
+                assertEquals( State.DONE, artDown.getState() );
+                assertEquals( State.DONE, metaDown.getState() );
+            }
+
+            FileUtil.deleteDir( localRepo );
         }
 
     }
