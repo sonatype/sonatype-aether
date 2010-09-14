@@ -44,18 +44,18 @@ public class StubArtifact
 
     public StubArtifact( String coords, Map<String, String> properties )
     {
-        Pattern p = Pattern.compile( "([^: ]+):([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?" );
+        Pattern p = Pattern.compile( "([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?:([^: ]+)" );
         Matcher m = p.matcher( coords );
         if ( !m.matches() )
         {
             throw new IllegalArgumentException( "Bad artifact coordinates"
-                + ", expected format is <groupId>:<artifactId>:<version>[:<extension>[:<classifier>]]" );
+                + ", expected format is <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>" );
         }
         groupId = m.group( 1 );
         artifactId = m.group( 2 );
-        version = m.group( 3 );
-        extension = get( m.group( 5 ), "jar" );
-        classifier = get( m.group( 7 ), "" );
+        extension = get( m.group( 4 ), "jar" );
+        classifier = get( m.group( 6 ), "" );
+        version = m.group( 7 );
         file = null;
         this.properties = properties;
     }

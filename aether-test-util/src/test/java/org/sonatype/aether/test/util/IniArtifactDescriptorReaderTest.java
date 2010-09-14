@@ -62,7 +62,7 @@ public class IniArtifactDescriptorReaderTest
     public void testLookup()
         throws ArtifactDescriptorException
     {
-        StubArtifact art = new StubArtifact( "gid:aid:ver:ext" );
+        StubArtifact art = new StubArtifact( "gid:aid:ext:ver" );
         ArtifactDescriptorRequest request = new ArtifactDescriptorRequest( art, null, "" );
         ArtifactDescriptorResult description = reader.readArtifactDescriptor( session, request );
         
