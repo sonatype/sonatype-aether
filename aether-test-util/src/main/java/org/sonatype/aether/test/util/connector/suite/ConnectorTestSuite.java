@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
@@ -30,7 +31,6 @@ import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
 import org.sonatype.aether.test.util.FileUtil;
-import org.sonatype.aether.test.util.connector.TestConnectorPathUtil;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.test.util.impl.StubMetadata;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
@@ -104,39 +104,36 @@ public abstract class ConnectorTestSuite
     public void testBlocking()
         throws NoRepositoryConnectorException, IOException
     {
-    
+
         RepositoryConnector connector = factory().newInstance( session, repository );
-    
+
         int count = 10;
-    
+
         byte[] pattern = "tmpFile".getBytes();
         File tmpFile = FileUtil.createTempFile( pattern, 100000 );
-    
+
         List<ArtifactUpload> artUps = ConnectorTestUtil.createTransfers( ArtifactUpload.class, count, tmpFile );
         List<MetadataUpload> metaUps = ConnectorTestUtil.createTransfers( MetadataUpload.class, count, tmpFile );
-        List<ArtifactDownload> artDowns =
-            ConnectorTestUtil.createTransfers( ArtifactDownload.class, count, null );
-        List<MetadataDownload> metaDowns =
-            ConnectorTestUtil.createTransfers( MetadataDownload.class, count, null );
-        
-    
+        List<ArtifactDownload> artDowns = ConnectorTestUtil.createTransfers( ArtifactDownload.class, count, null );
+        List<MetadataDownload> metaDowns = ConnectorTestUtil.createTransfers( MetadataDownload.class, count, null );
+
         // this should block until all transfers are done - racing condition, better way to test this?
         connector.put( artUps, metaUps );
         connector.get( artDowns, metaDowns );
-    
+
         for ( int i = 0; i < count; i++ )
         {
             ArtifactUpload artUp = artUps.get( i );
             MetadataUpload metaUp = metaUps.get( i );
             ArtifactDownload artDown = artDowns.get( i );
             MetadataDownload metaDown = metaDowns.get( i );
-    
+
             assertTrue( Transfer.State.DONE.equals( artUp.getState() ) );
             assertTrue( Transfer.State.DONE.equals( artDown.getState() ) );
             assertTrue( Transfer.State.DONE.equals( metaUp.getState() ) );
             assertTrue( Transfer.State.DONE.equals( metaDown.getState() ) );
         }
-    
+
     }
 
     @Test
@@ -145,26 +142,43 @@ public abstract class ConnectorTestSuite
     {
         RepositoryConnector connector = factory().newInstance( session, repository );
         File tmpFile = FileUtil.createTempFile( "mkdirsBug" );
-        ArtifactUpload artUp =
-            new ArtifactUpload( new StubArtifact( "testGroup", "testArtifact", "jar", "", 1 + "-test" ), tmpFile );
-        MetadataUpload metaUp =
-            new MetadataUpload( new StubMetadata( "testGroup", "testArtifact", 1 + "-test", "maven-metadata.xml",
-                                                     Metadata.Nature.RELEASE_OR_SNAPSHOT ), tmpFile );
-    
+        StubArtifact art = new StubArtifact( "testGroup", "testArtifact", "jar", "", 1 + "-test" );
+        StubMetadata meta =
+            new StubMetadata( "testGroup", "testArtifact", 1 + "-test", "maven-metadata.xml",
+                              Metadata.Nature.RELEASE_OR_SNAPSHOT );
+
+        ArtifactUpload artUp = new ArtifactUpload( art, tmpFile );
+        MetadataUpload metaUp = new MetadataUpload( meta, tmpFile );
+
+        Collection<ArtifactUpload> artUps = Arrays.asList( artUp );
+        Collection<MetadataUpload> metaUps = Arrays.asList( metaUp );
+        connector.put( artUps, null );
+        connector.put( null, metaUps );
+
+        File artFile =
+            new File(
+                      "target/connector-test-suite/dir/with/many/sub/directories/to/test/concurrent/directory/creation/artifact.file" );
+        File metaFile =
+            new File(
+                      "target/connector-test-suite/dir/with/many/sub/directories/to/test/concurrent/directory/creation/metadata.file" );
+
         for ( int i = 0; i < 100; i++ )
         {
-            Collection<ArtifactUpload> artUps = Arrays.asList( artUp );
-            Collection<MetadataUpload> metaUps = Arrays.asList( metaUp );
-    
-            connector.put( artUps, metaUps );
-    
-            assertNull( artUp.getException() );
-            assertNull( metaUp.getException() );
-            assertEquals( State.DONE, artUp.getState() );
-            assertEquals( State.DONE, metaUp.getState() );
-    
-            FileUtil.deleteDir( new File( TestConnectorPathUtil.basedir( repository.getUrl() ) ) );
+            ArtifactDownload artDown = new ArtifactDownload( art, null, artFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
+            MetadataDownload metaDown =
+                new MetadataDownload( meta, null, metaFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
+            Collection<ArtifactDownload> artDowns = Arrays.asList( artDown );
+            Collection<MetadataDownload> metaDowns = Arrays.asList( metaDown );
+
+            connector.get( artDowns, metaDowns );
+
+            assertNull( "artifact download had exception: " + artDown.getException(), artDown.getException() );
+            assertNull( "metadata download had exception: " + metaDown.getException(), metaDown.getException() );
+            assertEquals( State.DONE, artDown.getState() );
+            assertEquals( State.DONE, metaDown.getState() );
+
+            FileUtil.deleteDir( new File( "target/connector-test-suite" ) );
         }
-    
+
     }
 }
