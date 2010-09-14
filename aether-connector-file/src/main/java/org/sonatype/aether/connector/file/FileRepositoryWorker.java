@@ -51,6 +51,7 @@ import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferEvent.RequestType;
 import org.sonatype.aether.util.ChecksumUtils;
+import org.sonatype.aether.util.FileUtil;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
@@ -241,7 +242,7 @@ class FileRepositoryWorker
             {
                 File dir = target.getParentFile();
 
-                mkdirs( dir );
+                FileUtil.mkdirs( dir );
 
                 totalTransferred = copy( src, target );
 
@@ -340,25 +341,6 @@ class FileRepositoryWorker
             }
         }
 
-    }
-
-    public void mkdirs( File dir )
-        throws FileNotFoundException
-    {
-        // maximum number of possible failures
-        int maxFail = dir.getAbsolutePath().split( "\\Q" + File.separator + "\\E" ).length;
-        
-        // dir = new File( baseDir, transfer.getRelativePath() ).getParentFile();
-
-        // mkdirs is not threadsafe, try harder
-        int i = 0;
-        while ( !dir.exists() && !dir.mkdirs() )
-        {
-            if ( i++ >= maxFail )
-            {
-                throw new FileNotFoundException( "Could not create directory: " + dir.getAbsolutePath() );
-            }
-        }
     }
 
     private void writeChecksum( File src, String targetPath )
