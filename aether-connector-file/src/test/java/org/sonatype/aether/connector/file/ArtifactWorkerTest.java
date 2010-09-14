@@ -35,7 +35,7 @@ import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
-import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
@@ -64,7 +64,7 @@ public class ArtifactWorkerTest
     public void cleanup()
     {
         File dir = new File( "target/test-repository" );
-        FileUtil.deleteDir( dir );
+        TestFileUtils.deleteDir( dir );
     }
 
     @Test

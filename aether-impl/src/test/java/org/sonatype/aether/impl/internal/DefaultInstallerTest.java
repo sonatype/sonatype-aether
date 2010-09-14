@@ -33,7 +33,7 @@ import org.sonatype.aether.metadata.Metadata.Nature;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener.EventWrapper;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
-import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.listener.AbstractRepositoryListener;
 import org.sonatype.aether.util.metadata.DefaultMetadata;
@@ -62,10 +62,10 @@ public class DefaultInstallerTest
         throws IOException
     {
         artifact = new DefaultArtifact( "gid", "aid", "jar", "ver" );
-        artifact = artifact.setFile( FileUtil.createTempFile( "artifact".getBytes(), 1 ) );
+        artifact = artifact.setFile( TestFileUtils.createTempFile( "artifact".getBytes(), 1 ) );
         metadata =
             new DefaultMetadata( "gid", "aid", "ver", "type", Nature.RELEASE_OR_SNAPSHOT,
-                                 FileUtil.createTempFile( "metadata".getBytes(), 1 ) );
+                                 TestFileUtils.createTempFile( "metadata".getBytes(), 1 ) );
 
         session = new TestRepositorySystemSession();
         localArtifactPath = session.getLocalRepositoryManager().getPathForLocalArtifact( artifact );
@@ -81,7 +81,7 @@ public class DefaultInstallerTest
     @After
     public void teardown()
     {
-        FileUtil.deleteDir( session.getLocalRepository().getBasedir() );
+        TestFileUtils.deleteDir( session.getLocalRepository().getBasedir() );
     }
 
     @Test

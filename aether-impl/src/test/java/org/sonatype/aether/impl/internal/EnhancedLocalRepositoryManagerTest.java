@@ -31,7 +31,7 @@ import org.sonatype.aether.repository.LocalArtifactRequest;
 import org.sonatype.aether.repository.LocalArtifactResult;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
-import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 
 public class EnhancedLocalRepositoryManagerTest
@@ -62,7 +62,7 @@ public class EnhancedLocalRepositoryManagerTest
 
         artifact =
             new DefaultArtifact( "gid", "aid", "", "jar", "1-test", Collections.<String, String> emptyMap(),
-                                 FileUtil.createTempFile( "artifact".getBytes(), 1 ) );
+                                 TestFileUtils.createTempFile( "artifact".getBytes(), 1 ) );
         baseDir = new File( "target/enhanced-repo" );
         manager = new EnhancedLocalRepositoryManager( baseDir );
 
@@ -74,7 +74,7 @@ public class EnhancedLocalRepositoryManagerTest
     @After
     public void tearDown()
     {
-        FileUtil.deleteDir( baseDir );
+        TestFileUtils.deleteDir( baseDir );
 
         session = null;
         manager = null;
@@ -108,7 +108,7 @@ public class EnhancedLocalRepositoryManagerTest
             return -1;
         }
         File artifactFile = new File( baseDir, path );
-        return FileUtil.copy( artifact.getFile(), artifactFile );
+        return TestFileUtils.copy( artifact.getFile(), artifactFile );
     }
 
     @Test

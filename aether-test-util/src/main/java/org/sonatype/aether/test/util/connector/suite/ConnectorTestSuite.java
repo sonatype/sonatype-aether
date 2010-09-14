@@ -29,7 +29,7 @@ import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
-import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.test.util.impl.StubMetadata;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
@@ -77,22 +77,22 @@ public abstract class ConnectorTestSuite
 
         RepositoryConnector connector = factory().newInstance( session, repository );
 
-        File tmpFile = FileUtil.createTempFile( "testFileHandleLeakage" );
+        File tmpFile = TestFileUtils.createTempFile( "testFileHandleLeakage" );
         ArtifactUpload artUp = new ArtifactUpload( artifact, tmpFile );
         connector.put( Arrays.asList( artUp ), null );
         assertTrue( "Leaking file handle in artifact upload", tmpFile.delete() );
 
-        tmpFile = FileUtil.createTempFile( "testFileHandleLeakage" );
+        tmpFile = TestFileUtils.createTempFile( "testFileHandleLeakage" );
         MetadataUpload metaUp = new MetadataUpload( metadata, tmpFile );
         connector.put( null, Arrays.asList( metaUp ) );
         assertTrue( "Leaking file handle in metadata upload", tmpFile.delete() );
 
-        tmpFile = FileUtil.createTempFile( "testFileHandleLeakage" );
+        tmpFile = TestFileUtils.createTempFile( "testFileHandleLeakage" );
         ArtifactDownload artDown = new ArtifactDownload( artifact, null, tmpFile, null );
         connector.get( Arrays.asList( artDown ), null );
         assertTrue( "Leaking file handle in artifact download", tmpFile.delete() );
 
-        tmpFile = FileUtil.createTempFile( "testFileHandleLeakage" );
+        tmpFile = TestFileUtils.createTempFile( "testFileHandleLeakage" );
         MetadataDownload metaDown = new MetadataDownload( metadata, null, tmpFile, null );
         connector.get( null, Arrays.asList( metaDown ) );
         assertTrue( "Leaking file handle in metadata download", tmpFile.delete() );
@@ -109,12 +109,12 @@ public abstract class ConnectorTestSuite
         int count = 10;
 
         byte[] pattern = "tmpFile".getBytes();
-        File tmpFile = FileUtil.createTempFile( pattern, 100000 );
+        File tmpFile = TestFileUtils.createTempFile( pattern, 100000 );
 
-        List<ArtifactUpload> artUps = ConnectorTestUtil.createTransfers( ArtifactUpload.class, count, tmpFile );
-        List<MetadataUpload> metaUps = ConnectorTestUtil.createTransfers( MetadataUpload.class, count, tmpFile );
-        List<ArtifactDownload> artDowns = ConnectorTestUtil.createTransfers( ArtifactDownload.class, count, null );
-        List<MetadataDownload> metaDowns = ConnectorTestUtil.createTransfers( MetadataDownload.class, count, null );
+        List<ArtifactUpload> artUps = ConnectorTestUtils.createTransfers( ArtifactUpload.class, count, tmpFile );
+        List<MetadataUpload> metaUps = ConnectorTestUtils.createTransfers( MetadataUpload.class, count, tmpFile );
+        List<ArtifactDownload> artDowns = ConnectorTestUtils.createTransfers( ArtifactDownload.class, count, null );
+        List<MetadataDownload> metaDowns = ConnectorTestUtils.createTransfers( MetadataDownload.class, count, null );
 
         // this should block until all transfers are done - racing condition, better way to test this?
         connector.put( artUps, metaUps );
@@ -140,7 +140,7 @@ public abstract class ConnectorTestSuite
         throws IOException, NoRepositoryConnectorException
     {
         RepositoryConnector connector = factory().newInstance( session, repository );
-        File tmpFile = FileUtil.createTempFile( "mkdirsBug" );
+        File tmpFile = TestFileUtils.createTempFile( "mkdirsBug" );
 
         int numTransfers = 2;
 
@@ -211,7 +211,7 @@ public abstract class ConnectorTestSuite
                 assertEquals( State.DONE, metaDown.getState() );
             }
 
-            FileUtil.deleteDir( localRepo );
+            TestFileUtils.deleteDir( localRepo );
         }
 
     }

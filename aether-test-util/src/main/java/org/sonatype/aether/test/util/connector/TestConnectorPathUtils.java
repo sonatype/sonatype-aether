@@ -21,10 +21,10 @@ import java.util.StringTokenizer;
  * 
  * @author Benjamin Hanzelmann
  */
-public final class TestConnectorPathUtil
+public final class TestConnectorPathUtils
 {
 
-    private TestConnectorPathUtil()
+    private TestConnectorPathUtils()
     {
     }
 
@@ -53,7 +53,7 @@ public final class TestConnectorPathUtil
 
     public static String[] dirnames( final String path )
     {
-        final String dirname = TestConnectorPathUtil.dirname( path );
+        final String dirname = TestConnectorPathUtils.dirname( path );
         return split( dirname, "/", -1 );
 
     }
@@ -143,7 +143,7 @@ public final class TestConnectorPathUtil
      */
     public static String basedir( String url )
     {
-        String protocol = TestConnectorPathUtil.protocol( url );
+        String protocol = TestConnectorPathUtils.protocol( url );
 
         String retValue = null;
 

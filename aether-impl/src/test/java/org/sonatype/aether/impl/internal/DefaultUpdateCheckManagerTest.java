@@ -33,7 +33,7 @@ import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
-import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.test.util.impl.StubMetadata;
 import org.sonatype.aether.transfer.ArtifactTransferException;
@@ -64,8 +64,8 @@ public class DefaultUpdateCheckManagerTest
         manager = new DefaultUpdateCheckManager();
         metadata =
             new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT,
-                              FileUtil.createTempFile( "metadata" ) );
-        artifact = new StubArtifact( "gid", "aid", "", "ext", "ver" ).setFile( FileUtil.createTempFile( "artifact" ) );
+                              TestFileUtils.createTempFile( "metadata" ) );
+        artifact = new StubArtifact( "gid", "aid", "", "ext", "ver" ).setFile( TestFileUtils.createTempFile( "artifact" ) );
     }
 
     @Test( expected = IllegalArgumentException.class )

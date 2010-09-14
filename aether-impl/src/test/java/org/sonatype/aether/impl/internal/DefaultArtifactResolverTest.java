@@ -33,7 +33,7 @@ import org.sonatype.aether.test.impl.RecordingRepositoryListener;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener.EventWrapper;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener.Type;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
-import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.transfer.ArtifactTransferException;
@@ -89,7 +89,7 @@ public class DefaultArtifactResolverTest
     public void testResolveLocalArtifactSuccessful()
         throws IOException, ArtifactResolutionException
     {
-        File tmpFile = FileUtil.createTempFile( "tmp" );
+        File tmpFile = TestFileUtils.createTempFile( "tmp" );
         Map<String, String> properties = new HashMap<String, String>();
         properties.put( ArtifactProperties.LOCAL_PATH, tmpFile.getAbsolutePath() );
         artifact = artifact.setProperties( properties );
@@ -110,7 +110,7 @@ public class DefaultArtifactResolverTest
     public void testResolveLocalArtifactUnsuccessful()
         throws IOException, ArtifactResolutionException
     {
-        File tmpFile = FileUtil.createTempFile( "tmp" );
+        File tmpFile = TestFileUtils.createTempFile( "tmp" );
         Map<String, String> properties = new HashMap<String, String>();
         properties.put( ArtifactProperties.LOCAL_PATH, tmpFile.getAbsolutePath() );
         artifact = artifact.setProperties( properties );
@@ -240,7 +240,7 @@ public class DefaultArtifactResolverTest
                     {
                         try
                         {
-                            return FileUtil.createTempFile( artifact.toString() );
+                            return TestFileUtils.createTempFile( artifact.toString() );
                         }
                         catch ( IOException e )
                         {
@@ -323,7 +323,7 @@ public class DefaultArtifactResolverTest
         RecordingRepositoryListener listener = new RecordingRepositoryListener();
         session.setRepositoryListener( listener );
 
-        File tmpFile = FileUtil.createTempFile( "tmp" );
+        File tmpFile = TestFileUtils.createTempFile( "tmp" );
         Map<String, String> properties = new HashMap<String, String>();
         properties.put( ArtifactProperties.LOCAL_PATH, tmpFile.getAbsolutePath() );
         artifact = artifact.setProperties( properties );

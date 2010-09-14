@@ -14,7 +14,7 @@ import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.Transfer;
-import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.test.util.impl.StubMetadata;
 
@@ -34,7 +34,7 @@ import org.sonatype.aether.test.util.impl.StubMetadata;
 /**
  * @author Benjamin Hanzelmann
  */
-public class ConnectorTestUtil
+public class ConnectorTestUtils
 {
 
     /**
@@ -72,7 +72,7 @@ public class ConnectorTestUtil
                 try
                 {
                     Artifact artifact = ( (Artifact) item ).setVersion( ( i + 1 ) + "-test" );
-                    file = file == null ? FileUtil.createTempFile( "" ) : file;
+                    file = file == null ? TestFileUtils.createTempFile( "" ) : file;
                     obj = new ArtifactDownload( artifact, context, file, checksumPolicy );
                 }
                 catch ( IOException e )
@@ -90,7 +90,7 @@ public class ConnectorTestUtil
                 try
                 {
                     Metadata metadata = ( (StubMetadata) item ).setVersion( ( i + 1 ) + "-test" );
-                    file = file == null ? FileUtil.createTempFile( "" ) : file;
+                    file = file == null ? TestFileUtils.createTempFile( "" ) : file;
                     obj = new MetadataDownload( metadata, context, file, checksumPolicy );
                 }
                 catch ( IOException e )

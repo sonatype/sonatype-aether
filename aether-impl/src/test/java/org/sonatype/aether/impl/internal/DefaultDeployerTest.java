@@ -38,7 +38,7 @@ import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener.EventWrapper;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
-import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
@@ -68,10 +68,10 @@ public class DefaultDeployerTest
         throws IOException
     {
         artifact = new DefaultArtifact( "gid", "aid", "jar", "ver" );
-        artifact = artifact.setFile( FileUtil.createTempFile( "artifact" ) );
+        artifact = artifact.setFile( TestFileUtils.createTempFile( "artifact" ) );
         metadata =
             new DefaultMetadata( "gid", "aid", "ver", "type", Nature.RELEASE_OR_SNAPSHOT,
-                                 FileUtil.createTempFile( "metadata" ) );
+                                 TestFileUtils.createTempFile( "metadata" ) );
 
         session = new TestRepositorySystemSession();
         manager = new StubRemoteRepositoryManager();

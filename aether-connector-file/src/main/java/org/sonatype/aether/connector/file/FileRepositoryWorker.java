@@ -51,7 +51,7 @@ import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferEvent.RequestType;
 import org.sonatype.aether.util.ChecksumUtils;
-import org.sonatype.aether.util.FileUtil;
+import org.sonatype.aether.util.FileUtils;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
@@ -242,7 +242,7 @@ class FileRepositoryWorker
             {
                 File dir = target.getParentFile();
 
-                FileUtil.mkdirs( dir );
+                FileUtils.mkdirs( dir );
 
                 totalTransferred = copy( src, target );
 

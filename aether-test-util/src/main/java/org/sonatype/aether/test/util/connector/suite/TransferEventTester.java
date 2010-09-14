@@ -31,7 +31,7 @@ import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.test.impl.RecordingTransferListener;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
-import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferEvent.EventType;
@@ -54,13 +54,13 @@ public class TransferEventTester
         RepositoryConnector connector = factory.newInstance( session, repository );
 
         byte[] pattern = "tmpFile".getBytes();
-        File tmpFile = FileUtil.createTempFile( pattern, 10000 );
+        File tmpFile = TestFileUtils.createTempFile( pattern, 10000 );
         long expectedBytes = tmpFile.length();
 
-        Collection<ArtifactUpload> artUps = ConnectorTestUtil.createTransfers( ArtifactUpload.class, 1, tmpFile );
-        Collection<ArtifactDownload> artDowns = ConnectorTestUtil.createTransfers( ArtifactDownload.class, 1, tmpFile );
-        Collection<MetadataUpload> metaUps = ConnectorTestUtil.createTransfers( MetadataUpload.class, 1, tmpFile );
-        Collection<MetadataDownload> metaDowns = ConnectorTestUtil.createTransfers( MetadataDownload.class, 1, tmpFile );
+        Collection<ArtifactUpload> artUps = ConnectorTestUtils.createTransfers( ArtifactUpload.class, 1, tmpFile );
+        Collection<ArtifactDownload> artDowns = ConnectorTestUtils.createTransfers( ArtifactDownload.class, 1, tmpFile );
+        Collection<MetadataUpload> metaUps = ConnectorTestUtils.createTransfers( MetadataUpload.class, 1, tmpFile );
+        Collection<MetadataDownload> metaDowns = ConnectorTestUtils.createTransfers( MetadataDownload.class, 1, tmpFile );
 
         connector.put( artUps, null );
         LinkedList<TransferEvent> events = new LinkedList<TransferEvent>( listener.getEvents() );
@@ -169,12 +169,12 @@ public class TransferEventTester
         RepositoryConnector connector = factory.newInstance( session, repository );
 
         byte[] pattern = "tmpFile".getBytes();
-        File tmpFile = FileUtil.createTempFile( pattern, 10000 );
+        File tmpFile = TestFileUtils.createTempFile( pattern, 10000 );
 
-        Collection<ArtifactUpload> artUps = ConnectorTestUtil.createTransfers( ArtifactUpload.class, 1, null );
-        Collection<ArtifactDownload> artDowns = ConnectorTestUtil.createTransfers( ArtifactDownload.class, 1, tmpFile );
-        Collection<MetadataUpload> metaUps = ConnectorTestUtil.createTransfers( MetadataUpload.class, 1, null );
-        Collection<MetadataDownload> metaDowns = ConnectorTestUtil.createTransfers( MetadataDownload.class, 1, tmpFile );
+        Collection<ArtifactUpload> artUps = ConnectorTestUtils.createTransfers( ArtifactUpload.class, 1, null );
+        Collection<ArtifactDownload> artDowns = ConnectorTestUtils.createTransfers( ArtifactDownload.class, 1, tmpFile );
+        Collection<MetadataUpload> metaUps = ConnectorTestUtils.createTransfers( MetadataUpload.class, 1, null );
+        Collection<MetadataDownload> metaDowns = ConnectorTestUtils.createTransfers( MetadataDownload.class, 1, tmpFile );
 
         connector.put( artUps, null );
         LinkedList<TransferEvent> events = new LinkedList<TransferEvent>( listener.getEvents() );

@@ -21,7 +21,7 @@ import java.io.IOException;
  * 
  * @author Benjamin Hanzelmann
  */
-public class FileUtil
+public class FileUtils
 {
 
     /**

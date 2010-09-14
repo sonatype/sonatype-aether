@@ -66,7 +66,6 @@ import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.util.ChecksumUtils;
-import org.sonatype.aether.util.FileUtil;
 import org.sonatype.aether.util.layout.MavenDefaultLayout;
 import org.sonatype.aether.util.layout.RepositoryLayout;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
@@ -504,7 +503,7 @@ class WagonRepositoryConnector
                                  * executed concurrently, so we try a little harder.
                                  */
                                 File dir = tmp.getParentFile();
-                                FileUtil.mkdirs( dir );
+                                org.sonatype.aether.util.FileUtils.mkdirs( dir );
 
                                 wagon.get( path, tmp );
                             }

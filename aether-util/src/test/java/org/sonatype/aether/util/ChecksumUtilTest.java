@@ -25,7 +25,7 @@ import java.util.Map.Entry;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.TestFileUtils;
 
 public class ChecksumUtilTest
 {
@@ -57,14 +57,14 @@ public class ChecksumUtilTest
     public void before()
         throws IOException
     {
-        emptyFile = FileUtil.createTempFile( new byte[] {}, 0 );
+        emptyFile = TestFileUtils.createTempFile( new byte[] {}, 0 );
         sums.put( emptyFile, emptyFileChecksums );
 
         patternFile =
-            FileUtil.createTempFile( new byte[] { 0, 1, 2, 4, 8, 16, 32, 64, 127, -1, -2, -4, -8, -16, -32, -64, -127 }, 1000 );
+            TestFileUtils.createTempFile( new byte[] { 0, 1, 2, 4, 8, 16, 32, 64, 127, -1, -2, -4, -8, -16, -32, -64, -127 }, 1000 );
         sums.put( patternFile, patternFileChecksums );
 
-        textFile = FileUtil.createTempFile( "the quick brown fox jumps over the lazy dog\n".getBytes( "UTF-8" ), 500 );
+        textFile = TestFileUtils.createTempFile( "the quick brown fox jumps over the lazy dog\n".getBytes( "UTF-8" ), 500 );
         sums.put( textFile, textFileChecksums );
 
     }

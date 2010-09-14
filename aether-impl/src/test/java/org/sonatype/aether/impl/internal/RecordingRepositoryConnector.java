@@ -27,7 +27,7 @@ import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
-import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 
@@ -80,7 +80,7 @@ class RecordingRepositoryConnector
                 {
                     Artifact artifact = artifactDownload.getArtifact();
                     this.actualGet.add( artifact );
-                    artifactDownload.setFile( FileUtil.createTempFile( artifact.toString() ) );
+                    artifactDownload.setFile( TestFileUtils.createTempFile( artifact.toString() ) );
                 }
             }
             if ( metadataDownloads != null )
@@ -89,7 +89,7 @@ class RecordingRepositoryConnector
                 {
                     Metadata metadata = metadataDownload.getMetadata();
                     this.actualGetMD.add( metadata );
-                    metadataDownload.setFile( FileUtil.createTempFile( metadata.toString() ) );
+                    metadataDownload.setFile( TestFileUtils.createTempFile( metadata.toString() ) );
                 }
             }
         }

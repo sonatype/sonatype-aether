@@ -17,7 +17,7 @@ import org.sonatype.aether.resolution.MetadataRequest;
 import org.sonatype.aether.resolution.MetadataResult;
 import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
-import org.sonatype.aether.test.util.FileUtil;
+import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubMetadata;
 import org.sonatype.aether.transfer.MetadataNotFoundException;
 
@@ -64,7 +64,7 @@ public class DefaultMetadataResolverTest
     @After
     public void teardown()
     {
-        FileUtil.deleteDir( new File( "target/test-DMRT" ) );
+        TestFileUtils.deleteDir( new File( "target/test-DMRT" ) );
     }
 
     @Test
