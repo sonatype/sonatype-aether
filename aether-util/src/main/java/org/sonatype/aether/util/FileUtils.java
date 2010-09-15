@@ -63,6 +63,14 @@ public class FileUtils
         return ( parent != null && ( mkdirs( parent ) || parent.exists() ) && canonFile.mkdir() );
     }
 
+    /**
+     * Lock and copy src- to target-file.
+     * 
+     * @param src the file to copy from.
+     * @param target the file to copy to.
+     * @return the number of copied bytes.
+     * @throws IOException if an I/O error occurs.
+     */
     public static long copy( File src, File target )
         throws IOException
     {
@@ -79,6 +87,14 @@ public class FileUtils
         }
     }
 
+    /**
+     * Lock and copy src- to target-channel.
+     * 
+     * @param src the channel to copy from.
+     * @param target the channel to copy to.
+     * @return the number of copied bytes.
+     * @throws IOException if an I/O error occurs.
+     */
     public static long copy( FileChannel in, FileChannel out )
         throws IOException
     {
@@ -105,38 +121,61 @@ public class FileUtils
         
     }
 
-    public static long copy( FileChannel in, WritableByteChannel out )
+    /**
+     * Copy src- to target-channel.
+     * 
+     * @param src the channel to copy from.
+     * @param target the channel to copy to.
+     * @return the number of copied bytes.
+     * @throws IOException if an I/O error occurs.
+     */
+    public static long copy( FileChannel src, WritableByteChannel target )
         throws IOException
     {
         long total = 0;
         try
         {
-            while ( ( total += ( in.transferTo( total, in.size(), out ) ) ) < in.size() )
+            while ( ( total += ( src.transferTo( total, src.size(), target ) ) ) < src.size() )
             {
                 // copy all
             }
         }
         finally
         {
-            if ( in != null )
+            if ( src != null )
             {
-                in.close();
+                src.close();
             }
-            if ( out != null )
+            if ( target != null )
             {
-                out.close();
+                target.close();
             }
         }
 
         return total;
     }
 
+    /**
+     * Write the given data to a file. UTF-8 is assumed as encoding for the data.
+     * 
+     * @param fileName the file to write to. This file will be truncated.
+     * @param data the data to write.
+     * @throws IOException if an I/O error occurs.
+     */
     public static void write( String fileName, String data )
         throws IOException
     {
         write( fileName, null, data );
     }
 
+    /**
+     * Write the given data to a file. If encoding is {@code null}, UTF-8 is assumed.
+     * 
+     * @param fileName the file to write to. This file will be truncated.
+     * @param encoding the encoding to use to convert the given data into binary format. May be {@code null}.
+     * @param data the data to write.
+     * @throws IOException if an I/O error occurs.
+     */
     public static void write( String fileName, String encoding, String data )
         throws IOException
     {
