@@ -18,10 +18,10 @@ import java.io.File;
 import org.apache.maven.wagon.events.TransferEvent;
 import org.apache.maven.wagon.observers.AbstractTransferListener;
 import org.sonatype.aether.transfer.TransferCancelledException;
-import org.sonatype.aether.transfer.TransferListener;
-import org.sonatype.aether.transfer.TransferResource;
 import org.sonatype.aether.transfer.TransferEvent.EventType;
 import org.sonatype.aether.transfer.TransferEvent.RequestType;
+import org.sonatype.aether.transfer.TransferListener;
+import org.sonatype.aether.transfer.TransferResource;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
@@ -46,6 +46,7 @@ class WagonTransferListenerAdapter
         resource = new DefaultTransferResource( repositoryUrl, resourceName, file );
     }
 
+    @Override
     public void transferStarted( TransferEvent event )
     {
         transferredBytes = 0;
@@ -59,13 +60,13 @@ class WagonTransferListenerAdapter
         }
     }
 
+    @Override
     public void transferProgress( TransferEvent event, byte[] buffer, int length )
     {
         transferredBytes += length;
         try
         {
-            delegate.transferProgressed( wrap( event, EventType.PROGRESSED ).setDataBuffer( buffer ).setDataLength(
-                                                                                                                    length ) );
+            delegate.transferProgressed( wrap( event, EventType.PROGRESSED ).setDataBuffer( buffer, 0, length ) );
         }
         catch ( TransferCancelledException e )
         {

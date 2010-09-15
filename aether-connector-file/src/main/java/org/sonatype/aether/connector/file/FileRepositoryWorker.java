@@ -53,7 +53,6 @@ import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferEvent.RequestType;
 import org.sonatype.aether.util.ChecksumUtils;
 import org.sonatype.aether.util.FileUtils;
-import org.sonatype.aether.util.listener.ByteBufferTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
@@ -443,9 +442,9 @@ class FileRepositoryWorker
         return size;
     }
 
-    private ByteBufferTransferEvent newEvent( TransferWrapper transfer, RemoteRepository repository )
+    private DefaultTransferEvent newEvent( TransferWrapper transfer, RemoteRepository repository )
     {
-        ByteBufferTransferEvent event = new ByteBufferTransferEvent();
+        DefaultTransferEvent event = new DefaultTransferEvent();
         String resourceName = null;
         switch ( transfer.getType() )
         {
@@ -496,11 +495,13 @@ class FileRepositoryWorker
         public int write( ByteBuffer src )
             throws IOException
         {
+            ByteBuffer eventBuffer = src.asReadOnlyBuffer();
+
             int count = delegate.write( src );
             total += count;
-            ByteBufferTransferEvent event = newEvent( transfer, repository );
-            src.flip();
-            event.setByteBuffer( src ).setTransferredBytes( total );
+
+            DefaultTransferEvent event = newEvent( transfer, repository );
+            event.setDataBuffer( eventBuffer ).setTransferredBytes( total );
             try
             {
                 catapult.fireProgressed( event );
@@ -509,6 +510,7 @@ class FileRepositoryWorker
             {
                 throw new IOException( "Transfer was cancelled: " + e.getMessage() );
             }
+
             return count;
         }
     }

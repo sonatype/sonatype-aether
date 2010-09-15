@@ -13,6 +13,8 @@ package org.sonatype.aether.util.listener;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import java.nio.ByteBuffer;
+
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferResource;
 
@@ -29,11 +31,7 @@ public class DefaultTransferEvent
 
     private TransferResource resource;
 
-    private byte[] dataBuffer;
-
-    private int dataOffset;
-
-    private int dataLength;
+    private ByteBuffer dataBuffer;
 
     private long transferredBytes;
 
@@ -83,36 +81,32 @@ public class DefaultTransferEvent
         return this;
     }
 
-    public byte[] getDataBuffer()
+    public ByteBuffer getDataBuffer()
     {
-        return dataBuffer;
+        return dataBuffer != null ? dataBuffer.asReadOnlyBuffer() : null;
     }
 
-    public DefaultTransferEvent setDataBuffer( byte[] dataBuffer )
+    /**
+     * Wraps the given <code>byte[]</code>-array into a {@link ByteBuffer} as the content for this event.
+     * 
+     * @param buffer the array to use.
+     * @param offset the starting point of valid bytes in the array.
+     * @param length the number of valid bytes.
+     * @return this event.
+     */
+    public DefaultTransferEvent setDataBuffer( byte[] buffer, int offset, int length )
+    {
+        ByteBuffer bb = ByteBuffer.wrap( buffer );
+        bb.limit( length );
+        bb.position( offset );
+        setDataBuffer( bb );
+
+        return this;
+    }
+
+    public DefaultTransferEvent setDataBuffer( ByteBuffer dataBuffer )
     {
         this.dataBuffer = dataBuffer;
-        return this;
-    }
-
-    public int getDataOffset()
-    {
-        return dataOffset;
-    }
-
-    public DefaultTransferEvent setDataOffset( int dataOffset )
-    {
-        this.dataOffset = dataOffset;
-        return this;
-    }
-
-    public int getDataLength()
-    {
-        return dataLength;
-    }
-
-    public DefaultTransferEvent setDataLength( int dataLength )
-    {
-        this.dataLength = dataLength;
         return this;
     }
 

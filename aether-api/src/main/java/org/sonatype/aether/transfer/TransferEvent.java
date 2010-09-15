@@ -1,5 +1,7 @@
 package org.sonatype.aether.transfer;
 
+import java.nio.ByteBuffer;
+
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
  *
@@ -66,8 +68,7 @@ public interface TransferEvent
     long getTransferredBytes();
 
     /**
-     * The byte buffer holding the transferred bytes since the last event. Note that the buffer can be bigger than the
-     * actually valid bytes, so be sure to query {@link #getDataOffset()} and {@link #getDataLength()}. A listener must
+     * The byte buffer holding the transferred bytes since the last event. A listener must
      * assume this buffer to be owned by the event source and must not change any byte in this buffer. Also, the buffer
      * is only valid for the duration of the event, i.e. the next event might reuse the same buffer (with updated
      * contents).
@@ -75,21 +76,7 @@ public interface TransferEvent
      * @return The (read-only) byte buffer or {@code null} if not applicable to the event, i.e. if the event type is not
      *         {@link EventType#PROGRESSED}.
      */
-    byte[] getDataBuffer();
-
-    /**
-     * The offset into the byte buffer where the first valid byte resides.
-     * 
-     * @return The offset into the byte buffer.
-     */
-    int getDataOffset();
-
-    /**
-     * The number of valid bytes in the byte buffer.
-     * 
-     * @return The number of valid bytes.
-     */
-    int getDataLength();
+    ByteBuffer getDataBuffer();
 
     /**
      * Gets the error that occurred during the transfer.

@@ -119,7 +119,7 @@ public class TransferEventTester
                 assertTrue( "wrong order of progressed events (transferredSize got smaller)",
                             currentEvent.getTransferredBytes() > transferredBytes );
                 transferredBytes = currentEvent.getTransferredBytes();
-                dataLength += currentEvent.getDataLength();
+                dataLength += currentEvent.getDataBuffer().remaining();
                 checkProperties( currentEvent );
             }
         }
@@ -142,13 +142,6 @@ public class TransferEventTester
         if ( PROGRESSED.equals( event.getType() ) )
         {
             assertNotNull( "data buffer is null for type: " + event.getType(), event.getDataBuffer() );
-            assertTrue( "data length is not set/not positive for type: " + event.getType(), event.getDataLength() > -1 );
-            assertTrue( "data offset is not valid for type: " + event.getType(), event.getDataOffset() > -1 );
-
-            assertTrue( "invalid data offset: bigger than data length", event.getDataOffset() < event.getDataLength() );
-            assertTrue( "invalid data window: offset+data length > data buffer length",
-                        event.getDataOffset() + event.getDataLength() <= event.getDataBuffer().length );
-
             assertTrue( "transferred byte is not set/not positive for type: " + event.getType(),
                         event.getTransferredBytes() > -1 );
         }
