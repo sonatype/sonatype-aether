@@ -40,8 +40,6 @@ import org.apache.maven.wagon.observers.ChecksumObserver;
 import org.apache.maven.wagon.proxy.ProxyInfo;
 import org.apache.maven.wagon.proxy.ProxyInfoProvider;
 import org.apache.maven.wagon.repository.Repository;
-import org.codehaus.plexus.util.FileUtils;
-import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.Authentication;
@@ -66,6 +64,8 @@ import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.util.ChecksumUtils;
+import org.sonatype.aether.util.FileUtils;
+import org.sonatype.aether.util.StringUtils;
 import org.sonatype.aether.util.layout.MavenDefaultLayout;
 import org.sonatype.aether.util.layout.RepositoryLayout;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
@@ -667,11 +667,11 @@ class WagonRepositoryConnector
                      * So if the resource we asked for didn't cause any exception but doesn't show up in the tmp file
                      * either, Wagon tells us in its weird way the file is empty.
                      */
-                    FileUtils.fileWrite( to.getAbsolutePath(), "UTF-8", "" );
+                    FileUtils.write( to.getAbsolutePath(), "UTF-8", "" );
                 }
                 else
                 {
-                    FileUtils.copyFile( from, to );
+                    FileUtils.copy( from, to );
                 }
             }
         }
@@ -801,7 +801,7 @@ class WagonRepositoryConnector
                 File tmpFile = File.createTempFile( "checksum", ext );
                 try
                 {
-                    FileUtils.fileWrite( tmpFile.getAbsolutePath(), "UTF-8", String.valueOf( checksum ) );
+                    FileUtils.write( tmpFile.getAbsolutePath(), "UTF-8", String.valueOf( checksum ) );
                     wagon.put( tmpFile, path + ext );
                 }
                 finally

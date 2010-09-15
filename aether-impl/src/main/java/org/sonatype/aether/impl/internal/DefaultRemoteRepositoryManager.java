@@ -21,7 +21,6 @@ import java.util.ListIterator;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.UpdateCheckManager;
@@ -37,6 +36,7 @@ import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.StringUtils;
 
 /**
  * @author Benjamin Bentmann

@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.util.FileUtils;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
@@ -58,6 +57,7 @@ import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.FileUtils;
 import org.sonatype.aether.util.artifact.ArtifactProperties;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 
@@ -489,7 +489,7 @@ public class DefaultArtifactResolver
             {
                 try
                 {
-                    FileUtils.copyFile( file, dst );
+                    FileUtils.copy( file, dst );
                     dst.setLastModified( file.lastModified() );
                 }
                 catch ( IOException e )

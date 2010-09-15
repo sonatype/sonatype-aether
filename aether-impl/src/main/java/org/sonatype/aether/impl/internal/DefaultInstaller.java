@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.util.FileUtils;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
@@ -41,6 +40,7 @@ import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.util.FileUtils;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 
 /**
@@ -245,7 +245,7 @@ public class DefaultInstaller
                     dstFile.getParentFile().mkdirs();
                 }
 
-                FileUtils.copyFile( srcFile, dstFile );
+                FileUtils.copy( srcFile, dstFile );
                 dstFile.setLastModified( srcFile.lastModified() );
             }
             else
@@ -293,7 +293,7 @@ public class DefaultInstaller
             }
             else
             {
-                FileUtils.copyFile( metadata.getFile(), dstFile );
+                FileUtils.copy( metadata.getFile(), dstFile );
             }
         }
         catch ( Exception e )

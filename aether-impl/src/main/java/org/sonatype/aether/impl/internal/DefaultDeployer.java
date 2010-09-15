@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.util.FileUtils;
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
@@ -57,6 +56,7 @@ import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.MetadataNotFoundException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.FileUtils;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 
 /**
@@ -351,7 +351,7 @@ public class DefaultDeployer
             }
             try
             {
-                FileUtils.copyFile( metadata.getFile(), dstFile );
+                FileUtils.copy( metadata.getFile(), dstFile );
             }
             catch ( IOException e )
             {

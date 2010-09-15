@@ -15,13 +15,11 @@ package org.sonatype.aether.util;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.channels.WritableByteChannel;
-
-import org.sonatype.aether.transfer.TransferCancelledException;
 
 /**
  * A utility class helping with file-based operations.
@@ -66,7 +64,7 @@ public class FileUtils
     }
 
     public static long copy( File src, File target )
-        throws FileNotFoundException, IOException, TransferCancelledException
+        throws IOException
     {
         FileInputStream inStream = new FileInputStream( src );
         FileOutputStream outStream = new FileOutputStream( target );
@@ -81,15 +79,39 @@ public class FileUtils
         }
     }
 
+    public static long copy( FileChannel in, FileChannel out )
+        throws IOException
+    {
+        FileLock lock = null;
+        try
+        {
+            lock = out.lock();
+            return copy( in, (WritableByteChannel) out );
+        }
+        finally
+        {
+            if ( lock != null )
+            {
+                try
+                {
+                    lock.release();
+                }
+                catch ( IOException e )
+                {
+                    // tried everything
+                }
+            }
+        }
+        
+    }
+
     public static long copy( FileChannel in, WritableByteChannel out )
         throws IOException
     {
         long total = 0;
         try
         {
-            long count = 200000L;
-
-            while ( ( total += ( in.transferTo( total, count, out ) ) ) < in.size() )
+            while ( ( total += ( in.transferTo( total, in.size(), out ) ) ) < in.size() )
             {
                 // copy all
             }
@@ -107,6 +129,39 @@ public class FileUtils
         }
 
         return total;
+    }
+
+    public static void write( String fileName, String data )
+        throws IOException
+    {
+        write( fileName, null, data );
+    }
+
+    public static void write( String fileName, String encoding, String data )
+        throws IOException
+    {
+        if ( encoding == null )
+        {
+            encoding = "UTF-8";
+        }
+
+        File f = new File( fileName );
+
+        FileOutputStream out = null;
+        try
+        {
+            out = new FileOutputStream( f );
+            out.write( data.getBytes( encoding ) );
+            out.flush();
+        }
+        finally
+        {
+            if ( out != null )
+            {
+                out.close();
+            }
+        }
+
     }
 
 }
