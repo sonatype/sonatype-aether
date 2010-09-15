@@ -100,7 +100,7 @@ final class GenericVersionRange
                     + ", bounds may not contain additional ','" );
             }
 
-            lowerBound =  parsedLowerBound.length() > 0 ? new GenericVersion( parsedLowerBound ) : null;
+            lowerBound = parsedLowerBound.length() > 0 ? new GenericVersion( parsedLowerBound ) : null;
             upperBound = parsedUpperBound.length() > 0 ? new GenericVersion( parsedUpperBound ) : null;
 
             if ( upperBound != null && lowerBound != null )
@@ -115,7 +115,7 @@ final class GenericVersionRange
     }
 
     public GenericVersionRange( Version lowerBound, boolean lowerBoundInclusive, Version upperBound,
-                              boolean upperBoundInclusive )
+                                boolean upperBoundInclusive )
     {
         this.lowerBound = lowerBound;
         this.lowerBoundInclusive = lowerBoundInclusive;
@@ -143,23 +143,11 @@ final class GenericVersionRange
         return upperBoundInclusive;
     }
 
-    public boolean acceptsSnapshots()
-    {
-        return isSnapshot( lowerBound ) || isSnapshot( upperBound );
-    }
-
     public boolean containsVersion( Version version )
     {
-        boolean snapshot = isSnapshot( version );
-
         if ( lowerBound != null )
         {
             int comparison = lowerBound.compareTo( version );
-
-            if ( snapshot && comparison == 0 )
-            {
-                return true;
-            }
 
             if ( comparison == 0 && !lowerBoundInclusive )
             {
@@ -175,11 +163,6 @@ final class GenericVersionRange
         {
             int comparison = upperBound.compareTo( version );
 
-            if ( snapshot && comparison == 0 )
-            {
-                return true;
-            }
-
             if ( comparison == 0 && !upperBoundInclusive )
             {
                 return false;
@@ -190,17 +173,7 @@ final class GenericVersionRange
             }
         }
 
-        if ( lowerBound != null || upperBound != null )
-        {
-            return !snapshot;
-        }
-
         return true;
-    }
-
-    private boolean isSnapshot( Version version )
-    {
-        return version != null && version.toString().endsWith( "SNAPSHOT" );
     }
 
     @Override

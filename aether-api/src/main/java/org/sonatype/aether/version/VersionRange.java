@@ -29,11 +29,4 @@ public interface VersionRange
      */
     boolean containsVersion( Version version );
 
-    /**
-     * Determines whether this range accepts snapshot versions.
-     * 
-     * @return {@code true} if this range accepts snapshot versions, {@code false} otherwise.
-     */
-    boolean acceptsSnapshots();
-
 }
