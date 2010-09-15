@@ -97,6 +97,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <forgeReleaseUrl>https://repository.sonatype.org/service/local/staging/deploy/maven2</forgeReleaseUrl>
   </properties>
 
   <dependencyManagement>
