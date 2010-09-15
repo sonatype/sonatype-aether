@@ -14,9 +14,9 @@ package org.sonatype.aether.util;
  */
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.WritableByteChannel;
@@ -66,16 +66,16 @@ public class FileUtils
     public static long copy( File src, File target )
         throws IOException
     {
-        FileInputStream inStream = new FileInputStream( src );
-        FileOutputStream outStream = new FileOutputStream( target );
+        RandomAccessFile in = new RandomAccessFile( src, "r" );
+        RandomAccessFile out = new RandomAccessFile( target, "rw" );
         try
         {
-            return copy( inStream.getChannel(), outStream.getChannel() );
+            return copy( in.getChannel(), out.getChannel() );
         }
         finally
         {
-            inStream.close();
-            outStream.close();
+            in.close();
+            out.close();
         }
     }
 
