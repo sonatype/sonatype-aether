@@ -53,6 +53,7 @@ import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferEvent.RequestType;
 import org.sonatype.aether.util.ChecksumUtils;
 import org.sonatype.aether.util.FileUtils;
+import org.sonatype.aether.util.listener.ByteBufferTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
@@ -442,9 +443,9 @@ class FileRepositoryWorker
         return size;
     }
 
-    private DefaultTransferEvent newEvent( TransferWrapper transfer, RemoteRepository repository )
+    private ByteBufferTransferEvent newEvent( TransferWrapper transfer, RemoteRepository repository )
     {
-        DefaultTransferEvent event = new DefaultTransferEvent();
+        ByteBufferTransferEvent event = new ByteBufferTransferEvent();
         String resourceName = null;
         switch ( transfer.getType() )
         {
@@ -497,9 +498,9 @@ class FileRepositoryWorker
         {
             int count = delegate.write( src );
             total += count;
-            DefaultTransferEvent event = newEvent( transfer, repository );
+            ByteBufferTransferEvent event = newEvent( transfer, repository );
             src.flip();
-            event.setTransferredBytes( total );
+            event.setByteBuffer( src ).setTransferredBytes( total );
             try
             {
                 catapult.fireProgressed( event );
