@@ -429,6 +429,8 @@ class FileRepositoryWorker
 
         try
         {
+            DefaultTransferEvent event = newEvent( transfer, repository );
+            catapult.fireStarted( event );
             size = FileUtils.copy( inStream.getChannel(), new TransferEventChannel( delegate ) );
         }
         finally
@@ -438,75 +440,6 @@ class FileRepositoryWorker
             outStream.close();
         }
         return size;
-    }
-
-    private long copyNIO( File src, File target )
-        throws FileNotFoundException, IOException, TransferCancelledException
-    {
-        FileChannel in = null;
-        FileChannel out = null;
-        FileInputStream inStream = null;
-        FileOutputStream outStream = null;
-
-        long total = 0;
-        try
-        {
-            inStream = new FileInputStream( src );
-            in = inStream.getChannel();
-            outStream = new FileOutputStream( target );
-            out = outStream.getChannel();
-            long count = 200000L;
-            ByteBuffer buf = ByteBuffer.allocate( (int) count );
-
-            buf.clear();
-
-            transfer.setState( State.ACTIVE );
-            DefaultTransferEvent event = newEvent( transfer, repository );
-            catapult.fireStarted( event );
-
-            int transferred;
-            while ( ( transferred = in.read( buf ) ) >= 0 || buf.position() != 0 )
-            {
-                total += transferred;
-
-                event = newEvent( transfer, repository );
-                event.setDataBuffer( buf.array() );
-                event.setDataLength( buf.position() );
-                event.setDataOffset( 0 );
-                event.setTransferredBytes( total );
-                catapult.fireProgressed( event );
-
-                buf.flip();
-                out.write( buf );
-                buf.compact();
-            }
-            buf.flip();
-            while ( buf.hasRemaining() )
-            {
-                out.write( buf );
-            }
-        }
-        finally
-        {
-            if ( inStream != null )
-            {
-                inStream.close();
-            }
-            if ( in != null )
-            {
-                in.close();
-            }
-            if ( outStream != null )
-            {
-                outStream.close();
-            }
-            if ( out != null )
-            {
-                out.close();
-            }
-        }
-
-        return total;
     }
 
     private DefaultTransferEvent newEvent( TransferWrapper transfer, RemoteRepository repository )
@@ -562,13 +495,10 @@ class FileRepositoryWorker
         public int write( ByteBuffer src )
             throws IOException
         {
-            int pos = src.position();
             int count = delegate.write( src );
             total += count;
             DefaultTransferEvent event = newEvent( transfer, repository );
-            // event.setDataBuffer( src.array() );
-            event.setDataLength( src.limit() );
-            // event.setDataOffset( src.arrayOffset() + pos );
+            src.flip();
             event.setTransferredBytes( total );
             try
             {
