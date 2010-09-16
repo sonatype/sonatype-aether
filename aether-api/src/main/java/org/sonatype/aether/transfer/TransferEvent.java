@@ -67,9 +67,12 @@ public interface TransferEvent
 
     /**
      * The byte buffer holding the transferred bytes since the last event. Note that the buffer can be bigger than the
-     * actually valid bytes, so be sure to query {@link #getDataOffset()} and {@link #getDataLength()}.
+     * actually valid bytes, so be sure to query {@link #getDataOffset()} and {@link #getDataLength()}. A listener must
+     * assume this buffer to be owned by the event source and must not change any byte in this buffer. Also, the buffer
+     * is only valid for the duration of the event, i.e. the next event might reuse the same buffer (with updated
+     * contents).
      * 
-     * @return The byte buffer or {@code null} if not applicable to the event, i.e. if the event type is not
+     * @return The (read-only) byte buffer or {@code null} if not applicable to the event, i.e. if the event type is not
      *         {@link EventType#PROGRESSED}.
      */
     byte[] getDataBuffer();
