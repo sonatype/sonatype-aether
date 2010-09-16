@@ -52,6 +52,12 @@ public abstract class ConnectorTestSuite
         super( setup );
     }
 
+    /**
+     * Test successful event order.
+     * 
+     * @see TransferEventTester#testSuccessfulTransferEvents(RepositoryConnectorFactory, TestRepositorySystemSession,
+     *      RemoteRepository)
+     */
     @Test
     public void testSuccessfulEvents()
         throws NoRepositoryConnectorException, IOException

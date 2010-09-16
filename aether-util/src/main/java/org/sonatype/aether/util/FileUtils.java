@@ -142,8 +142,8 @@ public class FileUtils
     /**
      * Lock and copy src- to target-channel.
      * 
-     * @param in the channel to copy from.
-     * @param out the channel to copy to.
+     * @param in the channel to copy from, must not be {@code null}.
+     * @param out the channel to copy to, must not be {@code null}.
      * @return the number of copied bytes.
      * @throws IOException if an I/O error occurs.
      */
@@ -175,8 +175,8 @@ public class FileUtils
     /**
      * Copy src- to target-channel.
      * 
-     * @param src the channel to copy from.
-     * @param target the channel to copy to.
+     * @param src the channel to copy from, must not be {@code null}.
+     * @param target the channel to copy to, must not be {@code null}.
      * @return the number of copied bytes.
      * @throws IOException if an I/O error occurs.
      */

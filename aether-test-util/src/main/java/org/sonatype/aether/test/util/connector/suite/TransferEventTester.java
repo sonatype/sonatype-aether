@@ -44,6 +44,9 @@ import org.sonatype.aether.transfer.TransferEvent.EventType;
  */
 public class TransferEventTester
 {
+    /**
+     * Test the order of events and their properties for the successful up- and download of artifact and metadata.
+     */
     public static void testSuccessfulTransferEvents( RepositoryConnectorFactory factory,
                                                      TestRepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException, IOException
@@ -152,6 +155,11 @@ public class TransferEventTester
         }
     }
 
+    /**
+     * Test the order of events and their properties for the unsuccessful up- and download of artifact and metadata.
+     * Failure is triggered by setting the file to transfer to {@code null} for uploads, and asking for a non-existent
+     * item for downloads.
+     */
     public static void testFailedTransferEvents( RepositoryConnectorFactory factory,
                                                  TestRepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException, IOException
