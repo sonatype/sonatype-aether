@@ -21,15 +21,19 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
+import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
+import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
+import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.test.util.impl.StubMetadata;
@@ -224,4 +228,34 @@ public abstract class ConnectorTestSuite
 
     }
 
+    /**
+     * See https://issues.sonatype.org/browse/AETHER-8
+     */
+    @Test
+    public void testTransferZeroBytesFile()
+        throws IOException, NoRepositoryConnectorException
+    {
+        File emptyFile = TestFileUtils.createTempFile( "" );
+
+        Artifact artifact = new StubArtifact( "gid:aid:ext:ver" );
+        ArtifactUpload upA = new ArtifactUpload( artifact, emptyFile );
+        File downAFile = new File( "target/con-test/downA.file" );
+        downAFile.deleteOnExit();
+        ArtifactDownload downA = new ArtifactDownload( artifact, "", downAFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
+
+
+        Metadata metadata =
+            new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT );
+        MetadataUpload upM = new MetadataUpload( metadata, emptyFile );
+        File downMFile = new File( "target/con-test/downM.file" );
+        downMFile.deleteOnExit();
+        MetadataDownload downM = new MetadataDownload( metadata, "", downMFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
+
+        RepositoryConnector connector = factory().newInstance( session, repository );
+        connector.put( Arrays.asList( upA ), Arrays.asList( upM ) );
+        connector.get( Arrays.asList( downA ), Arrays.asList( downM ) );
+
+        assertEquals( 0, downAFile.length() );
+        assertEquals( 0, downMFile.length() );
+    }
 }
