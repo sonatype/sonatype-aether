@@ -186,7 +186,13 @@ public class FileUtils
         long total = 0;
         try
         {
-            while ( ( total += ( src.transferTo( total, src.size(), target ) ) ) < src.size() )
+            long size = src.size();
+
+            // copy large files in chunks to not run into Java Bug 4643189
+            // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4643189
+            long chunk = Integer.MAX_VALUE;
+
+            while ( ( total += ( src.transferTo( total, chunk, target ) ) ) < size )
             {
                 // copy all
             }
