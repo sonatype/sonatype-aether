@@ -1,11 +1,5 @@
 package org.sonatype.aether.test.util;
 
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.resolution.ArtifactDescriptorException;
-import org.sonatype.aether.resolution.ArtifactDescriptorRequest;
-import org.sonatype.aether.resolution.ArtifactDescriptorResult;
-
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
  *
@@ -18,6 +12,12 @@ import org.sonatype.aether.resolution.ArtifactDescriptorResult;
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
+
+import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.resolution.ArtifactDescriptorException;
+import org.sonatype.aether.resolution.ArtifactDescriptorRequest;
+import org.sonatype.aether.resolution.ArtifactDescriptorResult;
 
 /**
  * Uses a {@link IniArtifactDataReader} to parse an artifact description.

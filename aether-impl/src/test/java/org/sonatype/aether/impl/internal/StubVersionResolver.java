@@ -1,11 +1,5 @@
 package org.sonatype.aether.impl.internal;
 
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.impl.VersionResolver;
-import org.sonatype.aether.resolution.VersionRequest;
-import org.sonatype.aether.resolution.VersionResolutionException;
-import org.sonatype.aether.resolution.VersionResult;
-
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
  *
@@ -18,6 +12,12 @@ import org.sonatype.aether.resolution.VersionResult;
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
+
+import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.impl.VersionResolver;
+import org.sonatype.aether.resolution.VersionRequest;
+import org.sonatype.aether.resolution.VersionResolutionException;
+import org.sonatype.aether.resolution.VersionResult;
 
 /**
  * @author Benjamin Hanzelmann

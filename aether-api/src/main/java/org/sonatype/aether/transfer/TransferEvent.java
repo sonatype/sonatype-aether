@@ -1,7 +1,5 @@
 package org.sonatype.aether.transfer;
 
-import java.nio.ByteBuffer;
-
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
  *
@@ -14,6 +12,8 @@ import java.nio.ByteBuffer;
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
+
+import java.nio.ByteBuffer;
 
 /**
  * An event fired to a transfer listener during an artifact/metadata transfer.

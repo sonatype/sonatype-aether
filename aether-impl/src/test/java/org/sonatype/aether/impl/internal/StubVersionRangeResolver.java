@@ -1,16 +1,5 @@
 package org.sonatype.aether.impl.internal;
 
-import java.util.Arrays;
-
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.impl.VersionRangeResolver;
-import org.sonatype.aether.resolution.VersionRangeRequest;
-import org.sonatype.aether.resolution.VersionRangeResolutionException;
-import org.sonatype.aether.resolution.VersionRangeResult;
-import org.sonatype.aether.test.util.impl.StubVersion;
-import org.sonatype.aether.version.Version;
-
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
  *
@@ -23,6 +12,17 @@ import org.sonatype.aether.version.Version;
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
+
+import java.util.Arrays;
+
+import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.impl.VersionRangeResolver;
+import org.sonatype.aether.resolution.VersionRangeRequest;
+import org.sonatype.aether.resolution.VersionRangeResolutionException;
+import org.sonatype.aether.resolution.VersionRangeResult;
+import org.sonatype.aether.test.util.impl.StubVersion;
+import org.sonatype.aether.version.Version;
 
 /**
  * @author Benjamin Hanzelmann

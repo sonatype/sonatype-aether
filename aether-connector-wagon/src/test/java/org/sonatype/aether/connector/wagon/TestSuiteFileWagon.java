@@ -1,3 +1,5 @@
+package org.sonatype.aether.connector.wagon;
+
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
  *
@@ -10,7 +12,6 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.aether.connector.wagon;
 
 import java.io.File;
 import java.net.MalformedURLException;
