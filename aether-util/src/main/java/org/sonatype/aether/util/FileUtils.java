@@ -78,6 +78,7 @@ public class FileUtils
         RandomAccessFile out = new RandomAccessFile( target, "rw" );
         try
         {
+            out.setLength( 0 );
             return copy( in.getChannel(), out.getChannel() );
         }
         finally
