@@ -24,8 +24,10 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.UpdateCheckManager;
+import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.repository.AuthenticationSelector;
 import org.sonatype.aether.repository.MirrorSelector;
+import org.sonatype.aether.repository.Proxy;
 import org.sonatype.aether.repository.ProxySelector;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.RepositoryPolicy;
@@ -307,6 +309,33 @@ public class DefaultRemoteRepositoryManager
         List<RepositoryConnectorFactory> factories = new ArrayList<RepositoryConnectorFactory>( connectorFactories );
         Collections.sort( factories, COMPARATOR );
 
+        RepositoryConnector connector = getRepositoryConnector( session, repository, factories );
+
+        if ( logger.isDebugEnabled() )
+        {
+            StringBuilder buffer = new StringBuilder( 256 );
+            buffer.append( "Using connector " ).append( connector.getClass().getSimpleName() );
+            buffer.append( " for " ).append( repository.getUrl() );
+            Authentication auth = repository.getAuthentication();
+            if ( auth != null )
+            {
+                buffer.append( " as " ).append( auth.getUsername() );
+            }
+            Proxy proxy = repository.getProxy();
+            if ( proxy != null )
+            {
+                buffer.append( " via " ).append( proxy.getHost() ).append( ':' ).append( proxy.getPort() );
+            }
+            logger.debug( buffer.toString() );
+        }
+
+        return connector;
+    }
+
+    private RepositoryConnector getRepositoryConnector( RepositorySystemSession session, RemoteRepository repository,
+                                                        List<RepositoryConnectorFactory> factories )
+        throws NoRepositoryConnectorException
+    {
         for ( RepositoryConnectorFactory factory : factories )
         {
             try
