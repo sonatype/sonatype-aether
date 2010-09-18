@@ -18,7 +18,7 @@ import java.io.PrintStream;
 import org.sonatype.aether.RepositoryEvent;
 import org.sonatype.aether.util.listener.AbstractRepositoryListener;
 
-class ConsoleRepositoryListener
+public class ConsoleRepositoryListener
     extends AbstractRepositoryListener
 {
 

@@ -24,7 +24,7 @@ import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferResource;
 import org.sonatype.aether.util.listener.AbstractTransferListener;
 
-class ConsoleTransferListener
+public class ConsoleTransferListener
     extends AbstractTransferListener
 {
 
