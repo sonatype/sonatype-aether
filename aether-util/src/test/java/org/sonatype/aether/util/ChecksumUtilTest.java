@@ -42,9 +42,10 @@ public class ChecksumUtilTest
     private static Map<String, String> textFileChecksums = new HashMap<String, String>();
 
     private static Map<File, Map<String, String>> sums = new HashMap<File, Map<String, String>>();
-    
+
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass()
+    {
         emptyFileChecksums.put( "MD5", "d41d8cd98f00b204e9800998ecf8427e" );
         emptyFileChecksums.put( "SHA-1", "da39a3ee5e6b4b0d3255bfef95601890afd80709" );
         patternFileChecksums.put( "MD5", "14f01d6c7de7d4cf0a4887baa3528b5a" );
@@ -61,10 +62,12 @@ public class ChecksumUtilTest
         sums.put( emptyFile, emptyFileChecksums );
 
         patternFile =
-            TestFileUtils.createTempFile( new byte[] { 0, 1, 2, 4, 8, 16, 32, 64, 127, -1, -2, -4, -8, -16, -32, -64, -127 }, 1000 );
+            TestFileUtils.createTempFile( new byte[] { 0, 1, 2, 4, 8, 16, 32, 64, 127, -1, -2, -4, -8, -16, -32, -64,
+                -127 }, 1000 );
         sums.put( patternFile, patternFileChecksums );
 
-        textFile = TestFileUtils.createTempFile( "the quick brown fox jumps over the lazy dog\n".getBytes( "UTF-8" ), 500 );
+        textFile =
+            TestFileUtils.createTempFile( "the quick brown fox jumps over the lazy dog\n".getBytes( "UTF-8" ), 500 );
         sums.put( textFile, textFileChecksums );
 
     }
@@ -109,4 +112,5 @@ public class ChecksumUtilTest
         }
 
     }
+
 }
