@@ -28,6 +28,18 @@ public class ArtifactTransferException
 
     private final RemoteRepository repository;
 
+    static String getString( String prefix, RemoteRepository repository )
+    {
+        if ( repository == null )
+        {
+            return "";
+        }
+        else
+        {
+            return prefix + repository.getId() + " (" + repository.getUrl() + ")";
+        }
+    }
+
     public ArtifactTransferException( Artifact artifact, RemoteRepository repository, String message )
     {
         super( message );
@@ -38,8 +50,9 @@ public class ArtifactTransferException
 
     public ArtifactTransferException( Artifact artifact, RemoteRepository repository, Throwable cause )
     {
-        super( "Could not transfer artifact " + artifact + ( repository != null ? " from " + repository : "" )
-            + getMessage( ": ", cause ), cause );
+        super(
+               "Could not transfer artifact " + artifact + getString( " from ", repository ) + getMessage( ": ", cause ),
+               cause );
 
         this.artifact = artifact;
         this.repository = repository;

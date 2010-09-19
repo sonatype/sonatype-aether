@@ -25,8 +25,7 @@ public class MetadataNotFoundException
 
     public MetadataNotFoundException( Metadata metadata, RemoteRepository repository )
     {
-        super( metadata, repository, "Could not find metadata " + metadata
-            + ( repository != null ? " in " + repository : "" ) );
+        super( metadata, repository, "Could not find metadata " + metadata + getString( " in ", repository ) );
     }
 
     public MetadataNotFoundException( Metadata metadata, RemoteRepository repository, String message )

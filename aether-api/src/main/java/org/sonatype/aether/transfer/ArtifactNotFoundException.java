@@ -25,8 +25,7 @@ public class ArtifactNotFoundException
 
     public ArtifactNotFoundException( Artifact artifact, RemoteRepository repository )
     {
-        super( artifact, repository, "Could not find artifact " + artifact
-            + ( repository != null ? " in " + repository : "" ) );
+        super( artifact, repository, "Could not find artifact " + artifact + getString( " in ", repository ) );
     }
 
     public ArtifactNotFoundException( Artifact artifact, RemoteRepository repository, String message )
