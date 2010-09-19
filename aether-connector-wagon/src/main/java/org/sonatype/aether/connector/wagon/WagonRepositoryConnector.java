@@ -667,7 +667,7 @@ class WagonRepositoryConnector
                      * So if the resource we asked for didn't cause any exception but doesn't show up in the tmp file
                      * either, Wagon tells us in its weird way the file is empty.
                      */
-                    FileUtils.write( to.getAbsolutePath(), "UTF-8", "" );
+                    FileUtils.write( to, "" );
                 }
                 else
                 {
@@ -801,7 +801,7 @@ class WagonRepositoryConnector
                 File tmpFile = File.createTempFile( "checksum", ext );
                 try
                 {
-                    FileUtils.write( tmpFile.getAbsolutePath(), "UTF-8", String.valueOf( checksum ) );
+                    FileUtils.write( tmpFile, String.valueOf( checksum ) );
                     wagon.put( tmpFile, path + ext );
                 }
                 finally

@@ -13,9 +13,11 @@ package org.sonatype.aether.util;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -34,38 +36,88 @@ public class FileUtils
         // hide constructor
     }
 
+    private static void close( Closeable closeable )
+    {
+        if ( closeable != null )
+        {
+            try
+            {
+                closeable.close();
+            }
+            catch ( IOException e )
+            {
+                // too bad but who cares
+            }
+        }
+    }
+
+    private static void close( OutputStream closeable )
+    {
+        if ( closeable != null )
+        {
+            try
+            {
+                closeable.close();
+            }
+            catch ( IOException e )
+            {
+                // too bad but who cares
+            }
+        }
+    }
+
+    private static void close( RandomAccessFile closeable )
+    {
+        if ( closeable != null )
+        {
+            try
+            {
+                closeable.close();
+            }
+            catch ( IOException e )
+            {
+                // too bad but who cares
+            }
+        }
+    }
+
     /**
      * Thread-safe variant of {@link File#mkdirs()}. Adapted from Java 6. Creates the directory named by the given
      * abstract pathname, including any necessary but nonexistent parent directories. Note that if this operation fails
      * it may have succeeded in creating some of the necessary parent directories.
      * 
-     * @param dir the directory to create.
-     * @return <code>true</code> if and only if the directory was created, along with all necessary parent directories;
-     *         <code>false</code> otherwise
+     * @param directory The directory to create, may be {@code null}.
+     * @return {@code true} if and only if the directory was created, along with all necessary parent directories;
+     *         {@code false} otherwise
      */
-    public static boolean mkdirs( File dir )
+    public static boolean mkdirs( File directory )
     {
-        if ( dir.exists() )
+        if ( directory == null )
         {
             return false;
         }
-        if ( dir.mkdir() )
+
+        if ( directory.exists() )
+        {
+            return false;
+        }
+        if ( directory.mkdir() )
         {
             return true;
         }
 
-        File canonFile = null;
+        File canonDir = null;
         try
         {
-            canonFile = dir.getCanonicalFile();
+            canonDir = directory.getCanonicalFile();
         }
         catch ( IOException e )
         {
             return false;
         }
 
-        File parent = canonFile.getParentFile();
-        return ( parent != null && ( mkdirs( parent ) || parent.exists() ) && canonFile.mkdir() );
+        File parentDir = canonDir.getParentFile();
+        return ( parentDir != null && ( mkdirs( parentDir ) || parentDir.exists() ) && canonDir.mkdir() );
     }
 
     /**
@@ -79,17 +131,19 @@ public class FileUtils
     public static long copy( File src, File target )
         throws IOException
     {
-        RandomAccessFile in = new RandomAccessFile( src, "r" );
-        RandomAccessFile out = new RandomAccessFile( target, "rw" );
+        RandomAccessFile in = null;
+        RandomAccessFile out = null;
         try
         {
+            in = new RandomAccessFile( src, "r" );
+            out = new RandomAccessFile( target, "rw" );
             out.setLength( 0 );
             return copy( in.getChannel(), out.getChannel() );
         }
         finally
         {
-            in.close();
-            out.close();
+            close( in );
+            close( out );
         }
     }
 
@@ -101,7 +155,7 @@ public class FileUtils
      * @return the number of copied bytes.
      * @throws IOException if an I/O error occurs.
      */
-    public static long copy( FileChannel in, FileChannel out )
+    private static long copy( FileChannel in, FileChannel out )
         throws IOException
     {
         FileLock lock = null;
@@ -124,7 +178,6 @@ public class FileUtils
                 }
             }
         }
-        
     }
 
     /**
@@ -148,14 +201,8 @@ public class FileUtils
         }
         finally
         {
-            if ( src != null )
-            {
-                src.close();
-            }
-            if ( target != null )
-            {
-                target.close();
-            }
+            close( src );
+            close( target );
         }
 
         return total;
@@ -164,49 +211,27 @@ public class FileUtils
     /**
      * Write the given data to a file. UTF-8 is assumed as encoding for the data.
      * 
-     * @param fileName the file to write to. This file will be truncated.
-     * @param data the data to write.
+     * @param file The file to write to, must not be {@code null}. This file will be truncated.
+     * @param data The data to write, may be {@code null}.
      * @throws IOException if an I/O error occurs.
      */
-    public static void write( String fileName, String data )
+    public static void write( File file, String data )
         throws IOException
     {
-        write( fileName, null, data );
-    }
-
-    /**
-     * Write the given data to a file. If encoding is {@code null}, UTF-8 is assumed.
-     * 
-     * @param fileName the file to write to. This file will be truncated.
-     * @param encoding the encoding to use to convert the given data into binary format. May be {@code null}.
-     * @param data the data to write.
-     * @throws IOException if an I/O error occurs.
-     */
-    public static void write( String fileName, String encoding, String data )
-        throws IOException
-    {
-        if ( encoding == null )
-        {
-            encoding = "UTF-8";
-        }
-
-        File f = new File( fileName );
-
         FileOutputStream out = null;
         try
         {
-            out = new FileOutputStream( f );
-            out.write( data.getBytes( encoding ) );
+            out = new FileOutputStream( file );
+            if ( data != null )
+            {
+                out.write( data.getBytes( "UTF-8" ) );
+            }
             out.flush();
         }
         finally
         {
-            if ( out != null )
-            {
-                out.close();
-            }
+            close( out );
         }
-
     }
 
 }
