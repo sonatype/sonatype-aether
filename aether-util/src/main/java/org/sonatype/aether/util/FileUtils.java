@@ -96,8 +96,8 @@ public class FileUtils
     /**
      * Lock and copy src- to target-channel.
      * 
-     * @param src the channel to copy from.
-     * @param target the channel to copy to.
+     * @param in the channel to copy from.
+     * @param out the channel to copy to.
      * @return the number of copied bytes.
      * @throws IOException if an I/O error occurs.
      */
