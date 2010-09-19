@@ -13,29 +13,23 @@ package org.sonatype.aether.util;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
 /**
- * A utility class to ease string processing.
- * 
- * @author Benjamin Hanzelmann
  * @author Benjamin Bentmann
  */
-public class StringUtils
+public class StringUtilsTest
 {
 
-    private StringUtils()
+    @Test
+    public void testIsEmpty()
     {
-        // hide constructor
-    }
-
-    /**
-     * Checks whether a string is {@code null} or of zero length.
-     * 
-     * @param string The string to check, may be {@code null}.
-     * @return {@code true} if the string is {@code null} or of zero length, {@code false} otherwise.
-     */
-    public static boolean isEmpty( String string )
-    {
-        return string == null || string.length() <= 0;
+        assertTrue( StringUtils.isEmpty( null ) );
+        assertTrue( StringUtils.isEmpty( "" ) );
+        assertFalse( StringUtils.isEmpty( " " ) );
+        assertFalse( StringUtils.isEmpty( "test" ) );
     }
 
 }

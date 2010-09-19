@@ -226,7 +226,7 @@ class WagonRepositoryConnector
         String userAgent =
             ConfigurationProperties.get( session.getConfigProperties(), ConfigurationProperties.USER_AGENT,
                                          ConfigurationProperties.DEFAULT_USER_AGENT );
-        if ( StringUtils.isNotEmpty( userAgent ) )
+        if ( !StringUtils.isEmpty( userAgent ) )
         {
             try
             {

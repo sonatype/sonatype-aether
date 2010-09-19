@@ -29,6 +29,11 @@ import java.nio.channels.WritableByteChannel;
 public class FileUtils
 {
 
+    private FileUtils()
+    {
+        // hide constructor
+    }
+
     /**
      * Thread-safe variant of {@link File#mkdirs()}. Adapted from Java 6. Creates the directory named by the given
      * abstract pathname, including any necessary but nonexistent parent directories. Note that if this operation fails

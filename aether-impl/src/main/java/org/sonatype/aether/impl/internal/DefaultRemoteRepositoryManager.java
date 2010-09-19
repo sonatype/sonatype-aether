@@ -241,11 +241,11 @@ public class DefaultRemoteRepositoryManager
         }
 
         // superimpose global policy
-        if ( StringUtils.isNotEmpty( session.getChecksumPolicy() ) )
+        if ( !StringUtils.isEmpty( session.getChecksumPolicy() ) )
         {
             policy = policy.setChecksumPolicy( session.getChecksumPolicy() );
         }
-        if ( StringUtils.isNotEmpty( session.getUpdatePolicy() ) )
+        if ( !StringUtils.isEmpty( session.getUpdatePolicy() ) )
         {
             policy = policy.setUpdatePolicy( session.getUpdatePolicy() );
         }
