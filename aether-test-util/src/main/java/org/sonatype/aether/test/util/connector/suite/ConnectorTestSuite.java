@@ -91,13 +91,14 @@ public abstract class ConnectorTestSuite
         tmpFile = TestFileUtils.createTempFile( "testFileHandleLeakage" );
         ArtifactDownload artDown = new ArtifactDownload( artifact, null, tmpFile, null );
         connector.get( Arrays.asList( artDown ), null );
+        new File( tmpFile.getAbsolutePath() + ".sha1" ).deleteOnExit();
         assertTrue( "Leaking file handle in artifact download", tmpFile.delete() );
 
         tmpFile = TestFileUtils.createTempFile( "testFileHandleLeakage" );
         MetadataDownload metaDown = new MetadataDownload( metadata, null, tmpFile, null );
         connector.get( null, Arrays.asList( metaDown ) );
+        new File( tmpFile.getAbsolutePath() + ".sha1" ).deleteOnExit();
         assertTrue( "Leaking file handle in metadata download", tmpFile.delete() );
-
     }
 
     @Test
@@ -109,7 +110,7 @@ public abstract class ConnectorTestSuite
 
         int count = 10;
 
-        byte[] pattern = "tmpFile".getBytes();
+        byte[] pattern = "tmpFile".getBytes( "UTF-8" );
         File tmpFile = TestFileUtils.createTempFile( pattern, 100000 );
 
         List<ArtifactUpload> artUps = ConnectorTestUtils.createTransfers( ArtifactUpload.class, count, tmpFile );
@@ -216,4 +217,5 @@ public abstract class ConnectorTestSuite
         }
 
     }
+
 }
