@@ -369,7 +369,6 @@ class FileRepositoryWorker
     private void verifyChecksum( File src )
         throws ChecksumFailureException, IOException, TransferCancelledException
     {
-        DefaultTransferEvent event;
         if ( RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( transfer.getChecksumPolicy() ) )
         {
             return;
@@ -409,13 +408,10 @@ class FileRepositoryWorker
             {
                 throw e;
             }
-            else if ( RepositoryPolicy.CHECKSUM_POLICY_WARN.equals( transfer.getChecksumPolicy() ) )
-            {
-                event = newEvent( transfer, repository );
-                event.setException( e );
-                catapult.fireCorrupted( event );
-            }
 
+            DefaultTransferEvent event = newEvent( transfer, repository );
+            event.setException( e );
+            catapult.fireCorrupted( event );
         }
     }
 
