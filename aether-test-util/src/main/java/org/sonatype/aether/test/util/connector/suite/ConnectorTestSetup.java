@@ -29,6 +29,7 @@ import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
  */
 public interface ConnectorTestSetup
 {
+
     /**
      * This method is called before each test run.
      * 
@@ -94,4 +95,5 @@ public interface ConnectorTestSetup
         }
 
     }
+
 }
