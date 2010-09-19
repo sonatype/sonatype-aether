@@ -17,7 +17,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -37,21 +36,6 @@ public class FileUtils
     }
 
     private static void close( Closeable closeable )
-    {
-        if ( closeable != null )
-        {
-            try
-            {
-                closeable.close();
-            }
-            catch ( IOException e )
-            {
-                // too bad but who cares
-            }
-        }
-    }
-
-    private static void close( OutputStream closeable )
     {
         if ( closeable != null )
         {
