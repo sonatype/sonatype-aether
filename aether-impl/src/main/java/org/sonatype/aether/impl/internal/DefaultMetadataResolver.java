@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.MetadataResolver;
@@ -242,7 +243,8 @@ public class DefaultMetadataResolver
 
         if ( !tasks.isEmpty() )
         {
-            Executor executor = getExecutor( Math.min( tasks.size(), 4 ) );
+            int threads = ConfigurationProperties.get( session, "aether.metadataResolver.threads", 4 );
+            Executor executor = getExecutor( Math.min( tasks.size(), threads ) );
             try
             {
                 while ( latch.getCount() > tasks.size() )
