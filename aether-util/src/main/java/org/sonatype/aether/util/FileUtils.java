@@ -105,10 +105,11 @@ public class FileUtils
     }
 
     /**
-     * Lock and copy src- to target-file.
+     * Lock and copy src- to target-file. Creates the necessary directories for the target file. In case of an error,
+     * the created directories will be left on the file system.
      * 
-     * @param src the file to copy from.
-     * @param target the file to copy to.
+     * @param src the file to copy from, must not be {@code null}.
+     * @param target the file to copy to, must not be {@code null}.
      * @return the number of copied bytes.
      * @throws IOException if an I/O error occurs.
      */
@@ -120,6 +121,13 @@ public class FileUtils
         try
         {
             in = new RandomAccessFile( src, "r" );
+
+            File targetDir = target.getParentFile();
+            if ( targetDir != null )
+            {
+                mkdirs( targetDir );
+            }
+
             out = new RandomAccessFile( target, "rw" );
             out.setLength( 0 );
             return copy( in.getChannel(), out.getChannel() );
