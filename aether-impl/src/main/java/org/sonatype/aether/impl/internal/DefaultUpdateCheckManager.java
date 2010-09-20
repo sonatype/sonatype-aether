@@ -304,11 +304,12 @@ public class DefaultUpdateCheckManager
     {
         if ( auth != null )
         {
-            String infos = auth.getUsername() + auth.getPassword() + auth.getPrivateKeyFile() + auth.getPassphrase();
-            if ( infos.length() > 0 )
-            {
-                buffer.append( infos.hashCode() ).append( '@' );
-            }
+            SimpleDigest digest = new SimpleDigest();
+            digest.update( auth.getUsername() );
+            digest.update( auth.getPassword() );
+            digest.update( auth.getPrivateKeyFile() );
+            digest.update( auth.getPassphrase() );
+            buffer.append( digest.digest() ).append( '@' );
         }
     }
 
