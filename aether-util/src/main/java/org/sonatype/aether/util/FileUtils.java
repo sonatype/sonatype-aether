@@ -17,6 +17,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.WritableByteChannel;
@@ -149,8 +150,28 @@ public class FileUtils
      * @param target the file to copy to, must not be {@code null}.
      * @return the number of copied bytes.
      * @throws IOException if an I/O error occurs.
+     * @see #copy(File, File, ProgressListener)
      */
     public static long copy( File src, File target )
+        throws IOException
+    {
+        return copy( src, target, null );
+    }
+
+    /**
+     * Copy src- to target-file. Creates the necessary directories for the target file. In case of an error, the created
+     * directories will be left on the file system.
+     * <p>
+     * This method performs R/W-locking on the given files to provide concurrent access to files without data
+     * corruption, and will honor {@link FileLock}s from an external process.
+     * 
+     * @param src the file to copy from, must not be {@code null}.
+     * @param target the file to copy to, must not be {@code null}.
+     * @param listener the listener to notify about the copy progress, may be {@code null}.
+     * @return the number of copied bytes.
+     * @throws IOException if an I/O error occurs.
+     */
+    public static long copy( File src, File target, ProgressListener listener )
         throws IOException
     {
 
@@ -161,8 +182,14 @@ public class FileUtils
         RandomAccessFile out = null;
         boolean writeAcquired = false;
         boolean readAcquired = false;
+        FileLock lock = null;
         try
         {
+            readLock.lock();
+            readAcquired = true;
+            writeLock.lock();
+            writeAcquired = true;
+
             in = new RandomAccessFile( src, "r" );
 
             File targetDir = target.getParentFile();
@@ -172,19 +199,36 @@ public class FileUtils
             }
 
             out = new RandomAccessFile( target, "rw" );
-            
-            readLock.lock();
-            readAcquired = true;
-            writeLock.lock();
-            writeAcquired = true;
+            FileChannel outChannel = out.getChannel();
+
+            lock = outChannel.lock();
 
             out.setLength( 0 );
-            return copy( in.getChannel(), out.getChannel() );
+
+            WritableByteChannel realChannel = outChannel;
+            if ( listener != null )
+            {
+                realChannel = new ProgressingChannel( outChannel, listener );
+            }
+
+            return copy( in.getChannel(), realChannel );
         }
         finally
         {
             close( in );
             close( out );
+
+            if ( lock != null )
+            {
+                try
+                {
+                    lock.release();
+                }
+                catch ( IOException e )
+                {
+                    // tried everything
+                }
+            }
 
             // in case of file not found on src, we do not hold the lock
             if ( readAcquired )
@@ -199,39 +243,6 @@ public class FileUtils
     }
 
     /**
-     * Lock and copy src- to target-channel.
-     * 
-     * @param in the channel to copy from, must not be {@code null}.
-     * @param out the channel to copy to, must not be {@code null}.
-     * @return the number of copied bytes.
-     * @throws IOException if an I/O error occurs.
-     */
-    private static long copy( FileChannel in, FileChannel out )
-        throws IOException
-    {
-        FileLock lock = null;
-        try
-        {
-            lock = out.lock();
-            return copy( in, (WritableByteChannel) out );
-        }
-        finally
-        {
-            if ( lock != null )
-            {
-                try
-                {
-                    lock.release();
-                }
-                catch ( IOException e )
-                {
-                    // tried everything
-                }
-            }
-        }
-    }
-
-    /**
      * Copy src- to target-channel.
      * <p>
      * This method is not thread-safe and does not honor external {@link FileLock}s.
@@ -241,7 +252,7 @@ public class FileUtils
      * @return the number of copied bytes.
      * @throws IOException if an I/O error occurs.
      */
-    public static long copy( FileChannel src, WritableByteChannel target )
+    private static long copy( FileChannel src, WritableByteChannel target )
         throws IOException
     {
         long total = 0;
@@ -326,6 +337,54 @@ public class FileUtils
             {
                 writeLock.unlock();
             }
+        }
+    }
+
+    /**
+     * A listener object that is notified for every progress made while copying files.
+     * 
+     * @author Benjamin Hanzelmann
+     * @see FileUtils#copy(File, File, ProgressListener)
+     */
+    public interface ProgressListener
+    {
+        void progressed( ByteBuffer buffer )
+            throws IOException;
+    }
+
+    private static final class ProgressingChannel
+        implements WritableByteChannel
+    {
+        private FileChannel delegate;
+    
+        private ProgressListener listener;
+    
+        public ProgressingChannel( FileChannel delegate, ProgressListener listener )
+        {
+            this.delegate = delegate;
+            this.listener = listener;
+        }
+    
+        public boolean isOpen()
+        {
+            return delegate.isOpen();
+        }
+    
+        public void close()
+            throws IOException
+        {
+            delegate.close();
+        }
+    
+        public int write( ByteBuffer src )
+            throws IOException
+        {
+            ByteBuffer eventBuffer = src.asReadOnlyBuffer();
+    
+            int count = delegate.write( src );
+            listener.progressed( eventBuffer );
+    
+            return count;
         }
     }
 

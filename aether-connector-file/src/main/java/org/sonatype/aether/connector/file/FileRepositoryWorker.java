@@ -21,7 +21,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -247,7 +246,6 @@ class FileRepositoryWorker
 
                 totalTransferred = copy( src, target );
 
-
                 switch ( direction )
                 {
                     case UPLOAD:
@@ -427,7 +425,27 @@ class FileRepositoryWorker
         {
             DefaultTransferEvent event = newEvent( transfer, repository );
             catapult.fireStarted( event );
-            size = FileUtils.copy( inStream.getChannel(), new TransferEventChannel( delegate ) );
+            size = FileUtils.copy( src, target, new FileUtils.ProgressListener()
+            {
+                
+                int total = 0;
+
+                public void progressed( ByteBuffer buffer )
+                    throws IOException
+                {
+                    total += buffer.remaining();
+                    DefaultTransferEvent event = newEvent( transfer, repository );
+                    event.setDataBuffer( buffer ).setTransferredBytes( total );
+                    try
+                    {
+                        catapult.fireProgressed( event );
+                    }
+                    catch ( TransferCancelledException e )
+                    {
+                        throw new IOException( "Transfer was cancelled: " + e.getMessage() );
+                    }
+                }
+            } );
         }
         finally
         {
@@ -463,52 +481,6 @@ class FileRepositoryWorker
     public void setLogger( Logger logger )
     {
         this.logger = logger;
-    }
-
-    private final class TransferEventChannel
-        implements WritableByteChannel
-    {
-        private final FileChannel delegate;
-
-        long total = 0;
-
-        private TransferEventChannel( FileChannel delegate )
-        {
-            this.delegate = delegate;
-        }
-
-        public boolean isOpen()
-        {
-            return delegate.isOpen();
-        }
-
-        public void close()
-            throws IOException
-        {
-            delegate.close();
-        }
-
-        public int write( ByteBuffer src )
-            throws IOException
-        {
-            ByteBuffer eventBuffer = src.asReadOnlyBuffer();
-
-            int count = delegate.write( src );
-            total += count;
-
-            DefaultTransferEvent event = newEvent( transfer, repository );
-            event.setDataBuffer( eventBuffer ).setTransferredBytes( total );
-            try
-            {
-                catapult.fireProgressed( event );
-            }
-            catch ( TransferCancelledException e )
-            {
-                throw new IOException( "Transfer was cancelled: " + e.getMessage() );
-            }
-
-            return count;
-        }
     }
 
 }
