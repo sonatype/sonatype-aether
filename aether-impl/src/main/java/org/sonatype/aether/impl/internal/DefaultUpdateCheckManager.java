@@ -230,9 +230,9 @@ public class DefaultUpdateCheckManager
             {
                 check.setRequired( false );
                 check.setException( new MetadataNotFoundException( metadata, repository, "Failure to find " + metadata
-                    + " in " + repository.getUrl() + " was cached in the local repository. "
-                    + "Resolution will not be reattempted until the update interval of " + repository.getId()
-                    + " has elapsed or updates are forced." ) );
+                    + " in " + repository.getUrl() + " was cached in the local repository, "
+                    + "resolution will not be reattempted until the update interval of " + repository.getId()
+                    + " has elapsed or updates are forced" ) );
             }
             else
             {
@@ -240,8 +240,8 @@ public class DefaultUpdateCheckManager
                 {
                     check.setRequired( false );
                     check.setException( new MetadataTransferException( metadata, repository, "Failure to transfer "
-                        + metadata + " from " + repository.getUrl() + " was cached in the local repository. "
-                        + "Resolution will not be reattempted until the update interval of " + repository.getId()
+                        + metadata + " from " + repository.getUrl() + " was cached in the local repository, "
+                        + "resolution will not be reattempted until the update interval of " + repository.getId()
                         + " has elapsed or updates are forced. Original error: " + error ) );
                 }
                 else
