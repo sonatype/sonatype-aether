@@ -127,12 +127,12 @@ public class DefaultUpdateCheckManager
         }
 
         File touchFile = getTouchFile( artifact, check.getFile() );
-        Properties props = read( touchFile, logger );
+        Properties props = read( touchFile );
 
         boolean fileExists = check.getFile().exists();
         String key = getRepoKey( repository );
 
-        long lastUpdated = fileExists ? check.getFile().lastModified() : getLastUpdated( props, key, logger );
+        long lastUpdated = fileExists ? check.getFile().lastModified() : getLastUpdated( props, key );
 
         if ( lastUpdated == 0 )
         {
@@ -204,12 +204,12 @@ public class DefaultUpdateCheckManager
         }
 
         File touchFile = getTouchFile( check.getItem(), check.getFile() );
-        Properties props = read( touchFile, logger );
+        Properties props = read( touchFile );
 
         boolean fileExists = check.getFile().exists();
         String key = fileExists ? check.getFile().getName() : ( getRepoKey( repository ) + '.' + metadata.getType() );
 
-        long lastUpdated = getLastUpdated( props, key, logger );
+        long lastUpdated = getLastUpdated( props, key );
 
         if ( lastUpdated == 0 )
         {
@@ -252,7 +252,7 @@ public class DefaultUpdateCheckManager
         }
     }
 
-    private long getLastUpdated( Properties props, String key, Logger logger )
+    private long getLastUpdated( Properties props, String key )
     {
         String value = props.getProperty( key + UPDATED_KEY_SUFFIX, "" );
         try
@@ -355,7 +355,7 @@ public class DefaultUpdateCheckManager
         return checkForUpdates;
     }
 
-    private Properties read( File touchFile, Logger logger )
+    private Properties read( File touchFile )
     {
         Properties props = new TrackingFileManager().setLogger( logger ).read( touchFile );
         return ( props != null ) ? props : new Properties();
@@ -367,7 +367,7 @@ public class DefaultUpdateCheckManager
 
         String key = getRepoKey( check.getRepository() );
 
-        Properties props = write( touchFile, key, "artifact", check.getException(), logger );
+        Properties props = write( touchFile, key, "artifact", check.getException() );
 
         if ( check.getFile().exists() && !hasErrors( props ) )
         {
@@ -393,10 +393,10 @@ public class DefaultUpdateCheckManager
 
         String key = getRepoKey( check.getRepository() ) + '.' + check.getItem().getType();
 
-        write( touchFile, key, check.getFile().getName(), check.getException(), logger );
+        write( touchFile, key, check.getFile().getName(), check.getException() );
     }
 
-    private Properties write( File touchFile, String fullKey, String simpleKey, Exception error, Logger logger )
+    private Properties write( File touchFile, String fullKey, String simpleKey, Exception error )
     {
         Map<String, String> updates = new HashMap<String, String>();
 
