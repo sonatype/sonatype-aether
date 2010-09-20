@@ -34,7 +34,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 public class FileUtils
 {
 
-    private static Map<File, ReentrantReadWriteLock> locks = new WeakHashMap<File, ReentrantReadWriteLock>();
+    /**
+     * package visibility for testing purposes
+     */
+    static Map<File, ReentrantReadWriteLock> locks = new WeakHashMap<File, ReentrantReadWriteLock>();
 
     private FileUtils()
     {
