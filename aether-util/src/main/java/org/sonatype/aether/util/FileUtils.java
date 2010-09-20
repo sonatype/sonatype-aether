@@ -21,6 +21,11 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.WritableByteChannel;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 /**
  * A utility class helping with file-based operations.
@@ -29,6 +34,8 @@ import java.nio.channels.WritableByteChannel;
  */
 public class FileUtils
 {
+
+    private static Map<File, ReentrantReadWriteLock> locks = new WeakHashMap<File, ReentrantReadWriteLock>();
 
     private FileUtils()
     {
@@ -63,6 +70,31 @@ public class FileUtils
                 // too bad but who cares
             }
         }
+    }
+
+    private static ReadLock readLock( File file )
+    {
+        ReentrantReadWriteLock lock = lookup( file );
+
+        return lock.readLock();
+    }
+
+    private static WriteLock writeLock( File file )
+    {
+        ReentrantReadWriteLock lock = lookup( file );
+
+        return lock.writeLock();
+    }
+
+    protected static ReentrantReadWriteLock lookup( File file )
+    {
+        ReentrantReadWriteLock lock = null;
+        if ( ( lock = locks.get( file ) ) == null )
+        {
+            lock = new ReentrantReadWriteLock( true );
+            locks.put( file, lock );
+        }
+        return lock;
     }
 
     /**
@@ -105,8 +137,11 @@ public class FileUtils
     }
 
     /**
-     * Lock and copy src- to target-file. Creates the necessary directories for the target file. In case of an error,
-     * the created directories will be left on the file system.
+     * Copy src- to target-file. Creates the necessary directories for the target file. In case of an error, the created
+     * directories will be left on the file system.
+     * <p>
+     * This method performs R/W-locking on the given files to provide concurrent access to files without data
+     * corruption, and will honor {@link FileLock}s from an external process.
      * 
      * @param src the file to copy from, must not be {@code null}.
      * @param target the file to copy to, must not be {@code null}.
@@ -116,8 +151,14 @@ public class FileUtils
     public static long copy( File src, File target )
         throws IOException
     {
+
+        ReadLock readLock = readLock( src );
+        WriteLock writeLock = writeLock( target );
+
         RandomAccessFile in = null;
         RandomAccessFile out = null;
+        boolean writeAcquired = false;
+        boolean readAcquired = false;
         try
         {
             in = new RandomAccessFile( src, "r" );
@@ -129,6 +170,12 @@ public class FileUtils
             }
 
             out = new RandomAccessFile( target, "rw" );
+            
+            readLock.lock();
+            readAcquired = true;
+            writeLock.lock();
+            writeAcquired = true;
+
             out.setLength( 0 );
             return copy( in.getChannel(), out.getChannel() );
         }
@@ -136,6 +183,16 @@ public class FileUtils
         {
             close( in );
             close( out );
+
+            // in case of file not found on src, we do not hold the lock
+            if ( readAcquired )
+            {
+                readLock.unlock();
+            }
+            if ( writeAcquired )
+            {
+                writeLock.unlock();
+            }
         }
     }
 
@@ -174,6 +231,8 @@ public class FileUtils
 
     /**
      * Copy src- to target-channel.
+     * <p>
+     * This method is not thread-safe and does not honor external {@link FileLock}s.
      * 
      * @param src the channel to copy from, must not be {@code null}.
      * @param target the channel to copy to, must not be {@code null}.
