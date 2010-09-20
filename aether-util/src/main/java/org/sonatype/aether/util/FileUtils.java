@@ -15,7 +15,6 @@ package org.sonatype.aether.util;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
@@ -267,6 +266,9 @@ public class FileUtils
 
     /**
      * Write the given data to a file. UTF-8 is assumed as encoding for the data.
+     * <p>
+     * This method performs R/W-locking on the given files to provide concurrent access to files without data
+     * corruption, and will honor {@link FileLock}s from an external process.
      * 
      * @param file The file to write to, must not be {@code null}. This file will be truncated.
      * @param data The data to write, may be {@code null}.
@@ -275,19 +277,50 @@ public class FileUtils
     public static void write( File file, String data )
         throws IOException
     {
-        FileOutputStream out = null;
+        WriteLock writeLock = writeLock( file );
+
+        RandomAccessFile out = null;
+        FileChannel channel = null;
+        FileLock lock = null;
+        boolean writeAcquired = false;
         try
         {
-            out = new FileOutputStream( file );
-            if ( data != null )
+            out = new RandomAccessFile( file, "rw" );
+            channel = out.getChannel();
+
+            writeLock.lock();
+            writeAcquired = true;
+            out.setLength( 0 );
+            lock = channel.lock();
+            if ( data == null )
+            {
+                channel.truncate( 0 );
+            }
+            else
             {
                 out.write( data.getBytes( "UTF-8" ) );
             }
-            out.flush();
         }
         finally
         {
+            close( channel );
             close( out );
+
+            if ( lock != null )
+            {
+                try
+                {
+                    lock.release();
+                }
+                catch ( IOException e )
+                {
+                    // tried everything
+                }
+            }
+            if ( writeAcquired )
+            {
+                writeLock.unlock();
+            }
         }
     }
 
