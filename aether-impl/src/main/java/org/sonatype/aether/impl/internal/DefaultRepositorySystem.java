@@ -368,10 +368,6 @@ public class DefaultRepositorySystem
         {
             invalidSession( "LocalRepositoryManager" );
         }
-        if ( session.getLocalRepository() == null )
-        {
-            invalidSession( "LocalRepository" );
-        }
         if ( session.getSystemProperties() == null )
         {
             invalidSession( "SystemProperties" );
@@ -426,7 +422,7 @@ public class DefaultRepositorySystem
 
     private void invalidSession( String name )
     {
-        throw new IllegalArgumentException( "Invalid Session: " + name + " was not set." );
+        throw new IllegalArgumentException( "Invalid repository system session: " + name + " is not set." );
     }
 
 }
