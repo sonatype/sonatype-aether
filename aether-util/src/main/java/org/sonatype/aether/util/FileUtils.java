@@ -75,6 +75,21 @@ public class FileUtils
         }
     }
 
+    private static void release( FileLock lock )
+    {
+        if ( lock != null )
+        {
+            try
+            {
+                lock.release();
+            }
+            catch ( IOException e )
+            {
+                // tried everything
+            }
+        }
+    }
+
     private static ReadLock readLock( File file )
     {
         ReentrantReadWriteLock lock = lookup( file );
@@ -218,17 +233,7 @@ public class FileUtils
             close( in );
             close( out );
 
-            if ( lock != null )
-            {
-                try
-                {
-                    lock.release();
-                }
-                catch ( IOException e )
-                {
-                    // tried everything
-                }
-            }
+            release( lock );
 
             // in case of file not found on src, we do not hold the lock
             if ( readAcquired )
@@ -256,6 +261,7 @@ public class FileUtils
         throws IOException
     {
         long total = 0;
+
         try
         {
             long size = src.size();
@@ -322,17 +328,8 @@ public class FileUtils
             close( channel );
             close( out );
 
-            if ( lock != null )
-            {
-                try
-                {
-                    lock.release();
-                }
-                catch ( IOException e )
-                {
-                    // tried everything
-                }
-            }
+            release( lock );
+
             if ( writeAcquired )
             {
                 writeLock.unlock();
@@ -355,9 +352,9 @@ public class FileUtils
     private static final class ProgressingChannel
         implements WritableByteChannel
     {
-        private FileChannel delegate;
+        private final FileChannel delegate;
     
-        private ProgressListener listener;
+        private final ProgressListener listener;
     
         public ProgressingChannel( FileChannel delegate, ProgressListener listener )
         {
