@@ -240,11 +240,6 @@ public class DefaultInstaller
 
             if ( copy )
             {
-                if ( !dstFile.getParentFile().exists() )
-                {
-                    dstFile.getParentFile().mkdirs();
-                }
-
                 FileUtils.copy( srcFile, dstFile );
                 dstFile.setLastModified( srcFile.lastModified() );
             }
