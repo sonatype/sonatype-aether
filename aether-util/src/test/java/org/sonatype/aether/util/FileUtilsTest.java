@@ -67,13 +67,18 @@ public class FileUtilsTest
     private void assertContent( File file, byte[] content )
         throws IOException
     {
-        RandomAccessFile in = new RandomAccessFile( file, "r" );
-
-        byte[] buffer = new byte[(int) in.length()];
-        in.readFully( buffer );
-        assertArrayEquals( "content did not match", content, buffer );
-
-        in.close();
+        RandomAccessFile in = null;
+        try
+        {
+            in = new RandomAccessFile( file, "r" );
+            byte[] buffer = new byte[(int) in.length()];
+            in.readFully( buffer );
+            assertArrayEquals( "content did not match", content, buffer );
+        }
+        finally
+        {
+            in.close();
+        }
     }
 
     @Test
@@ -162,8 +167,6 @@ public class FileUtilsTest
             private ReentrantReadWriteLock lock;
 
             private WriteLock writeLock;
-            
-
 
             public void thread1()
             {
@@ -172,7 +175,7 @@ public class FileUtilsTest
                 waitForTick( 2 );
                 writeLock.unlock();
             }
-            
+
             public void thread2()
             {
                 waitForTick( 1 );
@@ -273,13 +276,13 @@ public class FileUtilsTest
         TestFramework.runOnce( new MultithreadedTestCase()
         {
             private File locked;
-    
+
             private File unlocked;
-    
+
             private ReentrantReadWriteLock lock;
-    
+
             private ReadLock readLock;
-    
+
             public void thread1()
             {
                 readLock = lock.readLock();
@@ -287,11 +290,11 @@ public class FileUtilsTest
                 waitForTick( 2 );
                 readLock.unlock();
             }
-    
+
             public void thread2()
             {
                 waitForTick( 1 );
-    
+
                 try
                 {
                     FileUtils.copy( locked, unlocked );
@@ -301,11 +304,11 @@ public class FileUtilsTest
                     e.printStackTrace();
                     fail( "testBlockingCopy failed (write lock on src file): " + e.getMessage() );
                 }
-    
+
                 assertTick( 1 );
                 waitForTick( 2 );
             }
-    
+
             @Override
             public void initialize()
             {
