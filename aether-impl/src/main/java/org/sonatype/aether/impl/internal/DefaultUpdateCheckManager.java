@@ -155,9 +155,9 @@ public class DefaultUpdateCheckManager
                 {
                     check.setRequired( false );
                     check.setException( new ArtifactNotFoundException( artifact, repository, "Failure to find "
-                        + artifact + " in " + repository.getUrl() + " was cached in the local repository. "
-                        + "Resolution will not be reattempted until the update interval of " + repository.getId()
-                        + " has elapsed or updates are forced." ) );
+                        + artifact + " in " + repository.getUrl() + " was cached in the local repository, "
+                        + "resolution will not be reattempted until the update interval of " + repository.getId()
+                        + " has elapsed or updates are forced" ) );
                 }
                 else
                 {
@@ -170,8 +170,8 @@ public class DefaultUpdateCheckManager
                 {
                     check.setRequired( false );
                     check.setException( new ArtifactTransferException( artifact, repository, "Failure to transfer "
-                        + artifact + " from " + repository.getUrl() + " was cached in the local repository. "
-                        + "Resolution will not be reattempted until the update interval of " + repository.getId()
+                        + artifact + " from " + repository.getUrl() + " was cached in the local repository, "
+                        + "resolution will not be reattempted until the update interval of " + repository.getId()
                         + " has elapsed or updates are forced. Original error: " + error ) );
                 }
                 else
