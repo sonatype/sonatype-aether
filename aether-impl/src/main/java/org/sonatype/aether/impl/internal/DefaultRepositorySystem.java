@@ -15,9 +15,7 @@ package org.sonatype.aether.impl.internal;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -101,8 +99,6 @@ public class DefaultRepositorySystem
 
     @Requirement
     private Deployer deployer;
-
-    private static Set<RepositorySystemSession> validated = new HashSet<RepositorySystemSession>();
 
     public DefaultRepositorySystem()
     {
@@ -359,11 +355,6 @@ public class DefaultRepositorySystem
 
     private void validateSession( RepositorySystemSession session )
     {
-        if ( validated.contains( session ) )
-        {
-            return;
-        }
-
         if ( session.getLocalRepositoryManager() == null )
         {
             invalidSession( "LocalRepositoryManager" );
@@ -416,8 +407,6 @@ public class DefaultRepositorySystem
         {
             invalidSession( "Data" );
         }
-
-        validated.add( session );
     }
 
     private void invalidSession( String name )
