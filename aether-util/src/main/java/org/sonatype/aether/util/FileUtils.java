@@ -251,7 +251,9 @@ public class FileUtils
 
             // copy large files in chunks to not run into Java Bug 4643189
             // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4643189
-            long chunk = Integer.MAX_VALUE;
+            // use even smaller chunks to work around bug with SMB shares
+            // http://forums.sun.com/thread.jspa?threadID=439695
+            long chunk = ( 64 * 1024 * 1024 ) - ( 32 * 1024 );
 
             while ( ( total += ( src.transferTo( total, chunk, target ) ) ) < size )
             {
