@@ -91,6 +91,7 @@ public class FileUtils
     }
 
     private static ReadLock readLock( File file )
+        throws IOException
     {
         ReentrantReadWriteLock lock = lookup( file );
 
@@ -98,19 +99,26 @@ public class FileUtils
     }
 
     private static WriteLock writeLock( File file )
+        throws IOException
     {
         ReentrantReadWriteLock lock = lookup( file );
 
         return lock.writeLock();
     }
 
-    protected static ReentrantReadWriteLock lookup( File file )
+    private static ReentrantReadWriteLock lookup( File file )
+        throws IOException
     {
         ReentrantReadWriteLock lock = null;
-        if ( ( lock = locks.get( file ) ) == null )
+        file = file.getCanonicalFile();
+
+        synchronized ( locks )
         {
-            lock = new ReentrantReadWriteLock( true );
-            locks.put( file, lock );
+            if ( ( lock = locks.get( file ) ) == null )
+            {
+                lock = new ReentrantReadWriteLock( true );
+                locks.put( file, lock );
+            }
         }
         return lock;
     }
@@ -361,26 +369,26 @@ public class FileUtils
             this.delegate = delegate;
             this.listener = listener;
         }
-    
+
         public boolean isOpen()
         {
             return delegate.isOpen();
         }
-    
+
         public void close()
             throws IOException
         {
             delegate.close();
         }
-    
+
         public int write( ByteBuffer src )
             throws IOException
         {
             ByteBuffer eventBuffer = src.asReadOnlyBuffer();
-    
+
             int count = delegate.write( src );
             listener.progressed( eventBuffer );
-    
+
             return count;
         }
     }
