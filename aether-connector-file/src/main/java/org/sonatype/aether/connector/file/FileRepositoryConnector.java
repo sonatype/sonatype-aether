@@ -48,7 +48,8 @@ public class FileRepositoryConnector
         throws NoRepositoryConnectorException
     {
         super( session.getConfigProperties() );
-        if ( !"default".equalsIgnoreCase( repository.getContentType() ) )
+
+        if ( !"default".equals( repository.getContentType() ) )
         {
             throw new NoRepositoryConnectorException( repository );
         }

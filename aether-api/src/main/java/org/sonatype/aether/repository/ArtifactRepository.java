@@ -24,14 +24,14 @@ public interface ArtifactRepository
     /**
      * Gets the type of the repository, for example "default".
      * 
-     * @return The type of the repository, never {@code null}.
+     * @return The (case-sensitive) type of the repository, never {@code null}.
      */
     String getContentType();
 
     /**
      * Gets the identifier of this repository.
      * 
-     * @return The identifier, never {@code null}.
+     * @return The (case-sensitive) identifier, never {@code null}.
      */
     String getId();
 
