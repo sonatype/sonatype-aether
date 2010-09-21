@@ -27,7 +27,12 @@ public class NoRepositoryConnectorException
 
     public NoRepositoryConnectorException( RemoteRepository repository )
     {
-        super( toMessage( repository ) );
+        this( repository, toMessage( repository ) );
+    }
+
+    public NoRepositoryConnectorException( RemoteRepository repository, String message )
+    {
+        super( message );
 
         this.repository = repository;
     }
@@ -36,8 +41,8 @@ public class NoRepositoryConnectorException
     {
         if ( repository != null )
         {
-            return "No connector available to access repository '" + repository.getId() + "' (" + repository.getUrl()
-                + ") of type '" + repository.getContentType() + "'";
+            return "No connector available to access repository " + repository.getId() + " (" + repository.getUrl()
+                + ") of type " + repository.getContentType();
         }
         else
         {

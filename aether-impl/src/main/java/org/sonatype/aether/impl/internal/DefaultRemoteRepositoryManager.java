@@ -309,38 +309,32 @@ public class DefaultRemoteRepositoryManager
         List<RepositoryConnectorFactory> factories = new ArrayList<RepositoryConnectorFactory>( connectorFactories );
         Collections.sort( factories, COMPARATOR );
 
-        RepositoryConnector connector = getRepositoryConnector( session, repository, factories );
-
-        if ( logger.isDebugEnabled() )
-        {
-            StringBuilder buffer = new StringBuilder( 256 );
-            buffer.append( "Using connector " ).append( connector.getClass().getSimpleName() );
-            buffer.append( " for " ).append( repository.getUrl() );
-            Authentication auth = repository.getAuthentication();
-            if ( auth != null )
-            {
-                buffer.append( " as " ).append( auth.getUsername() );
-            }
-            Proxy proxy = repository.getProxy();
-            if ( proxy != null )
-            {
-                buffer.append( " via " ).append( proxy.getHost() ).append( ':' ).append( proxy.getPort() );
-            }
-            logger.debug( buffer.toString() );
-        }
-
-        return connector;
-    }
-
-    private RepositoryConnector getRepositoryConnector( RepositorySystemSession session, RemoteRepository repository,
-                                                        List<RepositoryConnectorFactory> factories )
-        throws NoRepositoryConnectorException
-    {
         for ( RepositoryConnectorFactory factory : factories )
         {
             try
             {
-                return factory.newInstance( session, repository );
+                RepositoryConnector connector = factory.newInstance( session, repository );
+
+                if ( logger.isDebugEnabled() )
+                {
+                    StringBuilder buffer = new StringBuilder( 256 );
+                    buffer.append( "Using connector " ).append( connector.getClass().getSimpleName() );
+                    buffer.append( " with priority " ).append( factory.getPriority() );
+                    buffer.append( " for " ).append( repository.getUrl() );
+                    Authentication auth = repository.getAuthentication();
+                    if ( auth != null )
+                    {
+                        buffer.append( " as " ).append( auth.getUsername() );
+                    }
+                    Proxy proxy = repository.getProxy();
+                    if ( proxy != null )
+                    {
+                        buffer.append( " via " ).append( proxy.getHost() ).append( ':' ).append( proxy.getPort() );
+                    }
+                    logger.debug( buffer.toString() );
+                }
+
+                return connector;
             }
             catch ( NoRepositoryConnectorException e )
             {
@@ -348,7 +342,23 @@ public class DefaultRemoteRepositoryManager
             }
         }
 
-        throw new NoRepositoryConnectorException( repository );
+        StringBuilder buffer = new StringBuilder( 256 );
+        buffer.append( "No connector available to access repository " );
+        buffer.append( repository.getId() );
+        buffer.append( " (" ).append( repository.getUrl() );
+        buffer.append( ") of type " ).append( repository.getContentType() );
+        buffer.append( " using the available factories " );
+        for ( ListIterator<RepositoryConnectorFactory> it = factories.listIterator(); it.hasNext(); )
+        {
+            RepositoryConnectorFactory factory = it.next();
+            buffer.append( factory.getClass().getSimpleName() );
+            if ( it.hasNext() )
+            {
+                buffer.append( ", " );
+            }
+        }
+
+        throw new NoRepositoryConnectorException( repository, buffer.toString() );
     }
 
 }

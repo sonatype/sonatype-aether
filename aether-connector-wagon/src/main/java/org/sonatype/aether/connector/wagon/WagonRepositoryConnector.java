@@ -130,6 +130,7 @@ class WagonRepositoryConnector
         }
         catch ( Exception e )
         {
+            logger.debug( e.getMessage(), e );
             throw new NoRepositoryConnectorException( repository );
         }
 
