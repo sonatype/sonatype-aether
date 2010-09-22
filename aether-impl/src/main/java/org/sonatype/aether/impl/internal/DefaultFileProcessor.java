@@ -21,11 +21,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.WritableByteChannel;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.sonatype.aether.spi.io.FileProcessor;
@@ -39,11 +34,6 @@ import org.sonatype.aether.spi.io.FileProcessor;
 public class DefaultFileProcessor
     implements FileProcessor
 {
-
-    /**
-     * package visibility for testing purposes
-     */
-    Map<File, ReentrantReadWriteLock> locks = new WeakHashMap<File, ReentrantReadWriteLock>();
 
     private static void close( Closeable closeable )
     {
@@ -73,54 +63,6 @@ public class DefaultFileProcessor
                 // too bad but who cares
             }
         }
-    }
-
-    private static void release( FileLock lock )
-    {
-        if ( lock != null )
-        {
-            try
-            {
-                lock.release();
-            }
-            catch ( IOException e )
-            {
-                // tried everything
-            }
-        }
-    }
-
-    private ReadLock readLock( File file )
-        throws IOException
-    {
-        ReentrantReadWriteLock lock = lookup( file );
-
-        return lock.readLock();
-    }
-
-    private WriteLock writeLock( File file )
-        throws IOException
-    {
-        ReentrantReadWriteLock lock = lookup( file );
-
-        return lock.writeLock();
-    }
-
-    private ReentrantReadWriteLock lookup( File file )
-        throws IOException
-    {
-        ReentrantReadWriteLock lock = null;
-        file = file.getCanonicalFile();
-
-        synchronized ( locks )
-        {
-            if ( ( lock = locks.get( file ) ) == null )
-            {
-                lock = new ReentrantReadWriteLock( true );
-                locks.put( file, lock );
-            }
-        }
-        return lock;
     }
 
     /**
@@ -165,9 +107,6 @@ public class DefaultFileProcessor
     /**
      * Copy src- to target-file. Creates the necessary directories for the target file. In case of an error, the created
      * directories will be left on the file system.
-     * <p>
-     * This method performs R/W-locking on the given files to provide concurrent access to files without data
-     * corruption, and will honor {@link FileLock}s from an external process.
      * 
      * @param src the file to copy from, must not be {@code null}.
      * @param target the file to copy to, must not be {@code null}.
@@ -178,34 +117,16 @@ public class DefaultFileProcessor
     public long copy( File src, File target, ProgressListener listener )
         throws IOException
     {
-
-        ReadLock readLock = readLock( src );
-        WriteLock writeLock = writeLock( target );
-
         RandomAccessFile in = null;
         RandomAccessFile out = null;
-        boolean writeAcquired = false;
-        boolean readAcquired = false;
-        FileLock lock = null;
         try
         {
-            readLock.lock();
-            readAcquired = true;
-            writeLock.lock();
-            writeAcquired = true;
-
             in = new RandomAccessFile( src, "r" );
 
-            File targetDir = target.getParentFile();
-            if ( targetDir != null )
-            {
-                mkdirs( targetDir );
-            }
+            mkdirs( target.getParentFile() );
 
             out = new RandomAccessFile( target, "rw" );
             FileChannel outChannel = out.getChannel();
-
-            lock = outChannel.lock();
 
             out.setLength( 0 );
 
@@ -221,18 +142,6 @@ public class DefaultFileProcessor
         {
             close( in );
             close( out );
-
-            release( lock );
-
-            // in case of file not found on src, we do not hold the lock
-            if ( readAcquired )
-            {
-                readLock.unlock();
-            }
-            if ( writeAcquired )
-            {
-                writeLock.unlock();
-            }
         }
     }
 
@@ -288,21 +197,14 @@ public class DefaultFileProcessor
     public void write( File file, String data )
         throws IOException
     {
-        WriteLock writeLock = writeLock( file );
-
         RandomAccessFile out = null;
         FileChannel channel = null;
-        FileLock lock = null;
-        boolean writeAcquired = false;
         try
         {
             out = new RandomAccessFile( file, "rw" );
             channel = out.getChannel();
 
-            writeLock.lock();
-            writeAcquired = true;
             out.setLength( 0 );
-            lock = channel.lock();
             if ( data == null )
             {
                 channel.truncate( 0 );
@@ -316,13 +218,6 @@ public class DefaultFileProcessor
         {
             close( channel );
             close( out );
-
-            release( lock );
-
-            if ( writeAcquired )
-            {
-                writeLock.unlock();
-            }
         }
     }
 
