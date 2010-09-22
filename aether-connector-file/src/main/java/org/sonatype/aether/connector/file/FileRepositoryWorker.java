@@ -14,13 +14,10 @@ package org.sonatype.aether.connector.file;
  */
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,6 +37,7 @@ import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
+import org.sonatype.aether.spi.io.FileProcessor;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.transfer.ArtifactNotFoundException;
@@ -51,7 +49,6 @@ import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferEvent.RequestType;
 import org.sonatype.aether.util.ChecksumUtils;
-import org.sonatype.aether.util.FileUtils;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
@@ -65,6 +62,8 @@ class FileRepositoryWorker
 {
 
     private Logger logger = NullLogger.INSTANCE;
+
+    private FileProcessor fileProcessor;
 
     enum Direction
     {
@@ -240,10 +239,6 @@ class FileRepositoryWorker
             }
             else
             {
-                File dir = target.getParentFile();
-
-                FileUtils.mkdirs( dir );
-
                 totalTransferred = copy( src, target );
 
                 switch ( direction )
@@ -416,44 +411,43 @@ class FileRepositoryWorker
     private long copy( File src, File target )
         throws TransferCancelledException, IOException
     {
-        FileInputStream inStream = new FileInputStream( src );
-        FileOutputStream outStream = new FileOutputStream( target );
-        final FileChannel delegate = outStream.getChannel();
-        long size;
-
-        try
+        if ( src == null )
         {
-            DefaultTransferEvent event = newEvent( transfer, repository );
-            catapult.fireStarted( event );
-            size = FileUtils.copy( src, target, new FileUtils.ProgressListener()
+            throw new IllegalArgumentException( "source file not specified" );
+        }
+        if ( !src.isFile() )
+        {
+            throw new FileNotFoundException( src.getAbsolutePath() );
+        }
+        if ( target == null )
+        {
+            throw new IllegalArgumentException( "target file not specified" );
+        }
+
+        DefaultTransferEvent event = newEvent( transfer, repository );
+        catapult.fireStarted( event );
+
+        return fileProcessor.copy( src, target, new FileProcessor.ProgressListener()
+        {
+
+            int total = 0;
+
+            public void progressed( ByteBuffer buffer )
+                throws IOException
             {
-                
-                int total = 0;
-
-                public void progressed( ByteBuffer buffer )
-                    throws IOException
+                total += buffer.remaining();
+                DefaultTransferEvent event = newEvent( transfer, repository );
+                event.setDataBuffer( buffer ).setTransferredBytes( total );
+                try
                 {
-                    total += buffer.remaining();
-                    DefaultTransferEvent event = newEvent( transfer, repository );
-                    event.setDataBuffer( buffer ).setTransferredBytes( total );
-                    try
-                    {
-                        catapult.fireProgressed( event );
-                    }
-                    catch ( TransferCancelledException e )
-                    {
-                        throw new IOException( "Transfer was cancelled: " + e.getMessage() );
-                    }
+                    catapult.fireProgressed( event );
                 }
-            } );
-        }
-        finally
-        {
-            delegate.close();
-            inStream.close();
-            outStream.close();
-        }
-        return size;
+                catch ( TransferCancelledException e )
+                {
+                    throw new IOException( "Transfer was cancelled: " + e.getMessage() );
+                }
+            }
+        } );
     }
 
     private DefaultTransferEvent newEvent( TransferWrapper transfer, RemoteRepository repository )
@@ -481,6 +475,11 @@ class FileRepositoryWorker
     public void setLogger( Logger logger )
     {
         this.logger = logger;
+    }
+
+    public void setFileProcessor( FileProcessor fileProcessor )
+    {
+        this.fileProcessor = fileProcessor;
     }
 
 }

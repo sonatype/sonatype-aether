@@ -19,6 +19,7 @@ import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
+import org.sonatype.aether.spi.io.FileProcessor;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
@@ -39,6 +40,9 @@ public class WagonRepositoryConnectorFactory
     private Logger logger = NullLogger.INSTANCE;
 
     @Requirement
+    private FileProcessor fileProcessor;
+
+    @Requirement
     private WagonProvider wagonProvider;
 
     private int priority;
@@ -48,15 +52,17 @@ public class WagonRepositoryConnectorFactory
         // enables default constructor
     }
 
-    public WagonRepositoryConnectorFactory( Logger logger, WagonProvider wagonProvider )
+    public WagonRepositoryConnectorFactory( Logger logger, FileProcessor fileProcessor, WagonProvider wagonProvider )
     {
         setLogger( logger );
+        setFileProcessor( fileProcessor );
         setWagonProvider( wagonProvider );
     }
 
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );
+        setFileProcessor( locator.getService( FileProcessor.class ) );
         setWagonProvider( locator.getService( WagonProvider.class ) );
     }
 
@@ -69,6 +75,22 @@ public class WagonRepositoryConnectorFactory
     public WagonRepositoryConnectorFactory setLogger( Logger logger )
     {
         this.logger = ( logger != null ) ? logger : NullLogger.INSTANCE;
+        return this;
+    }
+
+    /**
+     * Sets the file processor to use for this component.
+     * 
+     * @param fileProcessor The file processor to use, must not be {@code null}.
+     * @return This component for chaining, never {@code null}.
+     */
+    public WagonRepositoryConnectorFactory setFileProcessor( FileProcessor fileProcessor )
+    {
+        if ( fileProcessor == null )
+        {
+            throw new IllegalArgumentException( "file processor has not been specified" );
+        }
+        this.fileProcessor = fileProcessor;
         return this;
     }
 
@@ -104,7 +126,7 @@ public class WagonRepositoryConnectorFactory
     public RepositoryConnector newInstance( RepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException
     {
-        return new WagonRepositoryConnector( wagonProvider, repository, session, logger );
+        return new WagonRepositoryConnector( wagonProvider, repository, session, fileProcessor, logger );
     }
 
 }

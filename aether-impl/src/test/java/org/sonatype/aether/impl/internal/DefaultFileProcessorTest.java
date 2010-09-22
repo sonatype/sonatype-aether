@@ -1,21 +1,4 @@
-package org.sonatype.aether.util;
-
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.sonatype.aether.test.util.TestFileUtils;
-
-import edu.umd.cs.mtc.MultithreadedTestCase;
-import edu.umd.cs.mtc.TestFramework;
+package org.sonatype.aether.impl.internal;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -30,24 +13,46 @@ import edu.umd.cs.mtc.TestFramework;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.sonatype.aether.impl.internal.DefaultFileProcessor;
+import org.sonatype.aether.test.util.TestFileUtils;
+
+import edu.umd.cs.mtc.MultithreadedTestCase;
+import edu.umd.cs.mtc.TestFramework;
+
 /**
  * @author Benjamin Hanzelmann
  */
-public class FileUtilsTest
+public class DefaultFileProcessorTest
 {
+
     private File targetDir;
+
+    private DefaultFileProcessor fileProcessor;
 
     @Before
     public void setup()
     {
         targetDir = new File( "target/test-FileUtils" );
-        FileUtils.locks.clear();
+        fileProcessor = new DefaultFileProcessor();
     }
 
     @After
     public void teardown()
     {
         TestFileUtils.deleteDir( targetDir );
+        fileProcessor = null;
     }
 
     @Test
@@ -57,7 +62,7 @@ public class FileUtilsTest
         File file = TestFileUtils.createTempFile( "testCopy\nasdf" );
         File target = new File( targetDir, "testCopy.txt" );
 
-        FileUtils.copy( file, target );
+        fileProcessor.copy( file, target, null );
 
         assertContent( file, "testCopy\nasdf".getBytes( "UTF-8" ) );
 
@@ -90,13 +95,14 @@ public class FileUtilsTest
         for ( int i = 0; i < 5; i++ )
         {
             File target = new File( targetDir, "testCopy.txt" );
-            FileUtils.copy( file, target );
+            fileProcessor.copy( file, target, null );
             assertContent( file, "testCopy\nasdf".getBytes( "UTF-8" ) );
         }
 
         file.delete();
     }
 
+    @SuppressWarnings( "unused" )
     @Test
     public void testBlockingCopyExistingWriteLockOnSrc()
         throws Throwable
@@ -125,7 +131,7 @@ public class FileUtilsTest
 
                 try
                 {
-                    FileUtils.copy( locked, unlocked );
+                    fileProcessor.copy( locked, unlocked, null );
                 }
                 catch ( IOException e )
                 {
@@ -149,11 +155,12 @@ public class FileUtilsTest
                 {
                     e.printStackTrace();
                 }
-                FileUtils.locks.put( locked, lock );
+                fileProcessor.locks.put( locked, lock );
             }
         } );
     }
 
+    @SuppressWarnings( "unused" )
     @Test
     public void testBlockingCopyExistingWriteLockOnTarget()
         throws Throwable
@@ -182,7 +189,7 @@ public class FileUtilsTest
 
                 try
                 {
-                    FileUtils.copy( unlocked, locked );
+                    fileProcessor.copy( unlocked, locked, null );
                 }
                 catch ( IOException e )
                 {
@@ -206,12 +213,13 @@ public class FileUtilsTest
                 {
                     e.printStackTrace();
                 }
-                FileUtils.locks.put( locked, lock );
+                fileProcessor.locks.put( locked, lock );
             }
         } );
 
     }
 
+    @SuppressWarnings( "unused" )
     @Test
     public void testBlockingCopyExistingReadLockOnTarget()
         throws Throwable
@@ -240,7 +248,7 @@ public class FileUtilsTest
 
                 try
                 {
-                    FileUtils.copy( unlocked, locked );
+                    fileProcessor.copy( unlocked, locked, null );
                 }
                 catch ( IOException e )
                 {
@@ -264,11 +272,12 @@ public class FileUtilsTest
                 {
                     e.printStackTrace();
                 }
-                FileUtils.locks.put( locked, lock );
+                fileProcessor.locks.put( locked, lock );
             }
         } );
     }
 
+    @SuppressWarnings( "unused" )
     @Test
     public void testDoNotBlockExistingReadLockOnSrc()
         throws Throwable
@@ -297,7 +306,7 @@ public class FileUtilsTest
 
                 try
                 {
-                    FileUtils.copy( locked, unlocked );
+                    fileProcessor.copy( locked, unlocked, null );
                 }
                 catch ( IOException e )
                 {
@@ -322,7 +331,7 @@ public class FileUtilsTest
                 {
                     e.printStackTrace();
                 }
-                FileUtils.locks.put( locked, lock );
+                fileProcessor.locks.put( locked, lock );
             }
         } );
     }

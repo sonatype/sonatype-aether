@@ -1,4 +1,4 @@
-package org.sonatype.aether.util;
+package org.sonatype.aether.impl.internal;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -27,23 +27,23 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import org.codehaus.plexus.component.annotations.Component;
+import org.sonatype.aether.spi.io.FileProcessor;
+
 /**
  * A utility class helping with file-based operations.
  * 
  * @author Benjamin Hanzelmann
  */
-public class FileUtils
+@Component( role = FileProcessor.class )
+public class DefaultFileProcessor
+    implements FileProcessor
 {
 
     /**
      * package visibility for testing purposes
      */
-    static Map<File, ReentrantReadWriteLock> locks = new WeakHashMap<File, ReentrantReadWriteLock>();
-
-    private FileUtils()
-    {
-        // hide constructor
-    }
+    Map<File, ReentrantReadWriteLock> locks = new WeakHashMap<File, ReentrantReadWriteLock>();
 
     private static void close( Closeable closeable )
     {
@@ -90,7 +90,7 @@ public class FileUtils
         }
     }
 
-    private static ReadLock readLock( File file )
+    private ReadLock readLock( File file )
         throws IOException
     {
         ReentrantReadWriteLock lock = lookup( file );
@@ -98,7 +98,7 @@ public class FileUtils
         return lock.readLock();
     }
 
-    private static WriteLock writeLock( File file )
+    private WriteLock writeLock( File file )
         throws IOException
     {
         ReentrantReadWriteLock lock = lookup( file );
@@ -106,7 +106,7 @@ public class FileUtils
         return lock.writeLock();
     }
 
-    private static ReentrantReadWriteLock lookup( File file )
+    private ReentrantReadWriteLock lookup( File file )
         throws IOException
     {
         ReentrantReadWriteLock lock = null;
@@ -132,7 +132,7 @@ public class FileUtils
      * @return {@code true} if and only if the directory was created, along with all necessary parent directories;
      *         {@code false} otherwise
      */
-    public static boolean mkdirs( File directory )
+    public boolean mkdirs( File directory )
     {
         if ( directory == null )
         {
@@ -171,30 +171,11 @@ public class FileUtils
      * 
      * @param src the file to copy from, must not be {@code null}.
      * @param target the file to copy to, must not be {@code null}.
-     * @return the number of copied bytes.
-     * @throws IOException if an I/O error occurs.
-     * @see #copy(File, File, ProgressListener)
-     */
-    public static long copy( File src, File target )
-        throws IOException
-    {
-        return copy( src, target, null );
-    }
-
-    /**
-     * Copy src- to target-file. Creates the necessary directories for the target file. In case of an error, the created
-     * directories will be left on the file system.
-     * <p>
-     * This method performs R/W-locking on the given files to provide concurrent access to files without data
-     * corruption, and will honor {@link FileLock}s from an external process.
-     * 
-     * @param src the file to copy from, must not be {@code null}.
-     * @param target the file to copy to, must not be {@code null}.
      * @param listener the listener to notify about the copy progress, may be {@code null}.
      * @return the number of copied bytes.
      * @throws IOException if an I/O error occurs.
      */
-    public static long copy( File src, File target, ProgressListener listener )
+    public long copy( File src, File target, ProgressListener listener )
         throws IOException
     {
 
@@ -304,7 +285,7 @@ public class FileUtils
      * @param data The data to write, may be {@code null}.
      * @throws IOException if an I/O error occurs.
      */
-    public static void write( File file, String data )
+    public void write( File file, String data )
         throws IOException
     {
         WriteLock writeLock = writeLock( file );
@@ -345,25 +326,13 @@ public class FileUtils
         }
     }
 
-    /**
-     * A listener object that is notified for every progress made while copying files.
-     * 
-     * @author Benjamin Hanzelmann
-     * @see FileUtils#copy(File, File, ProgressListener)
-     */
-    public interface ProgressListener
-    {
-        void progressed( ByteBuffer buffer )
-            throws IOException;
-    }
-
     private static final class ProgressingChannel
         implements WritableByteChannel
     {
         private final FileChannel delegate;
-    
+
         private final ProgressListener listener;
-    
+
         public ProgressingChannel( FileChannel delegate, ProgressListener listener )
         {
             this.delegate = delegate;

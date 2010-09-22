@@ -48,6 +48,7 @@ import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.Transfer;
+import org.sonatype.aether.spi.io.FileProcessor;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
@@ -56,7 +57,6 @@ import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.MetadataNotFoundException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
-import org.sonatype.aether.util.FileUtils;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 
 /**
@@ -69,6 +69,9 @@ public class DefaultDeployer
 
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
+
+    @Requirement
+    private FileProcessor fileProcessor;
 
     @Requirement
     private RemoteRepositoryManager remoteRepositoryManager;
@@ -94,10 +97,12 @@ public class DefaultDeployer
         // enables default constructor
     }
 
-    public DefaultDeployer( Logger logger, RemoteRepositoryManager remoteRepositoryManager,
-                            UpdateCheckManager updateCheckManager, List<MetadataGeneratorFactory> metadataFactories )
+    public DefaultDeployer( Logger logger, FileProcessor fileProcessor,
+                            RemoteRepositoryManager remoteRepositoryManager, UpdateCheckManager updateCheckManager,
+                            List<MetadataGeneratorFactory> metadataFactories )
     {
         setLogger( logger );
+        setFileProcessor( fileProcessor );
         setRemoteRepositoryManager( remoteRepositoryManager );
         setUpdateCheckManager( updateCheckManager );
         setMetadataFactories( metadataFactories );
@@ -106,6 +111,7 @@ public class DefaultDeployer
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );
+        setFileProcessor( locator.getService( FileProcessor.class ) );
         setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
         setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
         setMetadataFactories( locator.getServices( MetadataGeneratorFactory.class ) );
@@ -114,6 +120,16 @@ public class DefaultDeployer
     public DefaultDeployer setLogger( Logger logger )
     {
         this.logger = ( logger != null ) ? logger : NullLogger.INSTANCE;
+        return this;
+    }
+
+    public DefaultDeployer setFileProcessor( FileProcessor fileProcessor )
+    {
+        if ( fileProcessor == null )
+        {
+            throw new IllegalArgumentException( "file processor has not been specified" );
+        }
+        this.fileProcessor = fileProcessor;
         return this;
     }
 
@@ -167,7 +183,7 @@ public class DefaultDeployer
 
         if ( session.isOffline() )
         {
-            throw new DeploymentException( "The repository system is in offline mode, artifact deployment impossible" );
+            throw new DeploymentException( "The repository system is in offline mode, deployment impossible" );
         }
 
         RemoteRepository repository = request.getRepository();
@@ -351,7 +367,7 @@ public class DefaultDeployer
             }
             try
             {
-                FileUtils.copy( metadata.getFile(), dstFile );
+                fileProcessor.copy( metadata.getFile(), dstFile, null );
             }
             catch ( IOException e )
             {

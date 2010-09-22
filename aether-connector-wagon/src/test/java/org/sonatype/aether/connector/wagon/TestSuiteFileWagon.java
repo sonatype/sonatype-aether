@@ -25,6 +25,7 @@ import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSetup.AbstractConnectorTestSetup;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSuite;
@@ -70,7 +71,7 @@ public class TestSuiteFileWagon
                         {
                             return new FileWagon();
                         }
-                    }, repository, session, NullLogger.INSTANCE );
+                    }, repository, session, TestFileProcessor.INSTANCE, NullLogger.INSTANCE );
                 }
 
                 public int getPriority()

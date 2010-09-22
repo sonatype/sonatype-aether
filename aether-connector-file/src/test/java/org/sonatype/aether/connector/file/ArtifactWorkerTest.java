@@ -34,6 +34,7 @@ import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
+import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.transfer.ArtifactTransferException;
@@ -89,6 +90,7 @@ public class ArtifactWorkerTest
         ArtifactDownload down = new ArtifactDownload( artifact, "", file, "" );
         down.setChecksumPolicy( RepositoryPolicy.CHECKSUM_POLICY_FAIL );
         FileRepositoryWorker worker = new FileRepositoryWorker( down, repository, session );
+        worker.setFileProcessor( TestFileProcessor.INSTANCE );
         worker.run();
         if ( down.getException() != null )
         {
@@ -109,6 +111,7 @@ public class ArtifactWorkerTest
 
         ArtifactUpload transfer = new ArtifactUpload( artifact, file );
         FileRepositoryWorker worker = new FileRepositoryWorker( transfer, repository, session );
+        worker.setFileProcessor( TestFileProcessor.INSTANCE );
         worker.run();
 
         file.delete();
@@ -133,6 +136,7 @@ public class ArtifactWorkerTest
         DefaultMetadata metadata = new DefaultMetadata( "test", "artId1", "1", "jar", Nature.RELEASE_OR_SNAPSHOT );
         MetadataUpload up = new MetadataUpload( metadata, file );
         FileRepositoryWorker worker = new FileRepositoryWorker( up, repository, session );
+        worker.setFileProcessor( TestFileProcessor.INSTANCE );
         worker.run();
         if ( up.getException() != null )
         {
@@ -146,6 +150,7 @@ public class ArtifactWorkerTest
         down.setChecksumPolicy( RepositoryPolicy.CHECKSUM_POLICY_FAIL );
         down.setMetadata( metadata ).setFile( file );
         worker = new FileRepositoryWorker( down, repository, session );
+        worker.setFileProcessor( TestFileProcessor.INSTANCE );
         worker.run();
 
         if ( down.getException() != null )

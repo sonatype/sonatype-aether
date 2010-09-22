@@ -20,6 +20,7 @@ import java.util.Map;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
+import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSetup;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSetup.AbstractConnectorTestSetup;
@@ -38,7 +39,7 @@ public class TestSuite
 
         public RepositoryConnectorFactory factory()
         {
-            return new FileRepositoryConnectorFactory();
+            return new FileRepositoryConnectorFactory().setFileProcessor( TestFileProcessor.INSTANCE );
         }
 
         public void after( RepositorySystemSession session, RemoteRepository repository, Map<String, Object> context )

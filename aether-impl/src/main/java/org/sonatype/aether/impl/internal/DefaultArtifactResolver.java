@@ -50,6 +50,7 @@ import org.sonatype.aether.resolution.VersionResolutionException;
 import org.sonatype.aether.resolution.VersionResult;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
+import org.sonatype.aether.spi.io.FileProcessor;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
@@ -57,7 +58,6 @@ import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
-import org.sonatype.aether.util.FileUtils;
 import org.sonatype.aether.util.artifact.ArtifactProperties;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 
@@ -71,6 +71,9 @@ public class DefaultArtifactResolver
 
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
+
+    @Requirement
+    private FileProcessor fileProcessor;
 
     @Requirement
     private VersionResolver versionResolver;
@@ -89,12 +92,13 @@ public class DefaultArtifactResolver
         // enables default constructor
     }
 
-    public DefaultArtifactResolver( Logger logger, VersionResolver versionResolver,
+    public DefaultArtifactResolver( Logger logger, FileProcessor fileProcessor, VersionResolver versionResolver,
                                     UpdateCheckManager updateCheckManager,
                                     RemoteRepositoryManager remoteRepositoryManager,
                                     List<LocalRepositoryMaintainer> localRepositoryMaintainers )
     {
         setLogger( logger );
+        setFileProcessor( fileProcessor );
         setVersionResolver( versionResolver );
         setUpdateCheckManager( updateCheckManager );
         setRemoteRepositoryManager( remoteRepositoryManager );
@@ -104,6 +108,7 @@ public class DefaultArtifactResolver
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );
+        setFileProcessor( locator.getService( FileProcessor.class ) );
         setVersionResolver( locator.getService( VersionResolver.class ) );
         setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
         setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
@@ -113,6 +118,16 @@ public class DefaultArtifactResolver
     public DefaultArtifactResolver setLogger( Logger logger )
     {
         this.logger = ( logger != null ) ? logger : NullLogger.INSTANCE;
+        return this;
+    }
+
+    public DefaultArtifactResolver setFileProcessor( FileProcessor fileProcessor )
+    {
+        if ( fileProcessor == null )
+        {
+            throw new IllegalArgumentException( "file processor has not been specified" );
+        }
+        this.fileProcessor = fileProcessor;
         return this;
     }
 
@@ -489,7 +504,7 @@ public class DefaultArtifactResolver
             {
                 try
                 {
-                    FileUtils.copy( file, dst );
+                    fileProcessor.copy( file, dst, null );
                     dst.setLastModified( file.lastModified() );
                 }
                 catch ( IOException e )
