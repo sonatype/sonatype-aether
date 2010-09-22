@@ -24,13 +24,12 @@ import org.sonatype.aether.transfer.MetadataTransferException;
 final class DoNothingUpdateCheckManager
     implements UpdateCheckManager
 {
-    public void touchMetadata( RepositorySystemSession session,
-                               UpdateCheck<Metadata, MetadataTransferException> check )
+
+    public void touchMetadata( RepositorySystemSession session, UpdateCheck<Metadata, MetadataTransferException> check )
     {
     }
 
-    public void touchArtifact( RepositorySystemSession session,
-                               UpdateCheck<Artifact, ArtifactTransferException> check )
+    public void touchArtifact( RepositorySystemSession session, UpdateCheck<Artifact, ArtifactTransferException> check )
     {
     }
 
@@ -39,15 +38,19 @@ final class DoNothingUpdateCheckManager
         return policy1;
     }
 
-    public void checkMetadata( RepositorySystemSession session,
-                               UpdateCheck<Metadata, MetadataTransferException> check )
+    public void checkMetadata( RepositorySystemSession session, UpdateCheck<Metadata, MetadataTransferException> check )
     {
         check.setRequired( true );
     }
 
-    public void checkArtifact( RepositorySystemSession session,
-                               UpdateCheck<Artifact, ArtifactTransferException> check )
+    public void checkArtifact( RepositorySystemSession session, UpdateCheck<Artifact, ArtifactTransferException> check )
     {
         check.setRequired( true );
     }
+
+    public boolean isUpdatedRequired( RepositorySystemSession session, long lastModified, String policy )
+    {
+        return true;
+    }
+
 }

@@ -110,7 +110,8 @@ public class DefaultUpdateCheckManager
 
     public void checkArtifact( RepositorySystemSession session, UpdateCheck<Artifact, ArtifactTransferException> check )
     {
-        if ( check.getLocalLastUpdated() != 0 && !isUpdatedRequired( check.getLocalLastUpdated(), check.getPolicy() ) )
+        if ( check.getLocalLastUpdated() != 0
+            && !isUpdatedRequired( session, check.getLocalLastUpdated(), check.getPolicy() ) )
         {
             if ( logger.isDebugEnabled() )
             {
@@ -165,7 +166,7 @@ public class DefaultUpdateCheckManager
         {
             check.setRequired( true );
         }
-        else if ( isUpdatedRequired( lastUpdated, check.getPolicy() ) )
+        else if ( isUpdatedRequired( session, lastUpdated, check.getPolicy() ) )
         {
             check.setRequired( true );
         }
@@ -218,7 +219,8 @@ public class DefaultUpdateCheckManager
 
     public void checkMetadata( RepositorySystemSession session, UpdateCheck<Metadata, MetadataTransferException> check )
     {
-        if ( check.getLocalLastUpdated() != 0 && !isUpdatedRequired( check.getLocalLastUpdated(), check.getPolicy() ) )
+        if ( check.getLocalLastUpdated() != 0
+            && !isUpdatedRequired( session, check.getLocalLastUpdated(), check.getPolicy() ) )
         {
             if ( logger.isDebugEnabled() )
             {
@@ -277,7 +279,7 @@ public class DefaultUpdateCheckManager
         {
             check.setRequired( true );
         }
-        else if ( isUpdatedRequired( lastUpdated, check.getPolicy() ) )
+        else if ( isUpdatedRequired( session, lastUpdated, check.getPolicy() ) )
         {
             check.setRequired( true );
         }
@@ -431,7 +433,7 @@ public class DefaultUpdateCheckManager
         }
     }
 
-    private boolean isUpdatedRequired( long lastModified, String policy )
+    public boolean isUpdatedRequired( RepositorySystemSession session, long lastModified, String policy )
     {
         boolean checkForUpdates;
 
