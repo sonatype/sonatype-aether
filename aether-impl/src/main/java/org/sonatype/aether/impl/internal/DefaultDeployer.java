@@ -363,6 +363,7 @@ public class DefaultDeployer
         check.setItem( metadata );
         check.setFile( dstFile );
         check.setRepository( repository );
+        check.setAuthoritativeRepository( repository );
         updateCheckManager.touchMetadata( session, check );
 
         metadataUploads.add( new MetadataUploadEx( metadata, dstFile, catapult ) );

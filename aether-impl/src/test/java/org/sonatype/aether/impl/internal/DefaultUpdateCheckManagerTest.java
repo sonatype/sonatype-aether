@@ -111,10 +111,10 @@ public class DefaultUpdateCheckManagerTest
         UpdateCheck<Metadata, MetadataTransferException> check = new UpdateCheck<Metadata, MetadataTransferException>();
         check.setItem( metadata );
         check.setFile( metadata.getFile() );
+        check.setRepository( repository );
+        check.setAuthoritativeRepository( repository );
 
-        Calendar cal = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) );
-        cal.set( Calendar.HOUR, cal.get( Calendar.HOUR ) - 1 );
-        check.setLocalLastUpdated( cal.getTimeInMillis() );
+        check.setLocalLastUpdated( System.currentTimeMillis() );
 
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_NEVER );
         manager.checkMetadata( session, check );
@@ -141,6 +141,7 @@ public class DefaultUpdateCheckManagerTest
         check.setItem( metadata );
         check.setFile( metadata.getFile() );
         check.setRepository( repository );
+        check.setAuthoritativeRepository( repository );
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
 
         File propertiesFile = new File( check.getFile().getParentFile(), "resolver-status.properties" );
@@ -183,7 +184,6 @@ public class DefaultUpdateCheckManagerTest
         long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
         Properties p = new Properties();
         p.put( check.getFile().getName() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".maven-metadata.xml.lastUpdated", String.valueOf( lastUpdate ) );
         FileOutputStream out = new FileOutputStream( propertiesFile );
         p.store( out, "" );
         out.close();
@@ -204,10 +204,10 @@ public class DefaultUpdateCheckManagerTest
         UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
         File propertiesFile = new File( check.getFile().getParentFile(), "resolver-status.properties" );
 
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
+        long lastUpdate = new Date().getTime();
         Properties p = new Properties();
         p.put( check.getFile().getName() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".maven-metadata.xml.lastUpdated", String.valueOf( lastUpdate ) );
+        p.put( check.getFile().getName() + ".error", "" );
         FileOutputStream out = new FileOutputStream( propertiesFile );
         p.store( out, "" );
         out.close();
@@ -229,10 +229,10 @@ public class DefaultUpdateCheckManagerTest
         UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
         File propertiesFile = new File( check.getFile().getParentFile(), "resolver-status.properties" );
 
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
+        long lastUpdate = new Date().getTime();
         Properties p = new Properties();
         p.put( check.getFile().getName() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".maven-metadata.xml.lastUpdated", String.valueOf( lastUpdate ) );
+        p.put( check.getFile().getName() + ".error", "" );
         FileOutputStream out = new FileOutputStream( propertiesFile );
         p.store( out, "" );
         out.close();
@@ -255,11 +255,10 @@ public class DefaultUpdateCheckManagerTest
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
         File propertiesFile = new File( check.getFile().getParentFile(), "resolver-status.properties" );
 
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
+        long lastUpdate = new Date().getTime();
         Properties p = new Properties();
-        p.put( check.getFile().getName() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".maven-metadata.xml.lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".maven-metadata.xml.error", "some error message" );
+        p.put( check.getFile().getName() + "/default-" + repository.getUrl() + "/.lastUpdated", String.valueOf( lastUpdate ) );
+        p.put( check.getFile().getName() + ".error", "some error" );
         FileOutputStream out = new FileOutputStream( propertiesFile );
         p.store( out, "" );
         out.close();
@@ -303,6 +302,7 @@ public class DefaultUpdateCheckManagerTest
         check.setItem( metadata );
         check.setFile( metadata.getFile() );
         check.setRepository( repository );
+        check.setAuthoritativeRepository( repository );
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_INTERVAL + ":10" );
         return check;
     }
@@ -458,9 +458,10 @@ public class DefaultUpdateCheckManagerTest
         UpdateCheck<Artifact, ArtifactTransferException> check = newArtifactCheck();
         File propertiesFile = new File( check.getFile().getPath() + ".lastUpdated" );
 
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
+        long lastUpdate = new Date().getTime();
         Properties p = new Properties();
-        p.put( repository.getUrl() + ".lastUpdated", String.valueOf( lastUpdate ) );
+        p.put( repository.getUrl() + "/.lastUpdated", String.valueOf( lastUpdate ) );
+        p.put( repository.getUrl() + "/.error", "" );
         FileOutputStream out = new FileOutputStream( propertiesFile );
         p.store( out, "" );
         out.close();
@@ -482,9 +483,10 @@ public class DefaultUpdateCheckManagerTest
         UpdateCheck<Artifact, ArtifactTransferException> check = newArtifactCheck();
         File propertiesFile = new File( check.getFile().getPath() + ".lastUpdated" );
 
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
+        long lastUpdate = new Date().getTime();
         Properties p = new Properties();
-        p.put( repository.getUrl() + ".lastUpdated", String.valueOf( lastUpdate ) );
+        p.put( repository.getUrl() + "/.lastUpdated", String.valueOf( lastUpdate ) );
+        p.put( repository.getUrl() + "/.error", "" );
         FileOutputStream out = new FileOutputStream( propertiesFile );
         p.store( out, "" );
         out.close();
@@ -506,10 +508,10 @@ public class DefaultUpdateCheckManagerTest
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
         File propertiesFile = new File( check.getFile().getPath() + ".lastUpdated" );
 
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
+        long lastUpdate = new Date().getTime();
         Properties p = new Properties();
-        p.put( repository.getUrl() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".error", "some error message" );
+        p.put( repository.getContentType() + "-" + repository.getUrl() + "/.lastUpdated", String.valueOf( lastUpdate ) );
+        p.put( repository.getUrl() + "/.error", "some error message" );
         FileOutputStream out = new FileOutputStream( propertiesFile );
         p.store( out, "" );
         out.close();
@@ -531,7 +533,7 @@ public class DefaultUpdateCheckManagerTest
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
         File propertiesFile = new File( check.getFile().getPath() + ".lastUpdated" );
 
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
+        long lastUpdate = new Date().getTime();
         Properties p = new Properties();
         p.put( repository.getUrl() + ".lastUpdated", String.valueOf( lastUpdate ) );
         p.put( repository.getUrl() + ".error", "some error message" );

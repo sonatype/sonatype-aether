@@ -15,10 +15,13 @@ package org.sonatype.aether.impl.internal;
 
 import java.io.File;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeSet;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -107,32 +110,56 @@ public class DefaultUpdateCheckManager
 
     public void checkArtifact( RepositorySystemSession session, UpdateCheck<Artifact, ArtifactTransferException> check )
     {
-        if ( logger.isDebugEnabled() )
-        {
-            logger.debug( "Calculating update check for " + check.getItem() + " using policy " + check.getPolicy() );
-        }
-
         if ( check.getLocalLastUpdated() != 0 && !isUpdatedRequired( check.getLocalLastUpdated(), check.getPolicy() ) )
         {
+            if ( logger.isDebugEnabled() )
+            {
+                logger.debug( "Skipped remote update check for " + check.getItem()
+                    + ", locally built artifact up-to-date." );
+            }
+
             check.setRequired( false );
             return;
         }
 
         Artifact artifact = check.getItem();
-        RemoteRepository repository = check.getRepository();
 
-        if ( check.getFile() == null )
+        File artifactFile = check.getFile();
+        if ( artifactFile == null )
         {
-            throw new IllegalArgumentException( String.format( "The artifact '%s' had no file attached", artifact ) );
+            throw new IllegalArgumentException( String.format( "The artifact '%s' has no file attached", artifact ) );
         }
 
-        File touchFile = getTouchFile( artifact, check.getFile() );
+        boolean fileExists = artifactFile.exists();
+
+        File touchFile = getTouchFile( artifact, artifactFile );
         Properties props = read( touchFile );
 
-        boolean fileExists = check.getFile().exists();
-        String key = getRepoKey( repository );
+        String dataKey = getDataKey( artifact, artifactFile, check.getRepository() );
 
-        long lastUpdated = fileExists ? check.getFile().lastModified() : getLastUpdated( props, key );
+        String error = getError( props, dataKey );
+
+        long lastUpdated;
+        if ( fileExists )
+        {
+            lastUpdated = artifactFile.lastModified();
+        }
+        else if ( error == null )
+        {
+            // this is the first attempt ever
+            lastUpdated = 0;
+        }
+        else if ( error.length() <= 0 )
+        {
+            // artifact did not exist
+            lastUpdated = getLastUpdated( props, dataKey );
+        }
+        else
+        {
+            // artifact could not be transferred
+            String transferKey = getTransferKey( artifact, artifactFile, check.getRepository() );
+            lastUpdated = getLastUpdated( props, transferKey );
+        }
 
         if ( lastUpdated == 0 )
         {
@@ -144,11 +171,18 @@ public class DefaultUpdateCheckManager
         }
         else if ( fileExists )
         {
+            if ( logger.isDebugEnabled() )
+            {
+                logger.debug( "Skipped remote update check for " + check.getItem()
+                    + ", locally cached artifact up-to-date." );
+            }
+
             check.setRequired( false );
         }
         else
         {
-            String error = getError( props, key );
+            RemoteRepository repository = check.getRepository();
+
             if ( error == null || error.length() <= 0 )
             {
                 if ( session.isNotFoundCachingEnabled() )
@@ -184,32 +218,60 @@ public class DefaultUpdateCheckManager
 
     public void checkMetadata( RepositorySystemSession session, UpdateCheck<Metadata, MetadataTransferException> check )
     {
-        if ( logger.isDebugEnabled() )
-        {
-            logger.debug( "Calculating update check for " + check.getItem() + " using policy " + check.getPolicy() );
-        }
-
         if ( check.getLocalLastUpdated() != 0 && !isUpdatedRequired( check.getLocalLastUpdated(), check.getPolicy() ) )
         {
+            if ( logger.isDebugEnabled() )
+            {
+                logger.debug( "Skipped remote update check for " + check.getItem()
+                    + ", locally built metadata up-to-date." );
+            }
+
             check.setRequired( false );
             return;
         }
 
         Metadata metadata = check.getItem();
-        RemoteRepository repository = check.getRepository();
 
-        if ( check.getFile() == null )
+        File metadataFile = check.getFile();
+        if ( metadataFile == null )
         {
-            throw new IllegalArgumentException( String.format( "The metadata '%s' had no file attached", metadata ) );
+            throw new IllegalArgumentException( String.format( "The metadata '%s' has no file attached", metadata ) );
         }
 
-        File touchFile = getTouchFile( check.getItem(), check.getFile() );
+        boolean fileExists = metadataFile.exists();
+
+        File touchFile = getTouchFile( metadata, metadataFile );
         Properties props = read( touchFile );
 
-        boolean fileExists = check.getFile().exists();
-        String key = fileExists ? check.getFile().getName() : ( getRepoKey( repository ) + '.' + metadata.getType() );
+        String dataKey = getDataKey( metadata, metadataFile, check.getAuthoritativeRepository() );
 
-        long lastUpdated = getLastUpdated( props, key );
+        String error = getError( props, dataKey );
+
+        long lastUpdated;
+        if ( error == null )
+        {
+            if ( fileExists )
+            {
+                // last update was successful
+                lastUpdated = getLastUpdated( props, dataKey );
+            }
+            else
+            {
+                // this is the first attempt ever
+                lastUpdated = 0;
+            }
+        }
+        else if ( error.length() <= 0 )
+        {
+            // metadata did not exist
+            lastUpdated = getLastUpdated( props, dataKey );
+        }
+        else
+        {
+            // metadata could not be transferred
+            String transferKey = getTransferKey( metadata, metadataFile, check.getRepository() );
+            lastUpdated = getLastUpdated( props, transferKey );
+        }
 
         if ( lastUpdated == 0 )
         {
@@ -221,11 +283,18 @@ public class DefaultUpdateCheckManager
         }
         else if ( fileExists )
         {
+            if ( logger.isDebugEnabled() )
+            {
+                logger.debug( "Skipped remote update check for " + check.getItem()
+                    + ", locally cached metadata up-to-date." );
+            }
+
             check.setRequired( false );
         }
         else
         {
-            String error = getError( props, key );
+            RemoteRepository repository = check.getRepository();
+
             if ( error == null || error.length() <= 0 )
             {
                 check.setRequired( false );
@@ -281,6 +350,44 @@ public class DefaultUpdateCheckManager
         return new File( metadataFile.getParent(), "resolver-status.properties" );
     }
 
+    private String getDataKey( Artifact artifact, File artifactFile, RemoteRepository repository )
+    {
+        Set<String> mirroredUrls = Collections.emptySet();
+        if ( repository.isRepositoryManager() )
+        {
+            mirroredUrls = new TreeSet<String>();
+            for ( RemoteRepository mirroredRepository : repository.getMirroredRepositories() )
+            {
+                mirroredUrls.add( normalizeRepoUrl( mirroredRepository.getUrl() ) );
+            }
+        }
+
+        StringBuilder buffer = new StringBuilder( 1024 );
+
+        buffer.append( normalizeRepoUrl( repository.getUrl() ) );
+        for ( String mirroredUrl : mirroredUrls )
+        {
+            buffer.append( '+' ).append( mirroredUrl );
+        }
+
+        return buffer.toString();
+    }
+
+    private String getTransferKey( Artifact artifact, File artifactFile, RemoteRepository repository )
+    {
+        return getRepoKey( repository );
+    }
+
+    private String getDataKey( Metadata metadata, File metadataFile, RemoteRepository repository )
+    {
+        return metadataFile.getName();
+    }
+
+    private String getTransferKey( Metadata metadata, File metadataFile, RemoteRepository repository )
+    {
+        return metadataFile.getName() + '/' + getRepoKey( repository );
+    }
+
     private String getRepoKey( RemoteRepository repository )
     {
         StringBuilder buffer = new StringBuilder( 128 );
@@ -295,9 +402,20 @@ public class DefaultUpdateCheckManager
         Authentication auth = repository.getAuthentication();
         appendAuth( buffer, auth );
 
-        buffer.append( repository.getUrl() );
+        buffer.append( repository.getContentType() ).append( '-' );
+        buffer.append( normalizeRepoUrl( repository.getUrl() ) );
 
         return buffer.toString();
+    }
+
+    private String normalizeRepoUrl( String url )
+    {
+        String result = url;
+        if ( url != null && !url.endsWith( "/" ) )
+        {
+            result = url + '/';
+        }
+        return result;
     }
 
     private void appendAuth( StringBuilder buffer, Authentication auth )
@@ -364,13 +482,16 @@ public class DefaultUpdateCheckManager
 
     public void touchArtifact( RepositorySystemSession session, UpdateCheck<Artifact, ArtifactTransferException> check )
     {
-        File touchFile = getTouchFile( check.getItem(), check.getFile() );
+        Artifact artifact = check.getItem();
+        File artifactFile = check.getFile();
+        File touchFile = getTouchFile( artifact, artifactFile );
 
-        String key = getRepoKey( check.getRepository() );
+        String dataKey = getDataKey( artifact, artifactFile, check.getAuthoritativeRepository() );
+        String transferKey = getTransferKey( artifact, artifactFile, check.getRepository() );
 
-        Properties props = write( touchFile, key, "artifact", check.getException() );
+        Properties props = write( touchFile, dataKey, transferKey, check.getException() );
 
-        if ( check.getFile().exists() && !hasErrors( props ) )
+        if ( artifactFile.exists() && !hasErrors( props ) )
         {
             touchFile.delete();
         }
@@ -390,28 +511,33 @@ public class DefaultUpdateCheckManager
 
     public void touchMetadata( RepositorySystemSession session, UpdateCheck<Metadata, MetadataTransferException> check )
     {
-        File touchFile = getTouchFile( check.getItem(), check.getFile() );
+        Metadata metadata = check.getItem();
+        File metadataFile = check.getFile();
+        File touchFile = getTouchFile( metadata, metadataFile );
 
-        String key = getRepoKey( check.getRepository() ) + '.' + check.getItem().getType();
+        String dataKey = getDataKey( metadata, metadataFile, check.getAuthoritativeRepository() );
+        String transferKey = getTransferKey( metadata, metadataFile, check.getRepository() );
 
-        write( touchFile, key, check.getFile().getName(), check.getException() );
+        write( touchFile, dataKey, transferKey, check.getException() );
     }
 
-    private Properties write( File touchFile, String fullKey, String simpleKey, Exception error )
+    private Properties write( File touchFile, String dataKey, String transferKey, Exception error )
     {
         Map<String, String> updates = new HashMap<String, String>();
 
         String timestamp = Long.toString( System.currentTimeMillis() );
-        updates.put( fullKey + UPDATED_KEY_SUFFIX, timestamp );
-        updates.put( simpleKey + UPDATED_KEY_SUFFIX, timestamp );
 
         if ( error == null )
         {
-            updates.put( fullKey + ERROR_KEY_SUFFIX, null );
+            updates.put( dataKey + ERROR_KEY_SUFFIX, null );
+            updates.put( dataKey + UPDATED_KEY_SUFFIX, timestamp );
+            updates.put( transferKey + UPDATED_KEY_SUFFIX, null );
         }
         else if ( error instanceof ArtifactNotFoundException || error instanceof MetadataNotFoundException )
         {
-            updates.put( fullKey + ERROR_KEY_SUFFIX, NOT_FOUND );
+            updates.put( dataKey + ERROR_KEY_SUFFIX, NOT_FOUND );
+            updates.put( dataKey + UPDATED_KEY_SUFFIX, timestamp );
+            updates.put( transferKey + UPDATED_KEY_SUFFIX, null );
         }
         else
         {
@@ -420,7 +546,9 @@ public class DefaultUpdateCheckManager
             {
                 msg = error.getClass().getSimpleName();
             }
-            updates.put( fullKey + ERROR_KEY_SUFFIX, msg );
+            updates.put( dataKey + ERROR_KEY_SUFFIX, msg );
+            updates.put( dataKey + UPDATED_KEY_SUFFIX, null );
+            updates.put( transferKey + UPDATED_KEY_SUFFIX, timestamp );
         }
 
         return new TrackingFileManager().setLogger( logger ).update( touchFile, updates );

@@ -207,7 +207,8 @@ public class DefaultMetadataResolver
                 check.setLocalLastUpdated( ( localLastUpdate != null ) ? localLastUpdate.longValue() : 0 );
                 check.setItem( metadata );
                 check.setFile( metadataFile );
-                check.setRepository( repo );
+                check.setRepository( repository );
+                check.setAuthoritativeRepository( repo );
                 check.setPolicy( getPolicy( session, repo, metadata.getNature() ).getUpdatePolicy() );
                 updateCheckManager.checkMetadata( session, check );
 
@@ -444,7 +445,7 @@ public class DefaultMetadataResolver
                 List<RemoteRepository> repositories = new ArrayList<RemoteRepository>();
                 for ( UpdateCheck<Metadata, MetadataTransferException> check : checks )
                 {
-                    repositories.add( check.getRepository() );
+                    repositories.add( check.getAuthoritativeRepository() );
                 }
 
                 MetadataDownload download = new MetadataDownload();

@@ -37,14 +37,18 @@ public class UpdateCheck<T, E extends RepositoryException>
 
     private RemoteRepository repository;
 
+    private RemoteRepository authoritativeRepository;
+
     private boolean required;
 
     private E exception;
 
     /**
-     * Get the alternative reference time to use by the {@link UpdateCheckManager}.
+     * Gets the last-modified timestamp of the corresponding item produced by a local build. If non-zero, a remote
+     * update will be surpressed if the local item is up-to-date, even if the remote item has not been cached locally.
      * 
-     * @return the alternative reference time to use by the {@link UpdateCheckManager}.
+     * @return The last-modified timestamp of the corresponding item produced by a local build or {@code 0} to ignore
+     *         any local item.
      */
     public long getLocalLastUpdated()
     {
@@ -52,10 +56,12 @@ public class UpdateCheck<T, E extends RepositoryException>
     }
 
     /**
-     * Sets the alternative reference time to use by the {@link UpdateCheckManager}.
+     * Sets the last-modified timestamp of the corresponding item produced by a local build. If non-zero, a remote
+     * update will be surpressed if the local item is up-to-date, even if the remote item has not been cached locally.
      * 
-     * @param localLastUpdated the reference time to use for the check.
-     * @return this object for chaining.
+     * @param localLastUpdated The last-modified timestamp of the corresponding item produced by a local build or
+     *            {@code 0} to ignore any local item.
+     * @return This object for chaining.
      */
     public UpdateCheck<T, E> setLocalLastUpdated( long localLastUpdated )
     {
@@ -64,9 +70,9 @@ public class UpdateCheck<T, E extends RepositoryException>
     }
 
     /**
-     * Returns the item of the check.
+     * Gets the item of the check.
      * 
-     * @return the item of the check, never @ null} .
+     * @return The item of the check, never {@code null}.
      */
     public T getItem()
     {
@@ -76,8 +82,8 @@ public class UpdateCheck<T, E extends RepositoryException>
     /**
      * Sets the item of the check.
      * 
-     * @param item the item of the check, must not be {@code null}.
-     * @return this object for chaining.
+     * @param item The item of the check, must not be {@code null}.
+     * @return This object for chaining.
      */
     public UpdateCheck<T, E> setItem( T item )
     {
@@ -88,7 +94,7 @@ public class UpdateCheck<T, E extends RepositoryException>
     /**
      * Returns the local file of the item.
      * 
-     * @return the local file of the item.
+     * @return The local file of the item.
      */
     public File getFile()
     {
@@ -98,8 +104,8 @@ public class UpdateCheck<T, E extends RepositoryException>
     /**
      * Sets the local file of the item.
      * 
-     * @param file the file of the item, never {@code null} .
-     * @return this object for chaining.
+     * @param file The file of the item, never {@code null} .
+     * @return This object for chaining.
      */
     public UpdateCheck<T, E> setFile( File file )
     {
@@ -108,9 +114,9 @@ public class UpdateCheck<T, E extends RepositoryException>
     }
 
     /**
-     * Returns the policy to use for the check.
+     * Gets the policy to use for the check.
      * 
-     * @return the policy to use for the check.
+     * @return The policy to use for the check.
      * @see org.sonatype.aether.repository.RepositoryPolicy
      */
     public String getPolicy()
@@ -121,8 +127,8 @@ public class UpdateCheck<T, E extends RepositoryException>
     /**
      * Sets the policy to use for the check.
      * 
-     * @param policy the policy to use for the check, may be {@code null}.
-     * @return this object for chaining.
+     * @param policy The policy to use for the check, may be {@code null}.
+     * @return This object for chaining.
      * @see org.sonatype.aether.repository.RepositoryPolicy
      */
     public UpdateCheck<T, E> setPolicy( String policy )
@@ -132,9 +138,9 @@ public class UpdateCheck<T, E extends RepositoryException>
     }
 
     /**
-     * Gets the repository to use for the check.
+     * Gets the repository from which a potential update/download will performed.
      * 
-     * @return the repository to use for the check.
+     * @return The repository to use for the check.
      */
     public RemoteRepository getRepository()
     {
@@ -142,10 +148,10 @@ public class UpdateCheck<T, E extends RepositoryException>
     }
 
     /**
-     * Sets the repository to use for the check.
+     * Sets the repository from which a potential update/download will performed.
      * 
-     * @param repository the repository to use for the check, must not be {@code null}.
-     * @return this object for chaining.
+     * @param repository The repository to use for the check, must not be {@code null}.
+     * @return This object for chaining.
      */
     public UpdateCheck<T, E> setRepository( RemoteRepository repository )
     {
@@ -154,9 +160,35 @@ public class UpdateCheck<T, E extends RepositoryException>
     }
 
     /**
-     * Returns the result of a check, denoting whether the remote repository should be checked for updates.
+     * Gets the repository which ultimately hosts the metadata to update. This will be different from the repository
+     * given by {@link #getRepository()} in case the latter denotes a repository manager.
      * 
-     * @return the result of a check.
+     * @return The actual repository hosting the authoritative copy of the metadata to update, never {@code null} for a
+     *         metadata update check.
+     */
+    public RemoteRepository getAuthoritativeRepository()
+    {
+        return authoritativeRepository != null ? authoritativeRepository : repository;
+    }
+
+    /**
+     * Sets the repository which ultimately hosts the metadata to update. This will be different from the repository
+     * given by {@link #getRepository()} in case the latter denotes a repository manager.
+     * 
+     * @param authoritativeRepository The actual repository hosting the authoritative copy of the metadata to update,
+     *            must not be {@code null} for a metadata update check.
+     * @return This object for chaining.
+     */
+    public UpdateCheck<T, E> setAuthoritativeRepository( RemoteRepository authoritativeRepository )
+    {
+        this.authoritativeRepository = authoritativeRepository;
+        return this;
+    }
+
+    /**
+     * Gets the result of a check, denoting whether the remote repository should be checked for updates.
+     * 
+     * @return The result of a check.
      */
     public boolean isRequired()
     {
@@ -167,7 +199,7 @@ public class UpdateCheck<T, E extends RepositoryException>
      * Sets the result of an update check.
      * 
      * @param required the result of an update check.
-     * @return this object for chaining.
+     * @return This object for chaining.
      */
     public UpdateCheck<T, E> setRequired( boolean required )
     {
@@ -176,9 +208,9 @@ public class UpdateCheck<T, E extends RepositoryException>
     }
 
     /**
-     * Returns the exception if an exception occured during the check, {@code null} otherwise.
+     * Gets the exception if an exception occured during the check, {@code null} otherwise.
      * 
-     * @return the occured exception, may be {@code null}.
+     * @return The occured exception, may be {@code null}.
      */
     public E getException()
     {
@@ -188,8 +220,8 @@ public class UpdateCheck<T, E extends RepositoryException>
     /**
      * Sets the exception for this update check.
      * 
-     * @param exception the exception for this update check.
-     * @return this object for chaining.
+     * @param exception The exception for this update check, may be {@code null}.
+     * @return This object for chaining.
      */
     public UpdateCheck<T, E> setException( E exception )
     {
