@@ -56,7 +56,9 @@ public abstract class MetadataTransfer
     }
 
     /**
-     * Gets the local file the metadata is downloaded to or uploaded from.
+     * Gets the local file the metadata is downloaded to or uploaded from. In case of a download, a connector should
+     * first transfer the bytes to a temporary file and only overwrite the target file once the entire download is
+     * completed such that an interrupted/failed download does not corrupt the current file contents.
      * 
      * @return The local file or {@code null} if not set.
      */
