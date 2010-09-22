@@ -448,8 +448,7 @@ public class DefaultUpdateCheckManager
         }
         else if ( RepositoryPolicy.UPDATE_POLICY_DAILY.equals( policy ) )
         {
-            // Get midnight boundary
-            Calendar cal = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) );
+            Calendar cal = Calendar.getInstance();
             cal.set( Calendar.HOUR_OF_DAY, 0 );
             cal.set( Calendar.MINUTE, 0 );
             cal.set( Calendar.SECOND, 0 );
