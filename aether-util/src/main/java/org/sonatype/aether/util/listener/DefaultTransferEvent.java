@@ -97,7 +97,7 @@ public class DefaultTransferEvent
     public DefaultTransferEvent setDataBuffer( byte[] buffer, int offset, int length )
     {
         ByteBuffer bb = ByteBuffer.wrap( buffer );
-        bb.limit( length );
+        bb.limit( offset + length );
         bb.position( offset );
         setDataBuffer( bb );
 
