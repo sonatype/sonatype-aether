@@ -94,15 +94,15 @@ public class DefaultUpdateCheckManagerTest
         long localMidnight;
 
         Calendar cal = Calendar.getInstance();
-        cal.set( Calendar.HOUR, 0 );
+        cal.set( Calendar.HOUR_OF_DAY, 0 );
         cal.set( Calendar.MINUTE, 0 );
         cal.set( Calendar.SECOND, 0 );
         cal.set( Calendar.MILLISECOND, 0 );
         localMidnight = cal.getTimeInMillis();
 
         String policy = RepositoryPolicy.UPDATE_POLICY_DAILY;
-        assertEquals( false, manager.isUpdatedRequired( session, localMidnight + 1, policy ) );
-        assertEquals( true, manager.isUpdatedRequired( session, localMidnight - 1, policy ) );
+        assertEquals( false, manager.isUpdatedRequired( session, localMidnight + 1000, policy ) );
+        assertEquals( true, manager.isUpdatedRequired( session, localMidnight - 1000, policy ) );
     }
 
     @Test
