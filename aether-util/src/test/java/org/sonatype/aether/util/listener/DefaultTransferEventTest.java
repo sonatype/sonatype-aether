@@ -1,10 +1,5 @@
 package org.sonatype.aether.util.listener;
 
-import java.nio.ByteBuffer;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
  *
@@ -17,6 +12,11 @@ import org.junit.Test;
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
+
+import java.nio.ByteBuffer;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author Benjamin Hanzelmann

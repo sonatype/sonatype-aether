@@ -1,16 +1,5 @@
 package org.sonatype.aether.util.graph.transformer;
 
-
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.sonatype.aether.RepositoryException;
-import org.sonatype.aether.graph.DependencyNode;
-import org.sonatype.aether.test.util.DependencyGraphParser;
-
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
  *
@@ -23,6 +12,16 @@ import org.sonatype.aether.test.util.DependencyGraphParser;
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
+
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.sonatype.aether.RepositoryException;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.test.util.DependencyGraphParser;
 
 /**
  * @author Benjamin Hanzelmann
