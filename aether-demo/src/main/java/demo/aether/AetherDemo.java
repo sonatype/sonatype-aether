@@ -1,59 +1,55 @@
 package demo.aether;
 
 import java.io.File;
+import java.util.List;
 
 import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.collection.DependencyCollectionException;
+import org.sonatype.aether.deployment.DeploymentException;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.installation.InstallationException;
+import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.SubArtifact;
 
 public class AetherDemo
 {
-    public static void main( String[] args )
-        throws Exception
+    public void resolve() 
+        throws DependencyCollectionException, ArtifactResolutionException
     {
         Aether aether = new Aether( "http://localhost:8081/nexus/content/groups/public", "/Users/jvanzyl/aether-repo" );
                 
-        AetherResult result = aether.resolve( "org.apache.maven", "maven-aether-provider", "3.0-beta-3" );
-        
-        System.out.println( "-------------------------------------" );
-        System.out.println( "Resolved Tree" );
-        System.out.println( "-------------------------------------" );
-        System.out.println();
-        System.out.println( result.getTree() );
-        System.out.println();
+        AetherResult result = aether.resolve( "com.mycompany.app", "super-app", "1.0" );
 
-        System.out.println( "-------------------------------------" );
-        System.out.println( "Resolved Files" );
-        System.out.println( "-------------------------------------" );
-        System.out.println();
-        for( File file : result.getResolvedFiles() )
-        {
-            System.out.println( file );
-        }
-        System.out.println();
+        // Get the root of the resolved tree of artifacts
+        //
+        DependencyNode root = result.getRoot();
+
+        // Get the list of files for the artifacts resolved
+        //
+        List<File> artifacts = result.getResolvedFiles();
         
-        System.out.println( "-------------------------------------" );
-        System.out.println( "Resolved ClassPath" );
-        System.out.println( "-------------------------------------" );
-        System.out.println();
-        System.out.println( result.getResolvedClassPath() );
-        System.out.println();
+        // Get the classpath of the artifacts resolved
+        //
+        String classpath = result.getResolvedClassPath();        
+    }
+    
+    public void installAndDeploy() 
+        throws InstallationException, DeploymentException
+    {
+        Aether aether = new Aether( "http://localhost:8081/nexus/content/groups/public", "/Users/jvanzyl/aether-repo" );
         
-        Artifact artifact = new DefaultArtifact( "test", "demo", "", "jar", "0.1-SNAPSHOT" );
-        artifact = artifact.setFile( new File( "demo.jar" ) );
-        Artifact pom = new SubArtifact( artifact, "", "pom" );
-        pom = pom.setFile( new File( "pom.xml" ) );
-                
-        System.out.println( "-------------------------------------" );
-        System.out.println( "Installing..." );
-        System.out.println( "-------------------------------------" );
-        System.out.println();
+        Artifact artifact = new DefaultArtifact( "com.mycompany.super", "super-core", "jar", "0.1-SNAPSHOT" );
+        artifact = artifact.setFile( new File( "jar-from-whatever-process.jar" ) );
+        Artifact pom = new SubArtifact( artifact, null, "pom" );
+        pom = pom.setFile( new File( "pom-from-whatever-process.xml" ) );
+          
+        // Install into the local repository specified
+        //
         aether.install( artifact, pom );
         
-        System.out.println( "-------------------------------------" );
-        System.out.println( "Deploying..." );
-        System.out.println( "-------------------------------------" );
-        System.out.println();
+        // Deploy to a remote reposistory
+        //
         aether.deploy( artifact, pom, "http://localhost:8081/nexus/content/repositories/snapshots/" );
     }
 }

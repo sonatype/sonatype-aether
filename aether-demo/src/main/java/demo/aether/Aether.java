@@ -91,12 +91,12 @@ public class Aether
         repositorySystem.resolveDependencies( session, rootNode, null );
 
         StringBuffer dump = new StringBuffer();
-        dump( rootNode, "", dump );
+        displayTree( rootNode, "", dump );
 
         PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
         rootNode.accept( nlg );
 
-        return new AetherResult( dump.toString(), nlg.getFiles(), nlg.getClassPath() );
+        return new AetherResult( rootNode, nlg.getFiles(), nlg.getClassPath() );
     }
 
     public void install( Artifact artifact, Artifact pom )
@@ -126,13 +126,13 @@ public class Aether
         repositorySystem.deploy( session, deployRequest );
     }
 
-    private void dump( DependencyNode node, String indent, StringBuffer sb )
+    private void displayTree( DependencyNode node, String indent, StringBuffer sb )
     {
         sb.append( indent + node.getDependency() ).append( "\n" );
         indent += "  ";
         for ( DependencyNode child : node.getChildren() )
         {
-            dump( child, indent, sb );
+            displayTree( child, indent, sb );
         }
     }
 

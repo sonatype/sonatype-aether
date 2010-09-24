@@ -3,22 +3,24 @@ package demo.aether;
 import java.io.File;
 import java.util.List;
 
+import org.sonatype.aether.graph.DependencyNode;
+
 public class AetherResult
 {
-    private String tree;
+    private DependencyNode root;
     private List<File> resolvedFiles;
     private String resolvedClassPath;
     
-    public AetherResult( String tree, List<File> resolvedFiles, String resolvedClassPath )
+    public AetherResult( DependencyNode root, List<File> resolvedFiles, String resolvedClassPath )
     {
-        this.tree = tree;
+        this.root = root;
         this.resolvedFiles = resolvedFiles;
         this.resolvedClassPath = resolvedClassPath;
     }
 
-    public String getTree()
+    public DependencyNode getRoot()
     {
-        return tree;
+        return root;
     }
 
     public List<File> getResolvedFiles()
