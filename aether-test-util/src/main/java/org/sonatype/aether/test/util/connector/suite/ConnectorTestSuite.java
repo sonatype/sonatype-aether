@@ -17,6 +17,9 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,6 +41,9 @@ import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.test.util.impl.StubMetadata;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.transfer.TransferCancelledException;
+import org.sonatype.aether.transfer.TransferEvent;
+import org.sonatype.aether.transfer.TransferListener;
 
 /**
  * The ConnectorTestSuite bundles standard tests for {@link RepositoryConnector}s.
@@ -257,5 +263,107 @@ public abstract class ConnectorTestSuite
 
         assertEquals( 0, downAFile.length() );
         assertEquals( 0, downMFile.length() );
+    }
+
+    @Test
+    public void testProgressEventsDataBuffer()
+        throws UnsupportedEncodingException, IOException, NoSuchAlgorithmException, NoRepositoryConnectorException
+    {
+        byte[] bytes = "These are the test contents.\n".getBytes( "UTF-8" );
+        int count = 120000;
+        MessageDigest digest = MessageDigest.getInstance( "SHA-1" );
+        for (int i = 0; i < count; i++) {
+            digest.update( bytes );
+        }
+        byte[] hash = digest.digest();
+
+        File file = TestFileUtils.createTempFile( bytes, count );
+
+        Artifact artifact = new StubArtifact( "gid:aid:ext:ver" );
+        ArtifactUpload upA = new ArtifactUpload( artifact, file );
+
+        File downAFile = new File( "target/con-test/downA.file" );
+        downAFile.deleteOnExit();
+        ArtifactDownload downA = new ArtifactDownload( artifact, "", downAFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
+
+        Metadata metadata =
+            new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT );
+        MetadataUpload upM = new MetadataUpload( metadata, file );
+        File downMFile = new File( "target/con-test/downM.file" );
+        downMFile.deleteOnExit();
+        MetadataDownload downM = new MetadataDownload( metadata, "", downMFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
+
+        DigestingTransferListener listener = new DigestingTransferListener();
+        session.setTransferListener( listener );
+
+        RepositoryConnector connector = factory().newInstance( session, repository );
+        connector.put( Arrays.asList( upA ), null );
+        assertArrayEquals( hash, listener.getHash() );
+        listener.rewind();
+        connector.put( null, Arrays.asList( upM ) );
+        assertArrayEquals( hash, listener.getHash() );
+        listener.rewind();
+        connector.get( Arrays.asList( downA ), null );
+        assertArrayEquals( hash, listener.getHash() );
+        listener.rewind();
+        connector.get( null, Arrays.asList( downM ) );
+        assertArrayEquals( hash, listener.getHash() );
+        listener.rewind();
+    }
+
+    /**
+     * @author Benjamin Hanzelmann
+     *
+     */
+    private final class DigestingTransferListener
+        implements TransferListener
+    {
+        public DigestingTransferListener()
+            throws NoSuchAlgorithmException
+        {
+            digest = MessageDigest.getInstance( "SHA-1" );
+        }
+    
+        public void rewind()
+            throws NoSuchAlgorithmException
+        {
+            digest = MessageDigest.getInstance( "SHA-1" );
+        }
+    
+        private MessageDigest digest;
+    
+        public void transferSucceeded( TransferEvent event )
+        {
+        }
+    
+        public void transferStarted( TransferEvent event )
+            throws TransferCancelledException
+        {
+        }
+    
+        public void transferProgressed( TransferEvent event )
+            throws TransferCancelledException
+        {
+            digest.update( event.getDataBuffer() );
+        }
+    
+        public void transferInitiated( TransferEvent event )
+            throws TransferCancelledException
+        {
+        }
+    
+        public void transferFailed( TransferEvent event )
+        {
+        }
+    
+        public void transferCorrupted( TransferEvent event )
+            throws TransferCancelledException
+        {
+        }
+    
+        public byte[] getHash()
+        {
+            return digest.digest();
+        }
     }
 }
