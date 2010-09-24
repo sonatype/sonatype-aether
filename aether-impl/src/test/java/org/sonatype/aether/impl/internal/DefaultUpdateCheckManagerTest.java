@@ -112,8 +112,8 @@ public class DefaultUpdateCheckManagerTest
         check.setItem( metadata );
         check.setFile( metadata.getFile() );
 
-        Calendar cal = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) );
-        cal.set( Calendar.DATE, cal.get( Calendar.DATE ) - 1 );
+        Calendar cal = Calendar.getInstance();
+        cal.add( Calendar.DATE, -1 );
         check.setLocalLastUpdated( cal.getTimeInMillis() );
 
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_ALWAYS );
@@ -203,7 +203,7 @@ public class DefaultUpdateCheckManagerTest
 
         UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
 
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
+        long lastUpdate = new Date().getTime() - HOUR;
         check.setLocalLastUpdated( lastUpdate );
 
         // ! file.exists && updateRequired -> check in remote repo
@@ -341,7 +341,7 @@ public class DefaultUpdateCheckManagerTest
         check.setFile( artifact.getFile() );
 
         Calendar cal = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) );
-        cal.set( Calendar.DATE, cal.get( Calendar.DATE ) - 1 );
+        cal.add( Calendar.DATE, -1 );
         long lastUpdate = cal.getTimeInMillis();
         artifact.getFile().setLastModified( lastUpdate );
         check.setLocalLastUpdated( lastUpdate );
@@ -370,7 +370,7 @@ public class DefaultUpdateCheckManagerTest
         check.setFile( artifact.getFile() );
 
         Calendar cal = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) );
-        cal.set( Calendar.HOUR, cal.get( Calendar.HOUR ) - 1 );
+        cal.add( Calendar.HOUR_OF_DAY, -1 );
         check.setLocalLastUpdated( cal.getTimeInMillis() );
 
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_NEVER );
