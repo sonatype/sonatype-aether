@@ -36,11 +36,11 @@ import org.sonatype.aether.metadata.MergeableMetadata;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.repository.LocalArtifactRegistration;
 import org.sonatype.aether.repository.LocalRepositoryManager;
+import org.sonatype.aether.spi.io.FileProcessor;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
-import org.sonatype.aether.util.FileUtils;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 
 /**
@@ -53,6 +53,9 @@ public class DefaultInstaller
 
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
+
+    @Requirement
+    private FileProcessor fileProcessor;
 
     @Requirement( role = LocalRepositoryMaintainer.class )
     private List<LocalRepositoryMaintainer> localRepositoryMaintainers = new ArrayList<LocalRepositoryMaintainer>();
@@ -75,10 +78,12 @@ public class DefaultInstaller
         // enables default constructor
     }
 
-    public DefaultInstaller( Logger logger, List<MetadataGeneratorFactory> metadataFactories,
+    public DefaultInstaller( Logger logger, FileProcessor fileProcessor,
+                             List<MetadataGeneratorFactory> metadataFactories,
                              List<LocalRepositoryMaintainer> localRepositoryMaintainers )
     {
         setLogger( logger );
+        setFileProcessor( fileProcessor );
         setMetadataFactories( metadataFactories );
         setLocalRepositoryMaintainers( localRepositoryMaintainers );
     }
@@ -86,6 +91,7 @@ public class DefaultInstaller
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );
+        setFileProcessor( locator.getService( FileProcessor.class ) );
         setLocalRepositoryMaintainers( locator.getServices( LocalRepositoryMaintainer.class ) );
         setMetadataFactories( locator.getServices( MetadataGeneratorFactory.class ) );
     }
@@ -93,6 +99,16 @@ public class DefaultInstaller
     public DefaultInstaller setLogger( Logger logger )
     {
         this.logger = ( logger != null ) ? logger : NullLogger.INSTANCE;
+        return this;
+    }
+
+    public DefaultInstaller setFileProcessor( FileProcessor fileProcessor )
+    {
+        if ( fileProcessor == null )
+        {
+            throw new IllegalArgumentException( "file processor has not been specified" );
+        }
+        this.fileProcessor = fileProcessor;
         return this;
     }
 
@@ -226,7 +242,6 @@ public class DefaultInstaller
 
         File srcFile = artifact.getFile();
 
-
         File dstFile = new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalArtifact( artifact ) );
 
         artifactInstalling( session, artifact, dstFile );
@@ -240,12 +255,7 @@ public class DefaultInstaller
 
             if ( copy )
             {
-                if ( !dstFile.getParentFile().exists() )
-                {
-                    dstFile.getParentFile().mkdirs();
-                }
-
-                FileUtils.copy( srcFile, dstFile );
+                fileProcessor.copy( srcFile, dstFile, null );
                 dstFile.setLastModified( srcFile.lastModified() );
             }
             else
@@ -293,7 +303,7 @@ public class DefaultInstaller
             }
             else
             {
-                FileUtils.copy( metadata.getFile(), dstFile );
+                fileProcessor.copy( metadata.getFile(), dstFile, null );
             }
         }
         catch ( Exception e )

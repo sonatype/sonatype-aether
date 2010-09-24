@@ -24,6 +24,7 @@ import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
+import org.sonatype.aether.spi.io.FileProcessor;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
@@ -44,17 +45,22 @@ public class FileRepositoryConnector
 
     private Logger logger = NullLogger.INSTANCE;
 
-    public FileRepositoryConnector( RepositorySystemSession session, RemoteRepository repository, Logger logger )
+    private FileProcessor fileProcessor;
+
+    public FileRepositoryConnector( RepositorySystemSession session, RemoteRepository repository,
+                                    FileProcessor fileProcessor, Logger logger )
         throws NoRepositoryConnectorException
     {
         super( session.getConfigProperties() );
-        if ( !"default".equalsIgnoreCase( repository.getContentType() ) )
+
+        if ( !"default".equals( repository.getContentType() ) )
         {
             throw new NoRepositoryConnectorException( repository );
         }
 
         this.session = session;
         this.repository = repository;
+        this.fileProcessor = fileProcessor;
         this.logger = logger;
     }
 
@@ -62,7 +68,7 @@ public class FileRepositoryConnector
                      Collection<? extends MetadataDownload> metadataDownloads )
     {
         checkClosed();
-        
+
         artifactDownloads = notNull( artifactDownloads );
         metadataDownloads = notNull( metadataDownloads );
 
@@ -73,6 +79,7 @@ public class FileRepositoryConnector
             FileRepositoryWorker worker = new FileRepositoryWorker( artifactDownload, repository, session );
             worker.setLatch( latch );
             worker.setLogger( logger );
+            worker.setFileProcessor( fileProcessor );
             executor.execute( worker );
         }
 
@@ -81,9 +88,9 @@ public class FileRepositoryConnector
             FileRepositoryWorker worker = new FileRepositoryWorker( metadataDownload, repository, session );
             worker.setLatch( latch );
             worker.setLogger( logger );
+            worker.setFileProcessor( fileProcessor );
             executor.execute( worker );
         }
-
 
         while ( latch.getCount() > 0 )
         {
@@ -107,7 +114,7 @@ public class FileRepositoryConnector
                      Collection<? extends MetadataUpload> metadataUploads )
     {
         checkClosed();
-        
+
         artifactUploads = notNull( artifactUploads );
         metadataUploads = notNull( metadataUploads );
 
@@ -118,6 +125,7 @@ public class FileRepositoryConnector
             FileRepositoryWorker worker = new FileRepositoryWorker( artifactUpload, repository, session );
             worker.setLatch( latch );
             worker.setLogger( logger );
+            worker.setFileProcessor( fileProcessor );
             executor.execute( worker );
         }
         for ( MetadataUpload metadataUpload : metadataUploads )
@@ -125,6 +133,7 @@ public class FileRepositoryConnector
             FileRepositoryWorker worker = new FileRepositoryWorker( metadataUpload, repository, session );
             worker.setLatch( latch );
             worker.setLogger( logger );
+            worker.setFileProcessor( fileProcessor );
             executor.execute( worker );
         }
 

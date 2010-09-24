@@ -31,6 +31,7 @@ import org.sonatype.aether.installation.InstallationException;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.metadata.Metadata.Nature;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener;
+import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener.EventWrapper;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
@@ -71,11 +72,10 @@ public class DefaultInstallerTest
         localArtifactPath = session.getLocalRepositoryManager().getPathForLocalArtifact( artifact );
         localMetadataPath = session.getLocalRepositoryManager().getPathForLocalMetadata( metadata );
 
-        installer = new DefaultInstaller();
+        installer = new DefaultInstaller().setFileProcessor( TestFileProcessor.INSTANCE );
         request = new InstallRequest();
         listener = new RecordingRepositoryListener();
         session.setRepositoryListener( listener );
-
     }
 
     @After
@@ -185,7 +185,7 @@ public class DefaultInstallerTest
                 assertTrue( seenArtifactInstalling );
                 assertEquals( artifactFile, event.getFile() );
                 assertEquals( event.getArtifact(), artifact );
-                assertNull( event.getException() );
+                assertNull( String.valueOf( event.getException() ), event.getException() );
             }
 
             @Override
@@ -197,7 +197,7 @@ public class DefaultInstallerTest
 
                 assertEquals( artifactFile, event.getFile() );
                 assertEquals( event.getArtifact(), artifact );
-                assertNull( event.getException() );
+                assertNull( String.valueOf( event.getException() ), event.getException() );
             }
 
             @Override
@@ -209,7 +209,7 @@ public class DefaultInstallerTest
                 assertTrue( seenMetadataInstalling );
                 assertEquals( metadataFile, event.getFile() );
                 assertEquals( event.getMetadata(), metadata );
-                assertNull( event.getException() );
+                assertNull( String.valueOf( event.getException() ), event.getException() );
             }
 
             @Override
@@ -221,12 +221,11 @@ public class DefaultInstallerTest
 
                 assertEquals( metadataFile, event.getFile() );
                 assertEquals( event.getMetadata(), metadata );
-                assertNull( event.getException() );
+                assertNull( String.valueOf( event.getException() ), event.getException() );
             }
 
         } );
 
-        DefaultInstaller installer = new DefaultInstaller();
         installer.install( session, request );
     }
 

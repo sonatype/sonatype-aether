@@ -54,6 +54,7 @@ import org.sonatype.aether.spi.connector.MetadataTransfer;
 import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.Transfer;
+import org.sonatype.aether.spi.io.FileProcessor;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.transfer.ArtifactTransferException;
@@ -64,7 +65,6 @@ import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.util.ChecksumUtils;
-import org.sonatype.aether.util.FileUtils;
 import org.sonatype.aether.util.StringUtils;
 import org.sonatype.aether.util.layout.MavenDefaultLayout;
 import org.sonatype.aether.util.layout.RepositoryLayout;
@@ -80,6 +80,8 @@ class WagonRepositoryConnector
 {
 
     private final Logger logger;
+
+    private final FileProcessor fileProcessor;
 
     private final RemoteRepository repository;
 
@@ -108,10 +110,11 @@ class WagonRepositoryConnector
     private final Map<String, String> checksumAlgos;
 
     public WagonRepositoryConnector( WagonProvider wagonProvider, RemoteRepository repository,
-                                     RepositorySystemSession session, Logger logger )
+                                     RepositorySystemSession session, FileProcessor fileProcessor, Logger logger )
         throws NoRepositoryConnectorException
     {
         this.logger = logger;
+        this.fileProcessor = fileProcessor;
         this.wagonProvider = wagonProvider;
         this.repository = repository;
         this.session = session;
@@ -130,6 +133,7 @@ class WagonRepositoryConnector
         }
         catch ( Exception e )
         {
+            logger.debug( e.getMessage(), e );
             throw new NoRepositoryConnectorException( repository );
         }
 
@@ -226,7 +230,7 @@ class WagonRepositoryConnector
         String userAgent =
             ConfigurationProperties.get( session.getConfigProperties(), ConfigurationProperties.USER_AGENT,
                                          ConfigurationProperties.DEFAULT_USER_AGENT );
-        if ( StringUtils.isNotEmpty( userAgent ) )
+        if ( !StringUtils.isEmpty( userAgent ) )
         {
             try
             {
@@ -499,11 +503,10 @@ class WagonRepositoryConnector
                                 wagon.addTransferListener( sha1 );
 
                                 /*
-                                 * NOTE: AbstractWagon.createParentDirectories() seems to occasionally fail when
-                                 * executed concurrently, so we try a little harder.
+                                 * NOTE: AbstractWagon.createParentDirectories() uses File.mkdirs() which is not
+                                 * thread-safe in all JREs.
                                  */
-                                File dir = tmp.getParentFile();
-                                org.sonatype.aether.util.FileUtils.mkdirs( dir );
+                                fileProcessor.mkdirs( tmp.getParentFile() );
 
                                 wagon.get( path, tmp );
                             }
@@ -667,11 +670,11 @@ class WagonRepositoryConnector
                      * So if the resource we asked for didn't cause any exception but doesn't show up in the tmp file
                      * either, Wagon tells us in its weird way the file is empty.
                      */
-                    FileUtils.write( to.getAbsolutePath(), "UTF-8", "" );
+                    fileProcessor.write( to, "" );
                 }
                 else
                 {
-                    FileUtils.copy( from, to );
+                    fileProcessor.copy( from, to, null );
                 }
             }
         }
@@ -801,7 +804,7 @@ class WagonRepositoryConnector
                 File tmpFile = File.createTempFile( "checksum", ext );
                 try
                 {
-                    FileUtils.write( tmpFile.getAbsolutePath(), "UTF-8", String.valueOf( checksum ) );
+                    fileProcessor.write( tmpFile, String.valueOf( checksum ) );
                     wagon.put( tmpFile, path + ext );
                 }
                 finally

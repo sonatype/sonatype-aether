@@ -17,23 +17,33 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
+import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
+import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
+import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.test.util.impl.StubMetadata;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.transfer.TransferCancelledException;
+import org.sonatype.aether.transfer.TransferEvent;
+import org.sonatype.aether.transfer.TransferListener;
 
 /**
  * The ConnectorTestSuite bundles standard tests for {@link RepositoryConnector}s.
@@ -52,6 +62,12 @@ public abstract class ConnectorTestSuite
         super( setup );
     }
 
+    /**
+     * Test successful event order.
+     * 
+     * @see TransferEventTester#testSuccessfulTransferEvents(RepositoryConnectorFactory, TestRepositorySystemSession,
+     *      RemoteRepository)
+     */
     @Test
     public void testSuccessfulEvents()
         throws NoRepositoryConnectorException, IOException
@@ -91,13 +107,14 @@ public abstract class ConnectorTestSuite
         tmpFile = TestFileUtils.createTempFile( "testFileHandleLeakage" );
         ArtifactDownload artDown = new ArtifactDownload( artifact, null, tmpFile, null );
         connector.get( Arrays.asList( artDown ), null );
+        new File( tmpFile.getAbsolutePath() + ".sha1" ).deleteOnExit();
         assertTrue( "Leaking file handle in artifact download", tmpFile.delete() );
 
         tmpFile = TestFileUtils.createTempFile( "testFileHandleLeakage" );
         MetadataDownload metaDown = new MetadataDownload( metadata, null, tmpFile, null );
         connector.get( null, Arrays.asList( metaDown ) );
+        new File( tmpFile.getAbsolutePath() + ".sha1" ).deleteOnExit();
         assertTrue( "Leaking file handle in metadata download", tmpFile.delete() );
-
     }
 
     @Test
@@ -109,7 +126,7 @@ public abstract class ConnectorTestSuite
 
         int count = 10;
 
-        byte[] pattern = "tmpFile".getBytes();
+        byte[] pattern = "tmpFile".getBytes( "UTF-8" );
         File tmpFile = TestFileUtils.createTempFile( pattern, 100000 );
 
         List<ArtifactUpload> artUps = ConnectorTestUtils.createTransfers( ArtifactUpload.class, count, tmpFile );
@@ -215,5 +232,138 @@ public abstract class ConnectorTestSuite
             TestFileUtils.deleteDir( localRepo );
         }
 
+    }
+
+    /**
+     * See https://issues.sonatype.org/browse/AETHER-8
+     */
+    @Test
+    public void testTransferZeroBytesFile()
+        throws IOException, NoRepositoryConnectorException
+    {
+        File emptyFile = TestFileUtils.createTempFile( "" );
+
+        Artifact artifact = new StubArtifact( "gid:aid:ext:ver" );
+        ArtifactUpload upA = new ArtifactUpload( artifact, emptyFile );
+        File downAFile = new File( "target/con-test/downA.file" );
+        downAFile.deleteOnExit();
+        ArtifactDownload downA = new ArtifactDownload( artifact, "", downAFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
+
+
+        Metadata metadata =
+            new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT );
+        MetadataUpload upM = new MetadataUpload( metadata, emptyFile );
+        File downMFile = new File( "target/con-test/downM.file" );
+        downMFile.deleteOnExit();
+        MetadataDownload downM = new MetadataDownload( metadata, "", downMFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
+
+        RepositoryConnector connector = factory().newInstance( session, repository );
+        connector.put( Arrays.asList( upA ), Arrays.asList( upM ) );
+        connector.get( Arrays.asList( downA ), Arrays.asList( downM ) );
+
+        assertEquals( 0, downAFile.length() );
+        assertEquals( 0, downMFile.length() );
+    }
+
+    @Test
+    public void testProgressEventsDataBuffer()
+        throws UnsupportedEncodingException, IOException, NoSuchAlgorithmException, NoRepositoryConnectorException
+    {
+        byte[] bytes = "These are the test contents.\n".getBytes( "UTF-8" );
+        int count = 120000;
+        MessageDigest digest = MessageDigest.getInstance( "SHA-1" );
+        for (int i = 0; i < count; i++) {
+            digest.update( bytes );
+        }
+        byte[] hash = digest.digest();
+
+        File file = TestFileUtils.createTempFile( bytes, count );
+
+        Artifact artifact = new StubArtifact( "gid:aid:ext:ver" );
+        ArtifactUpload upA = new ArtifactUpload( artifact, file );
+
+        File downAFile = new File( "target/con-test/downA.file" );
+        downAFile.deleteOnExit();
+        ArtifactDownload downA = new ArtifactDownload( artifact, "", downAFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
+
+        Metadata metadata =
+            new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT );
+        MetadataUpload upM = new MetadataUpload( metadata, file );
+        File downMFile = new File( "target/con-test/downM.file" );
+        downMFile.deleteOnExit();
+        MetadataDownload downM = new MetadataDownload( metadata, "", downMFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
+
+        DigestingTransferListener listener = new DigestingTransferListener();
+        session.setTransferListener( listener );
+
+        RepositoryConnector connector = factory().newInstance( session, repository );
+        connector.put( Arrays.asList( upA ), null );
+        assertArrayEquals( hash, listener.getHash() );
+        listener.rewind();
+        connector.put( null, Arrays.asList( upM ) );
+        assertArrayEquals( hash, listener.getHash() );
+        listener.rewind();
+        connector.get( Arrays.asList( downA ), null );
+        assertArrayEquals( hash, listener.getHash() );
+        listener.rewind();
+        connector.get( null, Arrays.asList( downM ) );
+        assertArrayEquals( hash, listener.getHash() );
+        listener.rewind();
+    }
+
+    /**
+     * @author Benjamin Hanzelmann
+     *
+     */
+    private final class DigestingTransferListener
+        implements TransferListener
+    {
+        public DigestingTransferListener()
+            throws NoSuchAlgorithmException
+        {
+            digest = MessageDigest.getInstance( "SHA-1" );
+        }
+    
+        public void rewind()
+            throws NoSuchAlgorithmException
+        {
+            digest = MessageDigest.getInstance( "SHA-1" );
+        }
+    
+        private MessageDigest digest;
+    
+        public void transferSucceeded( TransferEvent event )
+        {
+        }
+    
+        public void transferStarted( TransferEvent event )
+            throws TransferCancelledException
+        {
+        }
+    
+        public void transferProgressed( TransferEvent event )
+            throws TransferCancelledException
+        {
+            digest.update( event.getDataBuffer() );
+        }
+    
+        public void transferInitiated( TransferEvent event )
+            throws TransferCancelledException
+        {
+        }
+    
+        public void transferFailed( TransferEvent event )
+        {
+        }
+    
+        public void transferCorrupted( TransferEvent event )
+            throws TransferCancelledException
+        {
+        }
+    
+        public byte[] getHash()
+        {
+            return digest.digest();
+        }
     }
 }

@@ -19,7 +19,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
   <parent>
     <groupId>org.sonatype.aether</groupId>
     <artifactId>aether-parent</artifactId>
-    <version>1.5-SNAPSHOT</version>
+    <version>1.6-SNAPSHOT</version>
   </parent>
 
   <artifactId>aether-demo</artifactId>
@@ -103,6 +103,11 @@ See the Apache License Version 2.0 for the specific language governing permissio
           <artifactId>commons-logging-api</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>2.0.5</version>
     </dependency>
   </dependencies>
   

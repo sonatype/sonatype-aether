@@ -17,6 +17,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 import org.sonatype.aether.artifact.Artifact;
@@ -85,6 +86,52 @@ public class DefaultArtifactTest
         assertNotSame( a, a.setFile( new File( "file" ) ) );
         assertNotSame( a, a.setVersion( "otherVersion" ));
         assertNotSame( a, a.setProperties( map ) );
+    }
+
+    @Test
+    public void testArtifactType()
+    {
+        DefaultArtifactType type = new DefaultArtifactType( "typeId", "typeExt", "typeCls", "typeLang", true, true );
+
+        Artifact a = new DefaultArtifact( "gid", "aid", null, null, null, null, type );
+        assertEquals( "typeExt", a.getExtension() );
+        assertEquals( "typeCls", a.getClassifier() );
+        assertEquals( "typeLang", a.getProperties().get( ArtifactProperties.LANGUAGE ) );
+        assertEquals( "typeId", a.getProperties().get( ArtifactProperties.TYPE ) );
+        assertEquals( "true", a.getProperties().get( ArtifactProperties.INCLUDES_DEPENDENCIES ) );
+        assertEquals( "true", a.getProperties().get( ArtifactProperties.CONSTITUTES_BUILD_PATH ) );
+        
+        a = new DefaultArtifact( "gid", "aid", "cls", "ext", "ver", null, type );
+        assertEquals( "ext", a.getExtension() );
+        assertEquals( "cls", a.getClassifier() );
+        assertEquals( "typeLang", a.getProperties().get( ArtifactProperties.LANGUAGE ) );
+        assertEquals( "typeId", a.getProperties().get( ArtifactProperties.TYPE ) );
+        assertEquals( "true", a.getProperties().get( ArtifactProperties.INCLUDES_DEPENDENCIES ) );
+        assertEquals( "true", a.getProperties().get( ArtifactProperties.CONSTITUTES_BUILD_PATH ) );
+
+        Map<String, String> props = new HashMap<String, String>();
+        props.put( "someNonStandardProperty", "someNonStandardProperty" );
+        a = new DefaultArtifact( "gid", "aid", "cls", "ext", "ver", props, type );
+        assertEquals( "ext", a.getExtension() );
+        assertEquals( "cls", a.getClassifier() );
+        assertEquals( "typeLang", a.getProperties().get( ArtifactProperties.LANGUAGE ) );
+        assertEquals( "typeId", a.getProperties().get( ArtifactProperties.TYPE ) );
+        assertEquals( "true", a.getProperties().get( ArtifactProperties.INCLUDES_DEPENDENCIES ) );
+        assertEquals( "true", a.getProperties().get( ArtifactProperties.CONSTITUTES_BUILD_PATH ) );
+        assertEquals( "someNonStandardProperty", a.getProperties().get( "someNonStandardProperty" ) );
+        
+        props = new HashMap<String, String>();
+        props.put( "someNonStandardProperty", "someNonStandardProperty" );
+        props.put( ArtifactProperties.CONSTITUTES_BUILD_PATH, "rubbish" );
+        props.put( ArtifactProperties.INCLUDES_DEPENDENCIES, "rubbish" );
+        a = new DefaultArtifact( "gid", "aid", "cls", "ext", "ver", props, type );
+        assertEquals( "ext", a.getExtension() );
+        assertEquals( "cls", a.getClassifier() );
+        assertEquals( "typeLang", a.getProperties().get( ArtifactProperties.LANGUAGE ) );
+        assertEquals( "typeId", a.getProperties().get( ArtifactProperties.TYPE ) );
+        assertEquals( "rubbish", a.getProperties().get( ArtifactProperties.INCLUDES_DEPENDENCIES ) );
+        assertEquals( "rubbish", a.getProperties().get( ArtifactProperties.CONSTITUTES_BUILD_PATH ) );
+        assertEquals( "someNonStandardProperty", a.getProperties().get( "someNonStandardProperty" ) );
     }
 
 }

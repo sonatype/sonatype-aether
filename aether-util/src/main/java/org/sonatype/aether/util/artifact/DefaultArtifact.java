@@ -48,11 +48,24 @@ public final class DefaultArtifact
 
     private String baseVersion;
 
+    /**
+     * Creates a new artifact with the specified coordinates.
+     * 
+     * @param coords The artifact coordinates in the format
+     *            {@code <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>}, must not be {@code null}.
+     */
     public DefaultArtifact( String coords )
     {
         this( coords, Collections.<String, String> emptyMap() );
     }
 
+    /**
+     * Creates a new artifact with the specified coordinates and properties.
+     * 
+     * @param coords The artifact coordinates in the format
+     *            {@code <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>}, must not be {@code null}.
+     * @param properties The artifact properties, may be {@code null}.
+     */
     public DefaultArtifact( String coords, Map<String, String> properties )
     {
         Pattern p = Pattern.compile( "([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?:([^: ]+)" );
@@ -83,22 +96,65 @@ public final class DefaultArtifact
         return ( value == null || value.length() <= 0 ) ? defaultValue : value;
     }
 
+    /**
+     * Creates a new artifact with the specified coordinates.
+     * 
+     * @param groupId The group identifier of the artifact, may be {@code null}.
+     * @param artifactId The artifact identifier of the artifact, may be {@code null}.
+     * @param extension The file extension of the artifact, may be {@code null}.
+     * @param version The version of the artifact, may be {@code null}.
+     */
     public DefaultArtifact( String groupId, String artifactId, String extension, String version )
     {
         this( groupId, artifactId, "", extension, version );
     }
 
+    /**
+     * Creates a new artifact with the specified coordinates.
+     * 
+     * @param groupId The group identifier of the artifact, may be {@code null}.
+     * @param artifactId The artifact identifier of the artifact, may be {@code null}.
+     * @param classifier The classifier of the artifact, may be {@code null}.
+     * @param extension The file extension of the artifact, may be {@code null}.
+     * @param version The version of the artifact, may be {@code null}.
+     */
     public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version )
     {
         this( groupId, artifactId, classifier, extension, version, null, (File) null );
     }
 
+    /**
+     * Creates a new artifact with the specified coordinates. The optional artifact type provided to this constructor
+     * will be used to determine the artifact's classifier and file extension if the corresponding arguments for this
+     * constructor are {@code null}.
+     * 
+     * @param groupId The group identifier of the artifact, may be {@code null}.
+     * @param artifactId The artifact identifier of the artifact, may be {@code null}.
+     * @param classifier The classifier of the artifact, may be {@code null}.
+     * @param extension The file extension of the artifact, may be {@code null}.
+     * @param version The version of the artifact, may be {@code null}.
+     * @param type The artifact type from which to query classifier, file extension and properties, may be {@code null}.
+     */
     public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version,
                             ArtifactType type )
     {
         this( groupId, artifactId, classifier, extension, version, null, type );
     }
 
+    /**
+     * Creates a new artifact with the specified coordinates and properties. The optional artifact type provided to this
+     * constructor will be used to determine the artifact's classifier and file extension if the corresponding arguments
+     * for this constructor are {@code null}. If the artifact type specifies properties, those will get merged with the
+     * properties passed directly into the constructor, with the latter properties taking precedence.
+     * 
+     * @param groupId The group identifier of the artifact, may be {@code null}.
+     * @param artifactId The artifact identifier of the artifact, may be {@code null}.
+     * @param classifier The classifier of the artifact, may be {@code null}.
+     * @param extension The file extension of the artifact, may be {@code null}.
+     * @param version The version of the artifact, may be {@code null}.
+     * @param properties The properties of the artifact, may be {@code null}.
+     * @param type The artifact type from which to query classifier, file extension and properties, may be {@code null}.
+     */
     public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version,
                             Map<String, String> properties, ArtifactType type )
     {
@@ -149,6 +205,17 @@ public final class DefaultArtifact
         return properties;
     }
 
+    /**
+     * Creates a new artifact with the specified coordinates, properties and file.
+     * 
+     * @param groupId The group identifier of the artifact, may be {@code null}.
+     * @param artifactId The artifact identifier of the artifact, may be {@code null}.
+     * @param classifier The classifier of the artifact, may be {@code null}.
+     * @param extension The file extension of the artifact, may be {@code null}.
+     * @param version The version of the artifact, may be {@code null}.
+     * @param properties The properties of the artifact, may be {@code null}.
+     * @param file The resolved file of the artifact, may be {@code null}.
+     */
     public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version,
                             Map<String, String> properties, File file )
     {

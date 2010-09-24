@@ -34,6 +34,11 @@ import java.util.Map;
 public class ChecksumUtils
 {
 
+    private ChecksumUtils()
+    {
+        // hide constructor
+    }
+
     /**
      * Extracts the checksum from the specified file.
      * 

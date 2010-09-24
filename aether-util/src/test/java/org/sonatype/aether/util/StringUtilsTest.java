@@ -1,4 +1,4 @@
-package org.sonatype.aether.impl;
+package org.sonatype.aether.util;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -13,25 +13,23 @@ package org.sonatype.aether.impl;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.collection.CollectRequest;
-import org.sonatype.aether.collection.CollectResult;
-import org.sonatype.aether.collection.DependencyCollectionException;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 /**
- * This collector fulfills the contract of
- * {@link RepositorySystem#collectDependencies(RepositorySystemSession, CollectRequest)}.
- * 
  * @author Benjamin Bentmann
  */
-public interface DependencyCollector
+public class StringUtilsTest
 {
 
-    /**
-     * @see RepositorySystem#collectDependencies(RepositorySystemSession, CollectRequest)
-     */
-    CollectResult collectDependencies( RepositorySystemSession session, CollectRequest request )
-        throws DependencyCollectionException;
+    @Test
+    public void testIsEmpty()
+    {
+        assertTrue( StringUtils.isEmpty( null ) );
+        assertTrue( StringUtils.isEmpty( "" ) );
+        assertFalse( StringUtils.isEmpty( " " ) );
+        assertFalse( StringUtils.isEmpty( "test" ) );
+    }
 
 }

@@ -14,3 +14,7 @@ Mailing Lists
 - Usage of Aether:  
   <aether-user@sonatype.org> to post mails  
   <aether-user-subscribe@sonatype.org> to subscribe to the list
+
+Development
+===========
+Source code uses the Maven code style: <http://maven.apache.org/developers/maven-eclipse-codestyle.xml>

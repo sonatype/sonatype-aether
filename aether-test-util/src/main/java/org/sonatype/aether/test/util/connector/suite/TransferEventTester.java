@@ -35,6 +35,7 @@ import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferEvent.EventType;
+import org.sonatype.aether.transfer.TransferResource;
 
 /**
  * Utility class for connector tests. Provides methods to check the emitted transfer events for artifact and metadata
@@ -44,6 +45,9 @@ import org.sonatype.aether.transfer.TransferEvent.EventType;
  */
 public class TransferEventTester
 {
+    /**
+     * Test the order of events and their properties for the successful up- and download of artifact and metadata.
+     */
     public static void testSuccessfulTransferEvents( RepositoryConnectorFactory factory,
                                                      TestRepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException, IOException
@@ -90,11 +94,14 @@ public class TransferEventTester
         assertEquals( msg, INITIATED, currentEvent.getType() );
         checkProperties( currentEvent );
 
+        TransferResource expectedResource = currentEvent.getResource();
+
         currentEvent = events.poll();
         msg = "start event is missing";
         assertNotNull( msg, currentEvent );
         assertEquals( msg, TransferEvent.EventType.STARTED, currentEvent.getType() );
         checkProperties( currentEvent );
+        assertResourceEquals( expectedResource, currentEvent.getResource() );
 
         EventType progressed = TransferEvent.EventType.PROGRESSED;
         EventType succeeded = TransferEvent.EventType.SUCCEEDED;
@@ -106,6 +113,8 @@ public class TransferEventTester
         while ( ( currentEvent = events.poll() ) != null )
         {
             EventType currentType = currentEvent.getType();
+
+            assertResourceEquals( expectedResource, currentEvent.getResource() );
 
             if ( succeeded.equals( currentType ) )
             {
@@ -133,6 +142,18 @@ public class TransferEventTester
         assertEquals( "succeed event transferred bytes don't match", expectedBytes, succeedEvent.getTransferredBytes() );
     }
 
+    private static void assertResourceEquals( TransferResource expected, TransferResource actual )
+    {
+        assertEquals( "TransferResource: content length does not match.", expected.getContentLength(),
+                      actual.getContentLength() );
+        assertEquals( "TransferResource: file does not match.", expected.getFile(), actual.getFile() );
+        assertEquals( "TransferResource: repo url does not match.", expected.getRepositoryUrl(),
+                      actual.getRepositoryUrl() );
+        assertEquals( "TransferResource: transfer start time does not match.", expected.getTransferStartTime(),
+                      actual.getTransferStartTime() );
+        assertEquals( "TransferResource: name does not match.", expected.getResourceName(), actual.getResourceName() );
+    }
+
     private static void checkProperties( TransferEvent event )
     {
         assertNotNull( "resource is null for type: " + event.getType(), event.getResource() );
@@ -152,6 +173,11 @@ public class TransferEventTester
         }
     }
 
+    /**
+     * Test the order of events and their properties for the unsuccessful up- and download of artifact and metadata.
+     * Failure is triggered by setting the file to transfer to {@code null} for uploads, and asking for a non-existent
+     * item for downloads.
+     */
     public static void testFailedTransferEvents( RepositoryConnectorFactory factory,
                                                  TestRepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException, IOException

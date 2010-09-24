@@ -22,11 +22,11 @@ import java.nio.channels.FileChannel;
 
 public class TestFileUtils
 {
-    
+
     public static File createTempFile( String contents )
         throws IOException
     {
-        return createTempFile( contents.getBytes("UTF-8"), 1);
+        return createTempFile( contents.getBytes( "UTF-8" ), 1 );
     }
 
     public static File createTempFile( byte[] pattern, int repeat )

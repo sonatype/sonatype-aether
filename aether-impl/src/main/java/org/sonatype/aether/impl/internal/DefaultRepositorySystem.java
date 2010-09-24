@@ -224,12 +224,14 @@ public class DefaultRepositorySystem
     public VersionResult resolveVersion( RepositorySystemSession session, VersionRequest request )
         throws VersionResolutionException
     {
+        validateSession( session );
         return versionResolver.resolveVersion( session, request );
     }
 
     public VersionRangeResult resolveVersionRange( RepositorySystemSession session, VersionRangeRequest request )
         throws VersionRangeResolutionException
     {
+        validateSession( session );
         return versionRangeResolver.resolveVersionRange( session, request );
     }
 
@@ -237,12 +239,14 @@ public class DefaultRepositorySystem
                                                             ArtifactDescriptorRequest request )
         throws ArtifactDescriptorException
     {
+        validateSession( session );
         return artifactDescriptorReader.readArtifactDescriptor( session, request );
     }
 
     public ArtifactResult resolveArtifact( RepositorySystemSession session, ArtifactRequest request )
         throws ArtifactResolutionException
     {
+        validateSession( session );
         return artifactResolver.resolveArtifact( session, request );
     }
 
@@ -250,18 +254,21 @@ public class DefaultRepositorySystem
                                                   Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException
     {
+        validateSession( session );
         return artifactResolver.resolveArtifacts( session, requests );
     }
 
     public List<MetadataResult> resolveMetadata( RepositorySystemSession session,
                                                  Collection<? extends MetadataRequest> requests )
     {
+        validateSession( session );
         return metadataResolver.resolveMetadata( session, requests );
     }
 
     public CollectResult collectDependencies( RepositorySystemSession session, CollectRequest request )
         throws DependencyCollectionException
     {
+        validateSession( session );
         return dependencyCollector.collectDependencies( session, request );
     }
 
@@ -269,6 +276,7 @@ public class DefaultRepositorySystem
                                                      DependencyFilter filter )
         throws ArtifactResolutionException
     {
+        validateSession( session );
         ArtifactRequestBuilder builder = new ArtifactRequestBuilder();
         DependencyVisitor visitor = ( filter != null ) ? new FilteringDependencyVisitor( builder, filter ) : builder;
         visitor = new TreeDependencyVisitor( visitor );
@@ -307,6 +315,7 @@ public class DefaultRepositorySystem
                                                      DependencyFilter filter )
         throws DependencyCollectionException, ArtifactResolutionException
     {
+        validateSession( session );
         CollectResult result = collectDependencies( session, request );
         return resolveDependencies( session, result.getRoot(), filter );
     }
@@ -314,12 +323,14 @@ public class DefaultRepositorySystem
     public InstallResult install( RepositorySystemSession session, InstallRequest request )
         throws InstallationException
     {
+        validateSession( session );
         return installer.install( session, request );
     }
 
     public DeployResult deploy( RepositorySystemSession session, DeployRequest request )
         throws DeploymentException
     {
+        validateSession( session );
         return deployer.deploy( session, request );
     }
 
@@ -340,6 +351,67 @@ public class DefaultRepositorySystem
         {
             throw new IllegalArgumentException( "Invalid repository type: " + type );
         }
+    }
+
+    private void validateSession( RepositorySystemSession session )
+    {
+        if ( session.getLocalRepositoryManager() == null )
+        {
+            invalidSession( "LocalRepositoryManager" );
+        }
+        if ( session.getSystemProperties() == null )
+        {
+            invalidSession( "SystemProperties" );
+        }
+        if ( session.getUserProperties() == null )
+        {
+            invalidSession( "UserProperties" );
+        }
+        if ( session.getConfigProperties() == null )
+        {
+            invalidSession( "ConfigProperties" );
+        }
+        if ( session.getMirrorSelector() == null )
+        {
+            invalidSession( "MirrorSelector" );
+        }
+        if ( session.getProxySelector() == null )
+        {
+            invalidSession( "ProxySelector" );
+        }
+        if ( session.getAuthenticationSelector() == null )
+        {
+            invalidSession( "AuthenticationSelector" );
+        }
+        if ( session.getArtifactTypeRegistry() == null )
+        {
+            invalidSession( "ArtifactTypeRegistry" );
+        }
+        if ( session.getDependencyTraverser() == null )
+        {
+            invalidSession( "DependencyTraverser" );
+        }
+        if ( session.getDependencyManager() == null )
+        {
+            invalidSession( "DependencyManager" );
+        }
+        if ( session.getDependencySelector() == null )
+        {
+            invalidSession( "DependencySelector" );
+        }
+        if ( session.getDependencyGraphTransformer() == null )
+        {
+            invalidSession( "DependencyGraphTransformer" );
+        }
+        if ( session.getData() == null )
+        {
+            invalidSession( "Data" );
+        }
+    }
+
+    private void invalidSession( String name )
+    {
+        throw new IllegalArgumentException( "Invalid repository system session: " + name + " is not set." );
     }
 
 }

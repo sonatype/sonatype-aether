@@ -13,6 +13,7 @@ package org.sonatype.aether.impl;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.deployment.DeployRequest;
 import org.sonatype.aether.deployment.DeployResult;
@@ -31,6 +32,7 @@ public interface Deployer
      * @param request The deployment request, must not be {@code null}.
      * @return The deployment result, never {@code null}.
      * @throws DeploymentException If any artifact/metadata from the request could not be deployed.
+     * @see RepositorySystem#deploy(RepositorySystemSession, DeployRequest)
      */
     DeployResult deploy( RepositorySystemSession session, DeployRequest request )
         throws DeploymentException;

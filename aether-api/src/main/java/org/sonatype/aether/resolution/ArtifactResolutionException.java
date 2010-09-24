@@ -45,11 +45,15 @@ public class ArtifactResolutionException
 
         buffer.append( "The following artifacts could not be resolved: " );
 
+        int unresolved = 0;
+
         String sep = "";
         for ( ArtifactResult result : results )
         {
             if ( !result.isResolved() )
             {
+                unresolved++;
+
                 buffer.append( sep );
                 buffer.append( result.getRequest().getArtifact() );
                 sep = ", ";
@@ -59,7 +63,15 @@ public class ArtifactResolutionException
         Throwable cause = getCause( results );
         if ( cause != null )
         {
-            buffer.append( ": " ).append( cause.getMessage() );
+            if ( unresolved == 1 )
+            {
+                buffer.setLength( 0 );
+                buffer.append( cause.getMessage() );
+            }
+            else
+            {
+                buffer.append( ": " ).append( cause.getMessage() );
+            }
         }
 
         return buffer.toString();

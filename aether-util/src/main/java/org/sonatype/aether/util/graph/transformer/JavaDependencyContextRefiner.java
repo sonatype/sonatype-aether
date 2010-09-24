@@ -30,7 +30,7 @@ public class JavaDependencyContextRefiner
         throws RepositoryException
     {
         String ctx = node.getRequestContext();
-        if ( "project".equals( context ) )
+        if ( "project".equals( ctx ) )
         {
             String scope = getClasspathScope( node );
             if ( scope != null )

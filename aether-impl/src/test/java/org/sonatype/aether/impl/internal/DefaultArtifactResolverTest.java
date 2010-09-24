@@ -45,6 +45,7 @@ import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener.EventWrapper;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener.Type;
+import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubArtifact;
@@ -76,8 +77,8 @@ public class DefaultArtifactResolverTest
         VersionResolver versionResolver = new StubVersionResolver();
         session = new TestRepositorySystemSession();
         resolver =
-            new DefaultArtifactResolver( NullLogger.INSTANCE, versionResolver, updateCheckManager,
-                                         remoteRepositoryManager, localRepositoryMaintainers );
+            new DefaultArtifactResolver( NullLogger.INSTANCE, TestFileProcessor.INSTANCE, versionResolver,
+                                         updateCheckManager, remoteRepositoryManager, localRepositoryMaintainers );
 
         artifact = new StubArtifact( "gid", "aid", "", "ext", "ver" );
 

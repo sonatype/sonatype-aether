@@ -25,7 +25,7 @@ under the License.
   <parent>
     <groupId>org.sonatype.aether</groupId>
     <artifactId>aether-parent</artifactId>
-    <version>1.5-SNAPSHOT</version>
+    <version>1.6-SNAPSHOT</version>
   </parent>
 
   <artifactId>aether-impl</artifactId>

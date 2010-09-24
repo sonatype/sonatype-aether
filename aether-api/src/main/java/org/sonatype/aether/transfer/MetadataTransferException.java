@@ -28,6 +28,18 @@ public class MetadataTransferException
 
     private final RemoteRepository repository;
 
+    static String getString( String prefix, RemoteRepository repository )
+    {
+        if ( repository == null )
+        {
+            return "";
+        }
+        else
+        {
+            return prefix + repository.getId() + " (" + repository.getUrl() + ")";
+        }
+    }
+
     public MetadataTransferException( Metadata metadata, RemoteRepository repository, String message )
     {
         super( message );
@@ -38,8 +50,9 @@ public class MetadataTransferException
 
     public MetadataTransferException( Metadata metadata, RemoteRepository repository, Throwable cause )
     {
-        super( "Could not transfer metadata " + metadata + ( repository != null ? " from " + repository : "" )
-            + getMessage( ": ", cause ), cause );
+        super(
+               "Could not transfer metadata " + metadata + getString( " from ", repository ) + getMessage( ": ", cause ),
+               cause );
 
         this.metadata = metadata;
         this.repository = repository;

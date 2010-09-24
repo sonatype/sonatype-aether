@@ -14,14 +14,13 @@ package org.sonatype.aether.impl.internal;
  */
 
 import static org.junit.Assert.*;
+import static org.sonatype.aether.repository.RepositoryPolicy.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Properties;
 import java.util.TimeZone;
 
 import org.junit.After;
@@ -36,7 +35,9 @@ import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.test.util.impl.StubMetadata;
+import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.transfer.ArtifactTransferException;
+import org.sonatype.aether.transfer.MetadataNotFoundException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 
 /**
@@ -44,6 +45,11 @@ import org.sonatype.aether.transfer.MetadataTransferException;
  */
 public class DefaultUpdateCheckManagerTest
 {
+
+    /**
+     * 
+     */
+    private static final int HOUR = 60 * 60 * 1000;
 
     private DefaultUpdateCheckManager manager;
 
@@ -65,10 +71,11 @@ public class DefaultUpdateCheckManagerTest
         metadata =
             new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT,
                               TestFileUtils.createTempFile( "metadata" ) );
-        artifact = new StubArtifact( "gid", "aid", "", "ext", "ver" ).setFile( TestFileUtils.createTempFile( "artifact" ) );
+        artifact =
+            new StubArtifact( "gid", "aid", "", "ext", "ver" ).setFile( TestFileUtils.createTempFile( "artifact" ) );
     }
 
-    @Test( expected = IllegalArgumentException.class )
+    @Test( expected = Exception.class )
     public void testCheckMetadataFailOnNoFile()
     {
         UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
@@ -78,6 +85,26 @@ public class DefaultUpdateCheckManagerTest
         manager.checkMetadata( session, check );
     }
 
+    /**
+     * [AETHER-27] updatePolicy:daily should be based on local midnight
+     */
+    @Test
+    public void testUseLocalTimezone()
+    {
+        long localMidnight;
+
+        Calendar cal = Calendar.getInstance();
+        cal.set( Calendar.HOUR_OF_DAY, 0 );
+        cal.set( Calendar.MINUTE, 0 );
+        cal.set( Calendar.SECOND, 0 );
+        cal.set( Calendar.MILLISECOND, 0 );
+        localMidnight = cal.getTimeInMillis();
+
+        String policy = RepositoryPolicy.UPDATE_POLICY_DAILY;
+        assertEquals( false, manager.isUpdatedRequired( session, localMidnight + 1000, policy ) );
+        assertEquals( true, manager.isUpdatedRequired( session, localMidnight - 1000, policy ) );
+    }
+
     @Test
     public void testCheckMetadataUpdatePolicyRequired()
     {
@@ -85,8 +112,8 @@ public class DefaultUpdateCheckManagerTest
         check.setItem( metadata );
         check.setFile( metadata.getFile() );
 
-        Calendar cal = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) );
-        cal.set( Calendar.DATE, cal.get( Calendar.DATE ) - 1 );
+        Calendar cal = Calendar.getInstance();
+        cal.add( Calendar.DATE, -1 );
         check.setLocalLastUpdated( cal.getTimeInMillis() );
 
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_ALWAYS );
@@ -111,10 +138,10 @@ public class DefaultUpdateCheckManagerTest
         UpdateCheck<Metadata, MetadataTransferException> check = new UpdateCheck<Metadata, MetadataTransferException>();
         check.setItem( metadata );
         check.setFile( metadata.getFile() );
+        check.setRepository( repository );
+        check.setAuthoritativeRepository( repository );
 
-        Calendar cal = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) );
-        cal.set( Calendar.HOUR, cal.get( Calendar.HOUR ) - 1 );
-        check.setLocalLastUpdated( cal.getTimeInMillis() );
+        check.setLocalLastUpdated( System.currentTimeMillis() );
 
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_NEVER );
         manager.checkMetadata( session, check );
@@ -141,9 +168,8 @@ public class DefaultUpdateCheckManagerTest
         check.setItem( metadata );
         check.setFile( metadata.getFile() );
         check.setRepository( repository );
+        check.setAuthoritativeRepository( repository );
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
-
-        File propertiesFile = new File( check.getFile().getParentFile(), "resolver-status.properties" );
 
         // never checked before
         manager.checkMetadata( session, check );
@@ -151,12 +177,11 @@ public class DefaultUpdateCheckManagerTest
         assertEquals( check.getLocalLastUpdated(), 0 );
 
         // just checked
-        Properties p = new Properties();
-        long lastUpdate = new Date().getTime();
-        p.put( check.getFile().getName() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        FileOutputStream out = new FileOutputStream( propertiesFile );
-        p.store( out, "" );
-        out.close();
+        check = newMetadataCheck();
+        manager.touchMetadata( session, check );
+
+        check = newMetadataCheck();
+        check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
 
         manager.checkMetadata( session, check );
         assertEquals( false, check.isRequired() );
@@ -178,15 +203,8 @@ public class DefaultUpdateCheckManagerTest
 
         UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
 
-        File propertiesFile = new File( check.getFile().getParentFile(), "resolver-status.properties" );
-
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
-        Properties p = new Properties();
-        p.put( check.getFile().getName() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".maven-metadata.xml.lastUpdated", String.valueOf( lastUpdate ) );
-        FileOutputStream out = new FileOutputStream( propertiesFile );
-        p.store( out, "" );
-        out.close();
+        long lastUpdate = new Date().getTime() - HOUR;
+        check.setLocalLastUpdated( lastUpdate );
 
         // ! file.exists && updateRequired -> check in remote repo
         check.setLocalLastUpdated( lastUpdate );
@@ -202,18 +220,12 @@ public class DefaultUpdateCheckManagerTest
         session.setNotFoundCachingEnabled( true );
 
         UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
-        File propertiesFile = new File( check.getFile().getParentFile(), "resolver-status.properties" );
 
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
-        Properties p = new Properties();
-        p.put( check.getFile().getName() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".maven-metadata.xml.lastUpdated", String.valueOf( lastUpdate ) );
-        FileOutputStream out = new FileOutputStream( propertiesFile );
-        p.store( out, "" );
-        out.close();
+        check.setException( new MetadataNotFoundException( metadata, repository, "" ) );
+        manager.touchMetadata( session, check );
 
         // ! file.exists && ! updateRequired -> artifact not found in remote repo
-        check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
+        check = newMetadataCheck().setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
         manager.checkMetadata( session, check );
         assertEquals( false, check.isRequired() );
         assertNotNull( check.getException() );
@@ -227,15 +239,9 @@ public class DefaultUpdateCheckManagerTest
         session.setNotFoundCachingEnabled( false );
 
         UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
-        File propertiesFile = new File( check.getFile().getParentFile(), "resolver-status.properties" );
 
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
-        Properties p = new Properties();
-        p.put( check.getFile().getName() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".maven-metadata.xml.lastUpdated", String.valueOf( lastUpdate ) );
-        FileOutputStream out = new FileOutputStream( propertiesFile );
-        p.store( out, "" );
-        out.close();
+        check.setException( new MetadataNotFoundException( metadata, repository, "" ) );
+        manager.touchMetadata( session, check );
 
         // ! file.exists && ! updateRequired -> artifact not found in remote repo
         // ignore NotFoundCaching-setting, don't check if update policy does not say so for metadata
@@ -253,18 +259,12 @@ public class DefaultUpdateCheckManagerTest
 
         UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
-        File propertiesFile = new File( check.getFile().getParentFile(), "resolver-status.properties" );
 
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
-        Properties p = new Properties();
-        p.put( check.getFile().getName() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".maven-metadata.xml.lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".maven-metadata.xml.error", "some error message" );
-        FileOutputStream out = new FileOutputStream( propertiesFile );
-        p.store( out, "" );
-        out.close();
+        check.setException( new MetadataTransferException( metadata, repository, "some error" ) );
+        manager.touchMetadata( session, check );
 
         // ! file.exists && ! updateRequired && previousError -> depends on transfer error caching
+        check = newMetadataCheck();
         session.setTransferErrorCachingEnabled( true );
         manager.checkMetadata( session, check );
         assertEquals( false, check.isRequired() );
@@ -279,18 +279,12 @@ public class DefaultUpdateCheckManagerTest
 
         UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
-        File propertiesFile = new File( check.getFile().getParentFile(), "resolver-status.properties" );
 
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
-        Properties p = new Properties();
-        p.put( check.getFile().getName() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".maven-metadata.xml.lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".maven-metadata.xml.error", "some error message" );
-        FileOutputStream out = new FileOutputStream( propertiesFile );
-        p.store( out, "" );
-        out.close();
+        check.setException( new MetadataTransferException( metadata, repository, "some error" ) );
+        manager.touchMetadata( session, check );
 
         // ! file.exists && ! updateRequired && previousError -> depends on transfer error caching
+        check = newMetadataCheck();
         session.setTransferErrorCachingEnabled( false );
         manager.checkMetadata( session, check );
         assertEquals( true, check.isRequired() );
@@ -303,6 +297,7 @@ public class DefaultUpdateCheckManagerTest
         check.setItem( metadata );
         check.setFile( metadata.getFile() );
         check.setRepository( repository );
+        check.setAuthoritativeRepository( repository );
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_INTERVAL + ":10" );
         return check;
     }
@@ -346,7 +341,7 @@ public class DefaultUpdateCheckManagerTest
         check.setFile( artifact.getFile() );
 
         Calendar cal = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) );
-        cal.set( Calendar.DATE, cal.get( Calendar.DATE ) - 1 );
+        cal.add( Calendar.DATE, -1 );
         long lastUpdate = cal.getTimeInMillis();
         artifact.getFile().setLastModified( lastUpdate );
         check.setLocalLastUpdated( lastUpdate );
@@ -375,7 +370,7 @@ public class DefaultUpdateCheckManagerTest
         check.setFile( artifact.getFile() );
 
         Calendar cal = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) );
-        cal.set( Calendar.HOUR, cal.get( Calendar.HOUR ) - 1 );
+        cal.add( Calendar.HOUR_OF_DAY, -1 );
         check.setLocalLastUpdated( cal.getTimeInMillis() );
 
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_NEVER );
@@ -432,15 +427,7 @@ public class DefaultUpdateCheckManagerTest
         artifact.getFile().delete();
         UpdateCheck<Artifact, ArtifactTransferException> check = newArtifactCheck();
 
-        File propertiesFile = new File( check.getFile().getPath() + ".lastUpdated" );
-
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
-        Properties p = new Properties();
-        p.put( check.getFile().getName() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        FileOutputStream out = new FileOutputStream( propertiesFile );
-        p.store( out, "" );
-        out.close();
+        long lastUpdate = new Date().getTime() - HOUR;
 
         // ! file.exists && updateRequired -> check in remote repo
         check.setLocalLastUpdated( lastUpdate );
@@ -456,17 +443,11 @@ public class DefaultUpdateCheckManagerTest
         session.setNotFoundCachingEnabled( true );
 
         UpdateCheck<Artifact, ArtifactTransferException> check = newArtifactCheck();
-        File propertiesFile = new File( check.getFile().getPath() + ".lastUpdated" );
-
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
-        Properties p = new Properties();
-        p.put( repository.getUrl() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        FileOutputStream out = new FileOutputStream( propertiesFile );
-        p.store( out, "" );
-        out.close();
+        check.setException( new ArtifactNotFoundException( artifact, repository ) );
+        manager.touchArtifact( session, check );
 
         // ! file.exists && ! updateRequired -> artifact not found in remote repo
-        check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
+        check = newArtifactCheck().setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
         manager.checkArtifact( session, check );
         assertEquals( false, check.isRequired() );
         assertNotNull( check.getException() );
@@ -480,17 +461,11 @@ public class DefaultUpdateCheckManagerTest
         session.setNotFoundCachingEnabled( false );
 
         UpdateCheck<Artifact, ArtifactTransferException> check = newArtifactCheck();
-        File propertiesFile = new File( check.getFile().getPath() + ".lastUpdated" );
-
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
-        Properties p = new Properties();
-        p.put( repository.getUrl() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        FileOutputStream out = new FileOutputStream( propertiesFile );
-        p.store( out, "" );
-        out.close();
+        check.setException( new ArtifactNotFoundException( artifact, repository ) );
+        manager.touchArtifact( session, check );
 
         // ! file.exists && ! updateRequired -> artifact not found in remote repo
-        check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
+        check = newArtifactCheck().setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
         manager.checkArtifact( session, check );
         assertEquals( true, check.isRequired() );
         assertNull( check.getException() );
@@ -504,17 +479,11 @@ public class DefaultUpdateCheckManagerTest
 
         UpdateCheck<Artifact, ArtifactTransferException> check = newArtifactCheck();
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
-        File propertiesFile = new File( check.getFile().getPath() + ".lastUpdated" );
-
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
-        Properties p = new Properties();
-        p.put( repository.getUrl() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".error", "some error message" );
-        FileOutputStream out = new FileOutputStream( propertiesFile );
-        p.store( out, "" );
-        out.close();
+        check.setException( new ArtifactTransferException( artifact, repository, "some error" ) );
+        manager.touchArtifact( session, check );
 
         // ! file.exists && ! updateRequired && previousError -> depends on transfer error caching
+        check = newArtifactCheck();
         session.setTransferErrorCachingEnabled( true );
         manager.checkArtifact( session, check );
         assertEquals( false, check.isRequired() );
@@ -529,17 +498,11 @@ public class DefaultUpdateCheckManagerTest
 
         UpdateCheck<Artifact, ArtifactTransferException> check = newArtifactCheck();
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
-        File propertiesFile = new File( check.getFile().getPath() + ".lastUpdated" );
-
-        long lastUpdate = new Date().getTime() - ( 1800 * 1000 );
-        Properties p = new Properties();
-        p.put( repository.getUrl() + ".lastUpdated", String.valueOf( lastUpdate ) );
-        p.put( repository.getUrl() + ".error", "some error message" );
-        FileOutputStream out = new FileOutputStream( propertiesFile );
-        p.store( out, "" );
-        out.close();
+        check.setException( new ArtifactTransferException( artifact, repository, "some error" ) );
+        manager.touchArtifact( session, check );
 
         // ! file.exists && ! updateRequired && previousError -> depends on transfer error caching
+        check = newArtifactCheck();
         session.setTransferErrorCachingEnabled( false );
         manager.checkArtifact( session, check );
         assertEquals( true, check.isRequired() );
@@ -550,10 +513,8 @@ public class DefaultUpdateCheckManagerTest
     public void testTouchMetadata()
         throws IOException
     {
-        long previous = new Date().getTime() - ( 2 * 60 * 60 * 1000 );
         UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
 
-        artifact.getFile().setLastModified( previous );
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_INTERVAL + ":60" );
         manager.checkMetadata( session, check );
         assertTrue( "check is marked as not required, but should be", check.isRequired() );
@@ -563,6 +524,22 @@ public class DefaultUpdateCheckManagerTest
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_INTERVAL + ":60" );
         manager.checkMetadata( session, check );
         assertFalse( "check is marked as required directly after touchMetadata()", check.isRequired() );
+
+    }
+
+    @Test
+    public void testEffectivePolicy()
+    {
+        assertEquals( UPDATE_POLICY_ALWAYS,
+                      manager.getEffectiveUpdatePolicy( session, UPDATE_POLICY_ALWAYS, UPDATE_POLICY_DAILY ) );
+        assertEquals( UPDATE_POLICY_ALWAYS,
+                      manager.getEffectiveUpdatePolicy( session, UPDATE_POLICY_ALWAYS, UPDATE_POLICY_NEVER ) );
+        assertEquals( UPDATE_POLICY_DAILY,
+                      manager.getEffectiveUpdatePolicy( session, UPDATE_POLICY_DAILY, UPDATE_POLICY_NEVER ) );
+        assertEquals( UPDATE_POLICY_INTERVAL + ":60",
+                      manager.getEffectiveUpdatePolicy( session, UPDATE_POLICY_DAILY, UPDATE_POLICY_INTERVAL + ":60" ) );
+        assertEquals( UPDATE_POLICY_INTERVAL + ":60", manager.getEffectiveUpdatePolicy( session, UPDATE_POLICY_INTERVAL
+            + ":100", UPDATE_POLICY_INTERVAL + ":60" ) );
     }
 
 }

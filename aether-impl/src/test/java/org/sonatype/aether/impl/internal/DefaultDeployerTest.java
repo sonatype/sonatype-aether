@@ -36,6 +36,7 @@ import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.Transfer.State;
 import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener;
+import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener.EventWrapper;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
@@ -81,6 +82,7 @@ public class DefaultDeployerTest
         UpdateCheckManager updateCheckManager = new DoNothingUpdateCheckManager();
         deployer.setUpdateCheckManager( updateCheckManager );
         deployer.setLogger( new NullLogger() );
+        deployer.setFileProcessor( TestFileProcessor.INSTANCE );
 
         request = new DeployRequest();
         connector = new RecordingRepositoryConnector();

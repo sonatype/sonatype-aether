@@ -1,4 +1,9 @@
-package org.sonatype.aether.util;
+package org.sonatype.aether.util.listener;
+
+import java.nio.ByteBuffer;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -14,28 +19,28 @@ package org.sonatype.aether.util;
  */
 
 /**
- * A utility class to ease string processing.
- * 
  * @author Benjamin Hanzelmann
- * @author Benjamin Bentmann
+ *
  */
-public class StringUtils
+public class DefaultTransferEventTest
 {
 
-    private StringUtils()
+    @Test
+    public void testByteArrayConversion()
     {
-        // hide constructor
-    }
 
-    /**
-     * Checks whether a string is {@code null} or of zero length.
-     * 
-     * @param string The string to check, may be {@code null}.
-     * @return {@code true} if the string is {@code null} or of zero length, {@code false} otherwise.
-     */
-    public static boolean isEmpty( String string )
-    {
-        return string == null || string.length() <= 0;
+        DefaultTransferEvent event = new DefaultTransferEvent();
+        byte[] buffer = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        int length = buffer.length - 2;
+        int offset = 1;
+        event.setDataBuffer( buffer, offset, length );
+
+        ByteBuffer bb = event.getDataBuffer();
+        byte[] dst = new byte[bb.remaining()];
+        bb.get( dst );
+
+        byte[] expected = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+        Assert.assertArrayEquals( expected, dst );
     }
 
 }

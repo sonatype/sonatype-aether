@@ -14,9 +14,6 @@ package org.sonatype.aether.impl.internal;
  */
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -128,7 +125,7 @@ public class SimpleLocalRepositoryManager
                 subKeys.add( mirroredRepo.getId() );
             }
 
-            SafeDigest digest = new SafeDigest();
+            SimpleDigest digest = new SimpleDigest();
             digest.update( context );
             for ( String subKey : subKeys )
             {
@@ -211,77 +208,6 @@ public class SimpleLocalRepositoryManager
     public String toString()
     {
         return String.valueOf( getRepository() );
-    }
-
-    static class SafeDigest
-    {
-
-        private MessageDigest digest;
-
-        private long hash;
-
-        public SafeDigest()
-        {
-            try
-            {
-                digest = MessageDigest.getInstance( "SHA-1" );
-            }
-            catch ( NoSuchAlgorithmException e )
-            {
-                digest = null;
-                hash = 13;
-            }
-        }
-
-        public void update( String data )
-        {
-            if ( data == null )
-            {
-                return;
-            }
-            if ( digest != null )
-            {
-                try
-                {
-                    digest.update( data.getBytes( "UTF-8" ) );
-                }
-                catch ( UnsupportedEncodingException e )
-                {
-                    // broken JVM
-                }
-            }
-            else
-            {
-                hash = hash * 31 + data.hashCode();
-            }
-        }
-
-        public String digest()
-        {
-            if ( digest != null )
-            {
-                StringBuilder buffer = new StringBuilder( "64" );
-
-                byte[] bytes = digest.digest();
-                for ( int i = 0; i < bytes.length; i++ )
-                {
-                    int b = bytes[i] & 0xFF;
-
-                    if ( b < 0x10 )
-                    {
-                        buffer.append( '0' );
-                    }
-
-                    buffer.append( Integer.toHexString( b ) );
-                }
-
-                return buffer.toString();
-            }
-            else
-            {
-                return Long.toHexString( hash );
-            }
-        }
     }
 
 }
