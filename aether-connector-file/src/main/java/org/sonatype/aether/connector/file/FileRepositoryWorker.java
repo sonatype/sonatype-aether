@@ -48,6 +48,7 @@ import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferEvent.RequestType;
+import org.sonatype.aether.transfer.TransferResource;
 import org.sonatype.aether.util.ChecksumUtils;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
@@ -65,7 +66,7 @@ class FileRepositoryWorker
 
     private FileProcessor fileProcessor;
 
-    enum Direction
+    private enum Direction
     {
         UPLOAD( TransferEvent.RequestType.PUT ), DOWNLOAD( TransferEvent.RequestType.GET );
 
@@ -93,6 +94,8 @@ class FileRepositoryWorker
     private final TransferEventCatapult catapult;
 
     private final Direction direction;
+
+    private TransferResource resource;
 
     /**
      * Set the latch to count down after all work is done.
@@ -210,7 +213,8 @@ class FileRepositoryWorker
         try
         {
             transfer.setState( State.NEW );
-            DefaultTransferEvent event = newEvent( transfer, repository );
+            resource = newResource( transfer, repository );
+            DefaultTransferEvent event = newEvent( transfer );
             catapult.fireInitiated( event );
 
             File baseDir = new File( PathUtils.basedir( repository.getUrl() ) );
@@ -303,7 +307,7 @@ class FileRepositoryWorker
             {
                 if ( transfer.getException() == null )
                 {
-                    DefaultTransferEvent event = newEvent( transfer, repository );
+                    DefaultTransferEvent event = newEvent( transfer );
                     event.setTransferredBytes( (int) totalTransferred );
                     catapult.fireSucceeded( event );
                 }
@@ -322,7 +326,7 @@ class FileRepositoryWorker
                         target.delete();
                     }
 
-                    DefaultTransferEvent event = newEvent( transfer, repository );
+                    DefaultTransferEvent event = newEvent( transfer );
                     catapult.fireFailed( event );
                 }
             }
@@ -402,7 +406,7 @@ class FileRepositoryWorker
                 throw e;
             }
 
-            DefaultTransferEvent event = newEvent( transfer, repository );
+            DefaultTransferEvent event = newEvent( transfer );
             event.setException( e );
             catapult.fireCorrupted( event );
         }
@@ -424,7 +428,7 @@ class FileRepositoryWorker
             throw new IllegalArgumentException( "target file not specified" );
         }
 
-        DefaultTransferEvent event = newEvent( transfer, repository );
+        DefaultTransferEvent event = newEvent( transfer );
         catapult.fireStarted( event );
 
         return fileProcessor.copy( src, target, new FileProcessor.ProgressListener()
@@ -436,7 +440,7 @@ class FileRepositoryWorker
                 throws IOException
             {
                 total += buffer.remaining();
-                DefaultTransferEvent event = newEvent( transfer, repository );
+                DefaultTransferEvent event = newEvent( transfer );
                 event.setDataBuffer( buffer ).setTransferredBytes( total );
                 try
                 {
@@ -450,9 +454,17 @@ class FileRepositoryWorker
         } );
     }
 
-    private DefaultTransferEvent newEvent( TransferWrapper transfer, RemoteRepository repository )
+    private DefaultTransferEvent newEvent( TransferWrapper transfer )
     {
         DefaultTransferEvent event = new DefaultTransferEvent();
+        event.setResource( resource );
+        event.setRequestType( direction.getType() );
+        event.setException( transfer.getException() );
+        return event;
+    }
+
+    private DefaultTransferResource newResource( TransferWrapper transfer, RemoteRepository repository )
+    {
         String resourceName = null;
         switch ( transfer.getType() )
         {
@@ -465,11 +477,8 @@ class FileRepositoryWorker
                 resourceName = new DefaultLayout().getPath( metadata );
                 break;
         }
-        event.setResource( new DefaultTransferResource( PathUtils.decode( repository.getUrl() ), resourceName,
-                                                        transfer.getFile() ) );
-        event.setRequestType( direction.getType() );
-        event.setException( transfer.getException() );
-        return event;
+        return new DefaultTransferResource( PathUtils.decode( repository.getUrl() ), resourceName,
+                                                        transfer.getFile() );
     }
 
     public void setLogger( Logger logger )
