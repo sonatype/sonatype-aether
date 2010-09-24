@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.nio.channels.WritableByteChannel;
 
 import org.codehaus.plexus.component.annotations.Component;
@@ -36,21 +35,6 @@ public class DefaultFileProcessor
 {
 
     private static void close( Closeable closeable )
-    {
-        if ( closeable != null )
-        {
-            try
-            {
-                closeable.close();
-            }
-            catch ( IOException e )
-            {
-                // too bad but who cares
-            }
-        }
-    }
-
-    private static void close( RandomAccessFile closeable )
     {
         if ( closeable != null )
         {
@@ -147,8 +131,6 @@ public class DefaultFileProcessor
 
     /**
      * Copy src- to target-channel.
-     * <p>
-     * This method is not thread-safe and does not honor external {@link FileLock}s.
      * 
      * @param src the channel to copy from, must not be {@code null}.
      * @param target the channel to copy to, must not be {@code null}.
@@ -170,10 +152,11 @@ public class DefaultFileProcessor
             // http://forums.sun.com/thread.jspa?threadID=439695
             long chunk = ( 64 * 1024 * 1024 ) - ( 32 * 1024 );
 
-            while ( ( total += ( src.transferTo( total, chunk, target ) ) ) < size )
+            do
             {
-                // copy all
+                total += src.transferTo( total, chunk, target );
             }
+            while ( total < size );
         }
         finally
         {
@@ -186,9 +169,6 @@ public class DefaultFileProcessor
 
     /**
      * Write the given data to a file. UTF-8 is assumed as encoding for the data.
-     * <p>
-     * This method performs R/W-locking on the given files to provide concurrent access to files without data
-     * corruption, and will honor {@link FileLock}s from an external process.
      * 
      * @param file The file to write to, must not be {@code null}. This file will be truncated.
      * @param data The data to write, may be {@code null}.

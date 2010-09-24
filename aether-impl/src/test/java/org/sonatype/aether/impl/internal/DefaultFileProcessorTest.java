@@ -22,7 +22,6 @@ import java.io.RandomAccessFile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.sonatype.aether.impl.internal.DefaultFileProcessor;
 import org.sonatype.aether.test.util.TestFileUtils;
 
 /**
@@ -94,6 +93,18 @@ public class DefaultFileProcessorTest
         }
 
         file.delete();
+    }
+
+    @Test
+    public void testCopyEmptyFile()
+        throws IOException
+    {
+        File file = TestFileUtils.createTempFile( "" );
+        File target = new File( "target/testCopyEmptyFile" );
+        target.delete();
+        fileProcessor.copy( file, target, null );
+        assertTrue( "empty file was not copied", target.exists() && target.length() == 0 );
+        target.delete();
     }
 
 }
