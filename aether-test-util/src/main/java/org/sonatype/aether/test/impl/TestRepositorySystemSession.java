@@ -256,4 +256,9 @@ public class TestRepositorySystemSession
     {
         this.notFoundCaching = b;
     }
+
+    public void setLocalRepositoryManager( LocalRepositoryManager localRepositoryManager )
+    {
+        this.localRepositoryManager = localRepositoryManager;
+    }
 }

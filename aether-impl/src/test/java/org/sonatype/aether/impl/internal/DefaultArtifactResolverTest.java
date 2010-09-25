@@ -30,6 +30,12 @@ import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.LocalRepositoryMaintainer;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.impl.VersionResolver;
+import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.repository.LocalArtifactRegistration;
+import org.sonatype.aether.repository.LocalArtifactRequest;
+import org.sonatype.aether.repository.LocalArtifactResult;
+import org.sonatype.aether.repository.LocalRepository;
+import org.sonatype.aether.repository.LocalRepositoryManager;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.WorkspaceReader;
 import org.sonatype.aether.repository.WorkspaceRepository;
@@ -261,7 +267,7 @@ public class DefaultArtifactResolverTest
 
         Artifact resolved = result.getArtifact();
         assertNotNull( resolved.getFile() );
-        
+
         byte[] expected = resolved.toString().getBytes( "UTF-8" );
         TestFileUtils.assertContent( expected, resolved.getFile() );
 
@@ -495,7 +501,7 @@ public class DefaultArtifactResolverTest
             assertNull( resolved );
         }
     }
-    
+
     @Test
     public void testRepositoryEventsOnVersionResolverFail()
     {
@@ -536,4 +542,146 @@ public class DefaultArtifactResolverTest
         assertEquals( 1, event.getEvent().getExceptions().size() );
     }
 
+    @Test
+    public void testLocalArtifactAvailable()
+        throws ArtifactResolutionException
+    {
+        session.setLocalRepositoryManager( new LocalRepositoryManager()
+        {
+
+            public LocalRepository getRepository()
+            {
+                return null;
+            }
+
+            public String getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository, String context )
+            {
+                return null;
+            }
+
+            public String getPathForRemoteArtifact( Artifact artifact, RemoteRepository repository, String context )
+            {
+                return null;
+            }
+
+            public String getPathForLocalMetadata( Metadata metadata )
+            {
+                return null;
+            }
+
+            public String getPathForLocalArtifact( Artifact artifact )
+            {
+                return null;
+            }
+
+            public LocalArtifactResult find( RepositorySystemSession session, LocalArtifactRequest request )
+            {
+
+                LocalArtifactResult result = new LocalArtifactResult( request );
+                result.setAvailable( true );
+                try
+                {
+                    result.setFile( TestFileUtils.createTempFile( "" ) );
+                }
+                catch ( IOException e )
+                {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+
+            public void add( RepositorySystemSession session, LocalArtifactRegistration request )
+            {
+            }
+        } );
+
+        ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
+        request.addRepository( new RemoteRepository( "id", "default", "file:///" ) );
+
+        ArtifactResult result = resolver.resolveArtifact( session, request );
+
+        assertTrue( result.getExceptions().isEmpty() );
+
+        Artifact resolved = result.getArtifact();
+        assertNotNull( resolved.getFile() );
+
+        resolved = resolved.setFile( null );
+        assertEquals( artifact, resolved );
+
+    }
+
+    @Test
+    public void testFindInLocalRepository()
+        throws ArtifactResolutionException
+    {
+        session.setLocalRepositoryManager( new LocalRepositoryManager()
+        {
+
+            public LocalRepository getRepository()
+            {
+                return null;
+            }
+
+            public String getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository, String context )
+            {
+                return null;
+            }
+
+            public String getPathForRemoteArtifact( Artifact artifact, RemoteRepository repository, String context )
+            {
+                return null;
+            }
+
+            public String getPathForLocalMetadata( Metadata metadata )
+            {
+                return null;
+            }
+
+            public String getPathForLocalArtifact( Artifact artifact )
+            {
+                return null;
+            }
+
+            public LocalArtifactResult find( RepositorySystemSession session, LocalArtifactRequest request )
+            {
+
+                LocalArtifactResult result = new LocalArtifactResult( request );
+                result.setAvailable( false );
+                try
+                {
+                    result.setFile( TestFileUtils.createTempFile( "" ) );
+                }
+                catch ( IOException e )
+                {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+
+            public void add( RepositorySystemSession session, LocalArtifactRegistration request )
+            {
+            }
+        } );
+        ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
+        request.addRepository( new RemoteRepository( "id", "default", "file:///" ) );
+
+        resolver.setVersionResolver( new VersionResolver()
+        {
+
+            public VersionResult resolveVersion( RepositorySystemSession session, VersionRequest request )
+                throws VersionResolutionException
+            {
+                return new VersionResult( request ).setRepository( new LocalRepository( "id" ) ).setVersion( request.getArtifact().getVersion() );
+            }
+        } );
+        ArtifactResult result = resolver.resolveArtifact( session, request );
+
+        assertTrue( result.getExceptions().isEmpty() );
+
+        Artifact resolved = result.getArtifact();
+        assertNotNull( resolved.getFile() );
+
+        resolved = resolved.setFile( null );
+        assertEquals( artifact, resolved );
+    }
 }
