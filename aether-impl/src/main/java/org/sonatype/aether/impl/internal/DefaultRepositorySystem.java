@@ -355,6 +355,10 @@ public class DefaultRepositorySystem
 
     private void validateSession( RepositorySystemSession session )
     {
+        if ( session == null )
+        {
+            throw new IllegalArgumentException( "Invalid repository system session: the session may not be null." );
+        }
         if ( session.getLocalRepositoryManager() == null )
         {
             invalidSession( "LocalRepositoryManager" );
