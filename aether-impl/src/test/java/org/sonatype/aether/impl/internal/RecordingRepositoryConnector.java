@@ -80,7 +80,7 @@ class RecordingRepositoryConnector
                 {
                     Artifact artifact = artifactDownload.getArtifact();
                     this.actualGet.add( artifact );
-                    artifactDownload.setFile( TestFileUtils.createTempFile( artifact.toString() ) );
+                    TestFileUtils.write( artifact.toString(), artifactDownload.getFile() );
                 }
             }
             if ( metadataDownloads != null )
@@ -89,7 +89,7 @@ class RecordingRepositoryConnector
                 {
                     Metadata metadata = metadataDownload.getMetadata();
                     this.actualGetMD.add( metadata );
-                    metadataDownload.setFile( TestFileUtils.createTempFile( metadata.toString() ) );
+                    TestFileUtils.write( metadata.toString(), metadataDownload.getFile() );
                 }
             }
         }
