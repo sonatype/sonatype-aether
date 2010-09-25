@@ -13,11 +13,12 @@ package org.sonatype.aether.test.util;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 
 public class TestFileUtils
@@ -34,13 +35,36 @@ public class TestFileUtils
     {
 
         File tmpFile = null;
+        tmpFile = File.createTempFile( "aether-test-util-", ".data" );
+
+        write( pattern, repeat, tmpFile );
+
+        return tmpFile;
+    }
+
+    public static void write( String content, File file )
+        throws IOException
+    {
+        try
+        {
+            write( content.getBytes( "UTF-8" ), 1, file );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            // broken VM
+            throw new IOException( e.getMessage() );
+        }
+    }
+
+    public static void write( byte[] pattern, int repeat, File file )
+        throws IOException
+    {
+        file.deleteOnExit();
+        file.getParentFile().mkdirs();
         FileOutputStream out = null;
         try
         {
-            tmpFile = File.createTempFile( "aether-test-util-", ".data" );
-            tmpFile.deleteOnExit();
-
-            out = new FileOutputStream( tmpFile );
+            out = new FileOutputStream( file );
             for ( int i = 0; i < repeat; i++ )
             {
                 out.write( pattern );
@@ -48,76 +72,61 @@ public class TestFileUtils
         }
         finally
         {
-            if ( out != null )
-            {
-                out.close();
-            }
+            close( out );
         }
-
-        return tmpFile;
     }
 
     public static long copy( File src, File target )
         throws IOException
     {
-        if ( src == null || target == null )
-        {
-            throw new IllegalArgumentException( String.format( "src and target may not be null: '%s' -> '%s'", src,
-                                                               target ) );
-        }
-
-        FileChannel in = null;
-        FileChannel out = null;
-        FileInputStream inStream = null;
-        FileOutputStream outStream = null;
-
-        long total = 0;
+        RandomAccessFile in = null;
+        RandomAccessFile out = null;
+        FileChannel inChannel = null;
+        FileChannel outChannel = null;
         try
         {
-            inStream = new FileInputStream( src );
-            in = inStream.getChannel();
-            outStream = new FileOutputStream( target );
-            out = outStream.getChannel();
-            long count = 20000L;
-            ByteBuffer buf = ByteBuffer.allocate( (int) count );
+            in = new RandomAccessFile( src, "r" );
 
-            buf.clear();
-            int transferred;
-            while ( ( transferred = in.read( buf ) ) >= 0 || buf.position() != 0 )
-            {
-                total += transferred;
+            target.getParentFile().mkdirs();
 
-                buf.flip();
-                out.write( buf );
-                buf.compact();
-            }
-            buf.flip();
-            while ( buf.hasRemaining() )
+            out = new RandomAccessFile( target, "rw" );
+
+            out.setLength( 0 );
+            long size = in.length();
+
+            // copy large files in chunks to not run into Java Bug 4643189
+            // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4643189
+            // use even smaller chunks to work around bug with SMB shares
+            // http://forums.sun.com/thread.jspa?threadID=439695
+            long chunk = ( 64 * 1024 * 1024 ) - ( 32 * 1024 );
+
+            inChannel = in.getChannel();
+            outChannel = out.getChannel();
+
+            int total = 0;
+            do
             {
-                out.write( buf );
+                total += inChannel.transferTo( total, chunk, outChannel );
             }
+            while ( total < size );
+            return total;
         }
         finally
         {
-            if ( inStream != null )
-            {
-                inStream.close();
-            }
-            if ( in != null )
-            {
-                in.close();
-            }
-            if ( outStream != null )
-            {
-                outStream.close();
-            }
-            if ( out != null )
-            {
-                out.close();
-            }
+            close( inChannel );
+            close( outChannel );
+            close( in );
+            close( out );
         }
+    }
 
-        return total;
+    private static void close( Closeable c )
+        throws IOException
+    {
+        if ( c != null )
+        {
+            c.close();
+        }
     }
 
     public static boolean deleteDir( File dir )
