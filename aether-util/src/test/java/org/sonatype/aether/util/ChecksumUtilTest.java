@@ -29,22 +29,24 @@ import org.sonatype.aether.test.util.TestFileUtils;
 
 public class ChecksumUtilTest
 {
-    private static File emptyFile;
+    private File emptyFile;
+
+
+    private File patternFile;
+
+    private File textFile;
 
     private static Map<String, String> emptyFileChecksums = new HashMap<String, String>();
 
-    private static File patternFile;
-
     private static Map<String, String> patternFileChecksums = new HashMap<String, String>();
-
-    private static File textFile;
 
     private static Map<String, String> textFileChecksums = new HashMap<String, String>();
 
-    private static Map<File, Map<String, String>> sums = new HashMap<File, Map<String, String>>();
+    private Map<File, Map<String, String>> sums = new HashMap<File, Map<String, String>>();
 
     @BeforeClass
     public static void beforeClass()
+        throws IOException
     {
         emptyFileChecksums.put( "MD5", "d41d8cd98f00b204e9800998ecf8427e" );
         emptyFileChecksums.put( "SHA-1", "da39a3ee5e6b4b0d3255bfef95601890afd80709" );
@@ -58,6 +60,8 @@ public class ChecksumUtilTest
     public void before()
         throws IOException
     {
+        sums.clear();
+
         emptyFile = TestFileUtils.createTempFile( new byte[] {}, 0 );
         sums.put( emptyFile, emptyFileChecksums );
 
@@ -111,6 +115,64 @@ public class ChecksumUtilTest
             assertTrue( "Could not delete file", file.delete() );
         }
 
+    }
+    
+    @Test
+    public void testRead()
+        throws IOException
+    {
+        for ( Map<String, String> checksums : sums.values() )
+        {
+            String sha1 = checksums.get( "SHA-1" );
+            String md5 = checksums.get( "MD5" );
+
+            File sha1File = new File( "target/checksum.sha1" );
+            File md5File = new File( "target/checksum.md5" );
+
+            TestFileUtils.write( sha1, sha1File );
+            TestFileUtils.write( md5, md5File );
+            
+            assertEquals( sha1, ChecksumUtils.read( sha1File ) );
+            assertEquals( md5, ChecksumUtils.read( md5File ) );
+
+            assertTrue( "ChecksumUtils leaks file handles (cannot delete checksums.sha1)", sha1File.delete() );
+            assertTrue( "ChecksumUtils leaks file handles (cannot delete checksums.md5)", md5File.delete() );
+        }
+    }
+
+    @Test
+    public void testReadSpaces()
+        throws IOException
+    {
+        for ( Map<String, String> checksums : sums.values() )
+        {
+            String sha1 = checksums.get( "SHA-1" );
+            String md5 = checksums.get( "MD5" );
+
+            File sha1File = new File( "target/checksum.sha1" );
+            File md5File = new File( "target/checksum.md5" );
+
+            TestFileUtils.write( "sha1-checksum = " + sha1, sha1File );
+            TestFileUtils.write( md5 + " test", md5File );
+
+            assertEquals( sha1, ChecksumUtils.read( sha1File ) );
+            assertEquals( md5, ChecksumUtils.read( md5File ) );
+
+            assertTrue( "ChecksumUtils leaks file handles (cannot delete checksums.sha1)", sha1File.delete() );
+            assertTrue( "ChecksumUtils leaks file handles (cannot delete checksums.md5)", md5File.delete() );
+        }
+    }
+
+    @Test
+    public void testReadEmptyFile()
+        throws IOException
+    {
+        File file = new File( "target/checksum.empty" );
+        TestFileUtils.write( "", file );
+
+        assertEquals( "", ChecksumUtils.read( file ) );
+
+        assertTrue( "ChecksumUtils leaks file handles (cannot delete checksum.empty)", file.delete() );
     }
 
 }

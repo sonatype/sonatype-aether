@@ -61,14 +61,11 @@ public class DefaultMetadataResolverTest
     {
         session = new TestRepositorySystemSession();
         manager = new StubRemoteRepositoryManager();
-        resolver = new DefaultMetadataResolver( NullLogger.INSTANCE, new DoNothingUpdateCheckManager(), manager );
+        resolver = new DefaultMetadataResolver( NullLogger.INSTANCE, new StaticUpdateCheckManager( true ), manager );
         repository = new RemoteRepository( "test-DMRT", "default", new File( "target/test-DMRT" ).toURL().toString() );
         metadata = new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT );
         connector = new RecordingRepositoryConnector();
         manager.setConnector( connector );
-
-        TestFileUtils.deleteDir( new File( "target/test-DMRT" ) );
-        TestFileUtils.deleteDir( new File( "target/test-local-repository" ) );
     }
 
     @After

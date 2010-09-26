@@ -34,10 +34,9 @@ import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.Transfer.State;
-import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener;
-import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener.EventWrapper;
+import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.transfer.ArtifactTransferException;
@@ -79,9 +78,8 @@ public class DefaultDeployerTest
 
         deployer = new DefaultDeployer();
         deployer.setRemoteRepositoryManager( manager );
-        UpdateCheckManager updateCheckManager = new DoNothingUpdateCheckManager();
+        UpdateCheckManager updateCheckManager = new StaticUpdateCheckManager( true );
         deployer.setUpdateCheckManager( updateCheckManager );
-        deployer.setLogger( new NullLogger() );
         deployer.setFileProcessor( TestFileProcessor.INSTANCE );
 
         request = new DeployRequest();
@@ -128,52 +126,6 @@ public class DefaultDeployerTest
     public void testSuccessfulArtifactEvents()
         throws DeploymentException
     {
-        // internal: DefaultDeployer depends on Connector setting state to fire events
-        connector = new RecordingRepositoryConnector()
-        {
-
-            @Override
-            public void get( Collection<? extends ArtifactDownload> artifactDownloads,
-                             Collection<? extends MetadataDownload> metadataDownloads )
-            {
-                metadataDownloads =
-                    metadataDownloads == null ? Collections.<MetadataDownload> emptyList() : metadataDownloads;
-                artifactDownloads =
-                    artifactDownloads == null ? Collections.<ArtifactDownload> emptyList() : artifactDownloads;
-                for ( MetadataDownload d : metadataDownloads )
-                {
-                    d.setState( State.ACTIVE );
-                    d.setState( State.DONE );
-                }
-                for ( ArtifactDownload d : artifactDownloads )
-                {
-                    d.setState( State.ACTIVE );
-                    d.setState( State.DONE );
-                }
-            }
-
-            @Override
-            public void put( Collection<? extends ArtifactUpload> artifactUploads,
-                             Collection<? extends MetadataUpload> metadataUploads )
-            {
-                metadataUploads = metadataUploads == null ? Collections.<MetadataUpload> emptyList() : metadataUploads;
-                artifactUploads = artifactUploads == null ? Collections.<ArtifactUpload> emptyList() : artifactUploads;
-                for ( MetadataUpload d : metadataUploads )
-                {
-                    d.setState( State.ACTIVE );
-                    d.setState( State.DONE );
-                }
-                for ( ArtifactUpload d : artifactUploads )
-                {
-                    d.setState( State.ACTIVE );
-                    d.setState( State.DONE );
-                }
-            }
-
-        };
-
-        manager.setConnector( connector );
-
         request.addArtifact( artifact );
 
         deployer.deploy( session, request );
@@ -199,7 +151,6 @@ public class DefaultDeployerTest
     @Test
     public void testFailingArtifactEvents()
     {
-        // internal: DefaultDeployer depends on Connector setting state to fire events
         connector = new RecordingRepositoryConnector()
         {
 
@@ -281,52 +232,6 @@ public class DefaultDeployerTest
     public void testSuccessfulMetadataEvents()
         throws DeploymentException
     {
-        // internal: DefaultDeployer depends on Connector setting state to fire events
-        connector = new RecordingRepositoryConnector()
-        {
-
-            @Override
-            public void get( Collection<? extends ArtifactDownload> artifactDownloads,
-                             Collection<? extends MetadataDownload> metadataDownloads )
-            {
-                metadataDownloads =
-                    metadataDownloads == null ? Collections.<MetadataDownload> emptyList() : metadataDownloads;
-                artifactDownloads =
-                    artifactDownloads == null ? Collections.<ArtifactDownload> emptyList() : artifactDownloads;
-                for ( MetadataDownload d : metadataDownloads )
-                {
-                    d.setState( State.ACTIVE );
-                    d.setState( State.DONE );
-                }
-                for ( ArtifactDownload d : artifactDownloads )
-                {
-                    d.setState( State.ACTIVE );
-                    d.setState( State.DONE );
-                }
-            }
-
-            @Override
-            public void put( Collection<? extends ArtifactUpload> artifactUploads,
-                             Collection<? extends MetadataUpload> metadataUploads )
-            {
-                metadataUploads = metadataUploads == null ? Collections.<MetadataUpload> emptyList() : metadataUploads;
-                artifactUploads = artifactUploads == null ? Collections.<ArtifactUpload> emptyList() : artifactUploads;
-                for ( MetadataUpload d : metadataUploads )
-                {
-                    d.setState( State.ACTIVE );
-                    d.setState( State.DONE );
-                }
-                for ( ArtifactUpload d : artifactUploads )
-                {
-                    d.setState( State.ACTIVE );
-                    d.setState( State.DONE );
-                }
-            }
-
-        };
-
-        manager.setConnector( connector );
-
         request.addMetadata( metadata );
 
         deployer.deploy( session, request );
@@ -352,7 +257,6 @@ public class DefaultDeployerTest
     @Test
     public void testFailingMetdataEvents()
     {
-        // internal: DefaultDeployer depends on Connector setting state to fire events
         connector = new RecordingRepositoryConnector()
         {
 

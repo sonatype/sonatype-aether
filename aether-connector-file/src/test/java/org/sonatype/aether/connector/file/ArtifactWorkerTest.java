@@ -15,16 +15,13 @@ package org.sonatype.aether.connector.file;
 
 import static org.junit.Assert.*;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.metadata.Metadata.Nature;
@@ -51,12 +48,11 @@ public class ArtifactWorkerTest
 
     private static DefaultLayout layout;
 
-    @BeforeClass
-    public static void setup()
+    @Before
+    public void setup()
         throws MalformedURLException
     {
-        repository =
-            new RemoteRepository( "test", "default", new File( "target/test-repository" ).toURI().toURL().toString() );
+        repository = new RemoteRepository( "test", "default", new File( "target/test-repository" ).toURL().toString() );
         session = new TestRepositorySystemSession();
         layout = new DefaultLayout();
     }
@@ -85,8 +81,7 @@ public class ArtifactWorkerTest
     private File downloadArtifact( DefaultArtifact artifact )
         throws IOException, ArtifactTransferException
     {
-        File file = File.createTempFile( "ArtifactWorkerTest", ".jar" );
-        file.deleteOnExit();
+        File file = TestFileUtils.createTempFile( "" );
         ArtifactDownload down = new ArtifactDownload( artifact, "", file, "" );
         down.setChecksumPolicy( RepositoryPolicy.CHECKSUM_POLICY_FAIL );
         FileRepositoryWorker worker = new FileRepositoryWorker( down, repository, session );
@@ -102,12 +97,7 @@ public class ArtifactWorkerTest
     private void uploadArtifact( Artifact artifact, String content )
         throws IOException, ArtifactTransferException
     {
-        File file = File.createTempFile( "ArtifactWorkerTest", ".jar" );
-        file.deleteOnExit();
-
-        FileWriter w = new FileWriter( file );
-        w.write( content );
-        w.close();
+        File file = TestFileUtils.createTempFile( content );
 
         ArtifactUpload transfer = new ArtifactUpload( artifact, file );
         FileRepositoryWorker worker = new FileRepositoryWorker( transfer, repository, session );
@@ -164,17 +154,12 @@ public class ArtifactWorkerTest
     }
 
     private void assertContentEquals( File file, String expectedContent )
-        throws FileNotFoundException, IOException
+        throws IOException
     {
-        BufferedReader r = new BufferedReader( new FileReader( file ) );
-        String content = null;
-        String actualContent = "";
-        while ( ( content = r.readLine() ) != null )
-        {
-            actualContent += content;
-        }
+        byte[] expected = expectedContent.getBytes( "UTF-8" );
+        byte[] actual = TestFileUtils.getContent( file );
 
-        assertEquals( expectedContent, actualContent );
+        assertArrayEquals( expected, actual );
     }
 
     @Test

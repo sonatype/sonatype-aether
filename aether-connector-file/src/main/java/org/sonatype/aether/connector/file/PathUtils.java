@@ -13,8 +13,6 @@ package org.sonatype.aether.connector.file;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import java.io.File;
-import java.util.StringTokenizer;
 
 /**
  * URL handling for file URLs. Based on org.apache.maven.wagon.PathUtils.
@@ -26,95 +24,6 @@ final class PathUtils
 
     private PathUtils()
     {
-    }
-
-    /**
-     * Returns the directory path portion of a file specification string. Matches the equally named unix command.
-     * 
-     * @return The directory portion excluding the ending file separator.
-     */
-    public static String dirname( final String path )
-    {
-        final int i = path.lastIndexOf( "/" );
-
-        return ( ( i >= 0 ) ? path.substring( 0, i ) : "" );
-    }
-
-    /**
-     * Returns the filename portion of a file specification string.
-     * 
-     * @return The filename string with extension.
-     */
-    public static String filename( final String path )
-    {
-        final int i = path.lastIndexOf( "/" );
-        return ( ( i >= 0 ) ? path.substring( i + 1 ) : path );
-    }
-
-    public static String[] dirnames( final String path )
-    {
-        final String dirname = PathUtils.dirname( path );
-        return split( dirname, "/", -1 );
-
-    }
-
-    private static String[] split( final String str, final String separator, final int max )
-    {
-        final StringTokenizer tok;
-
-        if ( separator == null )
-        {
-            // Null separator means we're using StringTokenizer's default
-            // delimiter, which comprises all whitespace characters.
-            tok = new StringTokenizer( str );
-        }
-        else
-        {
-            tok = new StringTokenizer( str, separator );
-        }
-
-        int listSize = tok.countTokens();
-
-        if ( max > 0 && listSize > max )
-        {
-            listSize = max;
-        }
-
-        final String[] list = new String[listSize];
-
-        int i = 0;
-
-        int lastTokenBegin;
-        int lastTokenEnd = 0;
-
-        while ( tok.hasMoreTokens() )
-        {
-            if ( max > 0 && i == listSize - 1 )
-            {
-                // In the situation where we hit the max yet have
-                // tokens left over in our input, the last list
-                // element gets all remaining text.
-                final String endToken = tok.nextToken();
-
-                lastTokenBegin = str.indexOf( endToken, lastTokenEnd );
-
-                list[i] = str.substring( lastTokenBegin );
-
-                break;
-
-            }
-            else
-            {
-                list[i] = tok.nextToken();
-
-                lastTokenBegin = str.indexOf( list[i], lastTokenEnd );
-
-                lastTokenEnd = lastTokenBegin + list[i].length();
-            }
-
-            i++;
-        }
-        return list;
     }
 
     /**
@@ -223,31 +132,5 @@ final class PathUtils
         return decoded;
     }
 
-    public static String toRelative( File basedir, String absolutePath )
-    {
-        String relative;
-
-        absolutePath = absolutePath.replace( '\\', '/' );
-        String basedirPath = basedir.getAbsolutePath().replace( '\\', '/' );
-
-        if ( absolutePath.startsWith( basedirPath ) )
-        {
-            relative = absolutePath.substring( basedirPath.length() );
-            if ( relative.startsWith( "/" ) )
-            {
-                relative = relative.substring( 1 );
-            }
-            if ( relative.length() <= 0 )
-            {
-                relative = ".";
-            }
-        }
-        else
-        {
-            relative = absolutePath;
-        }
-
-        return relative;
-    }
 
 }

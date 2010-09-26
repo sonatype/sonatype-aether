@@ -21,6 +21,8 @@ import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 
+import org.junit.Assert;
+
 public class TestFileUtils
 {
 
@@ -145,6 +147,29 @@ public class TestFileUtils
         }
 
         return dir.delete();
+    }
+
+    public static byte[] getContent( File file )
+        throws IOException
+    {
+        RandomAccessFile in = null;
+        try
+        {
+            in = new RandomAccessFile( file, "r" );
+            byte[] actual = new byte[(int) in.length()];
+            in.readFully( actual );
+            return actual;
+        }
+        finally
+        {
+            close( in );
+        }
+    }
+
+    public static void assertContent( byte[] expected, File file )
+        throws IOException
+    {
+        Assert.assertArrayEquals( expected, getContent( file ) );
     }
 
 }

@@ -17,7 +17,6 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 
 import org.junit.After;
 import org.junit.Before;
@@ -37,7 +36,7 @@ public class DefaultFileProcessorTest
     @Before
     public void setup()
     {
-        targetDir = new File( "target/test-FileUtils" );
+        targetDir = new File( "target/test-FileProcessor" );
         fileProcessor = new DefaultFileProcessor();
     }
 
@@ -57,26 +56,9 @@ public class DefaultFileProcessorTest
 
         fileProcessor.copy( file, target, null );
 
-        assertContent( file, "testCopy\nasdf".getBytes( "UTF-8" ) );
+        TestFileUtils.assertContent( "testCopy\nasdf".getBytes( "UTF-8" ), file );
 
         file.delete();
-    }
-
-    private void assertContent( File file, byte[] content )
-        throws IOException
-    {
-        RandomAccessFile in = null;
-        try
-        {
-            in = new RandomAccessFile( file, "r" );
-            byte[] buffer = new byte[(int) in.length()];
-            in.readFully( buffer );
-            assertArrayEquals( "content did not match", content, buffer );
-        }
-        finally
-        {
-            in.close();
-        }
     }
 
     @Test
@@ -89,7 +71,7 @@ public class DefaultFileProcessorTest
         {
             File target = new File( targetDir, "testCopy.txt" );
             fileProcessor.copy( file, target, null );
-            assertContent( file, "testCopy\nasdf".getBytes( "UTF-8" ) );
+            TestFileUtils.assertContent( "testCopy\nasdf".getBytes( "UTF-8" ), file );
         }
 
         file.delete();

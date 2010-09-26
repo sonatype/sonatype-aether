@@ -27,6 +27,7 @@ import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
+import org.sonatype.aether.spi.connector.Transfer.State;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.MetadataTransferException;
@@ -78,18 +79,22 @@ class RecordingRepositoryConnector
             {
                 for ( ArtifactDownload artifactDownload : artifactDownloads )
                 {
+                    artifactDownload.setState( State.ACTIVE );
                     Artifact artifact = artifactDownload.getArtifact();
                     this.actualGet.add( artifact );
                     TestFileUtils.write( artifact.toString(), artifactDownload.getFile() );
+                    artifactDownload.setState( State.DONE );
                 }
             }
             if ( metadataDownloads != null )
             {
                 for ( MetadataDownload metadataDownload : metadataDownloads )
                 {
+                    metadataDownload.setState( State.ACTIVE );
                     Metadata metadata = metadataDownload.getMetadata();
                     this.actualGetMD.add( metadata );
                     TestFileUtils.write( metadata.toString(), metadataDownload.getFile() );
+                    metadataDownload.setState( State.DONE );
                 }
             }
         }
@@ -108,12 +113,14 @@ class RecordingRepositoryConnector
             for ( ArtifactUpload artifactUpload : artifactUploads )
             {
                 // mimic "real" connector
+                artifactUpload.setState( State.ACTIVE );
                 if ( artifactUpload.getArtifact().getFile() == null )
                 {
                     artifactUpload.setException( new ArtifactTransferException( artifactUpload.getArtifact(), null,
                                                                                 "no file" ) );
                 }
                 this.actualPut.add( artifactUpload.getArtifact() );
+                artifactUpload.setState( State.DONE );
             }
         }
         if ( metadataUploads != null )
@@ -121,12 +128,14 @@ class RecordingRepositoryConnector
             for ( MetadataUpload metadataUpload : metadataUploads )
             {
                 // mimic "real" connector
+                metadataUpload.setState( State.ACTIVE );
                 if ( metadataUpload.getMetadata().getFile() == null )
                 {
                     metadataUpload.setException( new MetadataTransferException( metadataUpload.getMetadata(), null,
                                                                                 "no file" ) );
                 }
                 this.actualPutMD.add( metadataUpload.getMetadata() );
+                metadataUpload.setState( State.DONE );
             }
         }
 

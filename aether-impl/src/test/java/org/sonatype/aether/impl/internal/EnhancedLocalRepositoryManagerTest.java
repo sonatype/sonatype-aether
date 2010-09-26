@@ -167,4 +167,15 @@ public class EnhancedLocalRepositoryManagerTest
         LocalArtifactResult result = manager.find( session, request );
         assertFalse( result.isAvailable() );
     }
+
+    @Test
+    public void findUntrackedFile()
+        throws IOException
+    {
+        copy( artifact, manager.getPathForLocalArtifact( artifact ) );
+
+        LocalArtifactRequest request = new LocalArtifactRequest( artifact, Arrays.asList( repository ), testContext );
+        LocalArtifactResult result = manager.find( session, request );
+        assertTrue( result.isAvailable() );
+    }
 }

@@ -18,6 +18,7 @@ import static org.sonatype.aether.test.impl.RecordingRepositoryListener.Type.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import org.junit.After;
@@ -31,12 +32,11 @@ import org.sonatype.aether.installation.InstallationException;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.metadata.Metadata.Nature;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener;
-import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener.EventWrapper;
+import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
-import org.sonatype.aether.util.listener.AbstractRepositoryListener;
 import org.sonatype.aether.util.metadata.DefaultMetadata;
 
 public class DefaultInstallerTest
@@ -76,6 +76,7 @@ public class DefaultInstallerTest
         request = new InstallRequest();
         listener = new RecordingRepositoryListener();
         session.setRepositoryListener( listener );
+        TestFileUtils.deleteDir( session.getLocalRepository().getBasedir() );
     }
 
     @After
@@ -86,7 +87,7 @@ public class DefaultInstallerTest
 
     @Test
     public void testSuccessfulInstall()
-        throws InstallationException
+        throws InstallationException, UnsupportedEncodingException, IOException
     {
         File artifactFile =
             new File( session.getLocalRepositoryManager().getRepository().getBasedir(), localArtifactPath );
@@ -102,10 +103,10 @@ public class DefaultInstallerTest
         InstallResult result = installer.install( session, request );
 
         assertTrue( artifactFile.exists() );
-        assertEquals( artifactFile.length(), 8 );
+        TestFileUtils.assertContent( "artifact".getBytes( "UTF-8" ), artifactFile );
 
         assertTrue( metadataFile.exists() );
-        assertEquals( metadataFile.length(), 8 );
+        TestFileUtils.assertContent( "metadata".getBytes( "UTF-8" ), metadataFile );
 
         assertEquals( result.getRequest(), request );
 
@@ -143,8 +144,11 @@ public class DefaultInstallerTest
         throws InstallationException
     {
         String path = session.getLocalRepositoryManager().getPathForLocalArtifact( artifact );
-        assertTrue( "failed to setup test: could not create " + path,
-                    new File( session.getLocalRepository().getBasedir(), path ).mkdirs() );
+        File file = new File( session.getLocalRepository().getBasedir(), path );
+        assertFalse( file.getAbsolutePath() + " is a file, not directory", file.isFile() );
+        assertFalse( file.getAbsolutePath() + " already exists", file.exists() );
+        assertTrue( "failed to setup test: could not create " + file.getAbsolutePath(),
+                    file.mkdirs() || file.isDirectory() );
 
         request.addArtifact( artifact );
         new DefaultInstaller().install( session, request );
@@ -163,72 +167,26 @@ public class DefaultInstallerTest
     }
 
     @Test
-    public void testSuccessfulEvents()
+    public void testSuccessfulArtifactEvents()
         throws InstallationException
     {
         InstallRequest request = new InstallRequest();
         request.addArtifact( artifact );
-        request.addMetadata( metadata );
-
-        session.setRepositoryListener( new AbstractRepositoryListener()
-        {
-            private boolean seenArtifactInstalling = false;
-
-            private boolean seenMetadataInstalling = false;
-
-            @Override
-            public void artifactInstalled( RepositoryEvent event )
-            {
-                File artifactFile =
-                    new File( session.getLocalRepositoryManager().getRepository().getBasedir(), localArtifactPath );
-
-                assertTrue( seenArtifactInstalling );
-                assertEquals( artifactFile, event.getFile() );
-                assertEquals( event.getArtifact(), artifact );
-                assertNull( String.valueOf( event.getException() ), event.getException() );
-            }
-
-            @Override
-            public void artifactInstalling( RepositoryEvent event )
-            {
-                this.seenArtifactInstalling = true;
-                File artifactFile =
-                    new File( session.getLocalRepositoryManager().getRepository().getBasedir(), localArtifactPath );
-
-                assertEquals( artifactFile, event.getFile() );
-                assertEquals( event.getArtifact(), artifact );
-                assertNull( String.valueOf( event.getException() ), event.getException() );
-            }
-
-            @Override
-            public void metadataInstalled( RepositoryEvent event )
-            {
-                File metadataFile =
-                    new File( session.getLocalRepositoryManager().getRepository().getBasedir(), localMetadataPath );
-
-                assertTrue( seenMetadataInstalling );
-                assertEquals( metadataFile, event.getFile() );
-                assertEquals( event.getMetadata(), metadata );
-                assertNull( String.valueOf( event.getException() ), event.getException() );
-            }
-
-            @Override
-            public void metadataInstalling( RepositoryEvent event )
-            {
-                this.seenMetadataInstalling = true;
-                File metadataFile =
-                    new File( session.getLocalRepositoryManager().getRepository().getBasedir(), localMetadataPath );
-
-                assertEquals( metadataFile, event.getFile() );
-                assertEquals( event.getMetadata(), metadata );
-                assertNull( String.valueOf( event.getException() ), event.getException() );
-            }
-
-        } );
 
         installer.install( session, request );
+        checkEvents( "Repository Event problem", artifact, false );
     }
 
+    @Test
+    public void testSuccessfulMetadataEvents()
+        throws InstallationException
+    {
+        InstallRequest request = new InstallRequest();
+        request.addMetadata( metadata );
+
+        installer.install( session, request );
+        checkEvents( "Repository Event problem", metadata, false );
+    }
 
     @Test
     public void testFailingEventsNullArtifactFile()
@@ -272,22 +230,34 @@ public class DefaultInstallerTest
         }
         catch ( InstallationException e )
         {
-            List<EventWrapper> events = listener.getEvents();
-            assertEquals( msg, 2, events.size() );
-            EventWrapper wrapper = events.get( 0 );
-            assertEquals( msg, METADATA_INSTALLING, wrapper.getType() );
-
-            RepositoryEvent event = wrapper.getEvent();
-            assertEquals( msg, metadata, event.getMetadata() );
-            assertNull( msg, event.getException() );
-
-            wrapper = events.get( 1 );
-            assertEquals( msg, METADATA_INSTALLED, wrapper.getType() );
-            event = wrapper.getEvent();
-            assertEquals( msg, metadata, event.getMetadata() );
-            assertNotNull( msg, event.getException() );
+            checkEvents( msg, metadata, true );
         }
 
+    }
+
+    private void checkEvents( String msg, Metadata metadata, boolean failed )
+    {
+        List<EventWrapper> events = listener.getEvents();
+        assertEquals( msg, 2, events.size() );
+        EventWrapper wrapper = events.get( 0 );
+        assertEquals( msg, METADATA_INSTALLING, wrapper.getType() );
+
+        RepositoryEvent event = wrapper.getEvent();
+        assertEquals( msg, metadata, event.getMetadata() );
+        assertNull( msg, event.getException() );
+
+        wrapper = events.get( 1 );
+        assertEquals( msg, METADATA_INSTALLED, wrapper.getType() );
+        event = wrapper.getEvent();
+        assertEquals( msg, metadata, event.getMetadata() );
+        if ( failed )
+        {
+            assertNotNull( msg, event.getException() );
+        }
+        else
+        {
+            assertNull( msg, event.getException() );
+        }
     }
 
     private void checkFailedEvents( String msg, Artifact artifact )
@@ -302,20 +272,32 @@ public class DefaultInstallerTest
         }
         catch ( InstallationException e )
         {
-            List<EventWrapper> events = listener.getEvents();
-            assertEquals( msg, 2, events.size() );
-            EventWrapper wrapper = events.get( 0 );
-            assertEquals( msg, ARTIFACT_INSTALLING, wrapper.getType() );
-            
-            RepositoryEvent event = wrapper.getEvent();
-            assertEquals( msg, artifact, event.getArtifact() );
-            assertNull( msg, event.getException() );
-            
-            wrapper = events.get( 1 );
-            assertEquals( msg, ARTIFACT_INSTALLED, wrapper.getType() );
-            event = wrapper.getEvent();
-            assertEquals( msg, artifact, event.getArtifact() );
-            assertNotNull( msg, event.getException() );
+            checkEvents( msg, artifact, true );
+        }
+    }
+
+    private void checkEvents( String msg, Artifact artifact, boolean failed )
+    {
+        List<EventWrapper> events = listener.getEvents();
+        assertEquals( msg, 2, events.size() );
+        EventWrapper wrapper = events.get( 0 );
+        assertEquals( msg, ARTIFACT_INSTALLING, wrapper.getType() );
+        
+        RepositoryEvent event = wrapper.getEvent();
+        assertEquals( msg, artifact, event.getArtifact() );
+        assertNull( msg, event.getException() );
+        
+        wrapper = events.get( 1 );
+        assertEquals( msg, ARTIFACT_INSTALLED, wrapper.getType() );
+        event = wrapper.getEvent();
+        assertEquals( msg, artifact, event.getArtifact() );
+        if ( failed )
+        {
+            assertNotNull( msg + " > expected exception", event.getException() );
+        }
+        else
+        {
+            assertNull( msg + " > " + event.getException(), event.getException() );
         }
     }
 }

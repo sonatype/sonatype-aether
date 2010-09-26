@@ -74,7 +74,6 @@ public class DefaultDependencyCollectorTest
         collector.setVersionRangeResolver( new StubVersionRangeResolver() );
 
         manager = new StubRemoteRepositoryManager();
-        // manager.setConnector( new RecordingRepositoryConnector( null, null, null, null ) );
 
         collector.setRemoteRepositoryManager( manager );
 
@@ -152,12 +151,14 @@ public class DefaultDependencyCollectorTest
         assertEquals( 2, newRoot.getChildren().size() );
 
         DependencyNode expect = parser.parseLiteral( "gid:aid:ext:ver:compile" );
-        assertEquals( expect.getDependency(), newRoot.getChildren().get( 0 ).getDependency() );
+        Dependency dep = expect.getDependency();
+        assertEquals( dep, dep( newRoot, 0 ) );
 
         expect = parser.parseLiteral( "gid:aid2:ext:ver:compile" );
-        assertEquals( expect.getDependency(), path( newRoot, 1 ).getDependency() );
-        assertEquals( expect.getDependency(), path( newRoot, 0, 0 ).getDependency() );
-        assertEquals( path( newRoot, 1 ).getDependency(), path( newRoot, 0, 0 ).getDependency() );
+        dep = expect.getDependency();
+        assertEquals( dep, dep( newRoot, 1 ) );
+        assertEquals( dep, dep( newRoot, 0, 0 ) );
+        assertEquals( dep( newRoot, 1 ), dep( newRoot, 0, 0 ) );
     }
 
     @Test
@@ -173,7 +174,7 @@ public class DefaultDependencyCollectorTest
 
     }
 
-    private void assertEqualSubtree( DependencyNode root1, DependencyNode root2 )
+    private static void assertEqualSubtree( DependencyNode root1, DependencyNode root2 )
     {
         assertEquals( root1.getDependency(), root2.getDependency() );
         assertEquals( root1.getChildren().size(), root2.getChildren().size() );
@@ -231,13 +232,18 @@ public class DefaultDependencyCollectorTest
 
         assertEquals( 0, result.getExceptions().size() );
         assertEquals( 2, result.getRoot().getChildren().size() );
-        assertEquals( root1.getDependency(), path( result.getRoot(), 0 ).getDependency() );
+        assertEquals( root1.getDependency(), dep( result.getRoot(), 0 ) );
 
         assertEquals( 1, path( result.getRoot(), 0 ).getChildren().size() );
-        assertEquals( root2.getDependency(), path( result.getRoot(), 0, 0 ).getDependency() );
+        assertEquals( root2.getDependency(), dep( result.getRoot(), 0, 0 ) );
 
         assertEquals( 0, path( result.getRoot(), 1 ).getChildren().size() );
-        assertEquals( root2.getDependency(), path( result.getRoot(), 1 ).getDependency() );
+        assertEquals( root2.getDependency(), dep( result.getRoot(), 1 ) );
+    }
+
+    private Dependency dep( DependencyNode root, int... coords )
+    {
+        return path( root, coords ).getDependency();
     }
 
     private DependencyNode path( DependencyNode root, int... coords )

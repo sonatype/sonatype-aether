@@ -71,7 +71,7 @@ public class DefaultArtifactResolverTest
     @Before
     public void setup()
     {
-        UpdateCheckManager updateCheckManager = new DoNothingUpdateCheckManager();
+        UpdateCheckManager updateCheckManager = new StaticUpdateCheckManager( true );
         List<LocalRepositoryMaintainer> localRepositoryMaintainers = null;
         remoteRepositoryManager = new StubRemoteRepositoryManager();
         VersionResolver versionResolver = new StubVersionResolver();
@@ -261,6 +261,9 @@ public class DefaultArtifactResolverTest
 
         Artifact resolved = result.getArtifact();
         assertNotNull( resolved.getFile() );
+        
+        byte[] expected = resolved.toString().getBytes( "UTF-8" );
+        TestFileUtils.assertContent( expected, resolved.getFile() );
 
         resolved = resolved.setFile( null );
         assertEquals( artifact, resolved );
@@ -306,7 +309,7 @@ public class DefaultArtifactResolverTest
 
         ArtifactResult result = resolver.resolveArtifact( session, request );
 
-        assertTrue( result.getExceptions().isEmpty() );
+        assertTrue( "exception on resolveArtifact", result.getExceptions().isEmpty() );
 
         Artifact resolved = result.getArtifact();
         assertNotNull( resolved.getFile() );
