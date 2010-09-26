@@ -49,7 +49,7 @@ public interface TransferResource
     /**
      * The size of the resource in bytes.
      * 
-     * @return The of the resource in bytes or a negative value if unknown.
+     * @return The size of the resource in bytes or a negative value if unknown.
      */
     long getContentLength();
 

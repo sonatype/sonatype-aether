@@ -18,6 +18,8 @@ import java.io.File;
 import org.sonatype.aether.transfer.TransferResource;
 
 /**
+ * A simple transfer resource.
+ * 
  * @author Benjamin Bentmann
  */
 public class DefaultTransferResource
@@ -34,6 +36,15 @@ public class DefaultTransferResource
 
     private long contentLength = -1;
 
+    /**
+     * Creates a new transfer resource with the specified properties.
+     * 
+     * @param repositoryUrl The base URL of the repository, may be {@code null} or empty if unknown. If not empty, a
+     *            trailing slash will automatically be added if missing.
+     * @param resourceName The relative path to the resource within the repository, may be {@code null}. A leading slash
+     *            (if any) will be automatically removed.
+     * @param file The source/target file involved in the transfer, may be {@code null}.
+     */
     public DefaultTransferResource( String repositoryUrl, String resourceName, File file )
     {
         if ( repositoryUrl == null || repositoryUrl.length() <= 0 )
@@ -87,9 +98,16 @@ public class DefaultTransferResource
         return contentLength;
     }
 
-    public void setContentLength( long contentLength )
+    /**
+     * Sets the size of the resource in bytes.
+     * 
+     * @param contentLength The size of the resource in bytes or a negative value if unknown.
+     * @return This resource for chaining, never {@code null}.
+     */
+    public DefaultTransferResource setContentLength( long contentLength )
     {
         this.contentLength = contentLength;
+        return this;
     }
 
     public long getTransferStartTime()

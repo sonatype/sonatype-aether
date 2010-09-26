@@ -19,15 +19,17 @@ import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferResource;
 
 /**
+ * A simple transfer event.
+ * 
  * @author Benjamin Bentmann
  */
 public class DefaultTransferEvent
     implements TransferEvent
 {
 
-    private EventType type;
+    private EventType type = EventType.INITIATED;
 
-    private RequestType requestType;
+    private RequestType requestType = RequestType.GET;
 
     private TransferResource resource;
 
@@ -42,8 +44,18 @@ public class DefaultTransferEvent
         return type;
     }
 
+    /**
+     * Sets the type of the event.
+     * 
+     * @param type The type of the event, must not be {@code null}.
+     * @return This event for chaining, never {@code null}.
+     */
     public DefaultTransferEvent setType( EventType type )
     {
+        if ( type == null )
+        {
+            throw new IllegalArgumentException( "event type not specified" );
+        }
         this.type = type;
         return this;
     }
@@ -53,8 +65,18 @@ public class DefaultTransferEvent
         return requestType;
     }
 
+    /**
+     * Sets the type of the request/transfer.
+     * 
+     * @param requestType The request/transfer type, must not be {@code null}.
+     * @return This event for chaining, never {@code null}.
+     */
     public DefaultTransferEvent setRequestType( RequestType requestType )
     {
+        if ( requestType == null )
+        {
+            throw new IllegalArgumentException( "request type not specified" );
+        }
         this.requestType = requestType;
         return this;
     }
@@ -64,8 +86,18 @@ public class DefaultTransferEvent
         return resource;
     }
 
+    /**
+     * Sets the resource being transferred.
+     * 
+     * @param resource The resource being transferred, must not be {@code null}.
+     * @return This event for chaining, never {@code null}.
+     */
     public DefaultTransferEvent setResource( TransferResource resource )
     {
+        if ( resource == null )
+        {
+            throw new IllegalArgumentException( "transfer resource not specified" );
+        }
         this.resource = resource;
         return this;
     }
@@ -75,8 +107,19 @@ public class DefaultTransferEvent
         return transferredBytes;
     }
 
+    /**
+     * Sets the total number of bytes that have been transferred so far during the download/upload.
+     * 
+     * @param transferredBytes The total number of bytes that have been transferred so far during the download/upload,
+     *            must not be negative.
+     * @return This event for chaining, never {@code null}.
+     */
     public DefaultTransferEvent setTransferredBytes( long transferredBytes )
     {
+        if ( transferredBytes < 0 )
+        {
+            throw new IllegalArgumentException( "number of transferred bytes cannot be negative" );
+        }
         this.transferredBytes = transferredBytes;
         return this;
     }
@@ -88,7 +131,7 @@ public class DefaultTransferEvent
 
     public ByteBuffer getDataBuffer()
     {
-        return dataBuffer != null ? dataBuffer.asReadOnlyBuffer() : null;
+        return ( dataBuffer != null ) ? dataBuffer.asReadOnlyBuffer() : null;
     }
 
     /**
@@ -104,6 +147,12 @@ public class DefaultTransferEvent
         return setDataBuffer( ByteBuffer.wrap( buffer, offset, length ) );
     }
 
+    /**
+     * Sets the byte buffer holding the transferred bytes since the last event.
+     * 
+     * @param dataBuffer The byte buffer holding the transferred bytes since the last event, may be {@code null}.
+     * @return This event for chaining, never {@code null}.
+     */
     public DefaultTransferEvent setDataBuffer( ByteBuffer dataBuffer )
     {
         this.dataBuffer = dataBuffer;
@@ -115,6 +164,12 @@ public class DefaultTransferEvent
         return exception;
     }
 
+    /**
+     * Sets the error that occurred during the transfer.
+     * 
+     * @param exception The error that occurred during the transfer, may be {@code null} if none.
+     * @return This event for chaining, never {@code null}.
+     */
     public DefaultTransferEvent setException( Exception exception )
     {
         this.exception = exception;
