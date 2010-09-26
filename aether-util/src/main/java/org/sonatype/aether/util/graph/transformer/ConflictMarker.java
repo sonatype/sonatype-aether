@@ -13,6 +13,7 @@ package org.sonatype.aether.util.graph.transformer;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,14 +51,14 @@ public class ConflictMarker
     public DependencyNode transformGraph( DependencyNode node, DependencyGraphTransformationContext context )
         throws RepositoryException
     {
-        Map<DependencyNode, Object> nodes = new IdentityHashMap<DependencyNode, Object>();
+        Map<DependencyNode, Object> nodes = new IdentityHashMap<DependencyNode, Object>( 1024 );
         Map<Object, ConflictGroup> groups = new HashMap<Object, ConflictGroup>( 1024 );
 
         analyze( node, nodes, groups );
 
-        mark( nodes, groups );
+        Map<DependencyNode, Object> conflictIds = mark( nodes.keySet(), groups );
 
-        context.put( TransformationContextKeys.CONFLICT_IDS, nodes );
+        context.put( TransformationContextKeys.CONFLICT_IDS, conflictIds );
 
         return node;
     }
@@ -203,21 +204,21 @@ public class ConflictMarker
         return keys;
     }
 
-    private void mark( Map<DependencyNode, Object> nodes, Map<Object, ConflictGroup> groups )
+    private Map<DependencyNode, Object> mark( Collection<DependencyNode> nodes, Map<Object, ConflictGroup> groups )
     {
-        for ( Map.Entry<DependencyNode, Object> entry : nodes.entrySet() )
+        Map<DependencyNode, Object> conflictIds = new IdentityHashMap<DependencyNode, Object>( nodes.size() + 1 );
+
+        for ( DependencyNode node : nodes )
         {
-            Dependency dependency = entry.getKey().getDependency();
+            Dependency dependency = node.getDependency();
             if ( dependency != null )
             {
                 Object key = toKey( dependency.getArtifact() );
-                entry.setValue( groups.get( key ).keys );
-            }
-            else
-            {
-                entry.setValue( null );
+                conflictIds.put( node, groups.get( key ).keys );
             }
         }
+
+        return conflictIds;
     }
 
     private static Object toKey( Artifact artifact )
