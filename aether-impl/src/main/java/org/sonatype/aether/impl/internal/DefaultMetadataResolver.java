@@ -62,6 +62,7 @@ public class DefaultMetadataResolver
     implements MetadataResolver, Service
 {
 
+    @SuppressWarnings( "unused" )
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
 

@@ -25,6 +25,7 @@ import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.SubArtifact;
 
+@SuppressWarnings( "unused" )
 public class AetherDemo
 {
     public void resolve() 

@@ -62,6 +62,7 @@ public class DefaultDependencyCollector
     implements DependencyCollector, Service
 {
 
+    @SuppressWarnings( "unused" )
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
 

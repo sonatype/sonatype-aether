@@ -22,6 +22,7 @@ package org.sonatype.aether.util.version;
 import java.util.Locale;
 
 import org.sonatype.aether.util.version.GenericVersion;
+import org.sonatype.aether.version.Version;
 
 import junit.framework.TestCase;
 
@@ -30,12 +31,11 @@ import junit.framework.TestCase;
  * 
  * @author <a href="mailto:hboutemy@apache.org">Hervé Boutemy</a>
  */
-@SuppressWarnings( "unchecked" )
 public class GenericVersionTest
     extends TestCase
 {
 
-    private Comparable newComparable( String version )
+    private Version newComparable( String version )
     {
         return new GenericVersion( version );
     }
@@ -51,7 +51,7 @@ public class GenericVersionTest
 
     private void checkVersionsOrder( String[] versions )
     {
-        Comparable[] c = new Comparable[versions.length];
+        Version[] c = new Version[versions.length];
         for ( int i = 0; i < versions.length; i++ )
         {
             c[i] = newComparable( versions[i] );
@@ -59,10 +59,10 @@ public class GenericVersionTest
 
         for ( int i = 1; i < versions.length; i++ )
         {
-            Comparable low = c[i - 1];
+            Version low = c[i - 1];
             for ( int j = i; j < versions.length; j++ )
             {
-                Comparable high = c[j];
+                Version high = c[j];
                 assertTrue( "expected " + low + " < " + high, low.compareTo( high ) < 0 );
                 assertTrue( "expected " + high + " > " + low, high.compareTo( low ) > 0 );
             }
@@ -71,8 +71,8 @@ public class GenericVersionTest
 
     private void checkVersionsEqual( String v1, String v2 )
     {
-        Comparable c1 = newComparable( v1 );
-        Comparable c2 = newComparable( v2 );
+        Version c1 = newComparable( v1 );
+        Version c2 = newComparable( v2 );
         assertTrue( "expected " + v1 + " == " + v2, c1.compareTo( c2 ) == 0 );
         assertTrue( "expected " + v2 + " == " + v1, c2.compareTo( c1 ) == 0 );
         assertTrue( "expected same hashcode for " + v1 + " and " + v2, c1.hashCode() == c2.hashCode() );
@@ -82,8 +82,8 @@ public class GenericVersionTest
 
     private void checkVersionsOrder( String v1, String v2 )
     {
-        Comparable c1 = newComparable( v1 );
-        Comparable c2 = newComparable( v2 );
+        Version c1 = newComparable( v1 );
+        Version c2 = newComparable( v2 );
         assertTrue( "expected " + v1 + " < " + v2, c1.compareTo( c2 ) < 0 );
         assertTrue( "expected " + v2 + " > " + v1, c2.compareTo( c1 ) > 0 );
     }

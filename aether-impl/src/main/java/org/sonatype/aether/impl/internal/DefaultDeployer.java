@@ -67,6 +67,7 @@ public class DefaultDeployer
     implements Deployer, Service
 {
 
+    @SuppressWarnings( "unused" )
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
 
