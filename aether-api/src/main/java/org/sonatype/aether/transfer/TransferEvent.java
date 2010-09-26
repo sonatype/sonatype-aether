@@ -61,22 +61,30 @@ public interface TransferEvent
     TransferResource getResource();
 
     /**
-     * Gets the total number of bytes that have been transferred so far during the request.
+     * Gets the total number of bytes that have been transferred so far during the download/upload.
      * 
-     * @return The total number of bytes that have been transferred.
+     * @return The total number of bytes that have been transferred since the transfer started, never negative.
+     * @see #getDataLength()
      */
     long getTransferredBytes();
 
     /**
-     * The byte buffer holding the transferred bytes since the last event. A listener must
-     * assume this buffer to be owned by the event source and must not change any byte in this buffer. Also, the buffer
-     * is only valid for the duration of the event, i.e. the next event might reuse the same buffer (with updated
-     * contents).
+     * Gets the byte buffer holding the transferred bytes since the last event. A listener must assume this buffer to be
+     * owned by the event source and must not change any byte in this buffer. Also, the buffer is only valid for the
+     * duration of the event, i.e. the next event might reuse the same buffer (with updated contents).
      * 
      * @return The (read-only) byte buffer or {@code null} if not applicable to the event, i.e. if the event type is not
      *         {@link EventType#PROGRESSED}.
      */
     ByteBuffer getDataBuffer();
+
+    /**
+     * Gets the number of bytes that have been transferred since the last event.
+     * 
+     * @return The number of bytes that have been transferred since the last event, never negative.
+     * @see #getTransferredBytes()
+     */
+    int getDataLength();
 
     /**
      * Gets the error that occurred during the transfer.

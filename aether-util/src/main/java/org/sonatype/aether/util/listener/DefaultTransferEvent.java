@@ -81,6 +81,11 @@ public class DefaultTransferEvent
         return this;
     }
 
+    public int getDataLength()
+    {
+        return ( dataBuffer != null ) ? dataBuffer.remaining() : 0;
+    }
+
     public ByteBuffer getDataBuffer()
     {
         return dataBuffer != null ? dataBuffer.asReadOnlyBuffer() : null;
@@ -89,19 +94,14 @@ public class DefaultTransferEvent
     /**
      * Wraps the given <code>byte[]</code>-array into a {@link ByteBuffer} as the content for this event.
      * 
-     * @param buffer the array to use.
+     * @param buffer The array to use, must not be {@code null}.
      * @param offset the starting point of valid bytes in the array.
      * @param length the number of valid bytes.
-     * @return this event.
+     * @return This event for chaining, never {@code null}.
      */
     public DefaultTransferEvent setDataBuffer( byte[] buffer, int offset, int length )
     {
-        ByteBuffer bb = ByteBuffer.wrap( buffer );
-        bb.limit( offset + length );
-        bb.position( offset );
-        setDataBuffer( bb );
-
-        return this;
+        return setDataBuffer( ByteBuffer.wrap( buffer, offset, length ) );
     }
 
     public DefaultTransferEvent setDataBuffer( ByteBuffer dataBuffer )
