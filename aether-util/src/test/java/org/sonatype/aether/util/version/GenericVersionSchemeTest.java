@@ -1,6 +1,5 @@
 package org.sonatype.aether.util.version;
 
-
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
  *
@@ -40,7 +39,7 @@ public class GenericVersionSchemeTest
     {
         try
         {
-            VersionConstraint c = scheme.parseVersionConstraint( constraint );
+            scheme.parseVersionConstraint( constraint );
             fail( "expected exception for constraint " + constraint );
             return null;
         }
