@@ -56,7 +56,7 @@ public class ConflictIdSorter
             conflictIds = (Map<?, ?>) context.get( TransformationContextKeys.CONFLICT_IDS );
         }
 
-        Map<Object, ConflictId> ids = new LinkedHashMap<Object, ConflictId>();
+        Map<Object, ConflictId> ids = new LinkedHashMap<Object, ConflictId>( 256 );
 
         {
             ConflictId id = null;

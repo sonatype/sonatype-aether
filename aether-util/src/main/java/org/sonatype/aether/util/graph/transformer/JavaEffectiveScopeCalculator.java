@@ -58,7 +58,7 @@ public class JavaEffectiveScopeCalculator
             throw new RepositoryException( "conflict groups have not been identified" );
         }
 
-        Map<Object, ConflictGroup> groups = new HashMap<Object, ConflictGroup>();
+        Map<Object, ConflictGroup> groups = new HashMap<Object, ConflictGroup>( 256 );
 
         buildConflictGroups( groups, node, null, conflictIds );
 
