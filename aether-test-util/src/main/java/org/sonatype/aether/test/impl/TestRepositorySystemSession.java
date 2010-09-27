@@ -60,6 +60,8 @@ public class TestRepositorySystemSession
 
     private boolean notFoundCaching;
 
+    private DependencyManager dependencyManager;
+
     public TransferListener getTransferListener()
     {
         return listener;
@@ -175,19 +177,26 @@ public class TestRepositorySystemSession
 
     public DependencyManager getDependencyManager()
     {
-        return new DependencyManager()
+        if ( dependencyManager == null )
         {
-
-            public DependencyManagement manageDependency( Dependency dependency )
+            return new DependencyManager()
             {
-                return null;
-            }
 
-            public DependencyManager deriveChildManager( DependencyCollectionContext context )
-            {
-                return this;
-            }
-        };
+                public DependencyManagement manageDependency( Dependency dependency )
+                {
+                    return null;
+                }
+
+                public DependencyManager deriveChildManager( DependencyCollectionContext context )
+                {
+                    return this;
+                }
+            };
+        }
+        else
+        {
+            return dependencyManager;
+        }
     }
 
     public DependencySelector getDependencySelector()
@@ -260,5 +269,14 @@ public class TestRepositorySystemSession
     public void setLocalRepositoryManager( LocalRepositoryManager localRepositoryManager )
     {
         this.localRepositoryManager = localRepositoryManager;
+    }
+
+    /**
+     * @param classicDependencyManager
+     */
+    public void setDependencyManager( DependencyManager manager )
+    {
+        this.dependencyManager = manager;
+
     }
 }
