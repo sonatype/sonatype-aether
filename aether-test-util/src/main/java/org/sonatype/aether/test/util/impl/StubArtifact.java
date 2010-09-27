@@ -226,7 +226,7 @@ public class StubArtifact
     @Override
     public String toString()
     {
-        return String.format( "%s:%s:%s:%s", getGroupId(), getArtifactId(), getVersion(), getExtension() );
+        return String.format( "%s:%s:%s:%s", getGroupId(), getArtifactId(), getExtension(), getVersion() );
     }
 
 }
