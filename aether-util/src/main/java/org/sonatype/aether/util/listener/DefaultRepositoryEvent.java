@@ -98,7 +98,14 @@ public class DefaultRepositoryEvent
 
     public DefaultRepositoryEvent setException( Exception exception )
     {
-        this.exceptions = Collections.singletonList( exception );
+        if ( exception != null )
+        {
+            this.exceptions = Collections.singletonList( exception );
+        }
+        else
+        {
+            this.exceptions = Collections.emptyList();
+        }
         return this;
     }
 
