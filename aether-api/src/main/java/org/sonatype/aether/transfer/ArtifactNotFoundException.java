@@ -25,7 +25,21 @@ public class ArtifactNotFoundException
 
     public ArtifactNotFoundException( Artifact artifact, RemoteRepository repository )
     {
-        super( artifact, repository, "Could not find artifact " + artifact + getString( " in ", repository ) );
+        super( artifact, repository, "Could not find artifact " + artifact + getString( " in ", repository )
+            + getLocalPathInfo( artifact, repository ) );
+    }
+
+    private static String getLocalPathInfo( Artifact artifact, RemoteRepository repository )
+    {
+        String localPath = ( artifact != null ) ? artifact.getProperty( "localPath", null ) : null;
+        if ( localPath != null && repository == null )
+        {
+            return " at specified path " + localPath;
+        }
+        else
+        {
+            return "";
+        }
     }
 
     public ArtifactNotFoundException( Artifact artifact, RemoteRepository repository, String message )
