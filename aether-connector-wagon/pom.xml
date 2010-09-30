@@ -53,13 +53,13 @@ See the Apache License Version 2.0 for the specific language governing permissio
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-component-annotations</artifactId>
-      <version>1.5.4</version>
+      <version>1.5.5</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-container-default</artifactId>
-      <version>1.5.4</version>
+      <version>1.5.5</version>
     </dependency>
     <dependency>
       <groupId>org.sonatype.aether</groupId>
