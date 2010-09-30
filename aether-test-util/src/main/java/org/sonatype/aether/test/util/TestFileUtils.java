@@ -190,4 +190,16 @@ public class TestFileUtils
         Assert.assertArrayEquals( expected, getContent( file ) );
     }
 
+    public static void assertContent( String expected, File file )
+        throws IOException
+    {
+        byte[] content = getContent( file );
+        String msg = new String( content, "UTF-8" );
+        if ( msg.length() > 10 )
+        {
+            msg = msg.substring( 0, 10 ) + "...";
+        }
+        Assert.assertArrayEquals( "content was '" + msg + "'\n", expected.getBytes( "UTF-8" ), content );
+    }
+
 }
