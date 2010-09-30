@@ -301,4 +301,27 @@ public class DefaultInstallerTest
             assertNull( msg + " > " + event.getException(), event.getException() );
         }
     }
+
+    @Test
+    public void testDoNotUpdateUnchangedArtifact()
+        throws InstallationException
+    {
+        request.addArtifact( artifact );
+        installer.install( session, request );
+
+        installer.setFileProcessor( new DefaultFileProcessor()
+        {
+            @Override
+            public long copy( File src, File target, ProgressListener listener )
+                throws IOException
+            {
+                throw new IOException( "copy called" );
+            }
+        } );
+
+        request = new InstallRequest();
+        request.addArtifact( artifact );
+        installer.install( session, request );
+
+    }
 }
