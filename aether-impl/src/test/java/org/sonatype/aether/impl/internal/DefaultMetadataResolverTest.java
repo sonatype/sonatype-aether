@@ -83,7 +83,7 @@ public class DefaultMetadataResolverTest
         assertEquals( 1, results.size() );
 
         MetadataResult result = results.get( 0 );
-        assertEquals( request, result.getRequest() );
+        assertSame( request, result.getRequest() );
         assertNotNull( "" + ( result.getMetadata() != null ? result.getMetadata().getFile() : result.getMetadata() ),
                        result.getException() );
         assertEquals( MetadataNotFoundException.class, result.getException().getClass() );
@@ -107,7 +107,7 @@ public class DefaultMetadataResolverTest
         assertEquals( 1, results.size() );
 
         MetadataResult result = results.get( 0 );
-        assertEquals( request, result.getRequest() );
+        assertSame( request, result.getRequest() );
         assertNull( result.getException() );
         assertNotNull( result.getMetadata() );
         assertNotNull( result.getMetadata().getFile() );

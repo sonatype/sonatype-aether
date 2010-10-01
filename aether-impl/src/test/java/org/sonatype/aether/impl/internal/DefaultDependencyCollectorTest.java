@@ -127,7 +127,7 @@ public class DefaultDependencyCollectorTest
         catch ( DependencyCollectionException e )
         {
             CollectResult result = e.getResult();
-            assertEquals( request, result.getRequest() );
+            assertSame( request, result.getRequest() );
             assertNotNull( result.getExceptions() );
             assertEquals( 1, result.getExceptions().size() );
 
@@ -216,7 +216,7 @@ public class DefaultDependencyCollectorTest
         {
             result = e.getResult();
 
-            assertEquals( request, result.getRequest() );
+            assertSame( request, result.getRequest() );
             assertNotNull( result.getExceptions() );
             assertEquals( 1, result.getExceptions().size() );
 

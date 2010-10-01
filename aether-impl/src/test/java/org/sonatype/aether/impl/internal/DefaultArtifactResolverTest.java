@@ -138,7 +138,7 @@ public class DefaultArtifactResolverTest
 
             ArtifactResult result = e.getResults().get( 0 );
 
-            assertEquals( request, result.getRequest() );
+            assertSame( request, result.getRequest() );
 
             assertFalse( result.getExceptions().isEmpty() );
             assertTrue( result.getExceptions().get( 0 ) instanceof ArtifactNotFoundException );
@@ -210,7 +210,7 @@ public class DefaultArtifactResolverTest
 
             ArtifactResult result = e.getResults().get( 0 );
 
-            assertEquals( request, result.getRequest() );
+            assertSame( request, result.getRequest() );
 
             assertFalse( result.getExceptions().isEmpty() );
             assertTrue( result.getExceptions().get( 0 ) instanceof ArtifactNotFoundException );
@@ -492,7 +492,7 @@ public class DefaultArtifactResolverTest
 
             ArtifactResult result = e.getResults().get( 0 );
 
-            assertEquals( request, result.getRequest() );
+            assertSame( request, result.getRequest() );
 
             assertFalse( result.getExceptions().isEmpty() );
             assertTrue( result.getExceptions().get( 0 ) instanceof VersionResolutionException );
