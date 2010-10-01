@@ -17,7 +17,6 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -57,12 +56,12 @@ public class DefaultMetadataResolverTest
 
     @Before
     public void setup()
-        throws MalformedURLException
+        throws Exception
     {
         session = new TestRepositorySystemSession();
         manager = new StubRemoteRepositoryManager();
         resolver = new DefaultMetadataResolver( NullLogger.INSTANCE, new StaticUpdateCheckManager( true ), manager );
-        repository = new RemoteRepository( "test-DMRT", "default", new File( "target/test-DMRT" ).toURL().toString() );
+        repository = new RemoteRepository( "test-DMRT", "default", new File( "target/test-DMRT" ).toURI().toURL().toString() );
         metadata = new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT );
         connector = new RecordingRepositoryConnector();
         manager.setConnector( connector );
@@ -85,7 +84,8 @@ public class DefaultMetadataResolverTest
 
         MetadataResult result = results.get( 0 );
         assertEquals( request, result.getRequest() );
-        assertNotNull( "" + result.getException(), result.getException() );
+        assertNotNull( "" + ( result.getMetadata() != null ? result.getMetadata().getFile() : result.getMetadata() ),
+                       result.getException() );
         assertEquals( MetadataNotFoundException.class, result.getException().getClass() );
 
         assertNull( result.getMetadata() );
