@@ -68,7 +68,7 @@ public class TestLocalRepositoryManager
         String artifactId = metadata.getArtifactId();
         String groupId = metadata.getGroupId();
         String version = metadata.getVersion();
-        return String.format( "%s/%s/%s/%s-%s-%s.pom", groupId, artifactId, version, groupId, artifactId, version );
+        return String.format( "%s/%s/%s/%s-%s-%s.xml", groupId, artifactId, version, groupId, artifactId, version );
     }
 
     public String getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository, String context )

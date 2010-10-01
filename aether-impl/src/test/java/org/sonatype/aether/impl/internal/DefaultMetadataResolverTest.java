@@ -101,7 +101,7 @@ public class DefaultMetadataResolverTest
         connector.setExpectGet( metadata );
 
         // prepare "download"
-        File file = new File( "target/test-local-repository/gid/aid/ver/gid-aid-ver.pom" );
+        File file = new File( "target/test-local-repository/gid/aid/ver/gid-aid-ver.xml" );
         TestFileUtils.write( file.getAbsolutePath(), file );
 
         MetadataRequest request = new MetadataRequest( metadata, repository, "" );
@@ -143,7 +143,7 @@ public class DefaultMetadataResolverTest
         };
         manager.setConnector( connector );
 
-        File file = new File( "target/test-local-repository/gid/aid/ver/gid-aid-ver.pom" );
+        File file = new File( "target/test-local-repository/gid/aid/ver/gid-aid-ver.xml" );
         TestFileUtils.write( file.getAbsolutePath(), file );
         metadata.setFile( file );
 
