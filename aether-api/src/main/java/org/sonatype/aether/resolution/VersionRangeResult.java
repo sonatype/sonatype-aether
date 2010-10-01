@@ -178,4 +178,10 @@ public class VersionRangeResult
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return String.valueOf( repositories );
+    }
+
 }

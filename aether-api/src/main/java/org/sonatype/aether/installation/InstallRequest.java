@@ -122,4 +122,10 @@ public class InstallRequest
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getArtifacts() + ", " + getMetadata();
+    }
+
 }

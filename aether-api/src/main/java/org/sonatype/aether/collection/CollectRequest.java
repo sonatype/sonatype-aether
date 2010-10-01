@@ -287,4 +287,10 @@ public class CollectRequest
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getRoot() + " -> " + getDependencies() + " < " + getRepositories();
+    }
+
 }

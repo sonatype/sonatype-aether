@@ -131,4 +131,10 @@ public class VersionResult
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getVersion() + " @ " + getRepository();
+    }
+
 }

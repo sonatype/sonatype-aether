@@ -164,4 +164,10 @@ public class ArtifactResult
         return !isResolved();
     }
 
+    @Override
+    public String toString()
+    {
+        return getArtifact() + " < " + getRepository();
+    }
+
 }

@@ -130,4 +130,10 @@ public class LocalArtifactRequest
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getArtifact() + " @ " + getRepositories();
+    }
+
 }

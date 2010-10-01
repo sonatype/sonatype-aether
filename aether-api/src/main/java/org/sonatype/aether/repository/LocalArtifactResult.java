@@ -105,4 +105,10 @@ public class LocalArtifactResult
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getFile() + "(" + ( isAvailable() ? "available" : "unavailable" ) + ")";
+    }
+
 }

@@ -193,4 +193,10 @@ public class ArtifactRequest
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getArtifact() + " < " + getRepositories();
+    }
+
 }

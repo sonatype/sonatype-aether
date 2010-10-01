@@ -193,4 +193,10 @@ public class MetadataRequest
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getMetadata() + " < " + getRepository();
+    }
+
 }

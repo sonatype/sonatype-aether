@@ -149,4 +149,10 @@ public class DeployResult
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getArtifacts() + ", " + getMetadata();
+    }
+
 }

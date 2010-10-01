@@ -151,4 +151,10 @@ public class VersionRangeRequest
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getArtifact() + " < " + getRepositories();
+    }
+
 }

@@ -147,4 +147,10 @@ public class DeployRequest
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getArtifacts() + ", " + getMetadata() + " > " + getRepository();
+    }
+
 }

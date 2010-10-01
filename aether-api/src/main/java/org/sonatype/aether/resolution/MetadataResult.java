@@ -152,4 +152,10 @@ public class MetadataResult
         return getException() instanceof MetadataNotFoundException;
     }
 
+    @Override
+    public String toString()
+    {
+        return getMetadata() + ( isUpdated() ? " (updated)" : " (cached)" );
+    }
+
 }

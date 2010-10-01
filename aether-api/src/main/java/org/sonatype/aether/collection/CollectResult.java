@@ -107,4 +107,10 @@ public class CollectResult
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return String.valueOf( getRoot() );
+    }
+
 }

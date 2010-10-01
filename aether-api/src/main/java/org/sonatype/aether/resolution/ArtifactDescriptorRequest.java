@@ -151,4 +151,10 @@ public class ArtifactDescriptorRequest
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getArtifact() + " < " + getRepositories();
+    }
+
 }

@@ -431,4 +431,10 @@ public class ArtifactDescriptorResult
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getArtifact() + " -> " + getDependencies();
+    }
+
 }
