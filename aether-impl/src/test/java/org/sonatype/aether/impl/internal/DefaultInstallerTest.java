@@ -58,6 +58,10 @@ public class DefaultInstallerTest
 
     private RecordingRepositoryListener listener;
 
+    private File localArtifactFile;
+
+    private File localMetadataFile;
+
     @Before
     public void setup()
         throws IOException
@@ -71,6 +75,9 @@ public class DefaultInstallerTest
         session = new TestRepositorySystemSession();
         localArtifactPath = session.getLocalRepositoryManager().getPathForLocalArtifact( artifact );
         localMetadataPath = session.getLocalRepositoryManager().getPathForLocalMetadata( metadata );
+
+        localArtifactFile = new File( session.getLocalRepository().getBasedir(), localArtifactPath );
+        localMetadataFile = new File( session.getLocalRepository().getBasedir(), localMetadataPath );
 
         installer = new DefaultInstaller().setFileProcessor( TestFileProcessor.INSTANCE );
         request = new InstallRequest();
@@ -322,6 +329,30 @@ public class DefaultInstallerTest
         request = new InstallRequest();
         request.addArtifact( artifact );
         installer.install( session, request );
+    }
 
+    @Test
+    public void testSetArtifactTimestamps()
+        throws InstallationException
+    {
+        artifact.getFile().setLastModified( artifact.getFile().lastModified() - 60000 );
+
+        request.addArtifact( artifact );
+
+        installer.install( session, request );
+
+        assertEquals( "artifact timestamp was not set to src file", artifact.getFile().lastModified(),
+                      localArtifactFile.lastModified() );
+
+        request = new InstallRequest();
+
+        request.addArtifact( artifact );
+
+        artifact.getFile().setLastModified( artifact.getFile().lastModified() - 60000 );
+
+        installer.install( session, request );
+
+        assertEquals( "artifact timestamp was not set to src file", artifact.getFile().lastModified(),
+                      localArtifactFile.lastModified() );
     }
 }
