@@ -42,8 +42,9 @@ public class DefaultFileProcessorTest
 
     @After
     public void teardown()
+        throws Exception
     {
-        TestFileUtils.deleteDir( targetDir );
+        TestFileUtils.delete( targetDir );
         fileProcessor = null;
     }
 

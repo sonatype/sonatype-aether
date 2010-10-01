@@ -76,13 +76,14 @@ public class DefaultInstallerTest
         request = new InstallRequest();
         listener = new RecordingRepositoryListener();
         session.setRepositoryListener( listener );
-        TestFileUtils.deleteDir( session.getLocalRepository().getBasedir() );
+        TestFileUtils.delete( session.getLocalRepository().getBasedir() );
     }
 
     @After
     public void teardown()
+        throws Exception
     {
-        TestFileUtils.deleteDir( session.getLocalRepository().getBasedir() );
+        TestFileUtils.delete( session.getLocalRepository().getBasedir() );
     }
 
     @Test

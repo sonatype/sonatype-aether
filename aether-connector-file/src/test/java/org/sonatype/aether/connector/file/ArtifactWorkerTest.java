@@ -59,9 +59,9 @@ public class ArtifactWorkerTest
 
     @After
     public void cleanup()
+        throws Exception
     {
-        File dir = new File( "target/test-repository" );
-        TestFileUtils.deleteDir( dir );
+        TestFileUtils.delete( new File( "target/test-repository" ) );
     }
 
     @Test

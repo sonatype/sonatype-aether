@@ -58,6 +58,8 @@ public class DefaultMetadataResolverTest
     public void setup()
         throws Exception
     {
+        teardown();
+
         session = new TestRepositorySystemSession();
         manager = new StubRemoteRepositoryManager();
         resolver = new DefaultMetadataResolver( NullLogger.INSTANCE, new StaticUpdateCheckManager( true ), manager );
@@ -69,9 +71,10 @@ public class DefaultMetadataResolverTest
 
     @After
     public void teardown()
+        throws Exception
     {
-        TestFileUtils.deleteDir( new File( "target/test-DMRT" ) );
-        TestFileUtils.deleteDir( new File( "target/test-local-repository" ) );
+        TestFileUtils.delete( new File( "target/test-DMRT" ) );
+        TestFileUtils.delete( new File( "target/test-local-repository" ) );
     }
 
     @Test

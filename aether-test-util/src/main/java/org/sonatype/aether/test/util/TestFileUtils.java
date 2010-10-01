@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import org.junit.Assert;
 
@@ -131,22 +133,38 @@ public class TestFileUtils
         }
     }
 
-    public static boolean deleteDir( File dir )
+    public static void delete( File file )
+        throws IOException
     {
-        if ( dir.isDirectory() )
+        if ( file == null )
         {
-            String[] children = dir.list();
-            for ( int i = 0; i < children.length; i++ )
+            return;
+        }
+
+        Collection<File> undeletables = new ArrayList<File>();
+
+        delete( file, undeletables );
+
+        if ( !undeletables.isEmpty() )
+        {
+            throw new IOException( "Failed to delete " + undeletables );
+        }
+    }
+
+    private static void delete( File file, Collection<File> undeletables )
+    {
+        if ( file.isDirectory() )
+        {
+            for ( String child : file.list() )
             {
-                boolean success = deleteDir( new File( dir, children[i] ) );
-                if ( !success )
-                {
-                    return false;
-                }
+                delete( new File( file, child ), undeletables );
             }
         }
 
-        return dir.delete();
+        if ( !file.delete() && file.exists() )
+        {
+            undeletables.add( file.getAbsoluteFile() );
+        }
     }
 
     public static byte[] getContent( File file )

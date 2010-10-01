@@ -37,7 +37,8 @@ public interface ConnectorTestSetup
      * @param context The context provided by {@link #beforeClass(RepositorySystemSession)}.
      * @return The repository to use in the next test.
      */
-    public RemoteRepository before( RepositorySystemSession session, Map<String, Object> context );
+    public RemoteRepository before( RepositorySystemSession session, Map<String, Object> context )
+        throws Exception;
 
     /**
      * This method is called before the first test of the bundle is executed.
@@ -47,7 +48,8 @@ public interface ConnectorTestSetup
      *         cases in the suite, and is only used to provide context for the before/after/afterClass-method calls.
      *         This might be used to save setup-specific values (port numbers, directories to clean up after tests, ...)
      */
-    public Map<String, Object> beforeClass( RepositorySystemSession session );
+    public Map<String, Object> beforeClass( RepositorySystemSession session )
+        throws Exception;
 
     /**
      * This method is called after each test of the bundle is executed. Repositories should be cleaned after each test,
@@ -57,7 +59,8 @@ public interface ConnectorTestSetup
      * @param context The context provided by {@link #beforeClass(RepositorySystemSession)}.
      * @param repository the repository used in the test run.
      */
-    public void after( RepositorySystemSession session, RemoteRepository repository, Map<String, Object> context );
+    public void after( RepositorySystemSession session, RemoteRepository repository, Map<String, Object> context )
+        throws Exception;
 
     /**
      * This method is called after all tests of the bundle were run.
@@ -65,7 +68,8 @@ public interface ConnectorTestSetup
      * @param session The session used for the test bundle.
      * @param context The context provided by {@link #beforeClass(RepositorySystemSession)}.
      */
-    public void afterClass( RepositorySystemSession session, Map<String, Object> context );
+    public void afterClass( RepositorySystemSession session, Map<String, Object> context )
+        throws Exception;
 
     /**
      * @return the factory to use for the tests.
@@ -82,15 +86,18 @@ public interface ConnectorTestSetup
     {
 
         public Map<String, Object> beforeClass( RepositorySystemSession session )
+            throws Exception
         {
             return null;
         }
 
         public void after( RepositorySystemSession session, RemoteRepository repository, Map<String, Object> context )
+            throws Exception
         {
         }
 
         public void afterClass( RepositorySystemSession session, Map<String, Object> context )
+            throws Exception
         {
         }
 

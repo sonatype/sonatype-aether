@@ -69,6 +69,7 @@ public abstract class ConnectorTestSuiteSetup
      */
     @Before
     public void before()
+        throws Exception
     {
         if ( doClassInit )
         {
@@ -83,16 +84,17 @@ public abstract class ConnectorTestSuiteSetup
      */
     @After
     public void after()
+        throws Exception
     {
         connectorSetup.after( session, repository, context );
     }
-
 
     /**
      * Calls {@link ConnectorTestSetup#afterClass(org.sonatype.aether.RepositorySystemSession, RemoteRepository, Map)}.
      */
     @AfterClass
     public static void afterClass()
+        throws Exception
     {
         connectorSetup.afterClass( session, context );
     }

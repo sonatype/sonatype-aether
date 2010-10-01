@@ -73,8 +73,9 @@ public class EnhancedLocalRepositoryManagerTest
 
     @After
     public void tearDown()
+        throws Exception
     {
-        TestFileUtils.deleteDir( baseDir );
+        TestFileUtils.delete( baseDir );
 
         session = null;
         manager = null;

@@ -96,8 +96,10 @@ public class TestSuiteFileWagon
 
         @Override
         public void after( RepositorySystemSession session, RemoteRepository repository, Map<String, Object> context )
+            throws Exception
+
         {
-            TestFileUtils.deleteDir( new File( "target/test-filewagon" ) );
+            TestFileUtils.delete( new File( "target/test-filewagon" ) );
         }
 
     };
