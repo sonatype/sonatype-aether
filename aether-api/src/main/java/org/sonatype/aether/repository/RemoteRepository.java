@@ -27,7 +27,8 @@ public class RemoteRepository
     implements ArtifactRepository
 {
 
-    private static final Pattern URL_PATTERN = Pattern.compile( "([^:/]+(:[^:/]+)*):(//([^@/]*@)?([^/:]+))?.*" );
+    private static final Pattern URL_PATTERN =
+        Pattern.compile( "([^:/]+(:[^:/]{2,}+(?=://))?):(//([^@/]*@)?([^/:]+))?.*" );
 
     private String id = "";
 
