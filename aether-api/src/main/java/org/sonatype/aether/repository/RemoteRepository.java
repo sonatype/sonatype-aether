@@ -150,7 +150,8 @@ public class RemoteRepository
     }
 
     /**
-     * Gets the protocol part from the repository's URL.
+     * Gets the protocol part from the repository's URL, for example {@code file} or {@code http}. As suggested by RFC
+     * 2396, section 3.1 "Scheme Component", the protocol name should be treated case-insensitively.
      * 
      * @return The protocol or an empty string if none, never {@code null}.
      */
