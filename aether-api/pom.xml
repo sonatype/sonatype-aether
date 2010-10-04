@@ -19,7 +19,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
   <parent>
     <groupId>org.sonatype.aether</groupId>
     <artifactId>aether-parent</artifactId>
-    <version>1.8-SNAPSHOT</version>
+    <version>1.7-SNAPSHOT</version>
   </parent>
 
   <artifactId>aether-api</artifactId>
