@@ -18,6 +18,7 @@ import org.sonatype.aether.collection.DependencyGraphTransformationContext;
 import org.sonatype.aether.collection.DependencyGraphTransformer;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.util.artifact.JavaScopes;
 
 /**
  * @author Benjamin Bentmann
@@ -56,17 +57,18 @@ public class JavaDependencyContextRefiner
             return null;
         }
         String scope = dependency.getScope();
-        if ( "compile".equals( scope ) || "system".equals( scope ) || "provided".equals( scope ) )
+        if ( JavaScopes.COMPILE.equals( scope ) || JavaScopes.SYSTEM.equals( scope )
+            || JavaScopes.PROVIDED.equals( scope ) )
         {
-            return "compile";
+            return JavaScopes.COMPILE;
         }
-        else if ( "runtime".equals( scope ) )
+        else if ( JavaScopes.RUNTIME.equals( scope ) )
         {
-            return "runtime";
+            return JavaScopes.RUNTIME;
         }
-        else if ( "test".equals( scope ) )
+        else if ( JavaScopes.TEST.equals( scope ) )
         {
-            return "test";
+            return JavaScopes.TEST;
         }
         return null;
     }
