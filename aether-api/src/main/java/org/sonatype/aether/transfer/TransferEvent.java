@@ -61,7 +61,7 @@ public interface TransferEvent
     TransferResource getResource();
 
     /**
-     * Gets the total number of bytes that have been transferred so far during the download/upload.
+     * Gets the total number of bytes that have been transferred since the download/upload was started.
      * 
      * @return The total number of bytes that have been transferred since the transfer started, never negative.
      * @see #getDataLength()

@@ -13,10 +13,6 @@ package org.sonatype.aether.transfer;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.transfer.TransferCancelledException;
-import org.sonatype.aether.transfer.TransferEvent;
-import org.sonatype.aether.transfer.TransferListener;
-
 /**
  * A skeleton implementation for custom transfer listeners. The callback methods in this class do nothing.
  * 

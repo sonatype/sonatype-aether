@@ -70,7 +70,8 @@ public interface TransferListener
     void transferSucceeded( TransferEvent event );
 
     /**
-     * Notifies the listener about the unsuccessful termination of a transfer.
+     * Notifies the listener about the unsuccessful termination of a transfer. {@link TransferEvent#getException()} will
+     * provide further information about the failure.
      * 
      * @param event The event details, must not be {@code null}.
      */
