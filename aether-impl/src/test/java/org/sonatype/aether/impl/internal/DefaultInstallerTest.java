@@ -60,8 +60,6 @@ public class DefaultInstallerTest
 
     private File localArtifactFile;
 
-    private File localMetadataFile;
-
     @Before
     public void setup()
         throws IOException
@@ -77,7 +75,6 @@ public class DefaultInstallerTest
         localMetadataPath = session.getLocalRepositoryManager().getPathForLocalMetadata( metadata );
 
         localArtifactFile = new File( session.getLocalRepository().getBasedir(), localArtifactPath );
-        localMetadataFile = new File( session.getLocalRepository().getBasedir(), localMetadataPath );
 
         installer = new DefaultInstaller().setFileProcessor( TestFileProcessor.INSTANCE );
         request = new InstallRequest();
