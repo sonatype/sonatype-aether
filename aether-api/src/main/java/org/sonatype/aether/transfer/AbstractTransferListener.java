@@ -1,4 +1,4 @@
-package org.sonatype.aether.util.listener;
+package org.sonatype.aether.transfer;
 
 /*
  * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
@@ -13,14 +13,45 @@ package org.sonatype.aether.util.listener;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
+import org.sonatype.aether.transfer.TransferCancelledException;
+import org.sonatype.aether.transfer.TransferEvent;
+import org.sonatype.aether.transfer.TransferListener;
+
 /**
  * A skeleton implementation for custom transfer listeners. The callback methods in this class do nothing.
  * 
  * @author Benjamin Bentmann
- * @deprecated Use {@link org.sonatype.aether.transfer.AbstractTransferListener} instead.
  */
-@Deprecated
 public abstract class AbstractTransferListener
-    extends org.sonatype.aether.transfer.AbstractTransferListener
+    implements TransferListener
 {
+
+    public void transferInitiated( TransferEvent event )
+        throws TransferCancelledException
+    {
+    }
+
+    public void transferStarted( TransferEvent event )
+        throws TransferCancelledException
+    {
+    }
+
+    public void transferProgressed( TransferEvent event )
+        throws TransferCancelledException
+    {
+    }
+
+    public void transferCorrupted( TransferEvent event )
+        throws TransferCancelledException
+    {
+    }
+
+    public void transferSucceeded( TransferEvent event )
+    {
+    }
+
+    public void transferFailed( TransferEvent event )
+    {
+    }
+
 }

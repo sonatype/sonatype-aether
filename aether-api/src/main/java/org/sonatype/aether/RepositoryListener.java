@@ -17,8 +17,8 @@ import org.sonatype.aether.transfer.TransferListener;
 
 /**
  * A listener being notified of events from the repository system. The listener may be called from an arbitrary thread.
- * <em>Note:</em> Implementors are strongly advised to inherit from
- * {@link org.sonatype.aether.util.listener.AbstractRepositoryListener} instead of directly implementing this interface.
+ * <em>Note:</em> Implementors are strongly advised to inherit from {@link AbstractRepositoryListener} instead of
+ * directly implementing this interface.
  * 
  * @author Benjamin Bentmann
  * @see TransferListener

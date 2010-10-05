@@ -13,76 +13,14 @@ package org.sonatype.aether.util.listener;
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 
-import org.sonatype.aether.RepositoryEvent;
-import org.sonatype.aether.RepositoryListener;
-
 /**
  * A skeleton implementation for custom repository listeners. The callback methods in this class do nothing.
  * 
  * @author Benjamin Bentmann
+ * @deprecated Use {@link org.sonatype.aether.AbstractRepositoryListener} instead.
  */
+@Deprecated
 public abstract class AbstractRepositoryListener
-    implements RepositoryListener
+    extends org.sonatype.aether.AbstractRepositoryListener
 {
-
-    public void artifactDeployed( RepositoryEvent event )
-    {
-    }
-
-    public void artifactDeploying( RepositoryEvent event )
-    {
-    }
-
-    public void artifactDescriptorInvalid( RepositoryEvent event )
-    {
-    }
-
-    public void artifactDescriptorMissing( RepositoryEvent event )
-    {
-    }
-
-    public void artifactInstalled( RepositoryEvent event )
-    {
-    }
-
-    public void artifactInstalling( RepositoryEvent event )
-    {
-    }
-
-    public void artifactResolved( RepositoryEvent event )
-    {
-    }
-
-    public void artifactResolving( RepositoryEvent event )
-    {
-    }
-
-    public void metadataDeployed( RepositoryEvent event )
-    {
-    }
-
-    public void metadataDeploying( RepositoryEvent event )
-    {
-    }
-
-    public void metadataInstalled( RepositoryEvent event )
-    {
-    }
-
-    public void metadataInstalling( RepositoryEvent event )
-    {
-    }
-
-    public void metadataInvalid( RepositoryEvent event )
-    {
-    }
-
-    public void metadataResolved( RepositoryEvent event )
-    {
-    }
-
-    public void metadataResolving( RepositoryEvent event )
-    {
-    }
-
 }
