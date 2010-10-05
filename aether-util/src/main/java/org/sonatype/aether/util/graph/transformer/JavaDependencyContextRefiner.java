@@ -21,7 +21,12 @@ import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.util.artifact.JavaScopes;
 
 /**
+ * A dependency graph transformer that refines the request context for nodes that belong to the "project" context by
+ * appending the classpath type to which the node belongs. For instance, a compile-time project dependency will be
+ * assigned the request context "project/compile".
+ * 
  * @author Benjamin Bentmann
+ * @see DependencyNode#getRequestContext()
  */
 public class JavaDependencyContextRefiner
     implements DependencyGraphTransformer
@@ -31,6 +36,7 @@ public class JavaDependencyContextRefiner
         throws RepositoryException
     {
         String ctx = node.getRequestContext();
+
         if ( "project".equals( ctx ) )
         {
             String scope = getClasspathScope( node );
@@ -56,7 +62,9 @@ public class JavaDependencyContextRefiner
         {
             return null;
         }
+
         String scope = dependency.getScope();
+
         if ( JavaScopes.COMPILE.equals( scope ) || JavaScopes.SYSTEM.equals( scope )
             || JavaScopes.PROVIDED.equals( scope ) )
         {
@@ -70,6 +78,7 @@ public class JavaDependencyContextRefiner
         {
             return JavaScopes.TEST;
         }
+
         return null;
     }
 
