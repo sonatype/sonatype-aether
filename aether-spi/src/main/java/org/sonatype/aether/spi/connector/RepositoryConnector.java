@@ -56,7 +56,8 @@ public interface RepositoryConnector
 
     /**
      * Closes this connector and frees any network resources associated with it. Once closed, a connector must not be
-     * used for further transfers. Closing an already closed connector has no effect.
+     * used for further transfers, any attempt to do so would yield a {@link IllegalStateException} or similar. Closing
+     * an already closed connector is harmless and has no effect.
      */
     void close();
 
