@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.sonatype.aether.SessionData;
 
 /**
- * A simple session data storage backed by a {@link ConcurrentHashMap}.
+ * A simple session data storage backed by a thread-safe map.
  * 
  * @author Benjamin Bentmann
  */
@@ -27,7 +27,7 @@ public class DefaultSessionData
     implements SessionData
 {
 
-    private Map<Object, Object> data;
+    private final Map<Object, Object> data;
 
     public DefaultSessionData()
     {
@@ -36,6 +36,11 @@ public class DefaultSessionData
 
     public void set( Object key, Object value )
     {
+        if ( key == null )
+        {
+            throw new IllegalArgumentException( "key must not be null" );
+        }
+
         if ( value != null )
         {
             data.put( key, value );
@@ -48,6 +53,11 @@ public class DefaultSessionData
 
     public Object get( Object key )
     {
+        if ( key == null )
+        {
+            throw new IllegalArgumentException( "key must not be null" );
+        }
+
         return data.get( key );
     }
 
