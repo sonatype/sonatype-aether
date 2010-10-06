@@ -15,6 +15,7 @@ package org.sonatype.aether.graph;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -55,7 +56,7 @@ public interface DependencyNode
     /**
      * Gets the sequence of relocations that was followed to resolve the artifact referenced by the dependency.
      * 
-     * @return The sequence of relocations, never {@code null}.
+     * @return The (read-only) sequence of relocations, never {@code null}.
      */
     List<Artifact> getRelocations();
 
@@ -64,7 +65,7 @@ public interface DependencyNode
      * other artifact as such, thereby allowing conflict resolution to consider the patched and the original artifact as
      * a conflict.
      * 
-     * @return The known aliases, never {@code null}.
+     * @return The (read-only) set of known aliases, never {@code null}.
      */
     Collection<Artifact> getAliases();
 
@@ -106,7 +107,7 @@ public interface DependencyNode
     /**
      * Gets the remote repositories from which this node's artifact shall be resolved.
      * 
-     * @return The remote repositories to use for artifact resolution, never {@code null}.
+     * @return The (read-only) list of remote repositories to use for artifact resolution, never {@code null}.
      */
     List<RemoteRepository> getRepositories();
 
@@ -123,6 +124,23 @@ public interface DependencyNode
      * @param context The context, may be {@code null}.
      */
     void setRequestContext( String context );
+
+    /**
+     * Gets the custom data associated with this dependency node. Clients of the repository system can use this data to
+     * annotate dependency nodes with domain-specific information.
+     * 
+     * @return The (read-only) key-value mappings, never {@code null}.
+     */
+    Map<Object, Object> getData();
+
+    /**
+     * Associates the specified dependency node data with the given key. <em>Note:</em> This method must not be called
+     * while {@link #getData()} is being iterated.
+     * 
+     * @param key The key under which to store the data, must not be {@code null}.
+     * @param value The data to associate with the key, may be {@code null} to remove the mapping.
+     */
+    void setData( Object key, Object value );
 
     /**
      * Traverses this node and potentially its children using the specified visitor.

@@ -15,7 +15,9 @@ package org.sonatype.aether.impl.internal;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.graph.Dependency;
@@ -49,6 +51,8 @@ class GraphEdge
     private VersionConstraint versionConstraint;
 
     private Version version;
+
+    private Map<Object, Object> data = Collections.emptyMap();
 
     public GraphEdge( GraphNode source, GraphNode target )
     {
@@ -166,6 +170,40 @@ class GraphEdge
     public void setVersion( Version version )
     {
         this.version = version;
+    }
+
+    public Map<Object, Object> getData()
+    {
+        return data;
+    }
+
+    public void setData( Object key, Object value )
+    {
+        if ( key == null )
+        {
+            throw new IllegalArgumentException( "key must not be null" );
+        }
+
+        if ( value == null )
+        {
+            if ( !data.isEmpty() )
+            {
+                data.remove( key );
+
+                if ( data.isEmpty() )
+                {
+                    data = Collections.emptyMap();
+                }
+            }
+        }
+        else
+        {
+            if ( data.isEmpty() )
+            {
+                data = new HashMap<Object, Object>();
+            }
+            data.put( key, value );
+        }
     }
 
     public boolean accept( DependencyVisitor visitor )

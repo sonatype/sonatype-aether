@@ -16,7 +16,9 @@ package org.sonatype.aether.test.util.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.graph.Dependency;
@@ -54,6 +56,8 @@ public class TestDependencyNode
     private List<RemoteRepository> repositories = Collections.emptyList();
 
     private String context = "";
+
+    private Map<Object, Object> data = new HashMap<Object, Object>();
 
     /**
      * Creates an empty dependency node.
@@ -241,6 +245,23 @@ public class TestDependencyNode
     public void setRequestContext( String context )
     {
         this.context = ( context != null ) ? context : "";
+    }
+
+    public Map<Object, Object> getData()
+    {
+        return data;
+    }
+
+    public void setData( Object key, Object value )
+    {
+        if ( value == null )
+        {
+            data.remove( key );
+        }
+        else
+        {
+            data.put( key, value );
+        }
     }
 
     public boolean accept( DependencyVisitor visitor )

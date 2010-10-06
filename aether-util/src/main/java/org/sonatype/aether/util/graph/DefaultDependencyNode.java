@@ -16,7 +16,9 @@ package org.sonatype.aether.util.graph;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.graph.Dependency;
@@ -55,6 +57,8 @@ public class DefaultDependencyNode
 
     private String context = "";
 
+    private Map<Object, Object> data = Collections.emptyMap();
+
     /**
      * Creates an empty dependency node.
      */
@@ -89,6 +93,7 @@ public class DefaultDependencyNode
         setRepositories( node.getRepositories() );
         setVersion( node.getVersion() );
         setVersionConstraint( node.getVersionConstraint() );
+        setData( node.getData() );
     }
 
     public List<DependencyNode> getChildren()
@@ -241,6 +246,52 @@ public class DefaultDependencyNode
     public void setRequestContext( String context )
     {
         this.context = ( context != null ) ? context : "";
+    }
+
+    public Map<Object, Object> getData()
+    {
+        return data;
+    }
+
+    public void setData( Map<Object, Object> data )
+    {
+        if ( data == null )
+        {
+            this.data = Collections.emptyMap();
+        }
+        else
+        {
+            this.data = data;
+        }
+    }
+
+    public void setData( Object key, Object value )
+    {
+        if ( key == null )
+        {
+            throw new IllegalArgumentException( "key must not be null" );
+        }
+
+        if ( value == null )
+        {
+            if ( !data.isEmpty() )
+            {
+                data.remove( key );
+
+                if ( data.isEmpty() )
+                {
+                    data = Collections.emptyMap();
+                }
+            }
+        }
+        else
+        {
+            if ( data.isEmpty() )
+            {
+                data = new HashMap<Object, Object>();
+            }
+            data.put( key, value );
+        }
     }
 
     public boolean accept( DependencyVisitor visitor )
