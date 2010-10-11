@@ -140,12 +140,10 @@ class WagonRepositoryConnector
         wagonAuth = getAuthenticationInfo( repository );
         wagonProxy = getProxy( repository );
 
-        int threads =
-            ConfigurationProperties.get( session.getConfigProperties(), "aether.connector.wagon.threads",
-                                         Integer.MIN_VALUE );
+        int threads = ConfigurationProperties.get( session, "aether.connector.wagon.threads", Integer.MIN_VALUE );
         if ( threads == Integer.MIN_VALUE )
         {
-            threads = ConfigurationProperties.get( session.getConfigProperties(), "maven.artifact.threads", 5 );
+            threads = ConfigurationProperties.get( session, "maven.artifact.threads", 5 );
         }
         if ( threads <= 1 )
         {
@@ -228,7 +226,7 @@ class WagonRepositoryConnector
         throws Exception
     {
         String userAgent =
-            ConfigurationProperties.get( session.getConfigProperties(), ConfigurationProperties.USER_AGENT,
+            ConfigurationProperties.get( session, ConfigurationProperties.USER_AGENT,
                                          ConfigurationProperties.DEFAULT_USER_AGENT );
         if ( !StringUtils.isEmpty( userAgent ) )
         {
@@ -246,12 +244,11 @@ class WagonRepositoryConnector
         }
 
         int connectTimeout =
-            ConfigurationProperties.get( session.getConfigProperties(), ConfigurationProperties.CONNECT_TIMEOUT,
+            ConfigurationProperties.get( session, ConfigurationProperties.CONNECT_TIMEOUT,
                                          ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
         wagon.setTimeout( Math.max( connectTimeout, 0 ) );
 
-        wagon.setInteractive( ConfigurationProperties.get( session.getConfigProperties(),
-                                                           ConfigurationProperties.INTERACTIVE,
+        wagon.setInteractive( ConfigurationProperties.get( session, ConfigurationProperties.INTERACTIVE,
                                                            ConfigurationProperties.DEFAULT_INTERACTIVE ) );
 
         wagon.connect( wagonRepo, wagonAuth, wagonProxy );
