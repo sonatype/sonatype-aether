@@ -66,6 +66,9 @@ public class RemoteRepositoryTest
         repo = repo.setUrl( "http://localhost/" );
         assertEquals( "localhost", repo.getHost() );
 
+        repo = repo.setUrl( "http://localhost:1234/" );
+        assertEquals( "localhost", repo.getHost() );
+
         repo = repo.setUrl( "http://127.0.0.1" );
         assertEquals( "127.0.0.1", repo.getHost() );
 
@@ -76,6 +79,9 @@ public class RemoteRepositoryTest
         assertEquals( "localhost", repo.getHost() );
 
         repo = repo.setUrl( "http://user:pass@localhost/path" );
+        assertEquals( "localhost", repo.getHost() );
+
+        repo = repo.setUrl( "http://user:pass@localhost:1234/path" );
         assertEquals( "localhost", repo.getHost() );
     }
 
