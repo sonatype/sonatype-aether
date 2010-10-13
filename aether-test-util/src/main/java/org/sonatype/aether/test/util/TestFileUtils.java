@@ -27,6 +27,13 @@ import org.junit.Assert;
 
 public class TestFileUtils
 {
+    private static File tmpDir = new File( System.getProperty( "java.io.tmpdir" ), "aether-test-util" );
+    
+    public static void cleanupTmpDir()
+        throws IOException
+    {
+        delete( tmpDir );
+    }
 
     public static File createTempFile( String contents )
         throws IOException
@@ -37,10 +44,8 @@ public class TestFileUtils
     public static File createTempFile( byte[] pattern, int repeat )
         throws IOException
     {
-
-        File tmpFile = null;
-        tmpFile = File.createTempFile( "aether-test-util-", ".data" );
-
+        mkdirs( tmpDir );
+        File tmpFile = File.createTempFile( "tmpfile-", ".data", tmpDir );
         write( pattern, repeat, tmpFile );
 
         return tmpFile;
@@ -200,6 +205,36 @@ public class TestFileUtils
             msg = msg.substring( 0, 10 ) + "...";
         }
         Assert.assertArrayEquals( "content was '" + msg + "'\n", expected.getBytes( "UTF-8" ), content );
+    }
+
+    public static boolean mkdirs( File directory )
+    {
+        if ( directory == null )
+        {
+            return false;
+        }
+    
+        if ( directory.exists() )
+        {
+            return false;
+        }
+        if ( directory.mkdir() )
+        {
+            return true;
+        }
+    
+        File canonDir = null;
+        try
+        {
+            canonDir = directory.getCanonicalFile();
+        }
+        catch ( IOException e )
+        {
+            return false;
+        }
+    
+        File parentDir = canonDir.getParentFile();
+        return ( parentDir != null && ( mkdirs( parentDir ) || parentDir.exists() ) && canonDir.mkdir() );
     }
 
 }
