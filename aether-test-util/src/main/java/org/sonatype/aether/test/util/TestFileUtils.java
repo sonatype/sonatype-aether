@@ -32,10 +32,23 @@ public class TestFileUtils
     private static final File TMP = new File( System.getProperty( "java.io.tmpdir" ), "aether-"
         + UUID.randomUUID().toString().substring( 0, 8 ) );
 
-    public static void cleanupTmpDir()
-        throws IOException
+    static
     {
-        delete( TMP );
+        Runtime.getRuntime().addShutdownHook( new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    delete( TMP );
+                }
+                catch ( IOException e )
+                {
+                    e.printStackTrace();
+                }
+            }
+        } );
     }
 
     public static File createTempFile( String contents )
