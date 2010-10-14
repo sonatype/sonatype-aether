@@ -22,17 +22,20 @@ import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.UUID;
 
 import org.junit.Assert;
 
 public class TestFileUtils
 {
-    private static File tmpDir = new File( System.getProperty( "java.io.tmpdir" ), "aether-test-util" );
-    
+
+    private static final File TMP = new File( System.getProperty( "java.io.tmpdir" ), "aether-"
+        + UUID.randomUUID().toString().substring( 0, 8 ) );
+
     public static void cleanupTmpDir()
         throws IOException
     {
-        delete( tmpDir );
+        delete( TMP );
     }
 
     public static File createTempFile( String contents )
@@ -44,8 +47,8 @@ public class TestFileUtils
     public static File createTempFile( byte[] pattern, int repeat )
         throws IOException
     {
-        mkdirs( tmpDir );
-        File tmpFile = File.createTempFile( "tmpfile-", ".data", tmpDir );
+        mkdirs( TMP );
+        File tmpFile = File.createTempFile( "tmpfile-", ".data", TMP );
         write( pattern, repeat, tmpFile );
 
         return tmpFile;
@@ -213,7 +216,7 @@ public class TestFileUtils
         {
             return false;
         }
-    
+
         if ( directory.exists() )
         {
             return false;
@@ -222,7 +225,7 @@ public class TestFileUtils
         {
             return true;
         }
-    
+
         File canonDir = null;
         try
         {
@@ -232,7 +235,7 @@ public class TestFileUtils
         {
             return false;
         }
-    
+
         File parentDir = canonDir.getParentFile();
         return ( parentDir != null && ( mkdirs( parentDir ) || parentDir.exists() ) && canonDir.mkdir() );
     }
