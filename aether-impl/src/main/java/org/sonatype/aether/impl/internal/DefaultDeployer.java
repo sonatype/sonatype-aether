@@ -240,6 +240,16 @@ public class DefaultDeployer
              */
             connector.put( artifactUploads, null );
 
+            for ( ArtifactUpload upload : artifactUploads )
+            {
+                if ( upload.getException() != null )
+                {
+                    throw new DeploymentException( "Failed to deploy artifacts: " + upload.getException().getMessage(),
+                                                   upload.getException() );
+                }
+                result.addArtifact( upload.getArtifact() );
+            }
+
             for ( MetadataGenerator generator : generators )
             {
                 for ( Metadata metadata : generator.finish( artifacts ) )
@@ -260,15 +270,6 @@ public class DefaultDeployer
 
             connector.put( null, metadataUploads );
 
-            for ( ArtifactUpload upload : artifactUploads )
-            {
-                if ( upload.getException() != null )
-                {
-                    throw new DeploymentException( "Failed to deploy artifacts: " + upload.getException().getMessage(),
-                                                   upload.getException() );
-                }
-                result.addArtifact( upload.getArtifact() );
-            }
             for ( MetadataUpload upload : metadataUploads )
             {
                 if ( upload.getException() != null )
