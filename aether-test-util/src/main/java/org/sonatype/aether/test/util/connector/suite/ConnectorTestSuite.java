@@ -87,7 +87,7 @@ public abstract class ConnectorTestSuite
         throws IOException, NoRepositoryConnectorException
     {
 
-        StubArtifact artifact = new StubArtifact( "testGroup", "testArtifact", "jar", "", "1-test" );
+        StubArtifact artifact = new StubArtifact( "testGroup", "testArtifact", "", "jar", "1-test" );
         StubMetadata metadata =
             new StubMetadata( "testGroup", "testArtifact", "1-test", "maven-metadata.xml",
                               Metadata.Nature.RELEASE_OR_SNAPSHOT );
@@ -168,7 +168,7 @@ public abstract class ConnectorTestSuite
 
         for ( int i = 0; i < numTransfers; i++ )
         {
-            StubArtifact art = new StubArtifact( "testGroup", "testArtifact", "jar", "", i + "-test" );
+            StubArtifact art = new StubArtifact( "testGroup", "testArtifact", "", "jar", i + "-test" );
             StubMetadata meta =
                 new StubMetadata( "testGroup", "testArtifact", i + "-test", "maven-metadata.xml",
                                   Metadata.Nature.RELEASE_OR_SNAPSHOT );
@@ -202,7 +202,7 @@ public abstract class ConnectorTestSuite
                 File artFile = new File( localPath.toString() + "/a" + i );
                 File metaFile = new File( localPath.toString() + "/m" + i );
 
-                StubArtifact art = new StubArtifact( "testGroup", "testArtifact", "jar", "", i + "-test" );
+                StubArtifact art = new StubArtifact( "testGroup", "testArtifact", "", "jar", i + "-test" );
                 StubMetadata meta =
                     new StubMetadata( "testGroup", "testArtifact", i + "-test", "maven-metadata.xml",
                                       Metadata.Nature.RELEASE_OR_SNAPSHOT );
