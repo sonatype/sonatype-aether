@@ -1,3 +1,7 @@
+Homepage
+========
+<http://aether.sonatype.org/>
+
 Wiki
 ====
 <https://docs.sonatype.org/display/AETHER/Home>
