@@ -81,7 +81,7 @@ public interface TransferEvent
     /**
      * Gets the number of bytes that have been transferred since the last event.
      * 
-     * @return The number of bytes that have been transferred since the last event, never negative.
+     * @return The number of bytes that have been transferred since the last event, possibly zero but never negative.
      * @see #getTransferredBytes()
      */
     int getDataLength();

@@ -44,7 +44,8 @@ public interface TransferListener
         throws TransferCancelledException;
 
     /**
-     * Notifies the listener about some progress in the data transfer.
+     * Notifies the listener about some progress in the data transfer. This event may even be fired if actually zero
+     * bytes have been transferred since the last event, for instance to enable cancellation.
      * 
      * @param event The event details, must not be {@code null}.
      * @throws TransferCancelledException If the transfer should be aborted.

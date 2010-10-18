@@ -127,7 +127,7 @@ public class TransferEventTester
                 assertTrue( "event is not 'succeeded' and not 'progressed'", progressed.equals( currentType ) );
                 assertTrue( "wrong order of progressed events, transferredSize got smaller, last = " + transferredBytes
                                 + ", current = " + currentEvent.getTransferredBytes(),
-                            currentEvent.getTransferredBytes() > transferredBytes );
+                            currentEvent.getTransferredBytes() >= transferredBytes );
                 transferredBytes = currentEvent.getTransferredBytes();
                 dataLength += currentEvent.getDataBuffer().remaining();
                 checkProperties( currentEvent );
