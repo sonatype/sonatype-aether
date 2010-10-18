@@ -158,7 +158,8 @@ public abstract class ConnectorTestSuite
         throws IOException, NoRepositoryConnectorException
     {
         RepositoryConnector connector = factory().newInstance( session, repository );
-        File tmpFile = TestFileUtils.createTempFile( "mkdirsBug" );
+        File artifactFile = TestFileUtils.createTempFile( "mkdirsBug0" );
+        File metadataFile = TestFileUtils.createTempFile( "mkdirsBug1" );
 
         int numTransfers = 2;
 
@@ -173,8 +174,8 @@ public abstract class ConnectorTestSuite
                 new StubMetadata( "testGroup", "testArtifact", i + "-test", "maven-metadata.xml",
                                   Metadata.Nature.RELEASE_OR_SNAPSHOT );
 
-            ArtifactUpload artUp = new ArtifactUpload( art, tmpFile );
-            MetadataUpload metaUp = new MetadataUpload( meta, tmpFile );
+            ArtifactUpload artUp = new ArtifactUpload( art, artifactFile );
+            MetadataUpload metaUp = new MetadataUpload( meta, metadataFile );
 
             artUps[i] = artUp;
             metaUps[i] = metaUp;
