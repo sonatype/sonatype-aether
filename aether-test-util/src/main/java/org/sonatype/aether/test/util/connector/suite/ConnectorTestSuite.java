@@ -319,52 +319,60 @@ public abstract class ConnectorTestSuite
     private final class DigestingTransferListener
         implements TransferListener
     {
+
+        private volatile MessageDigest digest;
+
+        private void initDigest()
+            throws NoSuchAlgorithmException
+        {
+            digest = MessageDigest.getInstance( "SHA-1" );
+        }
+
         public DigestingTransferListener()
             throws NoSuchAlgorithmException
         {
-            digest = MessageDigest.getInstance( "SHA-1" );
+            initDigest();
         }
-    
+
         public void rewind()
             throws NoSuchAlgorithmException
         {
-            digest = MessageDigest.getInstance( "SHA-1" );
+            initDigest();
         }
-    
-        private MessageDigest digest;
-    
+
         public void transferSucceeded( TransferEvent event )
         {
         }
-    
+
         public void transferStarted( TransferEvent event )
             throws TransferCancelledException
         {
         }
-    
+
         public void transferProgressed( TransferEvent event )
             throws TransferCancelledException
         {
             digest.update( event.getDataBuffer() );
         }
-    
+
         public void transferInitiated( TransferEvent event )
             throws TransferCancelledException
         {
         }
-    
+
         public void transferFailed( TransferEvent event )
         {
         }
-    
+
         public void transferCorrupted( TransferEvent event )
             throws TransferCancelledException
         {
         }
-    
+
         public byte[] getHash()
         {
             return digest.digest();
         }
     }
+
 }
