@@ -415,6 +415,20 @@ class WagonRepositoryConnector
     }
 
     @Override
+    protected void finalize()
+        throws Throwable
+    {
+        try
+        {
+            close();
+        }
+        finally
+        {
+            super.finalize();
+        }
+    }
+
+    @Override
     public String toString()
     {
         return String.valueOf( repository );
