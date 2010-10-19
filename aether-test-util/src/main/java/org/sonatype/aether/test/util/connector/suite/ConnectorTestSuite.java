@@ -115,6 +115,8 @@ public abstract class ConnectorTestSuite
         connector.get( null, Arrays.asList( metaDown ) );
         new File( tmpFile.getAbsolutePath() + ".sha1" ).deleteOnExit();
         assertTrue( "Leaking file handle in metadata download", tmpFile.delete() );
+
+        connector.close();
     }
 
     @Test
@@ -151,6 +153,7 @@ public abstract class ConnectorTestSuite
             assertTrue( Transfer.State.DONE.equals( metaDown.getState() ) );
         }
 
+        connector.close();
     }
 
     @Test
@@ -233,6 +236,7 @@ public abstract class ConnectorTestSuite
             TestFileUtils.delete( localRepo );
         }
 
+        connector.close();
     }
 
     /**
@@ -264,6 +268,8 @@ public abstract class ConnectorTestSuite
 
         assertEquals( 0, downAFile.length() );
         assertEquals( 0, downMFile.length() );
+
+        connector.close();
     }
 
     @Test
@@ -310,6 +316,8 @@ public abstract class ConnectorTestSuite
         connector.get( null, Arrays.asList( downM ) );
         assertArrayEquals( hash, listener.getHash() );
         listener.rewind();
+
+        connector.close();
     }
 
     /**

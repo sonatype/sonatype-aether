@@ -84,6 +84,8 @@ public class TransferEventTester
         connector.get( null, metaDowns );
         events = new LinkedList<TransferEvent>( listener.getEvents() );
         checkEvents( events, expectedBytes );
+
+        connector.close();
     }
 
     private static void checkEvents( Queue<TransferEvent> events, long expectedBytes )
@@ -214,6 +216,8 @@ public class TransferEventTester
         connector.get( null, metaDowns );
         events = new LinkedList<TransferEvent>( listener.getEvents() );
         checkFailedEvents( events, null );
+
+        connector.close();
     }
 
     private static void checkFailedEvents( Queue<TransferEvent> events, Class<? extends Throwable> expectedError )
