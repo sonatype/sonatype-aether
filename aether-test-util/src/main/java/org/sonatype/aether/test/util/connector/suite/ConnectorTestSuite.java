@@ -320,9 +320,9 @@ public abstract class ConnectorTestSuite
         implements TransferListener
     {
 
-        private volatile MessageDigest digest;
+        private MessageDigest digest;
 
-        private void initDigest()
+        private synchronized void initDigest()
             throws NoSuchAlgorithmException
         {
             digest = MessageDigest.getInstance( "SHA-1" );
@@ -349,7 +349,7 @@ public abstract class ConnectorTestSuite
         {
         }
 
-        public void transferProgressed( TransferEvent event )
+        public synchronized void transferProgressed( TransferEvent event )
             throws TransferCancelledException
         {
             digest.update( event.getDataBuffer() );
@@ -369,7 +369,7 @@ public abstract class ConnectorTestSuite
         {
         }
 
-        public byte[] getHash()
+        public synchronized byte[] getHash()
         {
             return digest.digest();
         }
