@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Queue;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -308,6 +309,11 @@ class WagonRepositoryConnector
         return ( items != null ) ? items : Collections.<T> emptyList();
     }
 
+    private File getTmpFile( String path )
+    {
+        return new File( path + ".tmp" + UUID.randomUUID().toString().substring( 0, 8 ) );
+    }
+
     public void get( Collection<? extends ArtifactDownload> artifactDownloads,
                      Collection<? extends MetadataDownload> metadataDownloads )
     {
@@ -473,7 +479,7 @@ class WagonRepositoryConnector
                     listener.transferInitiated( event );
                 }
 
-                File tmp = ( file != null ) ? new File( file.getPath() + ".tmp" + System.currentTimeMillis() ) : null;
+                File tmp = ( file != null ) ? getTmpFile( file.getPath() ) : null;
 
                 Wagon wagon = pollWagon();
 
@@ -603,7 +609,7 @@ class WagonRepositoryConnector
         private boolean verifyChecksum( Wagon wagon, String actual, String ext )
             throws ChecksumFailureException
         {
-            File tmp = new File( file.getPath() + ext + ".tmp" + System.currentTimeMillis() );
+            File tmp = getTmpFile( file.getPath() + ext );
 
             try
             {
