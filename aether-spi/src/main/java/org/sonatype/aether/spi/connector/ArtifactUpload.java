@@ -69,4 +69,10 @@ public class ArtifactUpload
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getState() + " " + getArtifact() + " - " + getFile();
+    }
+
 }

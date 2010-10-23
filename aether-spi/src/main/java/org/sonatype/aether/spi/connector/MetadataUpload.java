@@ -69,4 +69,10 @@ public class MetadataUpload
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getState() + " " + getMetadata() + " - " + getFile();
+    }
+
 }

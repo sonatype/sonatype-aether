@@ -157,4 +157,10 @@ public class MetadataDownload
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getState() + " " + getMetadata() + " - " + getFile();
+    }
+
 }

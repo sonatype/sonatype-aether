@@ -229,4 +229,10 @@ public class ArtifactDownload
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getState() + " " + getArtifact() + " - " + ( isExistenceCheck() ? "?" : "" ) + getFile();
+    }
+
 }
