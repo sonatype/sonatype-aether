@@ -59,6 +59,10 @@ public abstract class Transfer
      */
     public Transfer setState( State state )
     {
+        if ( state == null )
+        {
+            throw new IllegalArgumentException( "no transfer state specified" );
+        }
         this.state = state;
         return this;
     }
