@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.ConfigurationProperties;
+import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.MetadataResolver;
@@ -360,7 +361,8 @@ public class DefaultMetadataResolver
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVING, session );
+            event.setMetadata( metadata );
             event.setRepository( repository );
             listener.metadataResolving( event );
         }
@@ -372,7 +374,8 @@ public class DefaultMetadataResolver
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVED, session );
+            event.setMetadata( metadata );
             event.setRepository( repository );
             event.setException( exception );
             event.setFile( metadata.getFile() );

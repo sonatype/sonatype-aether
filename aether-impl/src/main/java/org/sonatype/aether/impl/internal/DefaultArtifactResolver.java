@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
@@ -524,7 +525,8 @@ public class DefaultArtifactResolver
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_RESOLVING, session );
+            event.setArtifact( artifact );
             listener.artifactResolving( event );
         }
     }
@@ -535,7 +537,8 @@ public class DefaultArtifactResolver
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_RESOLVED, session );
+            event.setArtifact( artifact );
             event.setRepository( repository );
             event.setExceptions( exceptions );
             if ( artifact != null )

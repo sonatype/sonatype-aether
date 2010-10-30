@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
@@ -322,7 +323,8 @@ public class DefaultInstaller
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_INSTALLING, session );
+            event.setArtifact( artifact );
             event.setRepository( session.getLocalRepositoryManager().getRepository() );
             event.setFile( dstFile );
             listener.artifactInstalling( event );
@@ -335,7 +337,8 @@ public class DefaultInstaller
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_INSTALLED, session );
+            event.setArtifact( artifact );
             event.setRepository( session.getLocalRepositoryManager().getRepository() );
             event.setFile( dstFile );
             event.setException( exception );
@@ -348,7 +351,8 @@ public class DefaultInstaller
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_INSTALLING, session );
+            event.setMetadata( metadata );
             event.setRepository( session.getLocalRepositoryManager().getRepository() );
             event.setFile( dstFile );
             listener.metadataInstalling( event );
@@ -361,7 +365,8 @@ public class DefaultInstaller
         RepositoryListener listener = session.getRepositoryListener();
         if ( listener != null )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_INSTALLED, session );
+            event.setMetadata( metadata );
             event.setRepository( session.getLocalRepositoryManager().getRepository() );
             event.setFile( dstFile );
             event.setException( exception );

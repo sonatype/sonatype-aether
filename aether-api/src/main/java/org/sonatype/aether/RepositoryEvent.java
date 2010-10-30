@@ -29,18 +29,82 @@ import org.sonatype.aether.repository.ArtifactRepository;
 public interface RepositoryEvent
 {
 
+    /**
+     * The type of the event.
+     */
+    enum EventType
+    {
+        ARTIFACT_DESCRIPTOR_INVALID,
+        ARTIFACT_DESCRIPTOR_MISSING,
+        METADATA_INVALID,
+        ARTIFACT_RESOLVING,
+        ARTIFACT_RESOLVED,
+        METADATA_RESOLVING,
+        METADATA_RESOLVED,
+        ARTIFACT_INSTALLING,
+        ARTIFACT_INSTALLED,
+        METADATA_INSTALLING,
+        METADATA_INSTALLED,
+        ARTIFACT_DEPLOYING,
+        ARTIFACT_DEPLOYED,
+        METADATA_DEPLOYING,
+        METADATA_DEPLOYED
+    }
+
+    /**
+     * Gets the type of the event.
+     * 
+     * @return The type of the event, never {@code null}.
+     */
+    EventType getType();
+
+    /**
+     * Gets the repository system session during which the event occurred.
+     * 
+     * @return The repository system session during which the event occurred, never {@code null}.
+     */
     RepositorySystemSession getSession();
 
+    /**
+     * Gets the artifact involved in the event (if any).
+     * 
+     * @return The involved artifact or {@code null} if none.
+     */
     Artifact getArtifact();
 
+    /**
+     * Gets the metadata involved in the event (if any).
+     * 
+     * @return The involved metadata or {@code null} if none.
+     */
     Metadata getMetadata();
 
+    /**
+     * Gets the file involved in the event (if any).
+     * 
+     * @return The involved file or {@code null} if none.
+     */
     File getFile();
 
+    /**
+     * Gets the repository involved in the event (if any).
+     * 
+     * @return The involved repository or {@code null} if none.
+     */
     ArtifactRepository getRepository();
 
+    /**
+     * Gets the exception that caused the event (if any).
+     * 
+     * @return The exception or {@code null} if none.
+     */
     Exception getException();
 
+    /**
+     * Gets the exceptions that caused the event (if any).
+     * 
+     * @return The exceptions, never {@code null}.
+     */
     List<Exception> getExceptions();
 
 }

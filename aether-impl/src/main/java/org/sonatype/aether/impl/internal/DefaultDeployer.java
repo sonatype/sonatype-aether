@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
@@ -324,7 +325,8 @@ public class DefaultDeployer
                 RepositoryListener listener = session.getRepositoryListener();
                 if ( listener != null )
                 {
-                    DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+                    DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVING, session );
+                    event.setMetadata( metadata );
                     event.setRepository( repository );
                     listener.metadataResolving( event );
                 }
@@ -338,7 +340,8 @@ public class DefaultDeployer
 
                 if ( listener != null )
                 {
-                    DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+                    DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVED, session );
+                    event.setMetadata( metadata );
                     event.setRepository( repository );
                     event.setException( download.getException() );
                     listener.metadataResolved( event );
@@ -413,7 +416,8 @@ public class DefaultDeployer
             RepositoryListener listener = session.getRepositoryListener();
             if ( listener != null )
             {
-                DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
+                DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DEPLOYING, session );
+                event.setArtifact( artifact );
                 event.setRepository( repository );
                 event.setFile( file );
                 listener.artifactDeploying( event );
@@ -425,7 +429,8 @@ public class DefaultDeployer
             RepositoryListener listener = session.getRepositoryListener();
             if ( listener != null )
             {
-                DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, artifact );
+                DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DEPLOYED, session );
+                event.setArtifact( artifact );
                 event.setRepository( repository );
                 event.setFile( file );
                 event.setException( exception );
@@ -438,7 +443,8 @@ public class DefaultDeployer
             RepositoryListener listener = session.getRepositoryListener();
             if ( listener != null )
             {
-                DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+                DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DEPLOYING, session );
+                event.setMetadata( metadata );
                 event.setRepository( repository );
                 event.setFile( file );
                 listener.metadataDeploying( event );
@@ -450,7 +456,8 @@ public class DefaultDeployer
             RepositoryListener listener = session.getRepositoryListener();
             if ( listener != null )
             {
-                DefaultRepositoryEvent event = new DefaultRepositoryEvent( session, metadata );
+                DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DEPLOYED, session );
+                event.setMetadata( metadata );
                 event.setRepository( repository );
                 event.setFile( file );
                 event.setException( exception );

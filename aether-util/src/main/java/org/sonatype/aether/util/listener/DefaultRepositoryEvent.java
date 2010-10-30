@@ -24,11 +24,15 @@ import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.repository.ArtifactRepository;
 
 /**
+ * A simple repository event.
+ * 
  * @author Benjamin Bentmann
  */
 public class DefaultRepositoryEvent
     implements RepositoryEvent
 {
+
+    private EventType type;
 
     private RepositorySystemSession session;
 
@@ -42,16 +46,31 @@ public class DefaultRepositoryEvent
 
     private List<Exception> exceptions = Collections.emptyList();
 
-    public DefaultRepositoryEvent( RepositorySystemSession session, Artifact artifact )
+    public DefaultRepositoryEvent( EventType type, RepositorySystemSession session )
     {
-        this.session = session;
-        this.artifact = artifact;
+        setType( type );
+        setSession( session );
     }
 
-    public DefaultRepositoryEvent( RepositorySystemSession session, Metadata metadata )
+    public EventType getType()
     {
-        this.session = session;
-        this.metadata = metadata;
+        return type;
+    }
+
+    /**
+     * Sets the type of the event.
+     * 
+     * @param type The type of the event, must not be {@code null}.
+     * @return This event for chaining, never {@code null}.
+     */
+    private DefaultRepositoryEvent setType( EventType type )
+    {
+        if ( type == null )
+        {
+            throw new IllegalArgumentException( "event type not specified" );
+        }
+        this.type = type;
+        return this;
     }
 
     public RepositorySystemSession getSession()
@@ -59,9 +78,31 @@ public class DefaultRepositoryEvent
         return session;
     }
 
+    private DefaultRepositoryEvent setSession( RepositorySystemSession session )
+    {
+        if ( session == null )
+        {
+            throw new IllegalArgumentException( "session not specified" );
+        }
+        this.session = session;
+        return this;
+    }
+
     public Artifact getArtifact()
     {
         return artifact;
+    }
+
+    /**
+     * Sets the artifact involved in the event.
+     * 
+     * @param file The involved artifact, may be {@code null}.
+     * @return This event for chaining, never {@code null}.
+     */
+    public DefaultRepositoryEvent setArtifact( Artifact artifact )
+    {
+        this.artifact = artifact;
+        return this;
     }
 
     public Metadata getMetadata()
@@ -69,11 +110,29 @@ public class DefaultRepositoryEvent
         return metadata;
     }
 
+    /**
+     * Sets the metadata involved in the event.
+     * 
+     * @param file The involved metadata, may be {@code null}.
+     * @return This event for chaining, never {@code null}.
+     */
+    public DefaultRepositoryEvent setMetadata( Metadata metadata )
+    {
+        this.metadata = metadata;
+        return this;
+    }
+
     public ArtifactRepository getRepository()
     {
         return repository;
     }
 
+    /**
+     * Sets the repository involved in the event.
+     * 
+     * @param file The involved repository, may be {@code null}.
+     * @return This event for chaining, never {@code null}.
+     */
     public DefaultRepositoryEvent setRepository( ArtifactRepository repository )
     {
         this.repository = repository;
@@ -85,6 +144,12 @@ public class DefaultRepositoryEvent
         return file;
     }
 
+    /**
+     * Sets the file involved in the event.
+     * 
+     * @param file The involved file, may be {@code null}.
+     * @return This event for chaining, never {@code null}.
+     */
     public DefaultRepositoryEvent setFile( File file )
     {
         this.file = file;
@@ -96,6 +161,12 @@ public class DefaultRepositoryEvent
         return exceptions.isEmpty() ? null : exceptions.get( 0 );
     }
 
+    /**
+     * Sets the exception causing the event.
+     * 
+     * @param exception The exception causing the event, may be {@code null}.
+     * @return This event for chaining, never {@code null}.
+     */
     public DefaultRepositoryEvent setException( Exception exception )
     {
         if ( exception != null )
@@ -114,6 +185,12 @@ public class DefaultRepositoryEvent
         return exceptions;
     }
 
+    /**
+     * Sets the exceptions causing the event.
+     * 
+     * @param exceptions The exceptions causing the event, may be {@code null}.
+     * @return This event for chaining, never {@code null}.
+     */
     public DefaultRepositoryEvent setExceptions( List<Exception> exceptions )
     {
         if ( exceptions != null )
