@@ -130,13 +130,9 @@ class TrackingFileManager
                 props.store( stream,
                              "NOTE: This is an internal implementation file, its format can be changed without prior notice." );
 
-                byte[] data = stream.toByteArray();
-                ByteBuffer buffer = ByteBuffer.allocate( data.length );
-                buffer.put( data );
-                buffer.flip();
-
                 channel.position( 0 );
-                channel.write( buffer );
+                channel.write( ByteBuffer.wrap( stream.toByteArray() ) );
+                channel.truncate( channel.position() );
             }
             catch ( IOException e )
             {
