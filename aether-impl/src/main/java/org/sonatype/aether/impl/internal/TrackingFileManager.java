@@ -47,7 +47,7 @@ class TrackingFileManager
 
     public Properties read( File file )
     {
-        synchronized ( file.getAbsolutePath().intern() )
+        synchronized ( getLock( file ) )
         {
             FileLock lock = null;
             FileChannel channel = null;
@@ -84,7 +84,7 @@ class TrackingFileManager
     {
         Properties props = new Properties();
 
-        synchronized ( file.getAbsolutePath().intern() )
+        synchronized ( getLock( file ) )
         {
             File directory = file.getParentFile();
             if ( !directory.exists() && !directory.mkdirs() )
@@ -180,6 +180,11 @@ class TrackingFileManager
                 logger.debug( "Error closing file channel for resolution tracking file " + file, e );
             }
         }
+    }
+
+    private Object getLock( File file )
+    {
+        return file.getAbsolutePath().intern();
     }
 
 }
