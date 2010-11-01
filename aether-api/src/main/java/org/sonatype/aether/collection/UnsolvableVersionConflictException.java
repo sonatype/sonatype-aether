@@ -31,10 +31,27 @@ public class UnsolvableVersionConflictException
 
     public UnsolvableVersionConflictException( Object dependencyConflictId, Collection<String> versions )
     {
-        super( "Could not resolve version conflict for " + dependencyConflictId + " with requested versions: "
-            + versions );
+        super( "Could not resolve version conflict for " + dependencyConflictId + " with requested versions "
+            + toList( versions ) );
         this.dependencyConflictId = ( dependencyConflictId != null ) ? dependencyConflictId : "";
         this.versions = ( versions != null ) ? versions : Collections.<String> emptyList();
+    }
+
+    private static String toList( Collection<String> versions )
+    {
+        StringBuilder buffer = new StringBuilder( 256 );
+        if ( versions != null )
+        {
+            for ( String version : versions )
+            {
+                if ( buffer.length() > 0 )
+                {
+                    buffer.append( ", " );
+                }
+                buffer.append( version );
+            }
+        }
+        return buffer.toString();
     }
 
     public Object getDependencyConflictId()
