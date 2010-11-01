@@ -29,6 +29,21 @@ public interface LocalRepositoryEvent
 {
 
     /**
+     * The type of the event.
+     */
+    enum EventType
+    {
+        ARTIFACT_INSTALLED, ARTIFACT_DOWNLOADED
+    }
+
+    /**
+     * Gets the type of the event.
+     * 
+     * @return The type of the event, never {@code null}.
+     */
+    EventType getType();
+
+    /**
      * Gets the repository session from which this event originates.
      * 
      * @return The repository session, never {@code null}.

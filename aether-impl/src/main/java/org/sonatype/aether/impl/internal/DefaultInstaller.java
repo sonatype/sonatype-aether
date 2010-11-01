@@ -27,6 +27,7 @@ import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.Installer;
+import org.sonatype.aether.impl.LocalRepositoryEvent;
 import org.sonatype.aether.impl.LocalRepositoryMaintainer;
 import org.sonatype.aether.impl.MetadataGenerator;
 import org.sonatype.aether.impl.MetadataGeneratorFactory;
@@ -268,7 +269,9 @@ public class DefaultInstaller
 
             if ( !localRepositoryMaintainers.isEmpty() )
             {
-                DefaultLocalRepositoryEvent event = new DefaultLocalRepositoryEvent( session, artifact, dstFile );
+                DefaultLocalRepositoryEvent event =
+                    new DefaultLocalRepositoryEvent( LocalRepositoryEvent.EventType.ARTIFACT_INSTALLED, session,
+                                                     artifact, dstFile );
                 for ( LocalRepositoryMaintainer maintainer : localRepositoryMaintainers )
                 {
                     maintainer.artifactInstalled( event );
