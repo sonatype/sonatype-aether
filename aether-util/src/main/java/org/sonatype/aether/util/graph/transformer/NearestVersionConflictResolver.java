@@ -95,17 +95,23 @@ public class NearestVersionConflictResolver
                 group.positions.add( pos );
             }
 
+            boolean hardConstraint = !node.getVersionConstraint().getRanges().isEmpty();
+
+            if ( hardConstraint )
+            {
+                group.constraints.add( node.getVersionConstraint() );
+            }
+
             if ( !group.isAcceptable( node.getVersion() ) )
             {
+                if ( hardConstraint )
+                {
+                    throw newFailure( group );
+                }
                 return;
             }
 
             group.candidates.put( node, pos );
-
-            if ( !node.getVersionConstraint().getRanges().isEmpty() )
-            {
-                group.constraints.add( node.getVersionConstraint() );
-            }
 
             if ( group.version == null || isNearer( pos, node.getVersion(), group.position, group.version ) )
             {
@@ -136,12 +142,7 @@ public class NearestVersionConflictResolver
 
                 if ( group.version == null )
                 {
-                    Collection<String> versions = new LinkedHashSet<String>();
-                    for ( VersionConstraint constraint : group.constraints )
-                    {
-                        versions.add( constraint.toString() );
-                    }
-                    throw new UnsolvableVersionConflictException( group.key, versions );
+                    throw newFailure( group );
                 }
             }
         }
@@ -152,6 +153,16 @@ public class NearestVersionConflictResolver
         {
             selectVersion( child, node, depth, depths, group, conflictIds );
         }
+    }
+
+    private UnsolvableVersionConflictException newFailure( ConflictGroup group )
+    {
+        Collection<String> versions = new LinkedHashSet<String>();
+        for ( VersionConstraint constraint : group.constraints )
+        {
+            versions.add( constraint.toString() );
+        }
+        return new UnsolvableVersionConflictException( group.key, versions );
     }
 
     private boolean isNearer( Position pos1, Version ver1, Position pos2, Version ver2 )

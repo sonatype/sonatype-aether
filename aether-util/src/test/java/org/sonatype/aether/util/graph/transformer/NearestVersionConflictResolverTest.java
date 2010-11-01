@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.sonatype.aether.collection.UnsolvableVersionConflictException;
 import org.sonatype.aether.graph.DependencyNode;
 
 /**
@@ -263,6 +264,40 @@ public class NearestVersionConflictResolverTest
         assertSame( b2, root.getChildren().get( 1 ) );
         assertTrue( a1.getChildren().isEmpty() );
         assertTrue( b2.getChildren().isEmpty() );
+    }
+
+    @Test( expected = UnsolvableVersionConflictException.class )
+    public void testUnsolvableRangeConflictBetweenHardConstraints()
+        throws Exception
+    {
+        // root
+        // +- b:1
+        // |  \- a:[1]
+        // \- c:1
+        //    \- a:[2]
+
+        DependencyNode a1 = builder.artifactId( "a" ).version( "1" ).range( "[1]" ).build();
+        DependencyNode a2 = builder.artifactId( "a" ).version( "2" ).range( "[2]" ).build();
+
+        DependencyNode b = builder.artifactId( "b" ).version( "1" ).build();
+        DependencyNode c = builder.artifactId( "c" ).version( "1" ).build();
+
+        b.getChildren().add( a1 );
+        c.getChildren().add( a2 );
+
+        DependencyNode root = builder.artifactId( null ).build();
+        root.getChildren().add( b );
+        root.getChildren().add( c );
+
+        Map<DependencyNode, Object> conflictIds = new IdentityHashMap<DependencyNode, Object>();
+        conflictIds.put( a1, "a" );
+        conflictIds.put( a2, "a" );
+        conflictIds.put( b, "b" );
+        conflictIds.put( c, "c" );
+        context.put( TransformationContextKeys.CONFLICT_IDS, conflictIds );
+
+        NearestVersionConflictResolver transformer = new NearestVersionConflictResolver();
+        root = transformer.transformGraph( root, context );
     }
 
 }
