@@ -71,7 +71,7 @@ public class RepoSys
         RepositorySystemSession session = newSession( repoSystem );
 
         Dependency dependency =
-            new Dependency( new DefaultArtifact( "org.apache.maven:maven-aether-provider:3.0-beta-3" ), "runtime" );
+            new Dependency( new DefaultArtifact( "org.apache.maven:maven-aether-provider:3.0" ), "runtime" );
         RemoteRepository central = new RemoteRepository( "central", "default", "http://repo1.maven.org/maven2/" );
 
         CollectRequest collectRequest = new CollectRequest();

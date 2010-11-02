@@ -58,7 +58,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-aether-provider</artifactId>
-      <version>3.0-beta-3</version>
+      <version>3.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
