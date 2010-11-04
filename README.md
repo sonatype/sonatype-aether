@@ -22,3 +22,7 @@ Mailing Lists
 Development
 ===========
 Source code uses the Maven code style: <http://maven.apache.org/developers/maven-eclipse-codestyle.xml>
+
+License
+=======
+[Eclipse Public License, v1.0](http://www.eclipse.org/legal/epl-v10.html)
