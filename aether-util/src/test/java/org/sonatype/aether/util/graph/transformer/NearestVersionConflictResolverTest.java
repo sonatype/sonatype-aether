@@ -295,4 +295,124 @@ public class NearestVersionConflictResolverTest
         root = transformer.transformGraph( root, context );
     }
 
+    @Test
+    public void testSolvableConflictBetweenHardConstraints()
+        throws Exception
+    {
+        // root
+        // +- b:1
+        // |  \- a:[2]
+        // \- c:1
+        //    +- a:1-[1,3]
+        //    +- a:2-[1,3]
+        //    \- a:3-[1,3]
+
+        DependencyNode a1 = builder.artifactId( "a" ).version( "2" ).range( "[2]" ).build();
+        DependencyNode a2 = builder.artifactId( "a" ).version( "1" ).range( "[1,3]" ).build();
+        DependencyNode a3 = builder.artifactId( "a" ).version( "2" ).range( "[1,3]" ).build();
+        DependencyNode a4 = builder.artifactId( "a" ).version( "3" ).range( "[1,3]" ).build();
+
+        DependencyNode b = builder.artifactId( "b" ).version( "1" ).build();
+        DependencyNode c = builder.artifactId( "c" ).version( "1" ).build();
+
+        b.getChildren().add( a1 );
+        c.getChildren().add( a2 );
+        c.getChildren().add( a3 );
+        c.getChildren().add( a4 );
+
+        DependencyNode root = builder.artifactId( null ).build();
+        root.getChildren().add( b );
+        root.getChildren().add( c );
+
+        Map<DependencyNode, Object> conflictIds = new IdentityHashMap<DependencyNode, Object>();
+        conflictIds.put( a1, "a" );
+        conflictIds.put( a2, "a" );
+        conflictIds.put( a3, "a" );
+        conflictIds.put( a4, "a" );
+        conflictIds.put( b, "b" );
+        conflictIds.put( c, "c" );
+        context.put( TransformationContextKeys.CONFLICT_IDS, conflictIds );
+
+        NearestVersionConflictResolver transformer = new NearestVersionConflictResolver();
+        root = transformer.transformGraph( root, context );
+    }
+
+    @Test
+    public void testConflictGroupCompletelyDroppedFromResolvedTree()
+        throws Exception
+    {
+        // root
+        // +- a:1
+        // |  \- b:1
+        // |     \- c:1     # conflict group c will completely vanish from resolved tree
+        // \- b:2
+
+        DependencyNode a = builder.artifactId( "a" ).version( "1" ).build();
+        DependencyNode b1 = builder.artifactId( "b" ).version( "1" ).build();
+        DependencyNode b2 = builder.artifactId( "b" ).version( "2" ).build();
+        DependencyNode c = builder.artifactId( "c" ).version( "1" ).build();
+
+        b1.getChildren().add( c );
+        a.getChildren().add( b1 );
+
+        DependencyNode root = builder.artifactId( null ).build();
+        root.getChildren().add( a );
+        root.getChildren().add( b2 );
+
+        Map<DependencyNode, Object> conflictIds = new IdentityHashMap<DependencyNode, Object>();
+        conflictIds.put( a, "a" );
+        conflictIds.put( b1, "b" );
+        conflictIds.put( b2, "b" );
+        conflictIds.put( c, "c" );
+        context.put( TransformationContextKeys.CONFLICT_IDS, conflictIds );
+
+        NearestVersionConflictResolver transformer = new NearestVersionConflictResolver();
+        root = transformer.transformGraph( root, context );
+
+        assertEquals( 2, root.getChildren().size() );
+        assertSame( a, root.getChildren().get( 0 ) );
+        assertSame( b2, root.getChildren().get( 1 ) );
+        assertTrue( a.getChildren().isEmpty() );
+        assertTrue( b2.getChildren().isEmpty() );
+    }
+
+    @Test
+    public void testNearestSoftVersionPrunedByFartherRange()
+        throws Exception
+    {
+        // root
+        // +- a:1
+        // |  \- c:2
+        // \- b:1
+        //    \- c:[1]
+
+        DependencyNode a = builder.artifactId( "a" ).version( "1" ).build();
+        DependencyNode b = builder.artifactId( "b" ).version( "1" ).build();
+        DependencyNode c1 = builder.artifactId( "c" ).version( "1" ).range( "[1]" ).build();
+        DependencyNode c2 = builder.artifactId( "c" ).version( "2" ).build();
+
+        a.getChildren().add( c2 );
+        b.getChildren().add( c1 );
+
+        DependencyNode root = builder.artifactId( null ).build();
+        root.getChildren().add( a );
+        root.getChildren().add( b );
+
+        Map<DependencyNode, Object> conflictIds = new IdentityHashMap<DependencyNode, Object>();
+        conflictIds.put( a, "a" );
+        conflictIds.put( b, "b" );
+        conflictIds.put( c1, "c" );
+        conflictIds.put( c2, "c" );
+        context.put( TransformationContextKeys.CONFLICT_IDS, conflictIds );
+
+        NearestVersionConflictResolver transformer = new NearestVersionConflictResolver();
+        root = transformer.transformGraph( root, context );
+
+        assertEquals( 2, root.getChildren().size() );
+        assertSame( a, root.getChildren().get( 0 ) );
+        assertSame( b, root.getChildren().get( 1 ) );
+        assertTrue( a.getChildren().isEmpty() );
+        assertEquals( 1, b.getChildren().size() );
+    }
+
 }

@@ -85,60 +85,49 @@ public class NearestVersionConflictResolver
         if ( group.key.equals( key ) )
         {
             Position pos = new Position( parent, depth );
+
             if ( parent != null )
             {
                 group.positions.add( pos );
             }
 
-            boolean hardConstraint = !node.getVersionConstraint().getRanges().isEmpty();
+            VersionConstraint constraint = node.getVersionConstraint();
+
+            boolean backtrack = false;
+            boolean hardConstraint = !constraint.getRanges().isEmpty();
 
             if ( hardConstraint )
             {
-                group.constraints.add( node.getVersionConstraint() );
+                if ( group.constraints.add( constraint ) )
+                {
+                    if ( group.version != null && !constraint.containsVersion( group.version ) )
+                    {
+                        backtrack = true;
+                    }
+                }
             }
 
-            if ( !group.isAcceptable( node.getVersion() ) )
+            if ( isAcceptable( group, node.getVersion() ) )
             {
-                if ( hardConstraint )
+                group.candidates.put( node, pos );
+
+                if ( backtrack )
                 {
-                    throw newFailure( group );
+                    backtrack( group );
+                }
+                else if ( group.version == null || isNearer( pos, node.getVersion(), group.position, group.version ) )
+                {
+                    group.version = node.getVersion();
+                    group.position = pos;
+                }
+            }
+            else
+            {
+                if ( backtrack )
+                {
+                    backtrack( group );
                 }
                 return;
-            }
-
-            group.candidates.put( node, pos );
-
-            if ( group.version == null || isNearer( pos, node.getVersion(), group.position, group.version ) )
-            {
-                group.version = node.getVersion();
-                group.position = pos;
-            }
-
-            if ( !group.isAcceptable( group.version ) )
-            {
-                group.version = null;
-
-                for ( Iterator<Map.Entry<DependencyNode, Position>> it = group.candidates.entrySet().iterator(); it.hasNext(); )
-                {
-                    Map.Entry<DependencyNode, Position> entry = it.next();
-                    Version version = entry.getKey().getVersion();
-                    pos = entry.getValue();
-
-                    if ( !group.isAcceptable( version ) )
-                    {
-                        it.remove();
-                    }
-                    else if ( group.version == null || isNearer( pos, version, group.position, group.version ) )
-                    {
-                        group.version = version;
-                        group.position = pos;
-                    }
-                }
-
-                if ( group.version == null )
-                {
-                    throw newFailure( group );
-                }
             }
         }
 
@@ -147,6 +136,47 @@ public class NearestVersionConflictResolver
         for ( DependencyNode child : node.getChildren() )
         {
             selectVersion( child, node, depth, depths, group, conflictIds );
+        }
+    }
+
+    private boolean isAcceptable( ConflictGroup group, Version version )
+    {
+        for ( VersionConstraint constraint : group.constraints )
+        {
+            if ( !constraint.containsVersion( version ) )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void backtrack( ConflictGroup group )
+        throws UnsolvableVersionConflictException
+    {
+        group.version = null;
+
+        for ( Iterator<Map.Entry<DependencyNode, Position>> it = group.candidates.entrySet().iterator(); it.hasNext(); )
+        {
+            Map.Entry<DependencyNode, Position> entry = it.next();
+
+            Version version = entry.getKey().getVersion();
+            Position pos = entry.getValue();
+
+            if ( !isAcceptable( group, version ) )
+            {
+                it.remove();
+            }
+            else if ( group.version == null || isNearer( pos, version, group.position, group.version ) )
+            {
+                group.version = version;
+                group.position = pos;
+            }
+        }
+
+        if ( group.version == null )
+        {
+            throw newFailure( group );
         }
     }
 
@@ -220,18 +250,6 @@ public class NearestVersionConflictResolver
         {
             this.key = key;
             this.position = new Position( null, Integer.MAX_VALUE );
-        }
-
-        boolean isAcceptable( Version version )
-        {
-            for ( VersionConstraint constraint : constraints )
-            {
-                if ( !constraint.containsVersion( version ) )
-                {
-                    return false;
-                }
-            }
-            return true;
         }
 
         @Override
