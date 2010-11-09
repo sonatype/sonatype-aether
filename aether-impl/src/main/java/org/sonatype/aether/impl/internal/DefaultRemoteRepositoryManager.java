@@ -316,16 +316,25 @@ public class DefaultRemoteRepositoryManager
                     buffer.append( "Using connector " ).append( connector.getClass().getSimpleName() );
                     buffer.append( " with priority " ).append( factory.getPriority() );
                     buffer.append( " for " ).append( repository.getUrl() );
+
                     Authentication auth = repository.getAuthentication();
                     if ( auth != null )
                     {
                         buffer.append( " as " ).append( auth.getUsername() );
                     }
+
                     Proxy proxy = repository.getProxy();
                     if ( proxy != null )
                     {
                         buffer.append( " via " ).append( proxy.getHost() ).append( ':' ).append( proxy.getPort() );
+
+                        auth = proxy.getAuthentication();
+                        if ( auth != null )
+                        {
+                            buffer.append( " as " ).append( auth.getUsername() );
+                        }
                     }
+
                     logger.debug( buffer.toString() );
                 }
 
