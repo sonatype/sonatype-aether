@@ -12,10 +12,12 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.sonatype.aether.spi.io.FileProcessor.ProgressListener;
 import org.sonatype.aether.test.util.TestFileUtils;
 
 /**
@@ -27,6 +29,8 @@ public class DefaultFileProcessorTest
     private File targetDir;
 
     private DefaultFileProcessor fileProcessor;
+
+    private boolean progressed = false;
 
     @Before
     public void setup()
@@ -82,6 +86,30 @@ public class DefaultFileProcessorTest
         target.delete();
         fileProcessor.copy( file, target, null );
         assertTrue( "empty file was not copied", target.exists() && target.length() == 0 );
+        target.delete();
+    }
+
+
+    @Test
+    public void testProgressingChannel()
+        throws IOException
+    {
+        File file = TestFileUtils.createTempFile( "test" );
+        File target = new File( "target/testProgressingChannel" );
+        target.delete();
+        ProgressListener listener = new ProgressListener()
+        {
+
+            public void progressed( ByteBuffer buffer )
+                throws IOException
+            {
+                assertEquals( 4, buffer.remaining() );
+                progressed = true;
+            }
+        };
+        fileProcessor.copy( file, target, listener );
+        assertTrue( "file was not copied", target.exists() && target.length() == 4 );
+        assertTrue( "listener not called", progressed );
         target.delete();
     }
 
