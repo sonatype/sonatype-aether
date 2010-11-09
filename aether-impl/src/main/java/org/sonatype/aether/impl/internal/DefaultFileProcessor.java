@@ -196,6 +196,17 @@ public class DefaultFileProcessor
         }
     }
 
+    public void move( File source, File target )
+        throws IOException
+    {
+        target.delete();
+
+        if ( !source.renameTo( target ) )
+        {
+            copy( source, target, null );
+        }
+    }
+
     private static final class ProgressingChannel
         implements WritableByteChannel
     {

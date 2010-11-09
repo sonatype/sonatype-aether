@@ -673,21 +673,18 @@ class WagonRepositoryConnector
         private void rename( File from, File to )
             throws IOException
         {
-            if ( !from.renameTo( to ) )
+            if ( !from.exists() )
             {
-                if ( !from.exists() )
-                {
-                    /*
-                     * NOTE: Wagon (1.0-beta-6) doesn't create the destination file when transferring a 0-byte resource.
-                     * So if the resource we asked for didn't cause any exception but doesn't show up in the tmp file
-                     * either, Wagon tells us in its weird way the file is empty.
-                     */
-                    fileProcessor.write( to, "" );
-                }
-                else
-                {
-                    fileProcessor.copy( from, to, null );
-                }
+                /*
+                 * NOTE: Wagon (1.0-beta-6) doesn't create the destination file when transferring a 0-byte resource. So
+                 * if the resource we asked for didn't cause any exception but doesn't show up in the tmp file either,
+                 * Wagon tells us in its weird way the file is empty.
+                 */
+                fileProcessor.write( to, "" );
+            }
+            else
+            {
+                fileProcessor.move( from, to );
             }
         }
 

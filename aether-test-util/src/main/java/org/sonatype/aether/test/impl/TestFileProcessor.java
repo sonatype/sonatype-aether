@@ -115,4 +115,15 @@ public class TestFileProcessor
         return size;
     }
 
+    public void move( File source, File target )
+        throws IOException
+    {
+        target.delete();
+
+        if ( !source.renameTo( target ) )
+        {
+            copy( source, target, null );
+        }
+    }
+
 }

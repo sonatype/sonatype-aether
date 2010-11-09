@@ -56,6 +56,18 @@ public interface FileProcessor
         throws IOException;
 
     /**
+     * Moves the specified source file to the given target file. If the target file already exists, it is overwritten.
+     * Creates the necessary directories for the target file. In case of an error, the created directories will be left
+     * on the file system.
+     * 
+     * @param source The file to move from, must not be {@code null}.
+     * @param target The file to move to, must not be {@code null}.
+     * @throws IOException If an I/O error occurs.
+     */
+    void move( File source, File target )
+        throws IOException;
+
+    /**
      * A listener object that is notified for every progress made while copying files.
      * 
      * @author Benjamin Hanzelmann
