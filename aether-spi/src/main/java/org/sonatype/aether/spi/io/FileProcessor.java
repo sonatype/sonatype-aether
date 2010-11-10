@@ -33,7 +33,8 @@ public interface FileProcessor
     boolean mkdirs( File directory );
 
     /**
-     * Writes the given data to a file. UTF-8 is assumed as encoding for the data.
+     * Writes the given data to a file. UTF-8 is assumed as encoding for the data. Creates the necessary directories for
+     * the target file. In case of an error, the created directories will be left on the file system.
      * 
      * @param file The file to write to, must not be {@code null}. This file will be overwritten.
      * @param data The data to write, may be {@code null}.

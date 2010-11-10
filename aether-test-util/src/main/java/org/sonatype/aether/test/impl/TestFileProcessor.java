@@ -8,6 +8,7 @@ package org.sonatype.aether.test.impl;
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -24,6 +25,21 @@ public class TestFileProcessor
 {
 
     public static final FileProcessor INSTANCE = new TestFileProcessor();
+
+    private static void close( Closeable closeable )
+    {
+        if ( closeable != null )
+        {
+            try
+            {
+                closeable.close();
+            }
+            catch ( IOException e )
+            {
+                // too bad but who cares
+            }
+        }
+    }
 
     public boolean mkdirs( File directory )
     {
@@ -58,9 +74,13 @@ public class TestFileProcessor
     public void write( File file, String data )
         throws IOException
     {
-        FileOutputStream fos = new FileOutputStream( file );
+        mkdirs( file.getParentFile() );
+
+        FileOutputStream fos = null;
         try
         {
+            fos = new FileOutputStream( file );
+
             if ( data != null )
             {
                 fos.write( data.getBytes( "UTF-8" ) );
@@ -68,51 +88,62 @@ public class TestFileProcessor
         }
         finally
         {
-            fos.close();
+            close( fos );
         }
     }
 
     public long copy( File source, File target, ProgressListener listener )
         throws IOException
     {
-        long size = 0;
+        long total = 0;
 
-        FileInputStream fis = new FileInputStream( source );
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
         try
         {
+            fis = new FileInputStream( source );
+
             mkdirs( target.getParentFile() );
 
-            FileOutputStream fos = new FileOutputStream( target );
-            try
-            {
-                byte[] buffer = new byte[1024 * 16];
-                while ( true )
-                {
-                    int bytes = fis.read( buffer );
-                    if ( bytes < 0 )
-                    {
-                        break;
-                    }
-                    fos.write( buffer, 0, bytes );
-                    size += bytes;
+            fos = new FileOutputStream( target );
 
-                    if ( listener != null )
+            ByteBuffer buffer = ByteBuffer.allocate( 1024 * 32 );
+            byte[] array = buffer.array();
+
+            while ( true )
+            {
+                int bytes = fis.read( array );
+                if ( bytes < 0 )
+                {
+                    break;
+                }
+
+                fos.write( array, 0, bytes );
+
+                total += bytes;
+
+                if ( listener != null && bytes > 0 )
+                {
+                    try
                     {
-                        listener.progressed( ByteBuffer.wrap( buffer, 0, bytes ) );
+                        buffer.rewind();
+                        buffer.limit( bytes );
+                        listener.progressed( buffer );
+                    }
+                    catch ( Exception e )
+                    {
+                        // too bad
                     }
                 }
-            }
-            finally
-            {
-                fos.close();
             }
         }
         finally
         {
-            fis.close();
+            close( fis );
+            close( fos );
         }
 
-        return size;
+        return total;
     }
 
     public void move( File source, File target )
