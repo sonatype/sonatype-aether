@@ -8,14 +8,14 @@ package org.sonatype.aether.util.listener;
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
+import static org.junit.Assert.*;
+
 import java.nio.ByteBuffer;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * @author Benjamin Hanzelmann
- *
  */
 public class DefaultTransferEventTest
 {
@@ -23,7 +23,6 @@ public class DefaultTransferEventTest
     @Test
     public void testByteArrayConversion()
     {
-
         DefaultTransferEvent event = new DefaultTransferEvent();
         byte[] buffer = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         int length = buffer.length - 2;
@@ -35,7 +34,35 @@ public class DefaultTransferEventTest
         bb.get( dst );
 
         byte[] expected = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
-        Assert.assertArrayEquals( expected, dst );
+        assertArrayEquals( expected, dst );
+    }
+
+    @Test
+    public void testRepeatableReadingOfDataBuffer()
+    {
+        byte[] data = { 0, 1, 2, 3, 4, 5, 6, 7 };
+        ByteBuffer buffer = ByteBuffer.wrap( data );
+
+        DefaultTransferEvent event = new DefaultTransferEvent();
+        event.setDataBuffer( buffer );
+
+        assertEquals( 8, event.getDataLength() );
+
+        ByteBuffer eventBuffer = event.getDataBuffer();
+        assertNotNull( eventBuffer );
+        assertEquals( 8, eventBuffer.remaining() );
+
+        byte[] eventData = new byte[8];
+        eventBuffer.get( eventData );
+        assertArrayEquals( data, eventData );
+        assertEquals( 0, eventBuffer.remaining() );
+        assertEquals( 8, event.getDataLength() );
+
+        eventBuffer = event.getDataBuffer();
+        assertNotNull( eventBuffer );
+        assertEquals( 8, eventBuffer.remaining() );
+        eventBuffer.get( eventData );
+        assertArrayEquals( data, eventData );
     }
 
 }
