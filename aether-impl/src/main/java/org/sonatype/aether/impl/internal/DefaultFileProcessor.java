@@ -204,6 +204,8 @@ public class DefaultFileProcessor
         if ( !source.renameTo( target ) )
         {
             copy( source, target, null );
+
+            source.delete();
         }
     }
 

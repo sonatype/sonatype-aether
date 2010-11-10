@@ -123,6 +123,8 @@ public class TestFileProcessor
         if ( !source.renameTo( target ) )
         {
             copy( source, target, null );
+
+            source.delete();
         }
     }
 
