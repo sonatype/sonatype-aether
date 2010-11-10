@@ -8,6 +8,7 @@ package org.sonatype.aether.test.impl;
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
 import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferListener;
+import org.sonatype.aether.transfer.TransferResource;
 
 public class RecordingTransferListener
     implements TransferListener
@@ -68,6 +70,7 @@ public class RecordingTransferListener
     public void transferProgressed( TransferEvent event )
         throws TransferCancelledException
     {
+        event = new RecordedTransferEvent( event );
         events.add( event );
         progressEvents.add( event );
         if ( realListener != null )
@@ -110,4 +113,68 @@ public class RecordingTransferListener
         events.clear();
         progressEvents.clear();
     }
+
+    static class RecordedTransferEvent
+        implements TransferEvent
+    {
+
+        private final TransferEvent event;
+
+        private final ByteBuffer buffer;
+
+        public RecordedTransferEvent( TransferEvent event )
+        {
+            this.event = event;
+
+            // the buffer may be reused for future events so we need to clone it for later inspection
+            ByteBuffer buffer = event.getDataBuffer();
+            if ( buffer != null )
+            {
+                this.buffer = ByteBuffer.allocate( buffer.remaining() );
+                this.buffer.put( buffer );
+                this.buffer.flip();
+            }
+            else
+            {
+                this.buffer = null;
+            }
+        }
+
+        public EventType getType()
+        {
+            return event.getType();
+        }
+
+        public RequestType getRequestType()
+        {
+            return event.getRequestType();
+        }
+
+        public TransferResource getResource()
+        {
+            return event.getResource();
+        }
+
+        public long getTransferredBytes()
+        {
+            return event.getTransferredBytes();
+        }
+
+        public ByteBuffer getDataBuffer()
+        {
+            return ( buffer != null ) ? buffer.asReadOnlyBuffer() : null;
+        }
+
+        public int getDataLength()
+        {
+            return ( buffer != null ) ? buffer.remaining() : 0;
+        }
+
+        public Exception getException()
+        {
+            return event.getException();
+        }
+
+    }
+
 }
