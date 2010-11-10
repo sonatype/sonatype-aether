@@ -16,6 +16,7 @@ import java.nio.ByteBuffer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 import org.sonatype.aether.RepositorySystemSession;
@@ -238,7 +239,9 @@ class FileRepositoryWorker
             }
             else
             {
-                totalTransferred = copy( src, target );
+                File tmp = tmpfile( target );
+                totalTransferred = copy( src, tmp );
+                fileProcessor.move( tmp, target );
 
                 switch ( direction )
                 {
@@ -484,6 +487,12 @@ class FileRepositoryWorker
     public void setFileProcessor( FileProcessor fileProcessor )
     {
         this.fileProcessor = fileProcessor;
+    }
+
+    private File tmpfile( File target )
+    {
+        return new File( target.getAbsolutePath() + ".tmp"
+            + UUID.randomUUID().toString().replace( "-", "" ).substring( 0, 16 ) );
     }
 
 }
