@@ -50,7 +50,7 @@ class TrackingFileManager
             {
                 FileInputStream stream = new FileInputStream( file );
                 channel = stream.getChannel();
-                lock = channel.lock( 0, channel.size(), true );
+                lock = channel.lock( 0, Math.max( 1, channel.size() ), true );
 
                 Properties props = new Properties();
                 props.load( stream );
@@ -93,7 +93,7 @@ class TrackingFileManager
             try
             {
                 channel = new RandomAccessFile( file, "rw" ).getChannel();
-                lock = channel.lock( 0, channel.size(), false );
+                lock = channel.lock( 0, Math.max( 1, channel.size() ), false );
 
                 if ( file.canRead() )
                 {
