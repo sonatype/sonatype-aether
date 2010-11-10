@@ -13,6 +13,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
@@ -29,8 +30,6 @@ public class DefaultFileProcessorTest
     private File targetDir;
 
     private DefaultFileProcessor fileProcessor;
-
-    private boolean progressed = false;
 
     @Before
     public void setup()
@@ -89,7 +88,6 @@ public class DefaultFileProcessorTest
         target.delete();
     }
 
-
     @Test
     public void testProgressingChannel()
         throws IOException
@@ -97,19 +95,19 @@ public class DefaultFileProcessorTest
         File file = TestFileUtils.createTempFile( "test" );
         File target = new File( "target/testProgressingChannel" );
         target.delete();
+        final AtomicInteger progressed = new AtomicInteger();
         ProgressListener listener = new ProgressListener()
         {
-
             public void progressed( ByteBuffer buffer )
                 throws IOException
             {
-                assertEquals( 4, buffer.remaining() );
-                progressed = true;
+                progressed.addAndGet( buffer.remaining() );
             }
         };
         fileProcessor.copy( file, target, listener );
-        assertTrue( "file was not copied", target.exists() && target.length() == 4 );
-        assertTrue( "listener not called", progressed );
+        assertTrue( "file was not created", target.isFile() );
+        assertEquals( "file was not fully copied", 4, target.length() );
+        assertEquals( "listener not called", 4, progressed.intValue() );
         target.delete();
     }
 
