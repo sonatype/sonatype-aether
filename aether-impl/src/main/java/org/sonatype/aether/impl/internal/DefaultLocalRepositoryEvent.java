@@ -81,7 +81,7 @@ public class DefaultLocalRepositoryEvent
     @Override
     public String toString()
     {
-        return getArtifact() + " > " + getFile();
+        return getType() + " " + getArtifact() + " > " + getFile();
     }
 
 }

@@ -199,4 +199,28 @@ public class DefaultRepositoryEvent
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        StringBuilder buffer = new StringBuilder( 256 );
+        buffer.append( getType() );
+        if ( getArtifact() != null )
+        {
+            buffer.append( " " ).append( getArtifact() );
+        }
+        if ( getMetadata() != null )
+        {
+            buffer.append( " " ).append( getMetadata() );
+        }
+        if ( getFile() != null )
+        {
+            buffer.append( " (" ).append( getFile() ).append( ")" );
+        }
+        if ( getRepository() != null )
+        {
+            buffer.append( " @ " ).append( getRepository() );
+        }
+        return buffer.toString();
+    }
+
 }
