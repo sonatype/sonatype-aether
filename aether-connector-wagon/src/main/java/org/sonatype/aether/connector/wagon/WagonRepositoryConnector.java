@@ -36,6 +36,7 @@ import org.apache.maven.wagon.observers.ChecksumObserver;
 import org.apache.maven.wagon.proxy.ProxyInfo;
 import org.apache.maven.wagon.proxy.ProxyInfoProvider;
 import org.apache.maven.wagon.repository.Repository;
+import org.apache.maven.wagon.repository.RepositoryPermissions;
 import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.Authentication;
@@ -75,6 +76,16 @@ class WagonRepositoryConnector
     implements RepositoryConnector
 {
 
+    private static final String PROP_THREADS = "aether.connector.wagon.threads";
+
+    private static final String PROP_CONFIG = "aether.connector.wagon.config";
+
+    private static final String PROP_FILE_MODE = "aether.connector.ssh.fileMode";
+
+    private static final String PROP_DIR_MODE = "aether.connector.ssh.dirMode";
+
+    private static final String PROP_GROUP = "aether.connector.ssh.group";
+
     private final Logger logger;
 
     private final FileProcessor fileProcessor;
@@ -84,6 +95,8 @@ class WagonRepositoryConnector
     private final RepositorySystemSession session;
 
     private final WagonProvider wagonProvider;
+
+    private final WagonConfigurator wagonConfigurator;
 
     private final String wagonHint;
 
@@ -105,13 +118,15 @@ class WagonRepositoryConnector
 
     private final Map<String, String> checksumAlgos;
 
-    public WagonRepositoryConnector( WagonProvider wagonProvider, RemoteRepository repository,
-                                     RepositorySystemSession session, FileProcessor fileProcessor, Logger logger )
+    public WagonRepositoryConnector( WagonProvider wagonProvider, WagonConfigurator wagonConfigurator,
+                                     RemoteRepository repository, RepositorySystemSession session,
+                                     FileProcessor fileProcessor, Logger logger )
         throws NoRepositoryConnectorException
     {
         this.logger = logger;
         this.fileProcessor = fileProcessor;
         this.wagonProvider = wagonProvider;
+        this.wagonConfigurator = wagonConfigurator;
         this.repository = repository;
         this.session = session;
         this.listener = session.getTransferListener();
@@ -122,6 +137,8 @@ class WagonRepositoryConnector
         }
 
         wagonRepo = new Repository( repository.getId(), repository.getUrl() );
+        wagonRepo.setPermissions( getPermissions( repository.getId(), session ) );
+
         wagonHint = wagonRepo.getProtocol().toLowerCase( Locale.ENGLISH );
         try
         {
@@ -136,7 +153,7 @@ class WagonRepositoryConnector
         wagonAuth = getAuthenticationInfo( repository );
         wagonProxy = getProxy( repository );
 
-        int threads = ConfigurationProperties.get( session, "aether.connector.wagon.threads", Integer.MIN_VALUE );
+        int threads = ConfigurationProperties.get( session, PROP_THREADS, Integer.MIN_VALUE );
         if ( threads == Integer.MIN_VALUE )
         {
             threads = ConfigurationProperties.get( session, "maven.artifact.threads", 5 );
@@ -160,6 +177,38 @@ class WagonRepositoryConnector
         checksumAlgos = new LinkedHashMap<String, String>();
         checksumAlgos.put( "SHA-1", ".sha1" );
         checksumAlgos.put( "MD5", ".md5" );
+    }
+
+    private static RepositoryPermissions getPermissions( String repoId, RepositorySystemSession session )
+    {
+        RepositoryPermissions result = null;
+
+        RepositoryPermissions perms = new RepositoryPermissions();
+
+        String suffix = '.' + repoId;
+
+        String fileMode = ConfigurationProperties.get( session, PROP_FILE_MODE + suffix, null );
+        if ( fileMode != null )
+        {
+            perms.setFileMode( fileMode );
+            result = perms;
+        }
+
+        String dirMode = ConfigurationProperties.get( session, PROP_DIR_MODE + suffix, null );
+        if ( dirMode != null )
+        {
+            perms.setDirectoryMode( dirMode );
+            result = perms;
+        }
+
+        String group = ConfigurationProperties.get( session, PROP_GROUP + suffix, null );
+        if ( group != null )
+        {
+            perms.setGroup( group );
+            result = perms;
+        }
+
+        return result;
     }
 
     private AuthenticationInfo getAuthenticationInfo( RemoteRepository repository )
@@ -246,6 +295,20 @@ class WagonRepositoryConnector
 
         wagon.setInteractive( ConfigurationProperties.get( session, ConfigurationProperties.INTERACTIVE,
                                                            ConfigurationProperties.DEFAULT_INTERACTIVE ) );
+
+        Object configuration = session.getConfigProperties().get( PROP_CONFIG + "." + repository.getId() );
+        if ( configuration != null && wagonConfigurator != null )
+        {
+            try
+            {
+                wagonConfigurator.configure( wagon, configuration );
+            }
+            catch ( Exception e )
+            {
+                logger.debug( "Could not apply configuration to wagon " + wagon.getClass().getName() + ":"
+                                  + e.getMessage(), e );
+            }
+        }
 
         wagon.connect( wagonRepo, wagonAuth, wagonProxy );
     }

@@ -40,6 +40,9 @@ public class WagonRepositoryConnectorFactory
     @Requirement
     private WagonProvider wagonProvider;
 
+    @Requirement
+    private WagonConfigurator wagonConfigurator;
+
     private int priority;
 
     public WagonRepositoryConnectorFactory()
@@ -47,11 +50,13 @@ public class WagonRepositoryConnectorFactory
         // enables default constructor
     }
 
-    public WagonRepositoryConnectorFactory( Logger logger, FileProcessor fileProcessor, WagonProvider wagonProvider )
+    public WagonRepositoryConnectorFactory( Logger logger, FileProcessor fileProcessor, WagonProvider wagonProvider,
+                                            WagonConfigurator wagonConfigurator )
     {
         setLogger( logger );
         setFileProcessor( fileProcessor );
         setWagonProvider( wagonProvider );
+        setWagonConfigurator( wagonConfigurator );
     }
 
     public void initService( ServiceLocator locator )
@@ -59,6 +64,7 @@ public class WagonRepositoryConnectorFactory
         setLogger( locator.getService( Logger.class ) );
         setFileProcessor( locator.getService( FileProcessor.class ) );
         setWagonProvider( locator.getService( WagonProvider.class ) );
+        setWagonConfigurator( locator.getService( WagonConfigurator.class ) );
     }
 
     /**
@@ -101,6 +107,18 @@ public class WagonRepositoryConnectorFactory
         return this;
     }
 
+    /**
+     * Sets the wagon configurator to use to apply provider-specific configuration to wagon instances.
+     * 
+     * @param wagonConfigurator The wagon configurator to use, may be {@code null}.
+     * @return This factory for chaining, never {@code null}.
+     */
+    public WagonRepositoryConnectorFactory setWagonConfigurator( WagonConfigurator wagonConfigurator )
+    {
+        this.wagonConfigurator = wagonConfigurator;
+        return this;
+    }
+
     public int getPriority()
     {
         return priority;
@@ -121,7 +139,8 @@ public class WagonRepositoryConnectorFactory
     public RepositoryConnector newInstance( RepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException
     {
-        return new WagonRepositoryConnector( wagonProvider, repository, session, fileProcessor, logger );
+        return new WagonRepositoryConnector( wagonProvider, wagonConfigurator, repository, session, fileProcessor,
+                                             logger );
     }
 
 }

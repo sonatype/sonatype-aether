@@ -66,7 +66,7 @@ public class TestSuiteFileWagon
                         {
                             return new FileWagon();
                         }
-                    }, repository, session, TestFileProcessor.INSTANCE, NullLogger.INSTANCE );
+                    }, null, repository, session, TestFileProcessor.INSTANCE, NullLogger.INSTANCE );
                 }
 
                 public int getPriority()

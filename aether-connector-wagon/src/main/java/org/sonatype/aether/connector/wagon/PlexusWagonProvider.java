@@ -18,7 +18,7 @@ import org.codehaus.plexus.component.annotations.Requirement;
  * 
  * @author Benjamin Bentmann
  */
-@Component( role = WagonProvider.class )
+@Component( role = WagonProvider.class, hint = "plexus" )
 public class PlexusWagonProvider
     implements WagonProvider
 {
