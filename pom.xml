@@ -88,6 +88,7 @@ http://www.eclipse.org/legal/epl-v10.html
     <module>aether-test-util</module>
     <module>aether-connector-file</module>
     <module>aether-connector-wagon</module>
+    <module>aether-connector-asynchttpclient</module>
   </modules>
 
   <properties>
