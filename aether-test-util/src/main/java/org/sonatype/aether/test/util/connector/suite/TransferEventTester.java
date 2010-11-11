@@ -81,6 +81,7 @@ public class TransferEventTester
         checkEvents( events, expectedBytes );
 
         connector.close();
+        session.setTransferListener( null );
     }
 
     private static void checkEvents( Queue<TransferEvent> events, long expectedBytes )
@@ -213,6 +214,7 @@ public class TransferEventTester
         checkFailedEvents( events, null );
 
         connector.close();
+        session.setTransferListener( null );
     }
 
     private static void checkFailedEvents( Queue<TransferEvent> events, Class<? extends Throwable> expectedError )

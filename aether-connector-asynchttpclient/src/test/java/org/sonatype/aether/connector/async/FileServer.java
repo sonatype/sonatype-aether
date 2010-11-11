@@ -82,7 +82,7 @@ public class FileServer
     {
         int total = 0;
 
-        for ( byte[] buffer = new byte[1024 * 16];; )
+        for ( byte[] buffer = new byte[1024 * 4];; )
         {
             int read = is.read( buffer );
             if ( read < 0 )
@@ -90,6 +90,7 @@ public class FileServer
                 break;
             }
             os.write( buffer, 0, read );
+            os.flush();
             total += read;
         }
 
