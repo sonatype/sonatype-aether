@@ -80,11 +80,11 @@ class WagonRepositoryConnector
 
     private static final String PROP_CONFIG = "aether.connector.wagon.config";
 
-    private static final String PROP_FILE_MODE = "aether.connector.ssh.fileMode";
+    private static final String PROP_FILE_MODE = "aether.connector.perms.fileMode";
 
-    private static final String PROP_DIR_MODE = "aether.connector.ssh.dirMode";
+    private static final String PROP_DIR_MODE = "aether.connector.perms.dirMode";
 
-    private static final String PROP_GROUP = "aether.connector.ssh.group";
+    private static final String PROP_GROUP = "aether.connector.perms.group";
 
     private final Logger logger;
 
