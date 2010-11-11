@@ -33,6 +33,14 @@ public abstract class AbstractRepositoryListener
     {
     }
 
+    public void artifactDownloaded( RepositoryEvent event )
+    {
+    }
+
+    public void artifactDownloading( RepositoryEvent event )
+    {
+    }
+
     public void artifactInstalled( RepositoryEvent event )
     {
     }
@@ -54,6 +62,14 @@ public abstract class AbstractRepositoryListener
     }
 
     public void metadataDeploying( RepositoryEvent event )
+    {
+    }
+
+    public void metadataDownloaded( RepositoryEvent event )
+    {
+    }
+
+    public void metadataDownloading( RepositoryEvent event )
     {
     }
 

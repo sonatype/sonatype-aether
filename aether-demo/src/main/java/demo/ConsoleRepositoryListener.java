@@ -60,6 +60,16 @@ public class ConsoleRepositoryListener
         out.println( "Resolved artifact " + event.getArtifact() + " from " + event.getRepository() );
     }
 
+    public void artifactDownloading( RepositoryEvent event )
+    {
+        out.println( "Downloading artifact " + event.getArtifact() + " from " + event.getRepository() );
+    }
+
+    public void artifactDownloaded( RepositoryEvent event )
+    {
+        out.println( "Downloaded artifact " + event.getArtifact() + " from " + event.getRepository() );
+    }
+
     public void artifactResolving( RepositoryEvent event )
     {
         out.println( "Resolving artifact " + event.getArtifact() );

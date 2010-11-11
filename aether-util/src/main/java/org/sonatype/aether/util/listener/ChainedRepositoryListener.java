@@ -164,6 +164,38 @@ public class ChainedRepositoryListener
     }
 
     @Override
+    public void artifactDownloaded( RepositoryEvent event )
+    {
+        for ( RepositoryListener listener : listeners )
+        {
+            try
+            {
+                listener.artifactDownloaded( event );
+            }
+            catch ( RuntimeException e )
+            {
+                handleError( event, listener, e );
+            }
+        }
+    }
+
+    @Override
+    public void artifactDownloading( RepositoryEvent event )
+    {
+        for ( RepositoryListener listener : listeners )
+        {
+            try
+            {
+                listener.artifactDownloading( event );
+            }
+            catch ( RuntimeException e )
+            {
+                handleError( event, listener, e );
+            }
+        }
+    }
+
+    @Override
     public void artifactInstalled( RepositoryEvent event )
     {
         for ( RepositoryListener listener : listeners )
@@ -251,6 +283,38 @@ public class ChainedRepositoryListener
             try
             {
                 listener.metadataDeploying( event );
+            }
+            catch ( RuntimeException e )
+            {
+                handleError( event, listener, e );
+            }
+        }
+    }
+
+    @Override
+    public void metadataDownloaded( RepositoryEvent event )
+    {
+        for ( RepositoryListener listener : listeners )
+        {
+            try
+            {
+                listener.metadataDownloaded( event );
+            }
+            catch ( RuntimeException e )
+            {
+                handleError( event, listener, e );
+            }
+        }
+    }
+
+    @Override
+    public void metadataDownloading( RepositoryEvent event )
+    {
+        for ( RepositoryListener listener : listeners )
+        {
+            try
+            {
+                listener.metadataDownloading( event );
             }
             catch ( RuntimeException e )
             {

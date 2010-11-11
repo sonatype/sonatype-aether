@@ -117,6 +117,22 @@ public class RecordingRepositoryListener
 
     }
 
+    public void artifactDownloading( RepositoryEvent event )
+    {
+    }
+
+    public void artifactDownloaded( RepositoryEvent event )
+    {
+    }
+
+    public void metadataDownloaded( RepositoryEvent event )
+    {
+    }
+
+    public void metadataDownloading( RepositoryEvent event )
+    {
+    }
+
     public void metadataResolving( RepositoryEvent event )
     {
         Type type = Type.METADATA_RESOLVING;

@@ -324,6 +324,11 @@ public class DefaultDeployer
                     event.setMetadata( metadata );
                     event.setRepository( repository );
                     listener.metadataResolving( event );
+
+                    event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADING, session );
+                    event.setMetadata( metadata );
+                    event.setRepository( repository );
+                    listener.metadataDownloading( event );
                 }
 
                 RepositoryPolicy policy = getPolicy( session, repository, metadata.getNature() );
@@ -335,10 +340,18 @@ public class DefaultDeployer
 
                 if ( listener != null )
                 {
-                    DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVED, session );
+                    DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADED, session );
                     event.setMetadata( metadata );
                     event.setRepository( repository );
                     event.setException( download.getException() );
+                    event.setFile( dstFile );
+                    listener.metadataDownloaded( event );
+
+                    event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVED, session );
+                    event.setMetadata( metadata );
+                    event.setRepository( repository );
+                    event.setException( download.getException() );
+                    event.setFile( dstFile );
                     listener.metadataResolved( event );
                 }
 

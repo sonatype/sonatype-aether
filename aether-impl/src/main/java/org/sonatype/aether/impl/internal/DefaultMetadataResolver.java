@@ -378,6 +378,33 @@ public class DefaultMetadataResolver
         }
     }
 
+    private void metadataDownloading( RepositorySystemSession session, Metadata metadata, ArtifactRepository repository )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADING, session );
+            event.setMetadata( metadata );
+            event.setRepository( repository );
+            listener.metadataDownloading( event );
+        }
+    }
+
+    private void metadataDownloaded( RepositorySystemSession session, Metadata metadata, ArtifactRepository repository,
+                                     File file, Exception exception )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADED, session );
+            event.setMetadata( metadata );
+            event.setRepository( repository );
+            event.setException( exception );
+            event.setFile( file );
+            listener.metadataDownloaded( event );
+        }
+    }
+
     private Executor getExecutor( int threads )
     {
         if ( threads <= 1 )
@@ -439,6 +466,8 @@ public class DefaultMetadataResolver
 
         public void run()
         {
+            metadataDownloading( session, request.getMetadata(), request.getRepository() );
+
             try
             {
                 List<RemoteRepository> repositories = new ArrayList<RemoteRepository>();
@@ -485,6 +514,8 @@ public class DefaultMetadataResolver
             {
                 updateCheckManager.touchMetadata( session, check.setException( exception ) );
             }
+
+            metadataDownloaded( session, request.getMetadata(), request.getRepository(), metadataFile, exception );
         }
 
     }

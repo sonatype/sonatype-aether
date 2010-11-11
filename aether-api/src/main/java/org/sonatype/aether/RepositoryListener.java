@@ -35,6 +35,14 @@ public interface RepositoryListener
 
     void metadataResolved( RepositoryEvent event );
 
+    void artifactDownloading( RepositoryEvent event );
+
+    void artifactDownloaded( RepositoryEvent event );
+
+    void metadataDownloading( RepositoryEvent event );
+
+    void metadataDownloaded( RepositoryEvent event );
+
     void artifactInstalling( RepositoryEvent event );
 
     void artifactInstalled( RepositoryEvent event );

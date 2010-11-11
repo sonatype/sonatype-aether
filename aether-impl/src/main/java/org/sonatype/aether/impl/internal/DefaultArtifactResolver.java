@@ -391,10 +391,17 @@ public class DefaultArtifactResolver
                 downloads.add( download );
                 item.download = download;
             }
+
             if ( downloads.isEmpty() )
             {
                 continue;
             }
+
+            for ( ArtifactDownload download : downloads )
+            {
+                artifactDownloading( session, download.getArtifact(), group.repository );
+            }
+
             try
             {
                 RepositoryConnector connector =
@@ -415,6 +422,7 @@ public class DefaultArtifactResolver
                     download.setException( new ArtifactTransferException( download.getArtifact(), group.repository, e ) );
                 }
             }
+
             for ( ResolutionItem item : group.items )
             {
                 ArtifactDownload download = item.download;
@@ -428,6 +436,7 @@ public class DefaultArtifactResolver
                     item.updateCheck.setException( download.getException() );
                     updateCheckManager.touchArtifact( session, item.updateCheck );
                 }
+
                 if ( download.getException() == null )
                 {
                     item.resolved.set( true );
@@ -457,11 +466,15 @@ public class DefaultArtifactResolver
                         }
                     }
 
+                    artifactDownloaded( session, artifact, group.repository, null );
+
                     artifactResolved( session, artifact, group.repository, null );
                 }
                 else
                 {
                     item.result.addException( download.getException() );
+
+                    artifactDownloaded( session, download.getArtifact(), group.repository, download.getException() );
                 }
             }
         }
@@ -543,6 +556,36 @@ public class DefaultArtifactResolver
                 event.setFile( artifact.getFile() );
             }
             listener.artifactResolved( event );
+        }
+    }
+
+    private void artifactDownloading( RepositorySystemSession session, Artifact artifact, RemoteRepository repository )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DOWNLOADING, session );
+            event.setArtifact( artifact );
+            event.setRepository( repository );
+            listener.artifactDownloading( event );
+        }
+    }
+
+    private void artifactDownloaded( RepositorySystemSession session, Artifact artifact, RemoteRepository repository,
+                                     Exception exception )
+    {
+        RepositoryListener listener = session.getRepositoryListener();
+        if ( listener != null )
+        {
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DOWNLOADED, session );
+            event.setArtifact( artifact );
+            event.setRepository( repository );
+            event.setException( exception );
+            if ( artifact != null )
+            {
+                event.setFile( artifact.getFile() );
+            }
+            listener.artifactDownloaded( event );
         }
     }
 
