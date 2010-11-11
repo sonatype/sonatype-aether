@@ -24,21 +24,18 @@ http://www.eclipse.org/legal/epl-v10.html
     A repository connector implementation based on AsyncHttpClient.
   </description>
 
-   <dependencies>
+  <dependencies>
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-api</artifactId>
-      <version>1.7</version>
     </dependency>
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-spi</artifactId>
-      <version>1.7</version>
     </dependency>
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-util</artifactId>
-      <version>1.7</version>
     </dependency>
     <dependency>
       <groupId>com.ning</groupId>
@@ -48,13 +45,11 @@ http://www.eclipse.org/legal/epl-v10.html
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-component-annotations</artifactId>
-      <version>1.5.5</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-test-util</artifactId>
-      <version>1.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -89,6 +84,7 @@ http://www.eclipse.org/legal/epl-v10.html
       <scope>test</scope>
     </dependency>
   </dependencies>
+
   <build>
     <plugins>
       <plugin>
