@@ -18,9 +18,12 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
@@ -31,7 +34,6 @@ import org.sonatype.tests.server.api.ServerProvider;
 
 /**
  * @author Benjamin Hanzelmann
- *
  */
 @RunWith( ConfigurationRunner.class )
 public class TimeoutTest
@@ -44,10 +46,15 @@ public class TimeoutTest
         provider.addBehaviour( "/repo/*", new Pause( 100000 ) );
     }
 
-    @Test( timeout = 50000 )
-    public void testTimeout()
+    @Test( timeout = 3000 )
+    public void testRequestTimeout()
         throws Exception
     {
+        Map<String, Object> configProps = new HashMap<String, Object>();
+        configProps.put( ConfigurationProperties.CONNECT_TIMEOUT, "60000" );
+        configProps.put( ConfigurationProperties.REQUEST_TIMEOUT, "1000" );
+        session().setConfigProperties( configProps );
+
         File f = TestFileUtils.createTempFile( "" );
         Artifact a = artifact( "foo" );
 
