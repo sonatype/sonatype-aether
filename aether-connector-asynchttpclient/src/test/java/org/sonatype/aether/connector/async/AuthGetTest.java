@@ -16,8 +16,8 @@ package org.sonatype.aether.connector.async;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.sonatype.aether.repository.Authentication;
-import org.sonatype.tests.jetty.runner.ConfigurationRunner;
-import org.sonatype.tests.jetty.runner.ConfigurationRunner.ConfiguratorList;
+import org.sonatype.tests.http.runner.annotations.ConfiguratorList;
+import org.sonatype.tests.http.runner.junit.ConfigurationRunner;
 
 /**
  * @author Benjamin Hanzelmann

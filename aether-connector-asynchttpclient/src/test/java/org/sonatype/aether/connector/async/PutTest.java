@@ -24,7 +24,7 @@ import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
-import org.sonatype.tests.jetty.runner.ConfigurationRunner;
+import org.sonatype.tests.http.runner.junit.ConfigurationRunner;
 
 /**
  * @author Benjamin Hanzelmann

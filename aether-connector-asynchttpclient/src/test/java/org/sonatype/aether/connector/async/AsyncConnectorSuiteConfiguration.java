@@ -35,10 +35,10 @@ import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubArtifact;
 import org.sonatype.aether.test.util.impl.StubMetadata;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
-import org.sonatype.tests.jetty.runner.DefaultSuiteConfiguration;
-import org.sonatype.tests.jetty.server.behaviour.Expect;
-import org.sonatype.tests.jetty.server.behaviour.Provide;
-import org.sonatype.tests.server.api.ServerProvider;
+import org.sonatype.tests.http.runner.junit.DefaultSuiteConfiguration;
+import org.sonatype.tests.http.server.api.ServerProvider;
+import org.sonatype.tests.http.server.jetty.behaviour.Expect;
+import org.sonatype.tests.http.server.jetty.behaviour.Provide;
 
 /**
  * @author Benjamin Hanzelmann

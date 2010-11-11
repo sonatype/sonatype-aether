@@ -14,8 +14,8 @@ package org.sonatype.aether.connector.async;
  */
 
 import org.junit.runner.RunWith;
-import org.sonatype.tests.jetty.runner.ConfigurationRunner;
-import org.sonatype.tests.server.api.ServerProvider;
+import org.sonatype.tests.http.runner.junit.ConfigurationRunner;
+import org.sonatype.tests.http.server.api.ServerProvider;
 
 /**
  * @author Benjamin Hanzelmann

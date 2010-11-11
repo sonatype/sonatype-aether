@@ -27,7 +27,7 @@ import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.transfer.TransferEvent;
-import org.sonatype.tests.jetty.runner.ConfigurationRunner;
+import org.sonatype.tests.http.runner.junit.ConfigurationRunner;
 
 /**
  * @author Benjamin Hanzelmann

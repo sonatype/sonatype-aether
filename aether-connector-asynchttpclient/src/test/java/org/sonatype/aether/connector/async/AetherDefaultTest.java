@@ -23,7 +23,7 @@ import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSetup.AbstractConnectorTestSetup;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSuite;
-import org.sonatype.tests.jetty.server.impl.JettyServerProvider;
+import org.sonatype.tests.http.server.jetty.impl.JettyServerProvider;
 
 /**
  * @author Benjamin Hanzelmann

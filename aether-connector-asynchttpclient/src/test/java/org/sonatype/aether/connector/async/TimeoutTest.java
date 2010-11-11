@@ -28,9 +28,9 @@ import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.test.util.TestFileUtils;
-import org.sonatype.tests.jetty.runner.ConfigurationRunner;
-import org.sonatype.tests.jetty.server.behaviour.Pause;
-import org.sonatype.tests.server.api.ServerProvider;
+import org.sonatype.tests.http.runner.junit.ConfigurationRunner;
+import org.sonatype.tests.http.server.api.ServerProvider;
+import org.sonatype.tests.http.server.jetty.behaviour.Pause;
 
 /**
  * @author Benjamin Hanzelmann

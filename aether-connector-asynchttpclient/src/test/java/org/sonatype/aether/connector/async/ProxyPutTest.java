@@ -20,10 +20,10 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.repository.Proxy;
-import org.sonatype.tests.jetty.runner.ConfigurationRunner;
-import org.sonatype.tests.jetty.runner.ConfigurationRunner.Configurators;
-import org.sonatype.tests.jetty.server.configurations.HttpProxyAuthConfigurator;
-import org.sonatype.tests.jetty.server.configurations.HttpProxyConfigurator;
+import org.sonatype.tests.http.runner.annotations.Configurators;
+import org.sonatype.tests.http.runner.junit.ConfigurationRunner;
+import org.sonatype.tests.http.server.jetty.configurations.HttpProxyAuthConfigurator;
+import org.sonatype.tests.http.server.jetty.configurations.HttpProxyConfigurator;
 
 /**
  * @author Benjamin Hanzelmann
