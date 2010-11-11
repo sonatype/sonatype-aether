@@ -9,8 +9,10 @@ package org.sonatype.aether.test.impl;
  *******************************************************************************/
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
+import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.RepositoryCache;
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.RepositoryListener;
@@ -57,6 +59,14 @@ public class TestRepositorySystemSession
 
     private DependencyManager dependencyManager;
 
+    private Map<String, Object> configProperties = new HashMap<String, Object>();
+
+    public TestRepositorySystemSession()
+    {
+        configProperties.put( ConfigurationProperties.CONNECT_TIMEOUT, "3000" );
+        configProperties.put( ConfigurationProperties.REQUEST_TIMEOUT, "3000" );
+    }
+
     public TransferListener getTransferListener()
     {
         return listener;
@@ -64,7 +74,19 @@ public class TestRepositorySystemSession
 
     public Map<String, Object> getConfigProperties()
     {
-        return Collections.emptyMap();
+        return Collections.unmodifiableMap( configProperties );
+    }
+
+    public void setConfigProperties( Map<String, Object> configProperties )
+    {
+        if ( configProperties == null )
+        {
+            this.configProperties = Collections.emptyMap();
+        }
+        else
+        {
+            this.configProperties = configProperties;
+        }
     }
 
     public boolean isOffline()

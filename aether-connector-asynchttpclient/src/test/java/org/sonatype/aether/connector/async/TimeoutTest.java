@@ -44,7 +44,7 @@ public class TimeoutTest
         provider.addBehaviour( "/repo/*", new Pause( 100000 ) );
     }
 
-    @Test
+    @Test( timeout = 50000 )
     public void testTimeout()
         throws Exception
     {
