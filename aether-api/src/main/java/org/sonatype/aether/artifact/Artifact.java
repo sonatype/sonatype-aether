@@ -120,6 +120,9 @@ public interface Artifact
      * <dt>constitutesBuildPath</dt>
      * <dd>A boolean flag indicating whether the artifact is meant to be used for the compile/runtime/test build path of
      * a consumer project.</dd>
+     * <dt>localPath</dt>
+     * <dd>The (expected) path to the artifact on the local filesystem. An artifact which has this property set is
+     * assumed to be not present in any regular repository and likewise has no artifact descriptor.</dd>
      * </dl>
      * 
      * @return The (read-only) properties, never {@code null}.
