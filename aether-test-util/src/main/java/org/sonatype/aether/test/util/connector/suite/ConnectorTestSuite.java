@@ -182,7 +182,7 @@ public abstract class ConnectorTestSuite
         connector.put( Arrays.asList( artUps ), null );
         connector.put( null, Arrays.asList( metaUps ) );
 
-        File localRepo = new File( "target/con-test" );
+        File localRepo = session.getLocalRepository().getBasedir();
 
         StringBuilder localPath = new StringBuilder( localRepo.getAbsolutePath() );
 
@@ -242,10 +242,12 @@ public abstract class ConnectorTestSuite
         throws IOException, NoRepositoryConnectorException
     {
         File emptyFile = TestFileUtils.createTempFile( "" );
+        
 
         Artifact artifact = new StubArtifact( "gid:aid:ext:ver" );
         ArtifactUpload upA = new ArtifactUpload( artifact, emptyFile );
-        File downAFile = new File( "target/con-test/downA.file" );
+        String dir = "target/con-test" + hashCode();
+        File downAFile = new File( dir , "/downA.file" );
         downAFile.deleteOnExit();
         ArtifactDownload downA = new ArtifactDownload( artifact, "", downAFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
 
@@ -253,7 +255,7 @@ public abstract class ConnectorTestSuite
         Metadata metadata =
             new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT );
         MetadataUpload upM = new MetadataUpload( metadata, emptyFile );
-        File downMFile = new File( "target/con-test/downM.file" );
+        File downMFile = new File( dir, "/downM.file" );
         downMFile.deleteOnExit();
         MetadataDownload downM = new MetadataDownload( metadata, "", downMFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
 

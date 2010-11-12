@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonatype.aether.RepositorySystemSession;
@@ -85,6 +86,16 @@ public class DefaultArtifactResolverTest
 
         connector = new RecordingRepositoryConnector();
         remoteRepositoryManager.setConnector( connector );
+    }
+
+    @After
+    public void teardown()
+        throws Exception
+    {
+        if ( session.getLocalRepository() != null )
+        {
+            TestFileUtils.delete( session.getLocalRepository().getBasedir() );
+        }
     }
 
     @Test

@@ -17,7 +17,6 @@ import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.util.TestFileUtils;
-import org.sonatype.aether.test.util.connector.suite.ConnectorTestSetup;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSetup.AbstractConnectorTestSetup;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSuite;
 
@@ -28,15 +27,20 @@ public class TestSuite
     extends ConnectorTestSuite
 {
 
-    static ConnectorTestSetup setup = new AbstractConnectorTestSetup()
+    /**
+     * @author Benjamin Hanzelmann
+     */
+    private static final class FileConnectorTestSetup
+        extends AbstractConnectorTestSetup
     {
-        private File repoFile = new File( "target/test-repo" );
+        private File repoFile = new File( "target/test-repo." + hashCode() );
 
         public RepositoryConnectorFactory factory()
         {
             return new FileRepositoryConnectorFactory().setFileProcessor( TestFileProcessor.INSTANCE );
         }
 
+        @Override
         public void after( RepositorySystemSession session, RemoteRepository repository, Map<String, Object> context )
             throws Exception
         {
@@ -58,12 +62,11 @@ public class TestSuite
             }
             return repo;
         }
-
-    };
+    }
 
     public TestSuite()
     {
-        super( setup );
+        super( new FileConnectorTestSetup() );
     }
 
 }

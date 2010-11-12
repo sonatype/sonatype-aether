@@ -19,6 +19,7 @@ import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
+import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.tests.http.runner.junit.ConfigurationRunner;
 
 /**
@@ -42,7 +43,8 @@ public class PutTest
         List<ArtifactUpload> uploads = Arrays.asList( up );
         connector().put( uploads, null );
 
-        assertNull( up.getException() );
+        ArtifactTransferException ex = up.getException();
+        assertNull( ex != null ? ex.getMessage() : "", ex );
         assertExpectations();
     }
 

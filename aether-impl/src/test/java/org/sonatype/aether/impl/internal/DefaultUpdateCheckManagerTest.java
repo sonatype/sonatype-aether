@@ -41,9 +41,6 @@ import org.sonatype.aether.transfer.MetadataTransferException;
 public class DefaultUpdateCheckManagerTest
 {
 
-    /**
-     * 
-     */
     private static final int HOUR = 60 * 60 * 1000;
 
     private DefaultUpdateCheckManager manager;
@@ -60,14 +57,22 @@ public class DefaultUpdateCheckManagerTest
     public void setup()
         throws IOException
     {
+        File dir = TestFileUtils.createTempFile( "" );
+        TestFileUtils.delete( dir );
+
+        File metadataFile = new File( dir, "metadata" );
+        TestFileUtils.write( "metadata", metadataFile );
+        File artifactFile = new File( dir, "metadata" );
+        TestFileUtils.write( "artifact", artifactFile );
+
         session = new TestRepositorySystemSession();
-        repository = new RemoteRepository( "id", "default", new File( "target/test-DUCM/" ).toURL().toString() );
+        repository =
+            new RemoteRepository( "id", "default", new File( "target/test-DUCM." + hashCode() ).toURL().toString() );
         manager = new DefaultUpdateCheckManager();
         metadata =
             new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT,
-                              TestFileUtils.createTempFile( "metadata" ) );
-        artifact =
-            new StubArtifact( "gid", "aid", "", "ext", "ver" ).setFile( TestFileUtils.createTempFile( "artifact" ) );
+                              metadataFile );
+        artifact = new StubArtifact( "gid", "aid", "", "ext", "ver" ).setFile( artifactFile );
     }
 
     @Test( expected = Exception.class )

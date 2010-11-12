@@ -53,8 +53,6 @@ public class DefaultMetadataResolverTest
     public void setup()
         throws Exception
     {
-        teardown();
-
         session = new TestRepositorySystemSession();
         manager = new StubRemoteRepositoryManager();
         resolver = new DefaultMetadataResolver( NullLogger.INSTANCE, new StaticUpdateCheckManager( true ), manager );
@@ -69,7 +67,7 @@ public class DefaultMetadataResolverTest
         throws Exception
     {
         TestFileUtils.delete( new File( "target/test-DMRT" ) );
-        TestFileUtils.delete( new File( "target/test-local-repository" ) );
+        TestFileUtils.delete( session.getLocalRepository().getBasedir() );
     }
 
     @Test
@@ -96,7 +94,7 @@ public class DefaultMetadataResolverTest
         connector.setExpectGet( metadata );
 
         // prepare "download"
-        File file = new File( "target/test-local-repository/gid/aid/ver/gid-aid-ver.xml" );
+        File file = new File( session.getLocalRepository().getBasedir(), "gid/aid/ver/gid-aid-ver.xml" );
         TestFileUtils.write( file.getAbsolutePath(), file );
 
         MetadataRequest request = new MetadataRequest( metadata, repository, "" );
@@ -138,7 +136,7 @@ public class DefaultMetadataResolverTest
         };
         manager.setConnector( connector );
 
-        File file = new File( "target/test-local-repository/gid/aid/ver/gid-aid-ver.xml" );
+        File file = new File( session.getLocalRepository().getBasedir(), "gid/aid/ver/gid-aid-ver.xml" );
         TestFileUtils.write( file.getAbsolutePath(), file );
         metadata.setFile( file );
 

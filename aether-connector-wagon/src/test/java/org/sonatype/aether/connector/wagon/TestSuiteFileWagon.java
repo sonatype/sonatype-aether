@@ -34,8 +34,14 @@ public class TestSuiteFileWagon
     extends ConnectorTestSuite
 {
 
-    private static AbstractConnectorTestSetup setup = new AbstractConnectorTestSetup()
+    /**
+     * @author Benjamin Hanzelmann
+     *
+     */
+    private static final class FileWagonConnectorTestSetup
+        extends AbstractConnectorTestSetup
     {
+        private File basedir = new File( "target/test-filewagon." + hashCode() );
 
         public RepositoryConnectorFactory factory()
         {
@@ -81,7 +87,7 @@ public class TestSuiteFileWagon
             try
             {
                 return new RemoteRepository( "test-filewagon", "default",
-                                             new File( "target/test-filewagon" ).toURI().toURL().toString() );
+                                             basedir.toURI().toURL().toString() );
             }
             catch ( MalformedURLException e )
             {
@@ -94,14 +100,13 @@ public class TestSuiteFileWagon
             throws Exception
 
         {
-            TestFileUtils.delete( new File( "target/test-filewagon" ) );
+            TestFileUtils.delete( basedir );
         }
-
-    };
+    }
 
     public TestSuiteFileWagon()
     {
-        super( setup );
+        super( new FileWagonConnectorTestSetup() );
     }
 
 }

@@ -34,7 +34,7 @@ public class DefaultFileProcessorTest
     @Before
     public void setup()
     {
-        targetDir = new File( "target/test-FileProcessor" );
+        targetDir = new File( "target/test-FileProcessor." + hashCode() );
         fileProcessor = new DefaultFileProcessor();
     }
 

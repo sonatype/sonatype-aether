@@ -8,7 +8,6 @@ package org.sonatype.aether.connector.async;
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.sonatype.aether.RepositorySystemSession;
@@ -46,13 +45,6 @@ public class AetherDefaultTest
         public RepositoryConnectorFactory factory()
         {
             return new AsyncRepositoryConnectorFactory( NullLogger.INSTANCE, new TestFileProcessor() );
-        }
-
-        @Override
-        public Map<String, Object> beforeClass( RepositorySystemSession session )
-            throws Exception
-        {
-            return new HashMap<String, Object>();
         }
 
         @Override

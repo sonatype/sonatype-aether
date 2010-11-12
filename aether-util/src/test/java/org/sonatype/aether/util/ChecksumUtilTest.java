@@ -121,11 +121,8 @@ public class ChecksumUtilTest
             String sha1 = checksums.get( "SHA-1" );
             String md5 = checksums.get( "MD5" );
 
-            File sha1File = new File( "target/checksum.sha1" );
-            File md5File = new File( "target/checksum.md5" );
-
-            TestFileUtils.write( sha1, sha1File );
-            TestFileUtils.write( md5, md5File );
+            File sha1File = TestFileUtils.createTempFile( sha1 );
+            File md5File = TestFileUtils.createTempFile( md5 );
             
             assertEquals( sha1, ChecksumUtils.read( sha1File ) );
             assertEquals( md5, ChecksumUtils.read( md5File ) );
@@ -144,11 +141,8 @@ public class ChecksumUtilTest
             String sha1 = checksums.get( "SHA-1" );
             String md5 = checksums.get( "MD5" );
 
-            File sha1File = new File( "target/checksum.sha1" );
-            File md5File = new File( "target/checksum.md5" );
-
-            TestFileUtils.write( "sha1-checksum = " + sha1, sha1File );
-            TestFileUtils.write( md5 + " test", md5File );
+            File sha1File = TestFileUtils.createTempFile( "sha1-checksum = " + sha1 );
+            File md5File = TestFileUtils.createTempFile( md5 + " test" );
 
             assertEquals( sha1, ChecksumUtils.read( sha1File ) );
             assertEquals( md5, ChecksumUtils.read( md5File ) );
@@ -162,8 +156,7 @@ public class ChecksumUtilTest
     public void testReadEmptyFile()
         throws IOException
     {
-        File file = new File( "target/checksum.empty" );
-        TestFileUtils.write( "", file );
+        File file = TestFileUtils.createTempFile( "" );
 
         assertEquals( "", ChecksumUtils.read( file ) );
 

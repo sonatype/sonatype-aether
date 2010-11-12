@@ -24,13 +24,13 @@ import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 public abstract class ConnectorTestSuiteSetup
 {
 
-    private static ConnectorTestSetup connectorSetup = null;
+    private ConnectorTestSetup connectorSetup = null;
 
     protected RemoteRepository repository;
 
     protected TestRepositorySystemSession session;
 
-    private static Map<String, Object> context = null;
+    private Map<String, Object> context = null;
 
     private RepositoryConnectorFactory factory;
 

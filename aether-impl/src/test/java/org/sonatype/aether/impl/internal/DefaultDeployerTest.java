@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonatype.aether.RepositoryEvent;
@@ -84,6 +85,7 @@ public class DefaultDeployerTest
         listener = new RecordingRepositoryListener();
         session.setRepositoryListener( listener );
     }
+
 
     @Test
     public void testSuccessfulDeploy()
@@ -326,6 +328,16 @@ public class DefaultDeployerTest
             event = wrapper.getEvent();
             assertEquals( metadata, event.getMetadata() );
             assertNotNull( event.getException() );
+        }
+    }
+
+    @After
+    public void teardown()
+        throws Exception
+    {
+        if ( session.getLocalRepository() != null )
+        {
+            TestFileUtils.delete( session.getLocalRepository().getBasedir() );
         }
     }
 }

@@ -25,7 +25,7 @@ public class TestLocalRepositoryManager
     implements LocalRepositoryManager
 {
 
-    private LocalRepository localRepository = new LocalRepository( "target/test-local-repository" );
+    private LocalRepository localRepository = new LocalRepository( "target/test-local-repository." + hashCode() );
 
     private Set<Artifact> registration = new HashSet<Artifact>();
 

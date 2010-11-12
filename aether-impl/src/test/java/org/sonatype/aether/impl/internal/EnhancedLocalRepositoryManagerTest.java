@@ -58,7 +58,7 @@ public class EnhancedLocalRepositoryManagerTest
         artifact =
             new DefaultArtifact( "gid", "aid", "", "jar", "1-test", Collections.<String, String> emptyMap(),
                                  TestFileUtils.createTempFile( "artifact".getBytes(), 1 ) );
-        baseDir = new File( "target/enhanced-repo" );
+        baseDir = new File( "target/enhanced-repo." + hashCode() );
         manager = new EnhancedLocalRepositoryManager( baseDir );
 
         artifactFile = new File( baseDir, manager.getPathForLocalArtifact( artifact ) );
