@@ -56,6 +56,7 @@ http://www.eclipse.org/legal/epl-v10.html
       <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty</artifactId>
       <version>6.1.25</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.sonatype.http-testing-harness</groupId>
