@@ -66,12 +66,6 @@ public class AetherDefaultTest
             }
         }
 
-        @Override
-        public void afterClass( RepositorySystemSession session, Map<String, Object> context )
-            throws Exception
-        {
-        }
-
     }
 
     /**
