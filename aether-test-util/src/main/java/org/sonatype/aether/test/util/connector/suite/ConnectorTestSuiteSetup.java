@@ -11,9 +11,7 @@ package org.sonatype.aether.test.util.connector.suite;
 import java.util.Map;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
@@ -26,17 +24,15 @@ import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 public abstract class ConnectorTestSuiteSetup
 {
 
-    private static ConnectorTestSetup connectorSetup;
+    private static ConnectorTestSetup connectorSetup = null;
 
-    protected static RemoteRepository repository;
+    protected RemoteRepository repository;
 
-    protected static TestRepositorySystemSession session;
+    protected TestRepositorySystemSession session;
 
-    private static Map<String, Object> context;
+    private static Map<String, Object> context = null;
 
-    private static RepositoryConnectorFactory factory;
-
-    private boolean doClassInit = true;
+    private RepositoryConnectorFactory factory;
 
     /**
      * @param setup The connector-specific callback handler to use.
@@ -46,15 +42,14 @@ public abstract class ConnectorTestSuiteSetup
         super();
         connectorSetup = setup;
         factory = setup.factory();
-    }
-
-    /**
-     * Creates a new {@link TestRepositorySystemSession} to use in the tests.
-     */
-    @BeforeClass
-    public static void beforeClass()
-    {
-        session = new TestRepositorySystemSession();
+        try
+        {
+            context = connectorSetup.beforeClass( session );
+        }
+        catch ( Exception e )
+        {
+            throw new IllegalStateException( "Error while running ConnectorTestSetup#beforeClass.", e );
+        }
     }
 
     /**
@@ -66,11 +61,7 @@ public abstract class ConnectorTestSuiteSetup
     public void before()
         throws Exception
     {
-        if ( doClassInit )
-        {
-            context = connectorSetup.beforeClass( session );
-            doClassInit = false;
-        }
+        session = new TestRepositorySystemSession();
         repository = connectorSetup.before( session, context );
     }
 
@@ -85,19 +76,9 @@ public abstract class ConnectorTestSuiteSetup
     }
 
     /**
-     * Calls {@link ConnectorTestSetup#afterClass(org.sonatype.aether.RepositorySystemSession, RemoteRepository, Map)}.
-     */
-    @AfterClass
-    public static void afterClass()
-        throws Exception
-    {
-        connectorSetup.afterClass( session, context );
-    }
-
-    /**
      * @return the factory as determined by {@link ConnectorTestSetup#factory()}.
      */
-    protected static RepositoryConnectorFactory factory()
+    protected RepositoryConnectorFactory factory()
     {
         return factory;
     }

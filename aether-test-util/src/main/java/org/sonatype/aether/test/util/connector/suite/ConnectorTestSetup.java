@@ -58,15 +58,6 @@ public interface ConnectorTestSetup
         throws Exception;
 
     /**
-     * This method is called after all tests of the bundle were run.
-     * 
-     * @param session The session used for the test bundle.
-     * @param context The context provided by {@link #beforeClass(RepositorySystemSession)}.
-     */
-    public void afterClass( RepositorySystemSession session, Map<String, Object> context )
-        throws Exception;
-
-    /**
      * @return the factory to use for the tests.
      */
     public RepositoryConnectorFactory factory();
@@ -87,11 +78,6 @@ public interface ConnectorTestSetup
         }
 
         public void after( RepositorySystemSession session, RemoteRepository repository, Map<String, Object> context )
-            throws Exception
-        {
-        }
-
-        public void afterClass( RepositorySystemSession session, Map<String, Object> context )
             throws Exception
         {
         }
