@@ -51,4 +51,19 @@ public class Slf4jLogger
         logger.debug( msg, error );
     }
 
+    public boolean isWarnEnabled()
+    {
+        return logger.isWarnEnabled();
+    }
+
+    public void warn( String msg )
+    {
+        logger.warn( msg );
+    }
+
+    public void warn( String msg, Throwable error )
+    {
+        logger.warn( msg, error );
+    }
+
 }

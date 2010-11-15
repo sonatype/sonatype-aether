@@ -32,4 +32,17 @@ public class NullLogger
     {
     }
 
+    public boolean isWarnEnabled()
+    {
+        return false;
+    }
+
+    public void warn( String msg )
+    {
+    }
+
+    public void warn( String msg, Throwable error )
+    {
+    }
+
 }

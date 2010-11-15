@@ -9,7 +9,7 @@ package org.sonatype.aether.spi.log;
  *******************************************************************************/
 
 /**
- * A simple logger to facilitate emission of debug messages.
+ * A simple logger to facilitate emission of diagnostic messages.
  * 
  * @author Benjamin Bentmann
  */
@@ -37,5 +37,27 @@ public interface Logger
      * @param error The exception to log, may be {@code null}.
      */
     void debug( String msg, Throwable error );
+
+    /**
+     * Indicates whether warn logging is enabled.
+     * 
+     * @return {@code true} if warn logging is enabled, {@code false} otherwise.
+     */
+    boolean isWarnEnabled();
+
+    /**
+     * Emits the specified message.
+     * 
+     * @param msg The message to log, must not be {@code null}.
+     */
+    void warn( String msg );
+
+    /**
+     * Emits the specified message along with a stack trace of the given exception.
+     * 
+     * @param msg The message to log, must not be {@code null}.
+     * @param error The exception to log, may be {@code null}.
+     */
+    void warn( String msg, Throwable error );
 
 }

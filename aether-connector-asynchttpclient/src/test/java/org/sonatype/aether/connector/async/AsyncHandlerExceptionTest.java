@@ -104,5 +104,25 @@ public class AsyncHandlerExceptionTest
             return true;
         }
 
+        public void warn( String msg )
+        {
+            debug( msg, null );
+        }
+
+        public void warn( String msg, Throwable t )
+        {
+            System.out.println( msg );
+            if ( t != null )
+            {
+                t.printStackTrace( System.out );
+            }
+        }
+
+        public boolean isWarnEnabled()
+        {
+            return true;
+        }
+
     }
+
 }
