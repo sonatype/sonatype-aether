@@ -57,6 +57,7 @@ public class DefaultDependencyCollectorTest
 
     @Before
     public void setup()
+        throws IOException
     {
         session = new TestRepositorySystemSession();
 

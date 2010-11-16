@@ -248,4 +248,24 @@ public class TestFileUtils
         return ( parentDir != null && ( mkdirs( parentDir ) || parentDir.exists() ) && canonDir.mkdir() );
     }
 
+    public static File createTempDir()
+        throws IOException
+    {
+        return createTempDir( "" );
+    }
+
+    public static File createTempDir( String suffix )
+        throws IOException
+    {
+        mkdirs( TMP );
+
+        File tmpFile = File.createTempFile( "tmpdir-", suffix, TMP );
+
+        delete( tmpFile );
+        mkdirs( tmpFile );
+
+        return tmpFile;
+
+    }
+
 }

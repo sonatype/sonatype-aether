@@ -12,6 +12,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,13 +53,13 @@ public class EnhancedLocalRepositoryManagerTest
     {
         repository =
             new RemoteRepository( "enhanced-remote-repo", "default",
-                                  new File( "target/enhanced-remote-repo" ).toURI().toURL().toString() );
+                                  TestFileUtils.createTempDir( "enhanced-remote-repo" ).toURI().toURL().toString() );
         repository.setRepositoryManager( true );
 
         artifact =
             new DefaultArtifact( "gid", "aid", "", "jar", "1-test", Collections.<String, String> emptyMap(),
                                  TestFileUtils.createTempFile( "artifact".getBytes(), 1 ) );
-        baseDir = new File( "target/enhanced-repo." + hashCode() );
+        baseDir = TestFileUtils.createTempDir( "enhanced-repo" );
         manager = new EnhancedLocalRepositoryManager( baseDir );
 
         artifactFile = new File( baseDir, manager.getPathForLocalArtifact( artifact ) );
@@ -71,6 +72,7 @@ public class EnhancedLocalRepositoryManagerTest
         throws Exception
     {
         TestFileUtils.delete( baseDir );
+        TestFileUtils.delete( new File( new URI( repository.getUrl() ) ) );
 
         session = null;
         manager = null;

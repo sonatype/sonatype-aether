@@ -8,6 +8,7 @@ package org.sonatype.aether.test.impl;
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,18 +21,21 @@ import org.sonatype.aether.repository.LocalArtifactResult;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.LocalRepositoryManager;
 import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.test.util.TestFileUtils;
 
 public class TestLocalRepositoryManager
     implements LocalRepositoryManager
 {
 
-    private LocalRepository localRepository = new LocalRepository( "target/test-local-repository." + hashCode() );
+    private LocalRepository localRepository;
 
     private Set<Artifact> registration = new HashSet<Artifact>();
 
     public TestLocalRepositoryManager()
+        throws IOException
     {
         super();
+        localRepository = new LocalRepository( TestFileUtils.createTempDir( "test-local-repository" ) );
     }
 
     public LocalRepository getRepository()

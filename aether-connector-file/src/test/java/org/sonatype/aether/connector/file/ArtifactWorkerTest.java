@@ -11,9 +11,8 @@ package org.sonatype.aether.connector.file;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.net.URI;
 
 import org.junit.After;
 import org.junit.Before;
@@ -45,9 +44,11 @@ public class ArtifactWorkerTest
 
     @Before
     public void setup()
-        throws MalformedURLException
+        throws IOException
     {
-        repository = new RemoteRepository( "test", "default", new File( "target/test-repository" ).toURL().toString() );
+        repository =
+            new RemoteRepository( "test", "default",
+                                  TestFileUtils.createTempDir( "test-remote-repository" ).toURL().toString() );
         session = new TestRepositorySystemSession();
         layout = new DefaultLayout();
     }
@@ -56,7 +57,7 @@ public class ArtifactWorkerTest
     public void cleanup()
         throws Exception
     {
-        TestFileUtils.delete( new File( "target/test-repository" ) );
+        TestFileUtils.delete( new File( new URI( repository.getUrl() ) ) );
     }
 
     @Test
@@ -99,8 +100,7 @@ public class ArtifactWorkerTest
         worker.setFileProcessor( TestFileProcessor.INSTANCE );
         worker.run();
 
-        file.delete();
-
+        TestFileUtils.delete( file );
         if ( transfer.getException() != null )
         {
             throw transfer.getException();
@@ -111,15 +111,11 @@ public class ArtifactWorkerTest
     public void testMetadataTransfer()
         throws IOException, MetadataTransferException
     {
-        File file = File.createTempFile( "ArtifactWorkerTest", ".jar" );
-        file.deleteOnExit();
-        FileWriter w = new FileWriter( file );
         String expectedContent = "Dies ist ein Test.";
-        w.write( expectedContent );
-        w.close();
+        File srcFile = TestFileUtils.createTempFile( expectedContent );
 
         DefaultMetadata metadata = new DefaultMetadata( "test", "artId1", "1", "jar", Nature.RELEASE_OR_SNAPSHOT );
-        MetadataUpload up = new MetadataUpload( metadata, file );
+        MetadataUpload up = new MetadataUpload( metadata, srcFile );
         FileRepositoryWorker worker = new FileRepositoryWorker( up, repository, session );
         worker.setFileProcessor( TestFileProcessor.INSTANCE );
         worker.run();
@@ -128,12 +124,12 @@ public class ArtifactWorkerTest
             throw up.getException();
         }
 
-        file = File.createTempFile( "ArtifactWorkerTest", ".jar" );
-        file.deleteOnExit();
+        File targetFile = TestFileUtils.createTempFile( "" );
+        TestFileUtils.delete( targetFile );
 
         MetadataDownload down = new MetadataDownload();
         down.setChecksumPolicy( RepositoryPolicy.CHECKSUM_POLICY_FAIL );
-        down.setMetadata( metadata ).setFile( file );
+        down.setMetadata( metadata ).setFile( targetFile );
         worker = new FileRepositoryWorker( down, repository, session );
         worker.setFileProcessor( TestFileProcessor.INSTANCE );
         worker.run();
@@ -143,9 +139,9 @@ public class ArtifactWorkerTest
             throw down.getException();
         }
 
-        assertTrue( file.exists() );
+        assertTrue( "download did not happen.", targetFile.exists() );
 
-        assertContentEquals( file, expectedContent );
+        assertContentEquals( targetFile, expectedContent );
     }
 
     private void assertContentEquals( File file, String expectedContent )
@@ -161,16 +157,19 @@ public class ArtifactWorkerTest
     public void testDecodeURL()
         throws ArtifactTransferException, IOException
     {
-        String repoDir = "target/%72%65%70%6F";
+        String enc = "%72%65%70%6F";
+        File dir = TestFileUtils.createTempDir();
+        String repoDir = dir.toURI().toURL().toString() + "/" + enc;
         repository = new RemoteRepository( "test", "default", repoDir );
 
         Artifact artifact = new DefaultArtifact( "gid", "aid", "jar", "ver" );
         String content = "test content";
         uploadArtifact( artifact, content );
 
-        File repo = new File( "target/repo" );
-        assertTrue( repo.exists() );
-        assertTrue( new File( repo, layout.getPath( artifact ) ).exists() );
+        File repo = new File( dir, "repo" );
+        assertTrue( "Repository from encoded URL does not exist.", repo.exists() );
+        assertTrue( "Artifact was not uploaded correctly.", new File( repo, layout.getPath( artifact ) ).exists() );
+        TestFileUtils.delete( dir );
     }
 
 }

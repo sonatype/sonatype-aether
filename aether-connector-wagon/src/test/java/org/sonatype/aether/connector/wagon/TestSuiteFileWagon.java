@@ -9,6 +9,7 @@ package org.sonatype.aether.connector.wagon;
  *******************************************************************************/
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Map;
 
@@ -41,7 +42,7 @@ public class TestSuiteFileWagon
     private static final class FileWagonConnectorTestSetup
         extends AbstractConnectorTestSetup
     {
-        private File basedir = new File( "target/test-filewagon." + hashCode() );
+        private File basedir;
 
         public RepositoryConnectorFactory factory()
         {
@@ -83,9 +84,11 @@ public class TestSuiteFileWagon
         }
 
         public RemoteRepository before( RepositorySystemSession session, Map<String, Object> context )
+            throws IOException
         {
             try
             {
+                basedir = TestFileUtils.createTempDir( getClass().getSimpleName() );
                 return new RemoteRepository( "test-filewagon", "default",
                                              basedir.toURI().toURL().toString() );
             }

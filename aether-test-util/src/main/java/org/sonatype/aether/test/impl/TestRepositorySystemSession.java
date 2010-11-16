@@ -8,6 +8,7 @@ package org.sonatype.aether.test.impl;
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class TestRepositorySystemSession
 
     private ProxySelector proxySelector = new TestProxySelector();
 
-    private LocalRepositoryManager localRepositoryManager = new TestLocalRepositoryManager();
+    private LocalRepositoryManager localRepositoryManager;
 
     private boolean transferErrorCaching;
 
@@ -59,6 +60,13 @@ public class TestRepositorySystemSession
     private DependencyManager dependencyManager;
 
     private Map<String, Object> configProperties = new HashMap<String, Object>();
+
+    public TestRepositorySystemSession()
+        throws IOException
+    {
+        super();
+        localRepositoryManager = new TestLocalRepositoryManager();
+    }
 
     public TransferListener getTransferListener()
     {

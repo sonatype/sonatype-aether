@@ -246,8 +246,8 @@ public abstract class ConnectorTestSuite
 
         Artifact artifact = new StubArtifact( "gid:aid:ext:ver" );
         ArtifactUpload upA = new ArtifactUpload( artifact, emptyFile );
-        String dir = "target/con-test" + hashCode();
-        File downAFile = new File( dir , "/downA.file" );
+        File dir = TestFileUtils.createTempDir( "con-test" );
+        File downAFile = new File( dir, "downA.file" );
         downAFile.deleteOnExit();
         ArtifactDownload downA = new ArtifactDownload( artifact, "", downAFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
 
@@ -255,7 +255,7 @@ public abstract class ConnectorTestSuite
         Metadata metadata =
             new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT );
         MetadataUpload upM = new MetadataUpload( metadata, emptyFile );
-        File downMFile = new File( dir, "/downM.file" );
+        File downMFile = new File( dir, "downM.file" );
         downMFile.deleteOnExit();
         MetadataDownload downM = new MetadataDownload( metadata, "", downMFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
 
@@ -286,14 +286,15 @@ public abstract class ConnectorTestSuite
         Artifact artifact = new StubArtifact( "gid:aid:ext:ver" );
         ArtifactUpload upA = new ArtifactUpload( artifact, file );
 
-        File downAFile = new File( "target/con-test/downA.file" );
+        File dir = TestFileUtils.createTempDir( "con-test" );
+        File downAFile = new File( dir, "downA.file" );
         downAFile.deleteOnExit();
         ArtifactDownload downA = new ArtifactDownload( artifact, "", downAFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
 
         Metadata metadata =
             new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT );
         MetadataUpload upM = new MetadataUpload( metadata, file );
-        File downMFile = new File( "target/con-test/downM.file" );
+        File downMFile = new File( dir, "downM.file" );
         downMFile.deleteOnExit();
         MetadataDownload downM = new MetadataDownload( metadata, "", downMFile, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
 

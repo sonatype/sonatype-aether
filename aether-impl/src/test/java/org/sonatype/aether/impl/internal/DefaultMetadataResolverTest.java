@@ -12,6 +12,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -56,7 +57,8 @@ public class DefaultMetadataResolverTest
         session = new TestRepositorySystemSession();
         manager = new StubRemoteRepositoryManager();
         resolver = new DefaultMetadataResolver( NullLogger.INSTANCE, new StaticUpdateCheckManager( true ), manager );
-        repository = new RemoteRepository( "test-DMRT", "default", new File( "target/test-DMRT" ).toURI().toURL().toString() );
+        repository =
+            new RemoteRepository( "test-DMRT", "default", TestFileUtils.createTempDir().toURI().toURL().toString() );
         metadata = new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT );
         connector = new RecordingRepositoryConnector();
         manager.setConnector( connector );
@@ -66,7 +68,7 @@ public class DefaultMetadataResolverTest
     public void teardown()
         throws Exception
     {
-        TestFileUtils.delete( new File( "target/test-DMRT" ) );
+        TestFileUtils.delete( new File( new URI( repository.getUrl() ) ) );
         TestFileUtils.delete( session.getLocalRepository().getBasedir() );
     }
 

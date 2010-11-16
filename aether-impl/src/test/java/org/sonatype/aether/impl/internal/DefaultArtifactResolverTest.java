@@ -72,6 +72,7 @@ public class DefaultArtifactResolverTest
 
     @Before
     public void setup()
+        throws IOException
     {
         UpdateCheckManager updateCheckManager = new StaticUpdateCheckManager( true );
         List<LocalRepositoryMaintainer> localRepositoryMaintainers = null;

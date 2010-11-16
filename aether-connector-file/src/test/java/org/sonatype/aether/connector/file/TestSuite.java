@@ -9,6 +9,7 @@ package org.sonatype.aether.connector.file;
  *******************************************************************************/
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public class TestSuite
     private static final class FileConnectorTestSetup
         extends AbstractConnectorTestSetup
     {
-        private File repoFile = new File( "target/test-repo." + hashCode() );
+        private File repoFile;
 
         public RepositoryConnectorFactory factory()
         {
@@ -48,8 +49,10 @@ public class TestSuite
         }
 
         public RemoteRepository before( RepositorySystemSession session, Map<String, Object> context )
+            throws IOException
         {
             RemoteRepository repo = null;
+            repoFile = TestFileUtils.createTempDir( "test-repo" );
             try
             {
                 repo =

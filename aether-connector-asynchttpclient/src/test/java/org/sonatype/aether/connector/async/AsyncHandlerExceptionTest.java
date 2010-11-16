@@ -8,6 +8,8 @@ package org.sonatype.aether.connector.async;
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -21,6 +23,7 @@ import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertNull;
@@ -29,12 +32,21 @@ import static org.junit.Assert.assertTrue;
 public class AsyncHandlerExceptionTest
 {
 
+    private File baseDir;
+
+    @Before
+    public void setUp()
+        throws IOException
+    {
+        baseDir = TestFileUtils.createTempDir( getClass().getSimpleName() );
+    }
+
     @Test
     public void testIt()
         throws Exception
     {
         HttpServer server = new HttpServer();
-        server.addResources( "/", "target/http" );
+        server.addResources( "/", baseDir.getAbsolutePath() );
         server.start();
 
         try
@@ -51,10 +63,10 @@ public class AsyncHandlerExceptionTest
                 for ( int i = 0; i < 16; i++ )
                 {
                     System.out.println( "RUN #" + i );
-                    TestFileUtils.delete( new File( "target/http" ) );
+                    TestFileUtils.delete( baseDir );
 
                     ArtifactDownload download =
-                        new ArtifactDownload( artifact, "project", new File( "target/a.jar" ), "ignore" );
+                        new ArtifactDownload( artifact, "project", new File( baseDir, "a.jar" ), "ignore" );
                     System.out.println( "GET" );
                     connector.get( Arrays.asList( download ), null );
                     assertTrue( String.valueOf( download.getException() ),
@@ -79,6 +91,13 @@ public class AsyncHandlerExceptionTest
         {
             server.stop();
         }
+    }
+
+    @After
+    public void tearDown()
+        throws IOException
+    {
+        TestFileUtils.delete( baseDir );
     }
 
     private static class StubLogger

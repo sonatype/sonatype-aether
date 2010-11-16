@@ -33,8 +33,9 @@ public class DefaultFileProcessorTest
 
     @Before
     public void setup()
+        throws IOException
     {
-        targetDir = new File( "target/test-FileProcessor." + hashCode() );
+        targetDir = TestFileUtils.createTempDir( getClass().getSimpleName() );
         fileProcessor = new DefaultFileProcessor();
     }
 
@@ -81,7 +82,7 @@ public class DefaultFileProcessorTest
         throws IOException
     {
         File file = TestFileUtils.createTempFile( "" );
-        File target = new File( "target/testCopyEmptyFile" );
+        File target = new File( targetDir, "testCopyEmptyFile" );
         target.delete();
         fileProcessor.copy( file, target, null );
         assertTrue( "empty file was not copied", target.exists() && target.length() == 0 );
@@ -93,7 +94,7 @@ public class DefaultFileProcessorTest
         throws IOException
     {
         File file = TestFileUtils.createTempFile( "test" );
-        File target = new File( "target/testProgressingChannel" );
+        File target = new File( targetDir, "testProgressingChannel" );
         target.delete();
         final AtomicInteger progressed = new AtomicInteger();
         ProgressListener listener = new ProgressListener()

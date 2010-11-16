@@ -14,6 +14,8 @@ import static org.sonatype.aether.repository.RepositoryPolicy.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -66,8 +68,7 @@ public class DefaultUpdateCheckManagerTest
         TestFileUtils.write( "artifact", artifactFile );
 
         session = new TestRepositorySystemSession();
-        repository =
-            new RemoteRepository( "id", "default", new File( "target/test-DUCM." + hashCode() ).toURL().toString() );
+        repository = new RemoteRepository( "id", "default", TestFileUtils.createTempDir().toURL().toString() );
         manager = new DefaultUpdateCheckManager();
         metadata =
             new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT,
@@ -314,11 +315,13 @@ public class DefaultUpdateCheckManagerTest
 
     @After
     public void teardown()
+        throws IOException, URISyntaxException
     {
         new File( metadata.getFile().getParent(), "resolver-status.properties" ).delete();
         new File( artifact.getFile().getPath() + ".lastUpdated" ).delete();
         metadata.getFile().delete();
         artifact.getFile().delete();
+        TestFileUtils.delete( new File( new URI( repository.getUrl() ) ) );
     }
 
     @Test( expected = IllegalArgumentException.class )
