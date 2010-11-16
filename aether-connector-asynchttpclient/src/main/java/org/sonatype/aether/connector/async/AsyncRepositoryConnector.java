@@ -551,25 +551,20 @@ class AsyncRepositoryConnector
                     public AsyncHandler.STATE onStatusReceived( final HttpResponseStatus status )
                         throws Exception
                     {
-                        try
+                        STATE state = super.onStatusReceived( status );
+                        if ( status.getStatusCode() == 200 )
                         {
-                            if ( status.getStatusCode() == 200 )
+                            fileProcessor.mkdirs( tmp.getParentFile() );
+                            try
                             {
-                                fileProcessor.mkdirs( tmp.getParentFile() );
-                                try
-                                {
-                                    fileOutputStream = new FileOutputStream( tmp );
-                                }
-                                catch ( IOException ex )
-                                {
-                                    return AsyncHandler.STATE.ABORT;
-                                }
+                                fileOutputStream = new FileOutputStream( tmp );
+                            }
+                            catch ( IOException ex )
+                            {
+                                return AsyncHandler.STATE.ABORT;
                             }
                         }
-                        finally
-                        {
-                            return super.onStatusReceived( status );
-                        }
+                        return state;
                     }
 
                     public STATE onBodyPartReceived( final HttpResponseBodyPart content )
@@ -582,11 +577,10 @@ class AsyncRepositoryConnector
                                 byte[] bytes = content.getBodyPartBytes();
                                 fileOutputStream.write( bytes );
                             }
-                            return STATE.CONTINUE;
                         }
                         finally
                         {
-                            super.onBodyPartReceived( content );
+                            return super.onBodyPartReceived( content );
                         }
                     }
 
