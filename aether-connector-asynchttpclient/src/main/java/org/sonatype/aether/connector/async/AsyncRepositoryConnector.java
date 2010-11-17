@@ -570,18 +570,19 @@ class AsyncRepositoryConnector
                     public STATE onBodyPartReceived( final HttpResponseBodyPart content )
                         throws Exception
                     {
-                        try
+                        if ( status() != null && status().getStatusCode() == 200 )
                         {
-                            if ( status() != null && status().getStatusCode() == 200 )
+                            byte[] bytes = content.getBodyPartBytes();
+                            try
                             {
-                                byte[] bytes = content.getBodyPartBytes();
                                 fileOutputStream.write( bytes );
                             }
+                            catch ( IOException ex )
+                            {
+                                return AsyncHandler.STATE.ABORT;
+                            }
                         }
-                        finally
-                        {
-                            return super.onBodyPartReceived( content );
-                        }
+                        return super.onBodyPartReceived( content );
                     }
 
                     @Override
