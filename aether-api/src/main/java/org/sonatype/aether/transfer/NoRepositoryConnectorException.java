@@ -32,6 +32,18 @@ public class NoRepositoryConnectorException
         this.repository = repository;
     }
 
+    public NoRepositoryConnectorException( RemoteRepository repository, Throwable cause )
+    {
+        this( repository, toMessage( repository ), cause );
+    }
+
+    public NoRepositoryConnectorException( RemoteRepository repository, String message, Throwable cause )
+    {
+        super( message, cause );
+
+        this.repository = repository;
+    }
+
     private static String toMessage( RemoteRepository repository )
     {
         if ( repository != null )

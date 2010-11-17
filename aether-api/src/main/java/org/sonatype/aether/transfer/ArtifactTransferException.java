@@ -52,6 +52,14 @@ public class ArtifactTransferException
         this.repository = repository;
     }
 
+    public ArtifactTransferException( Artifact artifact, RemoteRepository repository, String message, Throwable cause )
+    {
+        super( message, cause );
+
+        this.artifact = artifact;
+        this.repository = repository;
+    }
+
     public Artifact getArtifact()
     {
         return artifact;

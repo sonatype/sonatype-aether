@@ -52,6 +52,14 @@ public class MetadataTransferException
         this.repository = repository;
     }
 
+    public MetadataTransferException( Metadata metadata, RemoteRepository repository, String message, Throwable cause )
+    {
+        super( message, cause );
+
+        this.metadata = metadata;
+        this.repository = repository;
+    }
+
     public Metadata getMetadata()
     {
         return metadata;

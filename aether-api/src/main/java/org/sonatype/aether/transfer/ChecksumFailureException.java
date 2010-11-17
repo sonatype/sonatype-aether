@@ -37,7 +37,13 @@ public class ChecksumFailureException
 
     public ChecksumFailureException( Throwable cause )
     {
-        super( "Checksum validation failed, could not read expected checksum" + getMessage( ": ", cause ) );
+        super( "Checksum validation failed, could not read expected checksum" + getMessage( ": ", cause ), cause );
+        expected = actual = "";
+    }
+
+    public ChecksumFailureException( String message, Throwable cause )
+    {
+        super( message, cause );
         expected = actual = "";
     }
 
