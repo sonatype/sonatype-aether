@@ -291,7 +291,11 @@ class WagonRepositoryConnector
         int connectTimeout =
             ConfigurationProperties.get( session, ConfigurationProperties.CONNECT_TIMEOUT,
                                          ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
-        wagon.setTimeout( Math.max( connectTimeout, 0 ) );
+        int requestTimeout =
+            ConfigurationProperties.get( session, ConfigurationProperties.REQUEST_TIMEOUT,
+                                         ConfigurationProperties.DEFAULT_REQUEST_TIMEOUT );
+
+        wagon.setTimeout( Math.max( Math.max( connectTimeout, requestTimeout ), 0 ) );
 
         wagon.setInteractive( ConfigurationProperties.get( session, ConfigurationProperties.INTERACTIVE,
                                                            ConfigurationProperties.DEFAULT_INTERACTIVE ) );
