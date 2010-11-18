@@ -10,7 +10,8 @@ package org.sonatype.aether.impl;
 
 /**
  * Performs housekeeping tasks in response to updates to the local repository. This provides an extension point to
- * integrators to performs things like updating indexes.
+ * integrators to perform things like updating indexes. <em>Note:</em> Implementors are strongly advised to inherit
+ * from {@link AbstractLocalRepositoryMaintainer} instead of directly implementing this interface.
  * 
  * @author Benjamin Bentmann
  */
