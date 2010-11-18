@@ -14,7 +14,7 @@ http://www.eclipse.org/legal/epl-v10.html
   <parent>
     <groupId>org.sonatype.aether</groupId>
     <artifactId>aether-parent</artifactId>
-    <version>1.8-SNAPSHOT</version>
+    <version>1.8</version>
   </parent>
 
   <artifactId>aether-connector-wagon</artifactId>
