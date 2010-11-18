@@ -15,7 +15,7 @@ import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
-import org.sonatype.aether.spi.log.Logger;
+import org.sonatype.aether.test.impl.SysoutLogger;
 import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubArtifact;
@@ -55,7 +55,7 @@ public class AsyncHandlerExceptionTest
             RepositorySystemSession session = new DefaultRepositorySystemSession();
 
             AsyncRepositoryConnector connector =
-                new AsyncRepositoryConnector( repo, session, new TestFileProcessor(), new StubLogger() );
+                new AsyncRepositoryConnector( repo, session, new TestFileProcessor(), new SysoutLogger() );
 
             try
             {
@@ -98,50 +98,6 @@ public class AsyncHandlerExceptionTest
         throws IOException
     {
         TestFileUtils.delete( baseDir );
-    }
-
-    private static class StubLogger
-        implements Logger
-    {
-
-        public void debug( String msg )
-        {
-            debug( msg, null );
-        }
-
-        public void debug( String msg, Throwable t )
-        {
-            System.out.println( msg );
-            if ( t != null )
-            {
-                t.printStackTrace( System.out );
-            }
-        }
-
-        public boolean isDebugEnabled()
-        {
-            return true;
-        }
-
-        public void warn( String msg )
-        {
-            debug( msg, null );
-        }
-
-        public void warn( String msg, Throwable t )
-        {
-            System.out.println( msg );
-            if ( t != null )
-            {
-                t.printStackTrace( System.out );
-            }
-        }
-
-        public boolean isWarnEnabled()
-        {
-            return true;
-        }
-
     }
 
 }
