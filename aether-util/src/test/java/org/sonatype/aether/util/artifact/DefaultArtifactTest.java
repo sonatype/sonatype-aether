@@ -42,6 +42,13 @@ public class DefaultArtifactTest
         assertEquals( "ext", a.getExtension() );
         assertEquals( "", a.getClassifier() );
 
+        a = new DefaultArtifact( "org.gid:foo-bar:jar:1.1-20101116.150650-3" );
+        assertEquals( "org.gid", a.getGroupId() );
+        assertEquals( "foo-bar", a.getArtifactId() );
+        assertEquals( "1.1-20101116.150650-3", a.getVersion() );
+        assertEquals( "jar", a.getExtension() );
+        assertEquals( "", a.getClassifier() );
+
         a = new DefaultArtifact( "gid:aid:ext:cls:ver" );
         assertEquals( "gid", a.getGroupId() );
         assertEquals( "aid", a.getArtifactId() );
@@ -79,7 +86,7 @@ public class DefaultArtifactTest
 
         Artifact a = new DefaultArtifact( coords );
         assertNotSame( a, a.setFile( new File( "file" ) ) );
-        assertNotSame( a, a.setVersion( "otherVersion" ));
+        assertNotSame( a, a.setVersion( "otherVersion" ) );
         assertNotSame( a, a.setProperties( map ) );
     }
 
@@ -95,7 +102,7 @@ public class DefaultArtifactTest
         assertEquals( "typeId", a.getProperties().get( ArtifactProperties.TYPE ) );
         assertEquals( "true", a.getProperties().get( ArtifactProperties.INCLUDES_DEPENDENCIES ) );
         assertEquals( "true", a.getProperties().get( ArtifactProperties.CONSTITUTES_BUILD_PATH ) );
-        
+
         a = new DefaultArtifact( "gid", "aid", "cls", "ext", "ver", null, type );
         assertEquals( "ext", a.getExtension() );
         assertEquals( "cls", a.getClassifier() );
@@ -114,7 +121,7 @@ public class DefaultArtifactTest
         assertEquals( "true", a.getProperties().get( ArtifactProperties.INCLUDES_DEPENDENCIES ) );
         assertEquals( "true", a.getProperties().get( ArtifactProperties.CONSTITUTES_BUILD_PATH ) );
         assertEquals( "someNonStandardProperty", a.getProperties().get( "someNonStandardProperty" ) );
-        
+
         props = new HashMap<String, String>();
         props.put( "someNonStandardProperty", "someNonStandardProperty" );
         props.put( ArtifactProperties.CONSTITUTES_BUILD_PATH, "rubbish" );
