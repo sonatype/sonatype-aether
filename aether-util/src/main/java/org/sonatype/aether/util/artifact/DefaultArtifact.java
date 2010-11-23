@@ -67,7 +67,7 @@ public final class DefaultArtifact
         Matcher m = p.matcher( coords );
         if ( !m.matches() )
         {
-            throw new IllegalArgumentException( "Bad artifact coordinates"
+            throw new IllegalArgumentException( "Bad artifact coordinates " + coords
                 + ", expected format is <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>" );
         }
         groupId = m.group( 1 );
