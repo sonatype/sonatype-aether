@@ -506,7 +506,7 @@ class AsyncRepositoryConnector
                             }
                             else
                             {
-                                exception = new Exception( t.getCause() );
+                                exception = new Exception( t );
                             }
                             fireTransferFailed();
                         }
@@ -771,7 +771,7 @@ class AsyncRepositoryConnector
                     }
                     else
                     {
-                        exception = new Exception( t.getCause() );
+                        exception = new Exception( t );
                     }
                     if ( listener != null )
                     {
@@ -935,7 +935,7 @@ class AsyncRepositoryConnector
                                 }
                                 else
                                 {
-                                    exception = new Exception( t.getCause() );
+                                    exception = new Exception( t );
                                 }
 
                                 if ( listener != null )
