@@ -20,6 +20,7 @@ import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
+import org.sonatype.aether.test.impl.RecordingTransferListener;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.tests.http.runner.junit.ConfigurationRunner;
@@ -91,6 +92,9 @@ public class GetTest
     public void testDownloadCorrupted()
         throws Exception
     {
+        RecordingTransferListener transferListener = new RecordingTransferListener();
+        session().setTransferListener( transferListener );
+
         addDelivery( "gid/aid/version/aid-version-classifier.extension", "artifact" );
         addDelivery( "gid/aid/version/aid-version-classifier.extension.sha1", "foo" );
         addDelivery( "gid/aid/version/aid-version-classifier.extension.md5", "bar" );
@@ -132,6 +136,23 @@ public class GetTest
         assertNull( String.valueOf( down.getException() ), down.getException() );
         TestFileUtils.assertContent( "foo", a.getFile() );
         TestFileUtils.assertContent( "artifact", f );
+    }
+
+    @Test
+    public void testDownloadArtifactWhoseSizeExceedsMaxHeapSize()
+        throws Exception
+    {
+        long bytes = Runtime.getRuntime().maxMemory() * 5 / 4;
+        generate.addContent( "gid/aid/version/aid-version-classifier.extension", bytes );
+
+        File f = TestFileUtils.createTempFile( "" );
+        Artifact a = artifact();
+
+        ArtifactDownload down = new ArtifactDownload( a, null, f, RepositoryPolicy.CHECKSUM_POLICY_IGNORE );
+        connector().get( Arrays.asList( down ), null );
+        connector().close();
+
+        assertEquals( bytes, f.length() );
     }
 
     @Test( expected = IllegalStateException.class )

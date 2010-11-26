@@ -24,8 +24,6 @@ import org.sonatype.aether.transfer.TransferResource;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -41,9 +39,6 @@ class CompletionHandler
     implements ProgressAsyncHandler<Response>
 {
     private final Logger logger;
-
-    private final Collection<HttpResponseBodyPart> bodies =
-        Collections.synchronizedCollection( new ArrayList<HttpResponseBodyPart>() );
 
     private HttpResponseStatus status;
 
@@ -104,7 +99,6 @@ class CompletionHandler
     public STATE onBodyPartReceived( final HttpResponseBodyPart content )
         throws Exception
     {
-        bodies.add( content );
         try
         {
             fireTransferProgressed( content.getBodyPartBytes() );
@@ -162,7 +156,8 @@ class CompletionHandler
         {
             throw new IllegalStateException( "Connection timed out" );
         }
-        return onCompleted( httpClient.getProvider().prepareResponse( status, headers, bodies ) );
+        return onCompleted( httpClient.getProvider().prepareResponse( status, headers,
+                                                                      Collections.<HttpResponseBodyPart> emptyList() ) );
     }
 
     /**
@@ -237,11 +232,6 @@ class CompletionHandler
     void fireTransferSucceeded( final Response response )
         throws IOException
     {
-        if ( response.hasResponseBody() )
-        {
-            response.getResponseBody().getBytes( "UTF-8" );
-        }
-
         final long bytesTransferred = byteTransfered.get();
 
         final TransferEvent transferEvent = new AsyncTransferEvent()

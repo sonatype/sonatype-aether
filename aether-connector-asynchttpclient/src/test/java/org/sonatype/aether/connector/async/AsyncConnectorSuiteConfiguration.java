@@ -24,7 +24,6 @@ import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.spi.log.NullLogger;
-import org.sonatype.aether.test.impl.RecordingTransferListener;
 import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
@@ -55,11 +54,11 @@ public class AsyncConnectorSuiteConfiguration
 
     private Metadata metadata;
 
-    protected RecordingTransferListener transferListener;
-
     protected Expect expect;
 
     protected Provide provide = new Provide();
+
+    protected Generate generate;
 
     private RepositoryConnector connector;
 
@@ -77,9 +76,6 @@ public class AsyncConnectorSuiteConfiguration
         this.artifact = new StubArtifact( "gid", "aid", "classifier", "extension", "version", null );
         this.metadata =
             new StubMetadata( "gid", "aid", "version", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT, null );
-
-        transferListener = new RecordingTransferListener();
-        session.setTransferListener( transferListener );
 
         connector = null;
 
@@ -209,7 +205,8 @@ public class AsyncConnectorSuiteConfiguration
         super.configureProvider( provider );
         expect = new Expect();
         provide = new Provide();
-        provider.addBehaviour( "/repo", expect, provide );
+        generate = new Generate();
+        provider.addBehaviour( "/repo", generate, expect, provide );
     }
 
     protected void addDelivery( String path, byte[] content )
