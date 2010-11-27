@@ -88,6 +88,7 @@ public class AsyncConnectorSuiteConfiguration
     {
         super.after();
         connector().close();
+        TestFileUtils.deleteTempFiles();
     }
 
     protected RepositoryConnectorFactory factory()

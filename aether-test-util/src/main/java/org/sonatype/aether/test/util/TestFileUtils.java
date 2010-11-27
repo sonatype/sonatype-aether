@@ -46,6 +46,12 @@ public class TestFileUtils
         } );
     }
 
+    public static void deleteTempFiles()
+        throws IOException
+    {
+        delete( TMP );
+    }
+
     public static File createTempFile( String contents )
         throws IOException
     {
@@ -265,7 +271,6 @@ public class TestFileUtils
         mkdirs( tmpFile );
 
         return tmpFile;
-
     }
 
 }
