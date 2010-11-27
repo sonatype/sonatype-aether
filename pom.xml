@@ -203,6 +203,9 @@ http://www.eclipse.org/legal/epl-v10.html
           <version>2.5</version>
           <configuration>
             <argLine>-Xmx64m</argLine>
+            <systemPropertyVariables>
+              <java.io.tmpdir>${project.build.directory}/surefire-tmp</java.io.tmpdir>
+            </systemPropertyVariables>
           </configuration>
         </plugin>
         <plugin>
