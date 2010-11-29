@@ -876,10 +876,7 @@ class AsyncRepositoryConnector
         private void rename( File from, File to )
             throws IOException
         {
-            if ( !from.renameTo( to ) )
-            {
-                fileProcessor.copy( from, to, null );
-            }
+            fileProcessor.move( from, to );
         }
     }
 
