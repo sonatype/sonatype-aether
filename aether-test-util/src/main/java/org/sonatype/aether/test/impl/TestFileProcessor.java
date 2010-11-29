@@ -155,6 +155,8 @@ public class TestFileProcessor
         {
             copy( source, target, null );
 
+            target.setLastModified( source.lastModified() );
+
             source.delete();
         }
     }

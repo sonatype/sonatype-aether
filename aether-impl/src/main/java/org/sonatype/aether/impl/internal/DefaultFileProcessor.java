@@ -169,6 +169,8 @@ public class DefaultFileProcessor
         {
             copy( source, target, null );
 
+            target.setLastModified( source.lastModified() );
+
             source.delete();
         }
     }
