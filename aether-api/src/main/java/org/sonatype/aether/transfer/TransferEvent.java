@@ -66,7 +66,9 @@ public interface TransferEvent
     /**
      * Gets the byte buffer holding the transferred bytes since the last event. A listener must assume this buffer to be
      * owned by the event source and must not change any byte in this buffer. Also, the buffer is only valid for the
-     * duration of the event, i.e. the next event might reuse the same buffer (with updated contents).
+     * duration of the event callback, i.e. the next event might reuse the same buffer (with updated contents).
+     * Therefore, if the actual event processing is deferred, the byte buffer would have to be cloned to create an
+     * immutable snapshot of its contents.
      * 
      * @return The (read-only) byte buffer or {@code null} if not applicable to the event, i.e. if the event type is not
      *         {@link EventType#PROGRESSED}.
