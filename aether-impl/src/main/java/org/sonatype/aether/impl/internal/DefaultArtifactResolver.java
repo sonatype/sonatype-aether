@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositoryEvent.EventType;
+import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
@@ -275,7 +276,7 @@ public class DefaultArtifactResolver
                 result.setRepository( lrm.getRepository() );
                 try
                 {
-                    artifact = artifact.setFile( getFile( artifact, local.getFile() ) );
+                    artifact = artifact.setFile( getFile( session, artifact, local.getFile() ) );
                     result.setArtifact( artifact );
                     artifactResolved( session, artifact, lrm.getRepository(), null );
                 }
@@ -444,7 +445,7 @@ public class DefaultArtifactResolver
                     Artifact artifact = download.getArtifact();
                     try
                     {
-                        artifact = artifact.setFile( getFile( artifact, download.getFile() ) );
+                        artifact = artifact.setFile( getFile( session, artifact, download.getFile() ) );
                         item.result.setArtifact( artifact );
                     }
                     catch ( ArtifactTransferException e )
@@ -502,10 +503,11 @@ public class DefaultArtifactResolver
         return results;
     }
 
-    private File getFile( Artifact artifact, File file )
+    private File getFile( RepositorySystemSession session, Artifact artifact, File file )
         throws ArtifactTransferException
     {
-        if ( artifact.isSnapshot() && !artifact.getVersion().equals( artifact.getBaseVersion() ) )
+        if ( artifact.isSnapshot() && !artifact.getVersion().equals( artifact.getBaseVersion() )
+            && !ConfigurationProperties.get( session, "aether.artifactResolver.noSnapshotNormalization", false ) )
         {
             String name = file.getName().replace( artifact.getVersion(), artifact.getBaseVersion() );
             File dst = new File( file.getParent(), name );
