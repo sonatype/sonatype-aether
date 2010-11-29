@@ -56,10 +56,12 @@ import org.sonatype.aether.util.layout.RepositoryLayout;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -492,7 +494,7 @@ class AsyncRepositoryConnector
 
                 completionHandler = new CompletionHandler( transferResource, httpClient, logger, RequestType.GET )
                 {
-                    private FileOutputStream fileOutputStream;
+                    private OutputStream fileOutputStream;
 
                     @Override
                     public void onThrowable( Throwable t )
@@ -557,7 +559,7 @@ class AsyncRepositoryConnector
                             fileProcessor.mkdirs( tmp.getParentFile() );
                             try
                             {
-                                fileOutputStream = new FileOutputStream( tmp );
+                                fileOutputStream = new BufferedOutputStream( new FileOutputStream( tmp ) );
                             }
                             catch ( IOException ex )
                             {
@@ -801,7 +803,7 @@ class AsyncRepositoryConnector
                         return false;
                     }
 
-                    FileOutputStream fs = new FileOutputStream( tmp );
+                    OutputStream fs = new BufferedOutputStream( new FileOutputStream( tmp ) );
                     try
                     {
                         InputStream is = response.getResponseBodyAsStream();
