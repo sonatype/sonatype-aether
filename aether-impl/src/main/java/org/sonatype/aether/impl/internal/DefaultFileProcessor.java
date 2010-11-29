@@ -8,11 +8,13 @@ package org.sonatype.aether.impl.internal;
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
+import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 import org.codehaus.plexus.component.annotations.Component;
@@ -110,14 +112,14 @@ public class DefaultFileProcessor
         long total = 0;
 
         FileInputStream fis = null;
-        FileOutputStream fos = null;
+        OutputStream fos = null;
         try
         {
             fis = new FileInputStream( source );
 
             mkdirs( target.getParentFile() );
 
-            fos = new FileOutputStream( target );
+            fos = new BufferedOutputStream( new FileOutputStream( target ) );
 
             ByteBuffer buffer = ByteBuffer.allocate( 1024 * 32 );
             byte[] array = buffer.array();
