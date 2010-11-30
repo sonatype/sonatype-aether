@@ -25,8 +25,8 @@ http://www.eclipse.org/legal/epl-v10.html
   </description>
 
   <properties>
-    <mavenVersion>3.0</mavenVersion>
-    <wagonVersion>1.0-beta-6</wagonVersion>
+    <mavenVersion>3.0.1</mavenVersion>
+    <wagonVersion>1.0-beta-7</wagonVersion>
   </properties>
 
   <dependencies>
@@ -77,6 +77,10 @@ http://www.eclipse.org/legal/epl-v10.html
         <exclusion>
           <groupId>nekohtml</groupId>
           <artifactId>xercesMinimal</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
