@@ -18,8 +18,6 @@ import com.ning.http.client.ProxyServer;
 import com.ning.http.client.ProxyServer.Protocol;
 import com.ning.http.client.Realm;
 import com.ning.http.client.Response;
-import com.ning.http.client.logging.LogManager;
-import com.ning.http.client.logging.LoggerProvider;
 import com.ning.http.client.providers.netty.NettyAsyncHttpProvider;
 
 import org.sonatype.aether.ConfigurationProperties;
@@ -206,84 +204,6 @@ class AsyncRepositoryConnector
 
         configBuilder.setProxyServer( getProxy( repository ) );
         configBuilder.setRealm( getRealm( repository ) );
-
-        // Brige AsyncHttpClient logger
-        LogManager.setProvider( new LoggerProvider()
-        {
-
-            public com.ning.http.client.logging.Logger getLogger( final Class<?> clazz )
-            {
-                return new com.ning.http.client.logging.Logger()
-                {
-
-                    public boolean isDebugEnabled()
-                    {
-                        return logger.isDebugEnabled();
-                    }
-
-                    public void debug( final String msg, final Object... msgArgs )
-                    {
-                        logger.debug( String.format( msg, msgArgs ) );
-                    }
-
-                    public void debug( final Throwable t )
-                    {
-                        logger.debug( "", t );
-                    }
-
-                    public void debug( final Throwable t, final String msg, final Object... msgArgs )
-                    {
-                        logger.debug( String.format( msg, msgArgs ), t );
-                    }
-
-                    public void info( final String msg, final Object... msgArgs )
-                    {
-                        logger.debug( String.format( msg, msgArgs ) );
-                    }
-
-                    public void info( final Throwable t )
-                    {
-                        logger.debug( "", t );
-                    }
-
-                    public void info( final Throwable t, final String msg, final Object... msgArgs )
-                    {
-                        logger.debug( String.format( msg, msgArgs ), t );
-                    }
-
-                    public void warn( final String msg, final Object... msgArgs )
-                    {
-                        logger.debug( String.format( msg, msgArgs ) );
-                    }
-
-                    public void warn( final Throwable t )
-                    {
-                        logger.debug( "", t );
-                    }
-
-                    public void warn( final Throwable t, final String msg, final Object... msgArgs )
-                    {
-                        logger.debug( String.format( msg, msgArgs ), t );
-                    }
-
-                    public void error( final String msg, final Object... msgArgs )
-                    {
-                        logger.debug( String.format( msg, msgArgs ) );
-
-                    }
-
-                    public void error( final Throwable t )
-                    {
-                        logger.debug( "", t );
-                    }
-
-                    public void error( final Throwable t, final String msg, final Object... msgArgs )
-                    {
-                        logger.debug( String.format( msg, msgArgs ), t );
-                    }
-                };
-            }
-        } );
 
         return configBuilder.build();
     }
