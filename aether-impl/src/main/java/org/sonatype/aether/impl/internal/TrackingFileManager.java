@@ -16,8 +16,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.Map;
 import java.util.Properties;
@@ -89,22 +87,23 @@ class TrackingFileManager
                 return props;
             }
 
-            FileChannel channel = null;
+            RandomAccessFile raf = null;
             FileLock lock = null;
             try
             {
-                channel = new RandomAccessFile( file, "rw" ).getChannel();
-                lock = channel.lock( 0, Math.max( 1, channel.size() ), false );
+                raf = new RandomAccessFile( file, "rw" );
+                lock = raf.getChannel().lock( 0, Math.max( 1, raf.length() ), false );
 
                 if ( file.canRead() )
                 {
                     logger.debug( "Reading resolution tracking file " + file );
-                    ByteBuffer buffer = ByteBuffer.allocate( (int) channel.size() );
 
-                    channel.read( buffer );
-                    buffer.flip();
+                    byte[] buffer = new byte[(int) raf.length()];
 
-                    ByteArrayInputStream stream = new ByteArrayInputStream( buffer.array() );
+                    raf.readFully( buffer );
+
+                    ByteArrayInputStream stream = new ByteArrayInputStream( buffer );
+
                     props.load( stream );
                 }
 
@@ -126,9 +125,9 @@ class TrackingFileManager
                 props.store( stream,
                              "NOTE: This is an internal implementation file, its format can be changed without prior notice." );
 
-                channel.position( 0 );
-                channel.write( ByteBuffer.wrap( stream.toByteArray() ) );
-                channel.truncate( channel.position() );
+                raf.seek( 0 );
+                raf.write( stream.toByteArray() );
+                raf.setLength( raf.getFilePointer() );
             }
             catch ( IOException e )
             {
@@ -137,7 +136,7 @@ class TrackingFileManager
             finally
             {
                 release( lock, file );
-                close( channel, file );
+                close( raf, file );
             }
         }
 
