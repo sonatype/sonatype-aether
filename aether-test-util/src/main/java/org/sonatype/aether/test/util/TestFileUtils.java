@@ -11,12 +11,12 @@ package org.sonatype.aether.test.util;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
@@ -104,48 +104,41 @@ public class TestFileUtils
         }
     }
 
-    public static long copy( File src, File target )
+    public static long copy( File source, File target )
         throws IOException
     {
-        RandomAccessFile in = null;
-        RandomAccessFile out = null;
-        FileChannel inChannel = null;
-        FileChannel outChannel = null;
+        long total = 0;
+
+        FileInputStream fis = null;
+        OutputStream fos = null;
         try
         {
-            in = new RandomAccessFile( src, "r" );
+            fis = new FileInputStream( source );
 
-            target.getParentFile().mkdirs();
+            mkdirs( target.getParentFile() );
 
-            out = new RandomAccessFile( target, "rw" );
+            fos = new BufferedOutputStream( new FileOutputStream( target ) );
 
-            out.setLength( 0 );
-            long size = in.length();
-
-            // copy large files in chunks to not run into Java Bug 4643189
-            // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4643189
-            // use even smaller chunks to work around bug with SMB shares
-            // http://forums.sun.com/thread.jspa?threadID=439695
-            long chunk = ( 64 * 1024 * 1024 ) - ( 32 * 1024 );
-
-            inChannel = in.getChannel();
-            outChannel = out.getChannel();
-
-            int total = 0;
-            do
+            for ( byte[] buffer = new byte[1024 * 32];; )
             {
-                total += inChannel.transferTo( total, chunk, outChannel );
+                int bytes = fis.read( buffer );
+                if ( bytes < 0 )
+                {
+                    break;
+                }
+
+                fos.write( buffer, 0, bytes );
+
+                total += bytes;
             }
-            while ( total < size );
-            return total;
         }
         finally
         {
-            close( inChannel );
-            close( outChannel );
-            close( in );
-            close( out );
+            close( fis );
+            close( fos );
         }
+
+        return total;
     }
 
     private static void close( Closeable c )

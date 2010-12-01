@@ -10,6 +10,7 @@ package org.sonatype.aether.impl.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -45,12 +46,12 @@ class TrackingFileManager
         synchronized ( getLock( file ) )
         {
             FileLock lock = null;
-            FileChannel channel = null;
+            FileInputStream stream = null;
             try
             {
-                FileInputStream stream = new FileInputStream( file );
-                channel = stream.getChannel();
-                lock = channel.lock( 0, Math.max( 1, channel.size() ), true );
+                stream = new FileInputStream( file );
+
+                lock = stream.getChannel().lock( 0, Math.max( 1, file.length() ), true );
 
                 Properties props = new Properties();
                 props.load( stream );
@@ -68,7 +69,7 @@ class TrackingFileManager
             finally
             {
                 release( lock, file );
-                close( channel, file );
+                close( stream, file );
             }
         }
 
@@ -158,17 +159,17 @@ class TrackingFileManager
         }
     }
 
-    private void close( FileChannel channel, File file )
+    private void close( Closeable closeable, File file )
     {
-        if ( channel != null )
+        if ( closeable != null )
         {
             try
             {
-                channel.close();
+                closeable.close();
             }
             catch ( IOException e )
             {
-                logger.debug( "Error closing file channel for resolution tracking file " + file, e );
+                logger.debug( "Error closing resolution tracking file " + file, e );
             }
         }
     }
