@@ -9,6 +9,7 @@ package org.sonatype.aether.transfer;
  *******************************************************************************/
 
 import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.RemoteRepository;
 
 /**
@@ -17,6 +18,23 @@ import org.sonatype.aether.repository.RemoteRepository;
 public class MetadataNotFoundException
     extends MetadataTransferException
 {
+
+    public MetadataNotFoundException( Metadata metadata, LocalRepository repository )
+    {
+        super( metadata, null, "Could not find metadata " + metadata + getString( " in ", repository ) );
+    }
+
+    private static String getString( String prefix, LocalRepository repository )
+    {
+        if ( repository == null )
+        {
+            return "";
+        }
+        else
+        {
+            return prefix + repository.getId() + " (" + repository.getBasedir() + ")";
+        }
+    }
 
     public MetadataNotFoundException( Metadata metadata, RemoteRepository repository )
     {

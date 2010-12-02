@@ -38,6 +38,7 @@ import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 import org.sonatype.aether.repository.ArtifactRepository;
+import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.LocalRepositoryManager;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.RepositoryPolicy;
@@ -134,7 +135,9 @@ public class DefaultMetadataResolver
 
             if ( repository == null )
             {
-                metadataResolving( session, metadata, session.getLocalRepositoryManager().getRepository() );
+                LocalRepository localRepo = session.getLocalRepositoryManager().getRepository();
+
+                metadataResolving( session, metadata, localRepo );
 
                 File localFile = getFile( session, metadata, null, null );
                 if ( localFile.isFile() )
@@ -144,11 +147,10 @@ public class DefaultMetadataResolver
                 }
                 else
                 {
-                    result.setException( new MetadataNotFoundException( metadata, null ) );
+                    result.setException( new MetadataNotFoundException( metadata, localRepo ) );
                 }
 
-                metadataResolved( session, metadata, session.getLocalRepositoryManager().getRepository(),
-                                  result.getException() );
+                metadataResolved( session, metadata, localRepo, result.getException() );
                 continue;
             }
 
