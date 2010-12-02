@@ -13,7 +13,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.impl.ArtifactDescriptorReader;
 import org.sonatype.aether.impl.internal.DefaultServiceLocator;
 import org.sonatype.aether.resolution.ArtifactDescriptorException;
 import org.sonatype.aether.resolution.ArtifactDescriptorRequest;

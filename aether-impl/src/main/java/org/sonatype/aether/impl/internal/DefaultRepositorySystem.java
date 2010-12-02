@@ -9,8 +9,12 @@ package org.sonatype.aether.impl.internal;
  *******************************************************************************/
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -57,6 +61,8 @@ import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.spi.repository.LocalRepositoryManagerFactory;
+import org.sonatype.aether.transfer.NoLocalRepositoryManagerException;
 import org.sonatype.aether.util.graph.FilteringDependencyVisitor;
 import org.sonatype.aether.util.graph.TreeDependencyVisitor;
 
@@ -67,6 +73,17 @@ import org.sonatype.aether.util.graph.TreeDependencyVisitor;
 public class DefaultRepositorySystem
     implements RepositorySystem, Service
 {
+
+    private static final Comparator<LocalRepositoryManagerFactory> COMPARATOR =
+        new Comparator<LocalRepositoryManagerFactory>()
+        {
+
+            public int compare( LocalRepositoryManagerFactory o1, LocalRepositoryManagerFactory o2 )
+            {
+                return o2.getPriority() - o1.getPriority();
+            }
+
+        };
 
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
@@ -94,6 +111,9 @@ public class DefaultRepositorySystem
 
     @Requirement
     private Deployer deployer;
+
+    @Requirement( role = LocalRepositoryManagerFactory.class )
+    private List<LocalRepositoryManagerFactory> managerFactories = new ArrayList<LocalRepositoryManagerFactory>();
 
     public DefaultRepositorySystem()
     {
@@ -128,6 +148,38 @@ public class DefaultRepositorySystem
         setDependencyCollector( locator.getService( DependencyCollector.class ) );
         setInstaller( locator.getService( Installer.class ) );
         setDeployer( locator.getService( Deployer.class ) );
+        setLocalRepositoryManagerFactories( locator.getServices( LocalRepositoryManagerFactory.class ) );
+    }
+
+    /**
+     * Set the factories to search for a {@link LocalRepositoryManager}.
+     * 
+     * @param factories The factories to use. If {@code null} or empty, use default implementation. See
+     *            {@link #newLocalRepositoryManager(LocalRepository)}.
+     * @return This instance, for chaining.
+     * @see #newLocalRepositoryManager(LocalRepository)
+     */
+    public DefaultRepositorySystem setLocalRepositoryManagerFactories( List<LocalRepositoryManagerFactory> factories )
+    {
+        if ( factories == null )
+        {
+            managerFactories = new ArrayList<LocalRepositoryManagerFactory>( 2 );
+        }
+        else
+        {
+            managerFactories = factories;
+        }
+        return this;
+    }
+
+    public DefaultRepositorySystem addLocalRepositoryManagerFactory( LocalRepositoryManagerFactory factory )
+    {
+        if ( factory == null )
+        {
+            throw new IllegalArgumentException( "Local repository manager factory has not been specified." );
+        }
+        managerFactories.add( factory );
+        return this;
     }
 
     public DefaultRepositorySystem setLogger( Logger logger )
@@ -329,23 +381,87 @@ public class DefaultRepositorySystem
         return deployer.deploy( session, request );
     }
 
+    /**
+     * Return a new local repository manager for the specified local repository. This method will either use
+     * {@link LocalRepositoryManagerFactory}s to dynamically load the appropriate managers, or fallback to the default
+     * implementations if no factories are configured.
+     * 
+     * @see LocalRepositoryManagerFactory#newInstance(LocalRepository)
+     * @see #addLocalRepositoryManagerFactory(LocalRepositoryManagerFactory)
+     * @see #setLocalRepositoryManagerFactories(List)
+     * @see #initService(ServiceLocator)
+     */
     public LocalRepositoryManager newLocalRepositoryManager( LocalRepository localRepository )
     {
         String type = localRepository.getContentType();
         File basedir = localRepository.getBasedir();
 
-        if ( "".equals( type ) || "enhanced".equals( type ) )
-        {
-            return new EnhancedLocalRepositoryManager( basedir ).setLogger( logger );
-        }
-        else if ( "simple".equals( type ) )
-        {
-            return new SimpleLocalRepositoryManager( basedir ).setLogger( logger );
+        if ( managerFactories.isEmpty() )
+        { // use built-in managers
+            if ( "".equals( type ) || "enhanced".equals( type ) )
+            {
+                return new EnhancedLocalRepositoryManager( basedir ).setLogger( logger );
+            }
+            else if ( "simple".equals( type ) )
+            {
+                return new SimpleLocalRepositoryManager( basedir ).setLogger( logger );
+            }
+            else
+            {
+                throw new IllegalArgumentException( "Invalid repository type: " + type );
+            }
         }
         else
         {
-            throw new IllegalArgumentException( "Invalid repository type: " + type );
+            return lookupManager( localRepository );
         }
+    }
+
+    private LocalRepositoryManager lookupManager( LocalRepository localRepository )
+    {
+        List<LocalRepositoryManagerFactory> factories = new ArrayList<LocalRepositoryManagerFactory>( managerFactories );
+        Collections.sort( factories, COMPARATOR );
+
+        for ( LocalRepositoryManagerFactory factory : factories )
+        {
+            try
+            {
+                LocalRepositoryManager connector = factory.newInstance( localRepository );
+
+                if ( logger.isDebugEnabled() )
+                {
+                    StringBuilder buffer = new StringBuilder( 256 );
+                    buffer.append( "Using connector " ).append( connector.getClass().getSimpleName() );
+                    buffer.append( " with priority " ).append( factory.getPriority() );
+                    buffer.append( " for " ).append( localRepository.getBasedir().getAbsolutePath() );
+
+                    logger.debug( buffer.toString() );
+                }
+
+                return connector;
+            }
+            catch ( NoLocalRepositoryManagerException e )
+            {
+                // continue and try next factory
+            }
+        }
+
+        StringBuilder buffer = new StringBuilder( 256 );
+        buffer.append( "No manager available for local repository " );
+        buffer.append( " (" ).append( localRepository.getBasedir() );
+        buffer.append( ") of type " ).append( localRepository.getContentType() );
+        buffer.append( " using the available factories " );
+        for ( ListIterator<LocalRepositoryManagerFactory> it = factories.listIterator(); it.hasNext(); )
+        {
+            LocalRepositoryManagerFactory factory = it.next();
+            buffer.append( factory.getClass().getSimpleName() );
+            if ( it.hasNext() )
+            {
+                buffer.append( ", " );
+            }
+        }
+
+        throw new IllegalArgumentException( buffer.toString(), new NoLocalRepositoryManagerException( localRepository ) );
     }
 
     private void validateSession( RepositorySystemSession session )
