@@ -1,4 +1,4 @@
-package org.sonatype.aether.transfer;
+package org.sonatype.aether.repository;
 
 /*******************************************************************************
  * Copyright (c) 2010 Sonatype, Inc.
@@ -9,7 +9,6 @@ package org.sonatype.aether.transfer;
  *******************************************************************************/
 
 import org.sonatype.aether.RepositoryException;
-import org.sonatype.aether.repository.LocalRepository;
 
 public class NoLocalRepositoryManagerException
     extends RepositoryException

@@ -1,4 +1,4 @@
-package org.sonatype.aether.spi.repository;
+package org.sonatype.aether.spi.localrepo;
 
 /*******************************************************************************
  * Copyright (c) 2010 Sonatype, Inc.
@@ -10,7 +10,7 @@ package org.sonatype.aether.spi.repository;
 
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.LocalRepositoryManager;
-import org.sonatype.aether.transfer.NoLocalRepositoryManagerException;
+import org.sonatype.aether.repository.NoLocalRepositoryManagerException;
 
 /**
  * A factory to create managers for the local repository. A local repository manager needs to keep track of artifacts

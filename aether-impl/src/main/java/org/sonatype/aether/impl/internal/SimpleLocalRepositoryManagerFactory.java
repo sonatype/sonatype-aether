@@ -11,8 +11,8 @@ package org.sonatype.aether.impl.internal;
 import org.codehaus.plexus.component.annotations.Component;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.LocalRepositoryManager;
-import org.sonatype.aether.spi.repository.LocalRepositoryManagerFactory;
-import org.sonatype.aether.transfer.NoLocalRepositoryManagerException;
+import org.sonatype.aether.repository.NoLocalRepositoryManagerException;
+import org.sonatype.aether.spi.localrepo.LocalRepositoryManagerFactory;
 
 /**
  * Creates {@link SimpleLocalRepositoryManager}s for repository type {@code "simple"}. Will not be used for
