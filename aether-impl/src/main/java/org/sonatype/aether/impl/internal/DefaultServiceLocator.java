@@ -27,6 +27,7 @@ import org.sonatype.aether.impl.MetadataResolver;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.spi.io.FileProcessor;
+import org.sonatype.aether.spi.localrepo.LocalRepositoryManagerFactory;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 
@@ -62,6 +63,8 @@ public class DefaultServiceLocator
         addService( RemoteRepositoryManager.class, DefaultRemoteRepositoryManager.class );
         addService( UpdateCheckManager.class, DefaultUpdateCheckManager.class );
         addService( FileProcessor.class, DefaultFileProcessor.class );
+        addService( LocalRepositoryManagerFactory.class, SimpleLocalRepositoryManagerFactory.class );
+        addService( LocalRepositoryManagerFactory.class, EnhancedLocalRepositoryManagerFactory.class );
     }
 
     /**
