@@ -79,7 +79,7 @@ public final class LocalRepository
     @Override
     public String toString()
     {
-        return getBasedir().getAbsolutePath() + " (" + getContentType() + ")";
+        return getBasedir() + " (" + getContentType() + ")";
     }
 
     @Override
