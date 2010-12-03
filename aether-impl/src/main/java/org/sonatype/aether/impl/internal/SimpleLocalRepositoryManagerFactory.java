@@ -15,8 +15,7 @@ import org.sonatype.aether.repository.NoLocalRepositoryManagerException;
 import org.sonatype.aether.spi.localrepo.LocalRepositoryManagerFactory;
 
 /**
- * Creates {@link SimpleLocalRepositoryManager}s for repository type {@code "simple"}. Will not be used for
- * {@code "" (automatic)}.
+ * Creates {@link SimpleLocalRepositoryManager}s for repository type {@code "simple"}.
  * 
  * @author Benjamin Hanzelmann
  */
@@ -28,8 +27,7 @@ public class SimpleLocalRepositoryManagerFactory
     public LocalRepositoryManager newInstance( LocalRepository repository )
         throws NoLocalRepositoryManagerException
     {
-        // ignore empty string ("auto"), always prefer enhanced (see EnhancedLocalRepositoryManager)
-        if ( "simple".equals( repository.getContentType() ) )
+        if ( "".equals( repository.getContentType() ) || "simple".equals( repository.getContentType() ) )
         {
             return new SimpleLocalRepositoryManager( repository.getBasedir() );
         }
@@ -41,7 +39,7 @@ public class SimpleLocalRepositoryManagerFactory
 
     public int getPriority()
     {
-        return 0;
+        return -1;
     }
 
 }

@@ -8,7 +8,6 @@ package org.sonatype.aether.impl.internal;
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -393,28 +392,49 @@ public class DefaultRepositorySystem
      */
     public LocalRepositoryManager newLocalRepositoryManager( LocalRepository localRepository )
     {
-        String type = localRepository.getContentType();
-        File basedir = localRepository.getBasedir();
-
-        if ( managerFactories.isEmpty() )
-        { // use built-in managers
-            if ( "".equals( type ) || "enhanced".equals( type ) )
-            {
-                return new EnhancedLocalRepositoryManager( basedir ).setLogger( logger );
-            }
-            else if ( "simple".equals( type ) )
-            {
-                return new SimpleLocalRepositoryManager( basedir ).setLogger( logger );
-            }
-            else
-            {
-                throw new IllegalArgumentException( "Invalid repository type: " + type );
-            }
-        }
-        else
+        List<LocalRepositoryManagerFactory> factories = new ArrayList<LocalRepositoryManagerFactory>( managerFactories );
+        Collections.sort( factories, COMPARATOR );
+        
+        for ( LocalRepositoryManagerFactory factory : factories )
         {
-            return lookupManager( localRepository );
+            try
+            {
+                LocalRepositoryManager manager = factory.newInstance( localRepository );
+        
+                if ( logger.isDebugEnabled() )
+                {
+                    StringBuilder buffer = new StringBuilder( 256 );
+                    buffer.append( "Using manager " ).append( manager.getClass().getSimpleName() );
+                    buffer.append( " with priority " ).append( factory.getPriority() );
+                    buffer.append( " for " ).append( localRepository.getBasedir() );
+        
+                    logger.debug( buffer.toString() );
+                }
+        
+                return manager;
+            }
+            catch ( NoLocalRepositoryManagerException e )
+            {
+                // continue and try next factory
+            }
         }
+        
+        StringBuilder buffer = new StringBuilder( 256 );
+        buffer.append( "No manager available for local repository " );
+        buffer.append( " (" ).append( localRepository.getBasedir() );
+        buffer.append( ") of type " ).append( localRepository.getContentType() );
+        buffer.append( " using the available factories " );
+        for ( ListIterator<LocalRepositoryManagerFactory> it = factories.listIterator(); it.hasNext(); )
+        {
+            LocalRepositoryManagerFactory factory = it.next();
+            buffer.append( factory.getClass().getSimpleName() );
+            if ( it.hasNext() )
+            {
+                buffer.append( ", " );
+            }
+        }
+        
+        throw new IllegalArgumentException( buffer.toString(), new NoLocalRepositoryManagerException( localRepository ) );
     }
 
     private LocalRepositoryManager lookupManager( LocalRepository localRepository )
