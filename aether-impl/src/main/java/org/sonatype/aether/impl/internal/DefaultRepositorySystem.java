@@ -43,6 +43,7 @@ import org.sonatype.aether.installation.InstallResult;
 import org.sonatype.aether.installation.InstallationException;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.LocalRepositoryManager;
+import org.sonatype.aether.repository.NoLocalRepositoryManagerException;
 import org.sonatype.aether.resolution.ArtifactDescriptorException;
 import org.sonatype.aether.resolution.ArtifactDescriptorRequest;
 import org.sonatype.aether.resolution.ArtifactDescriptorResult;
@@ -57,12 +58,11 @@ import org.sonatype.aether.resolution.VersionRangeResult;
 import org.sonatype.aether.resolution.VersionRequest;
 import org.sonatype.aether.resolution.VersionResolutionException;
 import org.sonatype.aether.resolution.VersionResult;
+import org.sonatype.aether.spi.localrepo.LocalRepositoryManagerFactory;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
-import org.sonatype.aether.spi.repository.LocalRepositoryManagerFactory;
-import org.sonatype.aether.transfer.NoLocalRepositoryManagerException;
 import org.sonatype.aether.util.graph.FilteringDependencyVisitor;
 import org.sonatype.aether.util.graph.TreeDependencyVisitor;
 
@@ -426,19 +426,19 @@ public class DefaultRepositorySystem
         {
             try
             {
-                LocalRepositoryManager connector = factory.newInstance( localRepository );
+                LocalRepositoryManager manager = factory.newInstance( localRepository );
 
                 if ( logger.isDebugEnabled() )
                 {
                     StringBuilder buffer = new StringBuilder( 256 );
-                    buffer.append( "Using connector " ).append( connector.getClass().getSimpleName() );
+                    buffer.append( "Using manager " ).append( manager.getClass().getSimpleName() );
                     buffer.append( " with priority " ).append( factory.getPriority() );
-                    buffer.append( " for " ).append( localRepository.getBasedir().getAbsolutePath() );
+                    buffer.append( " for " ).append( localRepository.getBasedir() );
 
                     logger.debug( buffer.toString() );
                 }
 
-                return connector;
+                return manager;
             }
             catch ( NoLocalRepositoryManagerException e )
             {
