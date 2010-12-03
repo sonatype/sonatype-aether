@@ -44,7 +44,7 @@ public class EnhancedLocalRepositoryManagerFactory
 
     public int getPriority()
     {
-        return 0;
+        return 10;
     }
 
 }

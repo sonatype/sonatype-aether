@@ -39,7 +39,7 @@ public class SimpleLocalRepositoryManagerFactory
 
     public int getPriority()
     {
-        return -1;
+        return 0;
     }
 
 }
