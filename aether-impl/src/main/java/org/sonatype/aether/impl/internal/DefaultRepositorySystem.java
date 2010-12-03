@@ -380,64 +380,7 @@ public class DefaultRepositorySystem
         return deployer.deploy( session, request );
     }
 
-    /**
-     * Return a new local repository manager for the specified local repository. This method will either use
-     * {@link LocalRepositoryManagerFactory}s to dynamically load the appropriate managers, or fallback to the default
-     * implementations if no factories are configured.
-     * 
-     * @see LocalRepositoryManagerFactory#newInstance(LocalRepository)
-     * @see #addLocalRepositoryManagerFactory(LocalRepositoryManagerFactory)
-     * @see #setLocalRepositoryManagerFactories(List)
-     * @see #initService(ServiceLocator)
-     */
     public LocalRepositoryManager newLocalRepositoryManager( LocalRepository localRepository )
-    {
-        List<LocalRepositoryManagerFactory> factories = new ArrayList<LocalRepositoryManagerFactory>( managerFactories );
-        Collections.sort( factories, COMPARATOR );
-        
-        for ( LocalRepositoryManagerFactory factory : factories )
-        {
-            try
-            {
-                LocalRepositoryManager manager = factory.newInstance( localRepository );
-        
-                if ( logger.isDebugEnabled() )
-                {
-                    StringBuilder buffer = new StringBuilder( 256 );
-                    buffer.append( "Using manager " ).append( manager.getClass().getSimpleName() );
-                    buffer.append( " with priority " ).append( factory.getPriority() );
-                    buffer.append( " for " ).append( localRepository.getBasedir() );
-        
-                    logger.debug( buffer.toString() );
-                }
-        
-                return manager;
-            }
-            catch ( NoLocalRepositoryManagerException e )
-            {
-                // continue and try next factory
-            }
-        }
-        
-        StringBuilder buffer = new StringBuilder( 256 );
-        buffer.append( "No manager available for local repository " );
-        buffer.append( " (" ).append( localRepository.getBasedir() );
-        buffer.append( ") of type " ).append( localRepository.getContentType() );
-        buffer.append( " using the available factories " );
-        for ( ListIterator<LocalRepositoryManagerFactory> it = factories.listIterator(); it.hasNext(); )
-        {
-            LocalRepositoryManagerFactory factory = it.next();
-            buffer.append( factory.getClass().getSimpleName() );
-            if ( it.hasNext() )
-            {
-                buffer.append( ", " );
-            }
-        }
-        
-        throw new IllegalArgumentException( buffer.toString(), new NoLocalRepositoryManagerException( localRepository ) );
-    }
-
-    private LocalRepositoryManager lookupManager( LocalRepository localRepository )
     {
         List<LocalRepositoryManagerFactory> factories = new ArrayList<LocalRepositoryManagerFactory>( managerFactories );
         Collections.sort( factories, COMPARATOR );
