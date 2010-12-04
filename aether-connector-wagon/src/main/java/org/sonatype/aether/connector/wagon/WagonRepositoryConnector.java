@@ -309,8 +309,17 @@ class WagonRepositoryConnector
             }
             catch ( Exception e )
             {
-                logger.debug( "Could not apply configuration to wagon " + wagon.getClass().getName() + ":"
-                                  + e.getMessage(), e );
+                String msg =
+                    "Could not apply configuration for " + repository.getId() + " to wagon "
+                        + wagon.getClass().getName() + ":" + e.getMessage();
+                if ( logger.isDebugEnabled() )
+                {
+                    logger.warn( msg, e );
+                }
+                else
+                {
+                    logger.warn( msg );
+                }
             }
         }
 
