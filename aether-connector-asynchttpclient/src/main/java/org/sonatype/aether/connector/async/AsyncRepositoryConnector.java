@@ -16,6 +16,8 @@ import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.ProxyServer;
 import com.ning.http.client.ProxyServer.Protocol;
 import com.ning.http.client.Realm;
+import com.ning.http.client.Request;
+import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.Response;
 import com.ning.http.client.providers.netty.NettyAsyncHttpProvider;
 import org.sonatype.aether.ConfigurationProperties;
@@ -126,7 +128,7 @@ class AsyncRepositoryConnector
         }
 
         AsyncHttpClientConfig config = createConfig( session, repository );
-        httpClient = new AsyncHttpClient( new NettyAsyncHttpProvider( config ), config );
+        httpClient = new AsyncHttpClient( new NettyAsyncHttpProvider( config ) );
 
         checksumAlgos = new LinkedHashMap<String, String>();
         checksumAlgos.put( "SHA-1", ".sha1" );
@@ -403,20 +405,23 @@ class AsyncRepositoryConnector
             CompletionHandler completionHandler = null;
 
             // TODO: Is file can really be null?
-            final File tmp = ( file != null ) ? createOrGetTmpFile( file.getPath() ) : null;
+            final File tmp = ( file != null ) ? getTmpFile( file.getPath() ) : null;
 
             try
             {
                 final ChecksumTransferListener sha1 = new ChecksumTransferListener( "SHA-1" );
                 final ChecksumTransferListener md5 = new ChecksumTransferListener( "MD5" );
-
-                boolean fileExist = fileProcessor.mkdirs( tmp.getParentFile() );
-
+                fileProcessor.mkdirs( tmp.getParentFile() );
                 final RandomAccessFile resumableFile = new RandomAccessFile( tmp, "rws" );
-                if ( fileExist )
+                FluentCaseInsensitiveStringsMap headers = new FluentCaseInsensitiveStringsMap();
+
+                if ( !useCache )
                 {
-                    resumableFile.seek( tmp.length() );
+                    headers.add( "Pragma", "no-cache" );
                 }
+                headers.add( "Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2" );
+
+                final Request request = httpClient.prepareGet( uri ).setHeaders( headers ).build();
 
                 completionHandler = new CompletionHandler( transferResource, httpClient, logger, RequestType.GET )
                 {
@@ -425,6 +430,14 @@ class AsyncRepositoryConnector
                     {
                         try
                         {
+                            if ( IOException.class.isAssignableFrom( t.getClass() ) )
+                            {
+                                Request newRequest =
+                                    new RequestBuilder( request ).setRangeOffset( resumableFile.length() ).build();
+                                httpClient.executeRequest( newRequest, this );
+                                return;
+                            }
+
                             super.onThrowable( t );
                             if ( Exception.class.isAssignableFrom( t.getClass() ) )
                             {
@@ -635,15 +648,7 @@ class AsyncRepositoryConnector
                             completionHandler.addTransferListener( sha1 );
                         }
 
-                        FluentCaseInsensitiveStringsMap headers = new FluentCaseInsensitiveStringsMap();
-                        if ( !useCache )
-                        {
-                            headers.add( "Pragma", "no-cache" );
-                        }
-                        headers.add( "Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2" );
-
-                        httpClient.prepareGet( uri ).setRangeOffset( tmp.length() ).setHeaders( headers ).execute(
-                            completionHandler );
+                        httpClient.executeRequest( request, completionHandler );
                     }
                 }
                 catch ( Exception ex )
@@ -1060,26 +1065,6 @@ class AsyncRepositoryConnector
     private <T> Collection<T> safe( Collection<T> items )
     {
         return ( items != null ) ? items : Collections.<T>emptyList();
-    }
-
-    private File createOrGetTmpFile( String path )
-    {
-        File f = new File( path + ".tmp" );
-        File parentFile = f.getParentFile();
-        if ( parentFile.isDirectory() )
-        {
-            for ( File tmpFile : parentFile.listFiles() )
-            {
-                if ( tmpFile.getPath().lastIndexOf( "." ) != -1 ) {
-                    String realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ));
-                    if ( realPath.equals( path ) )
-                    {
-                        return tmpFile;
-                    }
-                }
-            }
-        }
-        return getTmpFile( path );
     }
 
     private File getTmpFile( String path )
