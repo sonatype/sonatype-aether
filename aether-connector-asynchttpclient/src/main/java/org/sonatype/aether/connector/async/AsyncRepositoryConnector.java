@@ -13,13 +13,11 @@ import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.ProxyServer;
 import com.ning.http.client.ProxyServer.Protocol;
 import com.ning.http.client.Realm;
 import com.ning.http.client.Response;
 import com.ning.http.client.providers.netty.NettyAsyncHttpProvider;
-
 import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.Authentication;
@@ -60,6 +58,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -120,8 +119,8 @@ class AsyncRepositoryConnector
             throw new NoRepositoryConnectorException( repository );
         }
 
-        if ( !repository.getProtocol().regionMatches( true, 0, "http", 0, "http".length() )
-            && !repository.getProtocol().regionMatches( true, 0, "dav", 0, "dav".length() ) )
+        if ( !repository.getProtocol().regionMatches( true, 0, "http", 0, "http".length() ) &&
+            !repository.getProtocol().regionMatches( true, 0, "dav", 0, "dav".length() ) )
         {
             throw new NoRepositoryConnectorException( repository );
         }
@@ -156,9 +155,8 @@ class AsyncRepositoryConnector
         if ( p != null )
         {
             Authentication a = p.getAuthentication();
-            boolean useSSL =
-                repository.getProtocol().equalsIgnoreCase( "https" )
-                    || repository.getProtocol().equalsIgnoreCase( "dav:https" );
+            boolean useSSL = repository.getProtocol().equalsIgnoreCase( "https" ) ||
+                repository.getProtocol().equalsIgnoreCase( "dav:https" );
             if ( a == null )
             {
                 proxyServer = new ProxyServer( useSSL ? Protocol.HTTPS : Protocol.HTTP, p.getHost(), p.getPort() );
@@ -166,8 +164,8 @@ class AsyncRepositoryConnector
             else
             {
                 proxyServer =
-                    new ProxyServer( useSSL ? Protocol.HTTPS : Protocol.HTTP, p.getHost(), p.getPort(),
-                                     a.getUsername(), a.getPassword() );
+                    new ProxyServer( useSSL ? Protocol.HTTPS : Protocol.HTTP, p.getHost(), p.getPort(), a.getUsername(),
+                                     a.getPassword() );
             }
         }
 
@@ -184,16 +182,14 @@ class AsyncRepositoryConnector
     {
         AsyncHttpClientConfig.Builder configBuilder = new AsyncHttpClientConfig.Builder();
 
-        String userAgent =
-            ConfigurationProperties.get( session, ConfigurationProperties.USER_AGENT,
-                                         ConfigurationProperties.DEFAULT_USER_AGENT );
+        String userAgent = ConfigurationProperties.get( session, ConfigurationProperties.USER_AGENT,
+                                                        ConfigurationProperties.DEFAULT_USER_AGENT );
         if ( !StringUtils.isEmpty( userAgent ) )
         {
             configBuilder.setUserAgent( userAgent );
         }
-        int connectTimeout =
-            ConfigurationProperties.get( session, ConfigurationProperties.CONNECT_TIMEOUT,
-                                         ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
+        int connectTimeout = ConfigurationProperties.get( session, ConfigurationProperties.CONNECT_TIMEOUT,
+                                                          ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
 
         configBuilder.setConnectionTimeoutInMs( connectTimeout );
         configBuilder.setCompressionEnabled( true );
@@ -330,21 +326,21 @@ class AsyncRepositoryConnector
     {
         if ( responseCode == HttpURLConnection.HTTP_NOT_FOUND )
         {
-            throw new ResourceDoesNotExistException( String.format( "Unable to locate resource %s. Error code %s", url,
-                                                                    responseCode ) );
+            throw new ResourceDoesNotExistException(
+                String.format( "Unable to locate resource %s. Error code %s", url, responseCode ) );
         }
 
-        if ( responseCode == HttpURLConnection.HTTP_FORBIDDEN || responseCode == HttpURLConnection.HTTP_UNAUTHORIZED
-            || responseCode == HttpURLConnection.HTTP_PROXY_AUTH )
+        if ( responseCode == HttpURLConnection.HTTP_FORBIDDEN || responseCode == HttpURLConnection.HTTP_UNAUTHORIZED ||
+            responseCode == HttpURLConnection.HTTP_PROXY_AUTH )
         {
-            throw new AuthorizationException( String.format( "Access denied to %s. Error code %s, %s", url,
-                                                             responseCode, responseMsg ) );
+            throw new AuthorizationException(
+                String.format( "Access denied to %s. Error code %s, %s", url, responseCode, responseMsg ) );
         }
 
         if ( responseCode >= HttpURLConnection.HTTP_MULT_CHOICE )
         {
-            throw new TransferException( String.format( "Failed to transfer %s. Error code %s, %s", url, responseCode,
-                                                        responseMsg ) );
+            throw new TransferException(
+                String.format( "Failed to transfer %s. Error code %s, %s", url, responseCode, responseMsg ) );
         }
     }
 
@@ -406,16 +402,24 @@ class AsyncRepositoryConnector
             final boolean ignoreChecksum = RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy );
             CompletionHandler completionHandler = null;
 
+            // TODO: Is file can really be null?
+            final File tmp = ( file != null ) ? createOrGetTmpFile( file.getPath() ) : null;
+
             try
             {
                 final ChecksumTransferListener sha1 = new ChecksumTransferListener( "SHA-1" );
                 final ChecksumTransferListener md5 = new ChecksumTransferListener( "MD5" );
-                final File tmp = ( file != null ) ? getTmpFile( file.getPath() ) : null;
+
+                boolean fileExist = fileProcessor.mkdirs( tmp.getParentFile() );
+
+                final RandomAccessFile resumableFile = new RandomAccessFile( tmp, "rws" );
+                if ( fileExist )
+                {
+                    resumableFile.seek( tmp.length() );
+                }
 
                 completionHandler = new CompletionHandler( transferResource, httpClient, logger, RequestType.GET )
                 {
-                    private OutputStream fileOutputStream;
-
                     @Override
                     public void onThrowable( Throwable t )
                     {
@@ -438,11 +442,11 @@ class AsyncRepositoryConnector
                         }
                         finally
                         {
-                            if ( fileOutputStream != null )
+                            if ( resumableFile != null )
                             {
                                 try
                                 {
-                                    fileOutputStream.close();
+                                    resumableFile.close();
                                 }
                                 catch ( IOException ex )
                                 {
@@ -470,25 +474,6 @@ class AsyncRepositoryConnector
                         removeTransferListener( listener );
                     }
 
-                    public AsyncHandler.STATE onStatusReceived( final HttpResponseStatus status )
-                        throws Exception
-                    {
-                        STATE state = super.onStatusReceived( status );
-                        if ( status.getStatusCode() == 200 )
-                        {
-                            fileProcessor.mkdirs( tmp.getParentFile() );
-                            try
-                            {
-                                fileOutputStream = new BufferedOutputStream( new FileOutputStream( tmp ) );
-                            }
-                            catch ( IOException ex )
-                            {
-                                return AsyncHandler.STATE.ABORT;
-                            }
-                        }
-                        return state;
-                    }
-
                     public STATE onBodyPartReceived( final HttpResponseBodyPart content )
                         throws Exception
                     {
@@ -497,7 +482,7 @@ class AsyncRepositoryConnector
                             byte[] bytes = content.getBodyPartBytes();
                             try
                             {
-                                fileOutputStream.write( bytes );
+                                resumableFile.write( bytes );
                             }
                             catch ( IOException ex )
                             {
@@ -515,27 +500,14 @@ class AsyncRepositoryConnector
                         {
                             final Response response = super.onCompleted( r );
 
-                            if ( fileOutputStream != null )
+                            try
                             {
-                                try
-                                {
-                                    fileOutputStream.flush();
-                                }
-                                catch ( IOException e )
-                                {
-                                    // Ignore
-                                }
-                                finally
-                                {
-                                    try
-                                    {
-                                        fileOutputStream.close();
-                                    }
-                                    catch ( IOException ex )
-                                    {
-                                    }
-                                }
+                                resumableFile.close();
                             }
+                            catch ( IOException ex )
+                            {
+                            }
+
                             handleResponseCode( uri, response.getStatusCode(), response.getStatusText() );
 
                             if ( !ignoreChecksum )
@@ -552,7 +524,7 @@ class AsyncRepositoryConnector
                                                     !verifyChecksum( file, uri, md5.getActualChecksum(), ".md5" ) )
                                                 {
                                                     throw new ChecksumFailureException( "Checksum validation failed" +
-                                                        ", no checksums available from the repository" );
+                                                                                            ", no checksums available from the repository" );
                                                 }
                                             }
                                             catch ( ChecksumFailureException e )
@@ -653,8 +625,8 @@ class AsyncRepositoryConnector
                         if ( listener != null )
                         {
                             completionHandler.addTransferListener( listener );
-                            listener.transferInitiated( newEvent( transferResource, null, RequestType.GET,
-                                                                  EventType.INITIATED ) );
+                            listener.transferInitiated(
+                                newEvent( transferResource, null, RequestType.GET, EventType.INITIATED ) );
                         }
 
                         if ( !ignoreChecksum )
@@ -670,7 +642,8 @@ class AsyncRepositoryConnector
                         }
                         headers.add( "Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2" );
 
-                        httpClient.prepareGet( uri ).setHeaders( headers ).execute( completionHandler );
+                        httpClient.prepareGet( uri ).setRangeOffset( tmp.length() ).setHeaders( headers ).execute(
+                            completionHandler );
                     }
                 }
                 catch ( Exception ex )
@@ -685,6 +658,10 @@ class AsyncRepositoryConnector
             }
             catch ( Throwable t )
             {
+                if ( tmp != null )
+                {
+                    tmp.delete();
+                }
                 try
                 {
                     if ( Exception.class.isAssignableFrom( t.getClass() ) )
@@ -833,7 +810,8 @@ class AsyncRepositoryConnector
         public void run()
         {
             upload.setState( Transfer.State.ACTIVE );
-            final DefaultTransferResource transferResource = new DefaultTransferResource( repository.getUrl(), path, file );
+            final DefaultTransferResource transferResource =
+                new DefaultTransferResource( repository.getUrl(), path, file );
 
             try
             {
@@ -923,11 +901,13 @@ class AsyncRepositoryConnector
                 }
                 transferResource.setContentLength( file.length() );
 
-                httpClient.preparePut( uri ).setBody( new ProgressingFileBodyGenerator( file, completionHandler ) ).execute( completionHandler );
+                httpClient.preparePut( uri ).setBody(
+                    new ProgressingFileBodyGenerator( file, completionHandler ) ).execute( completionHandler );
             }
             catch ( Exception e )
             {
-                try {
+                try
+                {
                     if ( listener != null )
                     {
                         listener.transferFailed( newEvent( transferResource, e, RequestType.PUT, EventType.FAILED ) );
@@ -1082,6 +1062,26 @@ class AsyncRepositoryConnector
         return ( items != null ) ? items : Collections.<T>emptyList();
     }
 
+    private File createOrGetTmpFile( String path )
+    {
+        File f = new File( path + ".tmp" );
+        File parentFile = f.getParentFile();
+        if ( parentFile.isDirectory() )
+        {
+            for ( File tmpFile : parentFile.listFiles() )
+            {
+                if ( tmpFile.getPath().lastIndexOf( "." ) != -1 ) {
+                    String realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ));
+                    if ( realPath.equals( path ) )
+                    {
+                        return tmpFile;
+                    }
+                }
+            }
+        }
+        return getTmpFile( path );
+    }
+
     private File getTmpFile( String path )
     {
         return new File( path + ".tmp" + UUID.randomUUID().toString().replace( "-", "" ).substring( 0, 16 ) );
@@ -1125,6 +1125,7 @@ class AsyncRepositoryConnector
     {
 
         private final CountDownLatch latch;
+
         private final AtomicBoolean done = new AtomicBoolean( false );
 
         public LatchGuard( CountDownLatch latch )
@@ -1134,7 +1135,8 @@ class AsyncRepositoryConnector
 
         public void countDown()
         {
-            if (!done.getAndSet( true )) {
+            if ( !done.getAndSet( true ) )
+            {
                 latch.countDown();
             }
         }
