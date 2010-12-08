@@ -55,13 +55,17 @@ import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
 import java.io.BufferedOutputStream;
+import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
+import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -71,6 +75,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A repository connector that uses the Async Http Client.
@@ -405,24 +410,28 @@ class AsyncRepositoryConnector
             CompletionHandler completionHandler = null;
 
             // TODO: Is file can really be null?
-            final File tmp = ( file != null ) ? getTmpFile( file.getPath() ) : null;
+            final File tmp = ( file != null ) ? createOrGetTmpFile( file.getPath() ) : null;
 
             try
             {
                 final ChecksumTransferListener sha1 = new ChecksumTransferListener( "SHA-1" );
                 final ChecksumTransferListener md5 = new ChecksumTransferListener( "MD5" );
                 fileProcessor.mkdirs( tmp.getParentFile() );
-                final RandomAccessFile resumableFile = new RandomAccessFile( tmp, "rws" );
-                FluentCaseInsensitiveStringsMap headers = new FluentCaseInsensitiveStringsMap();
 
+                // Position the file to the end in case we are resuming an aborded download.
+                final RandomAccessFile resumableFile = new RandomAccessFile( tmp, "rws" );
+                resumableFile.seek( tmp.length() );
+
+                FluentCaseInsensitiveStringsMap headers = new FluentCaseInsensitiveStringsMap();
                 if ( !useCache )
                 {
                     headers.add( "Pragma", "no-cache" );
                 }
                 headers.add( "Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2" );
 
-                final Request request = httpClient.prepareGet( uri ).setHeaders( headers ).build();
+                final Request request = httpClient.prepareGet( uri ).setRangeOffset( resumableFile.length() ).setHeaders( headers ).build();
 
+                final AtomicInteger maxRequestTry = new AtomicInteger();
                 completionHandler = new CompletionHandler( transferResource, httpClient, logger, RequestType.GET )
                 {
                     @Override
@@ -430,8 +439,13 @@ class AsyncRepositoryConnector
                     {
                         try
                         {
-                            if ( IOException.class.isAssignableFrom( t.getClass() ) )
+                            /**
+                             * If an IOException occurs, let's try to resume the request based on how much bytes has
+                             * been so far downloaded.
+                             */
+                            if ( maxRequestTry.get() < 3 && IOException.class.isAssignableFrom( t.getClass() ) )
                             {
+                                maxRequestTry.incrementAndGet();
                                 Request newRequest =
                                     new RequestBuilder( request ).setRangeOffset( resumableFile.length() ).build();
                                 httpClient.executeRequest( newRequest, this );
@@ -1067,6 +1081,53 @@ class AsyncRepositoryConnector
         return ( items != null ) ? items : Collections.<T>emptyList();
     }
 
+    private File createOrGetTmpFile( String path )
+    {
+        File f = new File( path + ".tmp" );
+        File parentFile = f.getParentFile();
+        if ( parentFile.isDirectory() )
+        {
+            for ( File tmpFile : parentFile.listFiles() )
+            {
+                if ( tmpFile.getPath().lastIndexOf( "." ) != -1 )
+                {
+                    String realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ) );
+                    if ( realPath.equals( path ) )
+                    {
+                        File newFile = null;
+                        synchronized ( getLock( tmpFile ) )
+                        {
+                            FileInputStream stream = null;
+                            FileLock lock = null;
+                            try
+                            {
+                                stream = new FileInputStream( tmpFile );
+                                lock = stream.getChannel().lock( 0, Math.max( 1, tmpFile.length() ), true );
+                                newFile = new File( tmpFile.getCanonicalPath() + ".resumable" );
+                                fileProcessor.move( tmpFile, newFile );
+                            }
+                            catch ( FileNotFoundException e )
+                            {
+                            }
+                            catch ( IOException e )
+                            {
+                                logger.debug( "Failed to move " + tmpFile, e );
+                            }
+                            finally
+                            {
+                                release( lock, tmpFile );
+                                close( stream, tmpFile );
+                            }
+
+                            return (newFile != null) ? newFile : tmpFile;
+                        }
+                    }
+                }
+            }
+        }
+        return getTmpFile( path );
+    }
+
     private File getTmpFile( String path )
     {
         return new File( path + ".tmp" + UUID.randomUUID().toString().replace( "-", "" ).substring( 0, 16 ) );
@@ -1127,4 +1188,38 @@ class AsyncRepositoryConnector
         }
     }
 
+    private void release( FileLock lock, File file )
+    {
+        if ( lock != null )
+        {
+            try
+            {
+                lock.release();
+            }
+            catch ( IOException e )
+            {
+                logger.debug( "Error releasing resumable file " + file, e );
+            }
+        }
+    }
+
+    private void close( Closeable closeable, File file )
+    {
+        if ( closeable != null )
+        {
+            try
+            {
+                closeable.close();
+            }
+            catch ( IOException e )
+            {
+                logger.debug( "Error closing resumable file " + file, e );
+            }
+        }
+    }
+
+    private Object getLock( File file )
+    {
+        return file.getAbsolutePath().intern();
+    }
 }
