@@ -1096,12 +1096,14 @@ class AsyncRepositoryConnector
                         {
                             FileInputStream stream = null;
                             FileLock lock = null;
+                            boolean moved = false;
                             try
                             {
                                 stream = new FileInputStream( tmpFile );
                                 lock = stream.getChannel().lock( 0, Math.max( 1, tmpFile.length() ), true );
                                 newFile = new File( tmpFile.getCanonicalPath() + ".resumable" );
                                 fileProcessor.move( tmpFile, newFile );
+                                moved = true;
                             }
                             catch ( FileNotFoundException e )
                             {
@@ -1116,7 +1118,7 @@ class AsyncRepositoryConnector
                                 close( stream, tmpFile );
                             }
 
-                            return (newFile != null) ? newFile : tmpFile;
+                            return (newFile != null && moved) ? newFile : tmpFile;
                         }
                     }
                 }
