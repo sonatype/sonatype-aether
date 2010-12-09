@@ -182,23 +182,4 @@ public class GetTest
         connector().close();
     }
 
-    @Test
-    public void testDownloadInterruptedArtifact()
-        throws Exception
-    {
-        addDelivery( "gid/aid/version/aid-version-classifier.extension", "artifact" );
-        addDelivery( "gid/aid/version/aid-version-classifier.extension.sha1", sha1( "artifact" ) );
-        addDelivery( "gid/aid/version/aid-version-classifier.extension.md5", md5( "artifact" ) );
-
-        File f = TestFileUtils.createTempFile( "" );
-        Artifact a = artifact( "bla" );
-
-        ArtifactDownload down = new ArtifactDownload( a, null, f, RepositoryPolicy.CHECKSUM_POLICY_FAIL );
-        Collection<? extends ArtifactDownload> downs = Arrays.asList( down );
-        RepositoryConnector c = connector();
-        c.get( downs, null );
-
-        assertNull( String.valueOf( down.getException() ), down.getException() );
-        TestFileUtils.assertContent( "artifact", f );
-    }
 }
