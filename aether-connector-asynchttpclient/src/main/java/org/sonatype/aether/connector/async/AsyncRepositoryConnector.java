@@ -380,6 +380,8 @@ class AsyncRepositoryConnector
 
         private final ExceptionWrapper<T> wrapper;
 
+        private final AtomicBoolean deleteFile = new AtomicBoolean(true);
+
         public GetTask( String path, File file, String checksumPolicy, CountDownLatch latch, T download,
                         ExceptionWrapper<T> wrapper )
         {
@@ -441,7 +443,7 @@ class AsyncRepositoryConnector
                         {
                             /**
                              * If an IOException occurs, let's try to resume the request based on how much bytes has
-                             * been so far downloaded.
+                             * been so far downloaded. Fail after IOException.
                              */
                             if ( maxRequestTry.get() < 3 && IOException.class.isAssignableFrom( t.getClass() ) )
                             {
@@ -449,6 +451,7 @@ class AsyncRepositoryConnector
                                 Request newRequest =
                                     new RequestBuilder( request ).setRangeOffset( resumableFile.length() ).build();
                                 httpClient.executeRequest( newRequest, this );
+                                deleteFile.set(false);
                                 return;
                             }
 
@@ -480,11 +483,7 @@ class AsyncRepositoryConnector
                                 }
 
                             }
-                            // The request timed out we must delete the file.
-                            if ( tmp != null )
-                            {
-                                tmp.delete();
-                            }
+                            deleteFile( tmp );
 
                             latch.countDown();
                             removeListeners();
@@ -586,11 +585,7 @@ class AsyncRepositoryConnector
                                                 }
                                             }
 
-                                            if ( tmp != null )
-                                            {
-                                                tmp.delete();
-                                            }
-
+                                            deleteFile( tmp );
                                             latch.countDown();
                                         }
                                     }
@@ -619,7 +614,7 @@ class AsyncRepositoryConnector
                                 {
                                     if ( exception != null )
                                     {
-                                        tmp.delete();
+                                        deleteFile( tmp );
                                     }
                                     else if ( ignoreChecksum )
                                     {
@@ -667,20 +662,14 @@ class AsyncRepositoryConnector
                 }
                 catch ( Exception ex )
                 {
-                    if ( tmp != null )
-                    {
-                        tmp.delete();
-                    }
+                    deleteFile( tmp );
                     exception = ex;
                     latch.countDown();
                 }
             }
             catch ( Throwable t )
             {
-                if ( tmp != null )
-                {
-                    tmp.delete();
-                }
+                deleteFile( tmp );
                 try
                 {
                     if ( Exception.class.isAssignableFrom( t.getClass() ) )
@@ -701,6 +690,14 @@ class AsyncRepositoryConnector
                 {
                     latch.countDown();
                 }
+            }
+        }
+
+        private void deleteFile( File tmp )
+        {
+            if ( tmp != null && deleteFile.get() )
+            {
+                tmp.delete();
             }
         }
 
