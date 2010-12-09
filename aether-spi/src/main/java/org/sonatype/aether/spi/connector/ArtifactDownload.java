@@ -69,6 +69,15 @@ public class ArtifactDownload
         return this;
     }
 
+    /**
+     * {@inheritDoc} <em>Note:</em> In case of {@link #isExistenceCheck()}, this method may return {@code null}.
+     */
+    @Override
+    public File getFile()
+    {
+        return super.getFile();
+    }
+
     @Override
     public ArtifactDownload setFile( File file )
     {
@@ -80,7 +89,8 @@ public class ArtifactDownload
      * Indicates whether this transfer shall only verify the existence of the artifact in the remote repository rather
      * than actually downloading the file. Just like with an actual transfer, a connector is expected to signal the
      * non-existence of the artifact by associating an {@link org.sonatype.aether.transfer.ArtifactNotFoundException
-     * ArtifactNotFoundException} with this download.
+     * ArtifactNotFoundException} with this download. <em>Note:</em> If an existence check is requested,
+     * {@link #getFile()} may be {@code null}, i.e. the connector must not try to access the local file.
      * 
      * @return {@code true} if only the artifact existence shall be verified, {@code false} to actually download the
      *         artifact.
