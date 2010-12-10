@@ -166,6 +166,9 @@ public class GenericVersionTest
 
         checkVersionsOrder( "2.0.1", "2.0.1-123" );
         checkVersionsOrder( "2.0.1-xyz", "2.0.1-123" );
+
+        checkVersionsOrder( "1.0-20101206.111434-1", "1.0-20101206.111435-1" );
+        checkVersionsOrder( "1.0-20101206.111434-2", "1.0-20101206.111434-10" );
     }
 
     public void testLocaleIndependent()
