@@ -1086,7 +1086,7 @@ class AsyncRepositoryConnector
         {
             for ( File tmpFile : parentFile.listFiles() )
             {
-                if ( tmpFile.getName().lastIndexOf( "." ) != -1 )
+                if ( tmpFile.length() > 0 && tmpFile.getName().lastIndexOf( "." ) != -1 )
                 {
                     String realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ) );
                     if ( realPath.equals( path ) )
