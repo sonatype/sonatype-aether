@@ -44,6 +44,7 @@ import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
  * @author Benjamin Bentmann
  */
 @Component( role = Installer.class )
+@SuppressWarnings( "deprecation" )
 public class DefaultInstaller
     implements Installer, Service
 {

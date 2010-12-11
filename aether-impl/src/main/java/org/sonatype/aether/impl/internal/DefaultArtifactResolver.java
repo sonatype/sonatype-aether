@@ -63,6 +63,7 @@ import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
  * @author Benjamin Bentmann
  */
 @Component( role = ArtifactResolver.class )
+@SuppressWarnings( "deprecation" )
 public class DefaultArtifactResolver
     implements ArtifactResolver, Service
 {

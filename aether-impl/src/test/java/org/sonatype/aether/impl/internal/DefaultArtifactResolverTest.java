@@ -23,7 +23,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.impl.LocalRepositoryMaintainer;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.impl.VersionResolver;
 import org.sonatype.aether.metadata.Metadata;
@@ -75,14 +74,13 @@ public class DefaultArtifactResolverTest
         throws IOException
     {
         UpdateCheckManager updateCheckManager = new StaticUpdateCheckManager( true );
-        List<LocalRepositoryMaintainer> localRepositoryMaintainers = null;
         remoteRepositoryManager = new StubRemoteRepositoryManager();
         VersionResolver versionResolver = new StubVersionResolver();
         session = new TestRepositorySystemSession();
         resolver =
             new DefaultArtifactResolver( NullLogger.INSTANCE, TestFileProcessor.INSTANCE,
                                          new StubRepositoryEventDispatcher(), versionResolver, updateCheckManager,
-                                         remoteRepositoryManager, localRepositoryMaintainers );
+                                         remoteRepositoryManager, null );
 
         artifact = new StubArtifact( "gid", "aid", "", "ext", "ver" );
 

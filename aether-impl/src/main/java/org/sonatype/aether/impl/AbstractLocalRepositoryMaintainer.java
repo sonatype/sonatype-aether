@@ -13,6 +13,7 @@ package org.sonatype.aether.impl;
  * 
  * @author Benjamin Bentmann
  */
+@Deprecated
 public abstract class AbstractLocalRepositoryMaintainer
     implements LocalRepositoryMaintainer
 {
