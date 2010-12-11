@@ -21,13 +21,13 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.ConfigurationProperties;
-import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.ArtifactResolver;
 import org.sonatype.aether.impl.LocalRepositoryEvent;
 import org.sonatype.aether.impl.LocalRepositoryMaintainer;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
+import org.sonatype.aether.impl.RepositoryEventDispatcher;
 import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.impl.VersionResolver;
@@ -74,6 +74,9 @@ public class DefaultArtifactResolver
     private FileProcessor fileProcessor;
 
     @Requirement
+    private RepositoryEventDispatcher repositoryEventDispatcher;
+
+    @Requirement
     private VersionResolver versionResolver;
 
     @Requirement
@@ -90,13 +93,15 @@ public class DefaultArtifactResolver
         // enables default constructor
     }
 
-    public DefaultArtifactResolver( Logger logger, FileProcessor fileProcessor, VersionResolver versionResolver,
-                                    UpdateCheckManager updateCheckManager,
+    public DefaultArtifactResolver( Logger logger, FileProcessor fileProcessor,
+                                    RepositoryEventDispatcher repositoryEventDispatcher,
+                                    VersionResolver versionResolver, UpdateCheckManager updateCheckManager,
                                     RemoteRepositoryManager remoteRepositoryManager,
                                     List<LocalRepositoryMaintainer> localRepositoryMaintainers )
     {
         setLogger( logger );
         setFileProcessor( fileProcessor );
+        setRepositoryEventDispatcher( repositoryEventDispatcher );
         setVersionResolver( versionResolver );
         setUpdateCheckManager( updateCheckManager );
         setRemoteRepositoryManager( remoteRepositoryManager );
@@ -107,6 +112,7 @@ public class DefaultArtifactResolver
     {
         setLogger( locator.getService( Logger.class ) );
         setFileProcessor( locator.getService( FileProcessor.class ) );
+        setRepositoryEventDispatcher( locator.getService( RepositoryEventDispatcher.class ) );
         setVersionResolver( locator.getService( VersionResolver.class ) );
         setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
         setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
@@ -126,6 +132,16 @@ public class DefaultArtifactResolver
             throw new IllegalArgumentException( "file processor has not been specified" );
         }
         this.fileProcessor = fileProcessor;
+        return this;
+    }
+
+    public DefaultArtifactResolver setRepositoryEventDispatcher( RepositoryEventDispatcher repositoryEventDispatcher )
+    {
+        if ( repositoryEventDispatcher == null )
+        {
+            throw new IllegalArgumentException( "repository event dispatcher has not been specified" );
+        }
+        this.repositoryEventDispatcher = repositoryEventDispatcher;
         return this;
     }
 
@@ -534,61 +550,49 @@ public class DefaultArtifactResolver
 
     private void artifactResolving( RepositorySystemSession session, Artifact artifact )
     {
-        RepositoryListener listener = session.getRepositoryListener();
-        if ( listener != null )
-        {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_RESOLVING, session );
-            event.setArtifact( artifact );
-            listener.artifactResolving( event );
-        }
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_RESOLVING, session );
+        event.setArtifact( artifact );
+
+        repositoryEventDispatcher.dispatch( event );
     }
 
     private void artifactResolved( RepositorySystemSession session, Artifact artifact, ArtifactRepository repository,
                                    List<Exception> exceptions )
     {
-        RepositoryListener listener = session.getRepositoryListener();
-        if ( listener != null )
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_RESOLVED, session );
+        event.setArtifact( artifact );
+        event.setRepository( repository );
+        event.setExceptions( exceptions );
+        if ( artifact != null )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_RESOLVED, session );
-            event.setArtifact( artifact );
-            event.setRepository( repository );
-            event.setExceptions( exceptions );
-            if ( artifact != null )
-            {
-                event.setFile( artifact.getFile() );
-            }
-            listener.artifactResolved( event );
+            event.setFile( artifact.getFile() );
         }
+
+        repositoryEventDispatcher.dispatch( event );
     }
 
     private void artifactDownloading( RepositorySystemSession session, Artifact artifact, RemoteRepository repository )
     {
-        RepositoryListener listener = session.getRepositoryListener();
-        if ( listener != null )
-        {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DOWNLOADING, session );
-            event.setArtifact( artifact );
-            event.setRepository( repository );
-            listener.artifactDownloading( event );
-        }
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DOWNLOADING, session );
+        event.setArtifact( artifact );
+        event.setRepository( repository );
+
+        repositoryEventDispatcher.dispatch( event );
     }
 
     private void artifactDownloaded( RepositorySystemSession session, Artifact artifact, RemoteRepository repository,
                                      Exception exception )
     {
-        RepositoryListener listener = session.getRepositoryListener();
-        if ( listener != null )
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DOWNLOADED, session );
+        event.setArtifact( artifact );
+        event.setRepository( repository );
+        event.setException( exception );
+        if ( artifact != null )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DOWNLOADED, session );
-            event.setArtifact( artifact );
-            event.setRepository( repository );
-            event.setException( exception );
-            if ( artifact != null )
-            {
-                event.setFile( artifact.getFile() );
-            }
-            listener.artifactDownloaded( event );
+            event.setFile( artifact.getFile() );
         }
+
+        repositoryEventDispatcher.dispatch( event );
     }
 
     static class ResolutionGroup

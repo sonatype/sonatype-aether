@@ -71,7 +71,9 @@ public class DefaultInstallerTest
 
         localArtifactFile = new File( session.getLocalRepository().getBasedir(), localArtifactPath );
 
-        installer = new DefaultInstaller().setFileProcessor( TestFileProcessor.INSTANCE );
+        installer = new DefaultInstaller();
+        installer.setFileProcessor( TestFileProcessor.INSTANCE );
+        installer.setRepositoryEventDispatcher( new StubRepositoryEventDispatcher() );
         request = new InstallRequest();
         listener = new RecordingRepositoryListener();
         session.setRepositoryListener( listener );
@@ -124,7 +126,6 @@ public class DefaultInstallerTest
         InstallRequest request = new InstallRequest();
         request.addArtifact( artifact.setFile( null ) );
 
-        DefaultInstaller installer = new DefaultInstaller();
         installer.install( session, request );
     }
 
@@ -135,7 +136,6 @@ public class DefaultInstallerTest
         InstallRequest request = new InstallRequest();
         request.addMetadata( metadata.setFile( null ) );
 
-        DefaultInstaller installer = new DefaultInstaller();
         installer.install( session, request );
     }
 
@@ -151,7 +151,7 @@ public class DefaultInstallerTest
                     file.mkdirs() || file.isDirectory() );
 
         request.addArtifact( artifact );
-        new DefaultInstaller().install( session, request );
+        installer.install( session, request );
     }
 
     @Test( expected = InstallationException.class )
@@ -163,7 +163,7 @@ public class DefaultInstallerTest
                     new File( session.getLocalRepository().getBasedir(), path ).mkdirs() );
 
         request.addMetadata( metadata );
-        new DefaultInstaller().install( session, request );
+        installer.install( session, request );
     }
 
     @Test

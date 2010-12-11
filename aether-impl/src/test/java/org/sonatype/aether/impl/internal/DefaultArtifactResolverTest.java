@@ -80,8 +80,9 @@ public class DefaultArtifactResolverTest
         VersionResolver versionResolver = new StubVersionResolver();
         session = new TestRepositorySystemSession();
         resolver =
-            new DefaultArtifactResolver( NullLogger.INSTANCE, TestFileProcessor.INSTANCE, versionResolver,
-                                         updateCheckManager, remoteRepositoryManager, localRepositoryMaintainers );
+            new DefaultArtifactResolver( NullLogger.INSTANCE, TestFileProcessor.INSTANCE,
+                                         new StubRepositoryEventDispatcher(), versionResolver, updateCheckManager,
+                                         remoteRepositoryManager, localRepositoryMaintainers );
 
         artifact = new StubArtifact( "gid", "aid", "", "ext", "ver" );
 

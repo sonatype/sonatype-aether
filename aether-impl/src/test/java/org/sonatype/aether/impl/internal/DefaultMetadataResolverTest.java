@@ -26,7 +26,6 @@ import org.sonatype.aether.resolution.MetadataRequest;
 import org.sonatype.aether.resolution.MetadataResult;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
-import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubMetadata;
@@ -56,7 +55,10 @@ public class DefaultMetadataResolverTest
     {
         session = new TestRepositorySystemSession();
         manager = new StubRemoteRepositoryManager();
-        resolver = new DefaultMetadataResolver( NullLogger.INSTANCE, new StaticUpdateCheckManager( true ), manager );
+        resolver = new DefaultMetadataResolver();
+        resolver.setUpdateCheckManager( new StaticUpdateCheckManager( true ) );
+        resolver.setRepositoryEventDispatcher( new StubRepositoryEventDispatcher() );
+        resolver.setRemoteRepositoryManager( manager );
         repository =
             new RemoteRepository( "test-DMRT", "default", TestFileUtils.createTempDir().toURI().toURL().toString() );
         metadata = new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT );

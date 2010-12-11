@@ -26,10 +26,10 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.RepositoryEvent.EventType;
-import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.MetadataResolver;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
+import org.sonatype.aether.impl.RepositoryEventDispatcher;
 import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.metadata.Metadata;
@@ -64,6 +64,9 @@ public class DefaultMetadataResolver
     private Logger logger = NullLogger.INSTANCE;
 
     @Requirement
+    private RepositoryEventDispatcher repositoryEventDispatcher;
+
+    @Requirement
     private UpdateCheckManager updateCheckManager;
 
     @Requirement
@@ -74,10 +77,12 @@ public class DefaultMetadataResolver
         // enables default constructor
     }
 
-    public DefaultMetadataResolver( Logger logger, UpdateCheckManager updateCheckManager,
+    public DefaultMetadataResolver( Logger logger, RepositoryEventDispatcher repositoryEventDispatcher,
+                                    UpdateCheckManager updateCheckManager,
                                     RemoteRepositoryManager remoteRepositoryManager )
     {
         setLogger( logger );
+        setRepositoryEventDispatcher( repositoryEventDispatcher );
         setUpdateCheckManager( updateCheckManager );
         setRemoteRepositoryManager( remoteRepositoryManager );
     }
@@ -85,6 +90,7 @@ public class DefaultMetadataResolver
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );
+        setRepositoryEventDispatcher( locator.getService( RepositoryEventDispatcher.class ) );
         setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
         setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
     }
@@ -92,6 +98,16 @@ public class DefaultMetadataResolver
     public DefaultMetadataResolver setLogger( Logger logger )
     {
         this.logger = ( logger != null ) ? logger : NullLogger.INSTANCE;
+        return this;
+    }
+
+    public DefaultMetadataResolver setRepositoryEventDispatcher( RepositoryEventDispatcher repositoryEventDispatcher )
+    {
+        if ( repositoryEventDispatcher == null )
+        {
+            throw new IllegalArgumentException( "repository event dispatcher has not been specified" );
+        }
+        this.repositoryEventDispatcher = repositoryEventDispatcher;
         return this;
     }
 
@@ -355,56 +371,44 @@ public class DefaultMetadataResolver
 
     private void metadataResolving( RepositorySystemSession session, Metadata metadata, ArtifactRepository repository )
     {
-        RepositoryListener listener = session.getRepositoryListener();
-        if ( listener != null )
-        {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVING, session );
-            event.setMetadata( metadata );
-            event.setRepository( repository );
-            listener.metadataResolving( event );
-        }
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVING, session );
+        event.setMetadata( metadata );
+        event.setRepository( repository );
+
+        repositoryEventDispatcher.dispatch( event );
     }
 
     private void metadataResolved( RepositorySystemSession session, Metadata metadata, ArtifactRepository repository,
                                    Exception exception )
     {
-        RepositoryListener listener = session.getRepositoryListener();
-        if ( listener != null )
-        {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVED, session );
-            event.setMetadata( metadata );
-            event.setRepository( repository );
-            event.setException( exception );
-            event.setFile( metadata.getFile() );
-            listener.metadataResolved( event );
-        }
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVED, session );
+        event.setMetadata( metadata );
+        event.setRepository( repository );
+        event.setException( exception );
+        event.setFile( metadata.getFile() );
+
+        repositoryEventDispatcher.dispatch( event );
     }
 
     private void metadataDownloading( RepositorySystemSession session, Metadata metadata, ArtifactRepository repository )
     {
-        RepositoryListener listener = session.getRepositoryListener();
-        if ( listener != null )
-        {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADING, session );
-            event.setMetadata( metadata );
-            event.setRepository( repository );
-            listener.metadataDownloading( event );
-        }
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADING, session );
+        event.setMetadata( metadata );
+        event.setRepository( repository );
+
+        repositoryEventDispatcher.dispatch( event );
     }
 
     private void metadataDownloaded( RepositorySystemSession session, Metadata metadata, ArtifactRepository repository,
                                      File file, Exception exception )
     {
-        RepositoryListener listener = session.getRepositoryListener();
-        if ( listener != null )
-        {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADED, session );
-            event.setMetadata( metadata );
-            event.setRepository( repository );
-            event.setException( exception );
-            event.setFile( file );
-            listener.metadataDownloaded( event );
-        }
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADED, session );
+        event.setMetadata( metadata );
+        event.setRepository( repository );
+        event.setException( exception );
+        event.setFile( file );
+
+        repositoryEventDispatcher.dispatch( event );
     }
 
     private Executor getExecutor( int threads )

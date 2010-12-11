@@ -74,6 +74,7 @@ public class DefaultDeployerTest
 
         deployer = new DefaultDeployer();
         deployer.setRemoteRepositoryManager( manager );
+        deployer.setRepositoryEventDispatcher( new StubRepositoryEventDispatcher() );
         UpdateCheckManager updateCheckManager = new StaticUpdateCheckManager( true );
         deployer.setUpdateCheckManager( updateCheckManager );
         deployer.setFileProcessor( TestFileProcessor.INSTANCE );

@@ -22,7 +22,6 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.RepositoryException;
-import org.sonatype.aether.RepositoryListener;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.deployment.DeployRequest;
@@ -32,6 +31,7 @@ import org.sonatype.aether.impl.Deployer;
 import org.sonatype.aether.impl.MetadataGenerator;
 import org.sonatype.aether.impl.MetadataGeneratorFactory;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
+import org.sonatype.aether.impl.RepositoryEventDispatcher;
 import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.metadata.MergeableMetadata;
@@ -71,6 +71,9 @@ public class DefaultDeployer
     private FileProcessor fileProcessor;
 
     @Requirement
+    private RepositoryEventDispatcher repositoryEventDispatcher;
+
+    @Requirement
     private RemoteRepositoryManager remoteRepositoryManager;
 
     @Requirement
@@ -95,11 +98,13 @@ public class DefaultDeployer
     }
 
     public DefaultDeployer( Logger logger, FileProcessor fileProcessor,
+                            RepositoryEventDispatcher repositoryEventDispatcher,
                             RemoteRepositoryManager remoteRepositoryManager, UpdateCheckManager updateCheckManager,
                             List<MetadataGeneratorFactory> metadataFactories )
     {
         setLogger( logger );
         setFileProcessor( fileProcessor );
+        setRepositoryEventDispatcher( repositoryEventDispatcher );
         setRemoteRepositoryManager( remoteRepositoryManager );
         setUpdateCheckManager( updateCheckManager );
         setMetadataFactories( metadataFactories );
@@ -109,6 +114,7 @@ public class DefaultDeployer
     {
         setLogger( locator.getService( Logger.class ) );
         setFileProcessor( locator.getService( FileProcessor.class ) );
+        setRepositoryEventDispatcher( locator.getService( RepositoryEventDispatcher.class ) );
         setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
         setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
         setMetadataFactories( locator.getServices( MetadataGeneratorFactory.class ) );
@@ -127,6 +133,16 @@ public class DefaultDeployer
             throw new IllegalArgumentException( "file processor has not been specified" );
         }
         this.fileProcessor = fileProcessor;
+        return this;
+    }
+
+    public DefaultDeployer setRepositoryEventDispatcher( RepositoryEventDispatcher repositoryEventDispatcher )
+    {
+        if ( repositoryEventDispatcher == null )
+        {
+            throw new IllegalArgumentException( "repository event dispatcher has not been specified" );
+        }
+        this.repositoryEventDispatcher = repositoryEventDispatcher;
         return this;
     }
 
@@ -203,7 +219,7 @@ public class DefaultDeployer
             List<MetadataUpload> metadataUploads = new ArrayList<MetadataUpload>();
             IdentityHashMap<Metadata, Object> processedMetadata = new IdentityHashMap<Metadata, Object>();
 
-            EventCatapult catapult = new EventCatapult( session, repository );
+            EventCatapult catapult = new EventCatapult( session, repository, repositoryEventDispatcher );
 
             List<Artifact> artifacts = new ArrayList<Artifact>( request.getArtifacts() );
 
@@ -317,18 +333,16 @@ public class DefaultDeployer
         {
             if ( !( (MergeableMetadata) metadata ).isMerged() )
             {
-                RepositoryListener listener = session.getRepositoryListener();
-                if ( listener != null )
                 {
                     DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVING, session );
                     event.setMetadata( metadata );
                     event.setRepository( repository );
-                    listener.metadataResolving( event );
+                    repositoryEventDispatcher.dispatch( event );
 
                     event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADING, session );
                     event.setMetadata( metadata );
                     event.setRepository( repository );
-                    listener.metadataDownloading( event );
+                    repositoryEventDispatcher.dispatch( event );
                 }
 
                 RepositoryPolicy policy = getPolicy( session, repository, metadata.getNature() );
@@ -338,21 +352,20 @@ public class DefaultDeployer
                 download.setChecksumPolicy( policy.getChecksumPolicy() );
                 connector.get( null, Arrays.asList( download ) );
 
-                if ( listener != null )
                 {
                     DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADED, session );
                     event.setMetadata( metadata );
                     event.setRepository( repository );
                     event.setException( download.getException() );
                     event.setFile( dstFile );
-                    listener.metadataDownloaded( event );
+                    repositoryEventDispatcher.dispatch( event );
 
                     event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVED, session );
                     event.setMetadata( metadata );
                     event.setRepository( repository );
                     event.setException( download.getException() );
                     event.setFile( dstFile );
-                    listener.metadataResolved( event );
+                    repositoryEventDispatcher.dispatch( event );
                 }
 
                 Exception error = download.getException();
@@ -413,64 +426,56 @@ public class DefaultDeployer
 
         private final RemoteRepository repository;
 
-        public EventCatapult( RepositorySystemSession session, RemoteRepository repository )
+        private final RepositoryEventDispatcher dispatcher;
+
+        public EventCatapult( RepositorySystemSession session, RemoteRepository repository,
+                              RepositoryEventDispatcher dispatcher )
         {
             this.session = session;
             this.repository = repository;
+            this.dispatcher = dispatcher;
         }
 
         public void artifactDeploying( Artifact artifact, File file )
         {
-            RepositoryListener listener = session.getRepositoryListener();
-            if ( listener != null )
-            {
-                DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DEPLOYING, session );
-                event.setArtifact( artifact );
-                event.setRepository( repository );
-                event.setFile( file );
-                listener.artifactDeploying( event );
-            }
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DEPLOYING, session );
+            event.setArtifact( artifact );
+            event.setRepository( repository );
+            event.setFile( file );
+
+            dispatcher.dispatch( event );
         }
 
         public void artifactDeployed( Artifact artifact, File file, ArtifactTransferException exception )
         {
-            RepositoryListener listener = session.getRepositoryListener();
-            if ( listener != null )
-            {
-                DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DEPLOYED, session );
-                event.setArtifact( artifact );
-                event.setRepository( repository );
-                event.setFile( file );
-                event.setException( exception );
-                listener.artifactDeployed( event );
-            }
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DEPLOYED, session );
+            event.setArtifact( artifact );
+            event.setRepository( repository );
+            event.setFile( file );
+            event.setException( exception );
+
+            dispatcher.dispatch( event );
         }
 
         public void metadataDeploying( Metadata metadata, File file )
         {
-            RepositoryListener listener = session.getRepositoryListener();
-            if ( listener != null )
-            {
-                DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DEPLOYING, session );
-                event.setMetadata( metadata );
-                event.setRepository( repository );
-                event.setFile( file );
-                listener.metadataDeploying( event );
-            }
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DEPLOYING, session );
+            event.setMetadata( metadata );
+            event.setRepository( repository );
+            event.setFile( file );
+
+            dispatcher.dispatch( event );
         }
 
         public void metadataDeployed( Metadata metadata, File file, Exception exception )
         {
-            RepositoryListener listener = session.getRepositoryListener();
-            if ( listener != null )
-            {
-                DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DEPLOYED, session );
-                event.setMetadata( metadata );
-                event.setRepository( repository );
-                event.setFile( file );
-                event.setException( exception );
-                listener.metadataDeployed( event );
-            }
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DEPLOYED, session );
+            event.setMetadata( metadata );
+            event.setRepository( repository );
+            event.setFile( file );
+            event.setException( exception );
+
+            dispatcher.dispatch( event );
         }
 
     }
