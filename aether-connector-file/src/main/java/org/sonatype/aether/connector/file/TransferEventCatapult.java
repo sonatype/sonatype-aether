@@ -8,6 +8,7 @@ package org.sonatype.aether.connector.file;
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
+import org.sonatype.aether.transfer.AbstractTransferListener;
 import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferListener;
@@ -25,7 +26,6 @@ class TransferEventCatapult
 
     public TransferEventCatapult( TransferListener listener )
     {
-        super();
         if ( listener == null )
         {
             this.listener = new NoTransferListener();
@@ -75,38 +75,10 @@ class TransferEventCatapult
         event.setType( TransferEvent.EventType.PROGRESSED );
         listener.transferProgressed( event );
     }
-    
 
     private final class NoTransferListener
-        implements TransferListener
+        extends AbstractTransferListener
     {
-        public void transferSucceeded( TransferEvent event )
-        {
-        }
-    
-        public void transferStarted( TransferEvent event )
-            throws TransferCancelledException
-        {
-        }
-    
-        public void transferProgressed( TransferEvent event )
-            throws TransferCancelledException
-        {
-        }
-    
-        public void transferInitiated( TransferEvent event )
-            throws TransferCancelledException
-        {
-        }
-    
-        public void transferFailed( TransferEvent event )
-        {
-        }
-    
-        public void transferCorrupted( TransferEvent event )
-            throws TransferCancelledException
-        {
-        }
     }
 
 }
