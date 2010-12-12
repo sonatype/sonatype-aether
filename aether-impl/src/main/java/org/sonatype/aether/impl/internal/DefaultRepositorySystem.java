@@ -411,8 +411,8 @@ public class DefaultRepositorySystem
 
         StringBuilder buffer = new StringBuilder( 256 );
         buffer.append( "No manager available for local repository " );
-        buffer.append( " (" ).append( localRepository.getBasedir() );
-        buffer.append( ") of type " ).append( localRepository.getContentType() );
+        buffer.append( localRepository.getBasedir() );
+        buffer.append( " of type " ).append( localRepository.getContentType() );
         buffer.append( " using the available factories " );
         for ( ListIterator<LocalRepositoryManagerFactory> it = factories.listIterator(); it.hasNext(); )
         {
