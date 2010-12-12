@@ -17,6 +17,7 @@ import org.junit.Test;
 /**
  * @author Benjamin Bentmann
  */
+@SuppressWarnings( "deprecation" )
 public class AbstractLocalRepositoryMaintainerTest
 {
 
