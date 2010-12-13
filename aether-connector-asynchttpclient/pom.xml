@@ -71,8 +71,8 @@ http://www.eclipse.org/legal/epl-v10.html
       <scope>test</scope>
       <exclusions>
         <exclusion>
-        <artifactId>logback-classic</artifactId>
-        <groupId>ch.qos.logback</groupId>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
