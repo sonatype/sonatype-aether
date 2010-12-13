@@ -13,6 +13,7 @@ import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 import com.ning.http.client.HttpResponseBodyPart;
+import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.ProxyServer;
 import com.ning.http.client.ProxyServer.Protocol;
 import com.ning.http.client.Realm;
@@ -413,7 +414,6 @@ class AsyncRepositoryConnector
 
                 // Position the file to the end in case we are resuming an aborded download.
                 final RandomAccessFile resumableFile = new RandomAccessFile( tmp, "rws" );
-                resumableFile.seek( tmp.length() );
 
                 FluentCaseInsensitiveStringsMap headers = new FluentCaseInsensitiveStringsMap();
                 if ( !useCache )
@@ -427,6 +427,28 @@ class AsyncRepositoryConnector
                 final AtomicInteger maxRequestTry = new AtomicInteger();
                 completionHandler = new CompletionHandler( transferResource, httpClient, logger, RequestType.GET )
                 {
+                    private final AtomicBoolean acceptRange = new AtomicBoolean(false);
+
+                    /**
+                     * {@inheritDoc}
+                     */
+                    @Override
+                    public STATE onHeadersReceived( final HttpResponseHeaders headers )
+                        throws Exception
+                    {
+
+                        for ( String header : headers.getHeaders().keySet() )
+                        {
+                            // Make sure the server acceptance of the range requests headers
+                            if ( header.compareToIgnoreCase( "Accept-Range" ) == 0 &&
+                                headers.getHeaders().getFirstValue( header ).compareToIgnoreCase( "none" ) != 0 )
+                            {
+                                acceptRange.set( true );
+                            }
+                        }
+                        return super.onHeadersReceived( headers );
+                    }
+
                     @Override
                     public void onThrowable( Throwable t )
                     {
@@ -499,6 +521,9 @@ class AsyncRepositoryConnector
                             byte[] bytes = content.getBodyPartBytes();
                             try
                             {
+                                if ( acceptRange.get() ) {
+                                    resumableFile.seek( tmp.length() );
+                                }
                                 resumableFile.write( bytes );
                             }
                             catch ( IOException ex )
