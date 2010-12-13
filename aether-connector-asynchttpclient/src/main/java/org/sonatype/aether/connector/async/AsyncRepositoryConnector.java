@@ -54,16 +54,7 @@ import org.sonatype.aether.util.layout.RepositoryLayout;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
-import java.io.BufferedOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.nio.channels.FileLock;
 import java.util.ArrayList;
@@ -1082,9 +1073,20 @@ class AsyncRepositoryConnector
     {
         File f = new File( path + ".tmp" );
         File parentFile = f.getParentFile();
-        if ( parentFile.isDirectory() )
+        if ( parentFile.isDirectory() && !path.endsWith( ".tmp" ) )
         {
-            for ( File tmpFile : parentFile.listFiles() )
+            for ( File tmpFile : parentFile.listFiles( new FilenameFilter()
+            {
+                public boolean accept( File dir, String name )
+                {
+                    // TODO: to loose condition. Must look for the last index.
+                    if ( name.contains( ".tmp" ) )
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+            } ) )
             {
                 if ( tmpFile.length() > 0 && tmpFile.getName().lastIndexOf( "." ) != -1 )
                 {
@@ -1118,11 +1120,13 @@ class AsyncRepositoryConnector
                                 close( stream, tmpFile );
                             }
 
-                            return (newFile != null && moved) ? newFile : tmpFile;
+                            return ( newFile != null && moved ) ? newFile : tmpFile;
                         }
                     }
-                } else {
-                    tmpFile.delete();
+                }
+                else if ( tmpFile.length() == 0 )
+                {
+                    tmpFile.deleteOnExit();
                 }
             }
         }
