@@ -410,10 +410,17 @@ class AsyncRepositoryConnector
             {
                 final ChecksumTransferListener sha1 = new ChecksumTransferListener( "SHA-1" );
                 final ChecksumTransferListener md5 = new ChecksumTransferListener( "MD5" );
-                fileProcessor.mkdirs( tmp.getParentFile() );
+
+                long length = 0;
+                if (tmp != null) {
+                    fileProcessor.mkdirs( tmp.getParentFile() );
+                }
 
                 // Position the file to the end in case we are resuming an aborded download.
-                final RandomAccessFile resumableFile = new RandomAccessFile( tmp, "rws" );
+                final RandomAccessFile resumableFile = tmp == null ? null : new RandomAccessFile( tmp, "rws" );
+                if (resumableFile != null) {
+                    length = resumableFile.length();
+                }
 
                 FluentCaseInsensitiveStringsMap headers = new FluentCaseInsensitiveStringsMap();
                 if ( !useCache )
@@ -422,9 +429,10 @@ class AsyncRepositoryConnector
                 }
                 headers.add( "Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2" );
 
-                final Request request = httpClient.prepareGet( uri ).setRangeOffset( resumableFile.length() ).setHeaders( headers ).build();
+                final Request request = httpClient.prepareGet( uri ).setRangeOffset(length).setHeaders( headers ).build();
 
                 final AtomicInteger maxRequestTry = new AtomicInteger();
+
                 completionHandler = new CompletionHandler( transferResource, httpClient, logger, RequestType.GET )
                 {
                     private final AtomicBoolean acceptRange = new AtomicBoolean(false);
@@ -646,6 +654,7 @@ class AsyncRepositoryConnector
                     }
 
                 };
+
 
                 try
                 {
