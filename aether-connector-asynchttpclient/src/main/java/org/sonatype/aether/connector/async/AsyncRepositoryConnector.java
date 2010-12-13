@@ -1121,6 +1121,8 @@ class AsyncRepositoryConnector
                             return (newFile != null && moved) ? newFile : tmpFile;
                         }
                     }
+                } else {
+                    tmpFile.delete();
                 }
             }
         }
