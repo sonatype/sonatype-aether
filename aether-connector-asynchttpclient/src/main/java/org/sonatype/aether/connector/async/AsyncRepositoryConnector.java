@@ -1155,7 +1155,14 @@ class AsyncRepositoryConnector
             {
                 if ( tmpFile.length() > 0 && tmpFile.getName().lastIndexOf( "." ) != -1 )
                 {
-                    String realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ) );
+                    String realPath = null;
+                    if (tmpFile.getPath().endsWith( "resumable" )) {
+                        int index = tmpFile.getPath().lastIndexOf( "." );
+                        realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." , index - 1) );
+                    } else {
+                        realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ) );
+                    }
+
                     if ( realPath.equals( path ) )
                     {
                         File newFile = null;
