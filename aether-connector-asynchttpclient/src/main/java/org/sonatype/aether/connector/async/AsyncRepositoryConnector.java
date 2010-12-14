@@ -87,6 +87,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 class AsyncRepositoryConnector
     implements RepositoryConnector
 {
+    private final static String RESUMABLE_EXT = ".resumable";
+    
     private final Logger logger;
 
     private final FileProcessor fileProcessor;
@@ -1145,7 +1147,7 @@ class AsyncRepositoryConnector
             {
                 public boolean accept( File dir, String name )
                 {
-                    if ( name.endsWith( ".resumable" ) || ( name.lastIndexOf( "." ) == name.indexOf( ".tmp" ) ) )
+                    if ( name.endsWith( RESUMABLE_EXT ) || ( name.lastIndexOf( "." ) == name.indexOf( ".tmp" ) ) )
                     {
                         return true;
                     }
@@ -1174,20 +1176,24 @@ class AsyncRepositoryConnector
                             FileInputStream stream = null;
                             FileLock lock = null;
                             boolean moved = false;
+                            logger.debug(String.format("Found an incomplete download for file %s.", path) );
                             try
                             {
                                 stream = new FileInputStream( tmpFile );
                                 lock = stream.getChannel().lock( 0, Math.max( 1, tmpFile.length() ), true );
 
-                                if ( !tmpFile.getCanonicalPath().endsWith( ".resumable" ) )
+                                if ( !tmpFile.getCanonicalPath().endsWith( RESUMABLE_EXT ) )
                                 {
-                                    newFile = new File( tmpFile.getCanonicalPath() + ".resumable" );
-                                    fileProcessor.move( tmpFile, newFile );
+                                    newFile = new File( tmpFile.getCanonicalPath() + RESUMABLE_EXT );
                                 }
                                 else
                                 {
-                                    newFile = tmpFile;
+                                    // Regenerate another file to make sure two processes aren't using the same file.
+                                    newFile = new File( path + ".tmp" +
+                                                            UUID.randomUUID().toString().replace( "-", "" ).substring(
+                                                                0, 16 ) + RESUMABLE_EXT );
                                 }
+                                fileProcessor.move( tmpFile, newFile );
                                 moved = true;
                             }
                             catch ( FileNotFoundException e )
