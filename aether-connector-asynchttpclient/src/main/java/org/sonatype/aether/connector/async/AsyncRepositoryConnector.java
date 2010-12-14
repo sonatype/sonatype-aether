@@ -1145,7 +1145,7 @@ class AsyncRepositoryConnector
             {
                 public boolean accept( File dir, String name )
                 {
-                    if ( name.endsWith( ".resumable" ) || (name.lastIndexOf(".") == name.indexOf( ".tmp" ) ) )
+                    if ( name.endsWith( ".resumable" ) || ( name.lastIndexOf( "." ) == name.indexOf( ".tmp" ) ) )
                     {
                         return true;
                     }
@@ -1156,10 +1156,13 @@ class AsyncRepositoryConnector
                 if ( tmpFile.length() > 0 && tmpFile.getName().lastIndexOf( "." ) != -1 )
                 {
                     String realPath = null;
-                    if (tmpFile.getPath().endsWith( "resumable" )) {
+                    if ( tmpFile.getPath().endsWith( "resumable" ) )
+                    {
                         int index = tmpFile.getPath().lastIndexOf( "." );
-                        realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." , index - 1) );
-                    } else {
+                        realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( ".", index - 1 ) );
+                    }
+                    else
+                    {
                         realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ) );
                     }
 
