@@ -55,7 +55,17 @@ import org.sonatype.aether.util.layout.RepositoryLayout;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.nio.channels.FileLock;
 import java.util.ArrayList;
@@ -93,6 +103,8 @@ class AsyncRepositoryConnector
 
     private final TransferListener listener;
 
+    private final RepositorySystemSession session;
+
     private boolean useCache = false;
 
     /**
@@ -112,6 +124,7 @@ class AsyncRepositoryConnector
         this.repository = repository;
         this.listener = session.getTransferListener();
         this.fileProcessor = fileProcessor;
+        this.session = session;
 
         if ( !"default".equals( repository.getContentType() ) )
         {
@@ -124,7 +137,7 @@ class AsyncRepositoryConnector
             throw new NoRepositoryConnectorException( repository );
         }
 
-        AsyncHttpClientConfig config = createConfig( session, repository );
+        AsyncHttpClientConfig config = createConfig( session, repository , true);
         httpClient = new AsyncHttpClient( new NettyAsyncHttpProvider( config ) );
 
         checksumAlgos = new LinkedHashMap<String, String>();
@@ -177,7 +190,7 @@ class AsyncRepositoryConnector
      * @param session {link RepositorySystemSession}
      * @return a configured instance of
      */
-    private AsyncHttpClientConfig createConfig( RepositorySystemSession session, RemoteRepository repository )
+    private AsyncHttpClientConfig createConfig( RepositorySystemSession session, RemoteRepository repository, boolean useCompression )
     {
         AsyncHttpClientConfig.Builder configBuilder = new AsyncHttpClientConfig.Builder();
 
@@ -191,7 +204,7 @@ class AsyncRepositoryConnector
                                                           ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
 
         configBuilder.setConnectionTimeoutInMs( connectTimeout );
-        configBuilder.setCompressionEnabled( true );
+        configBuilder.setCompressionEnabled( useCompression );
         configBuilder.setFollowRedirects( true );
         configBuilder.setRequestTimeoutInMs(
             ConfigurationProperties.get( session, ConfigurationProperties.REQUEST_TIMEOUT,
@@ -429,10 +442,29 @@ class AsyncRepositoryConnector
                 }
                 headers.add( "Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2" );
 
-                final Request request = httpClient.prepareGet( uri ).setRangeOffset(length).setHeaders( headers ).build();
-
+                Request request = null;
                 final AtomicInteger maxRequestTry = new AtomicInteger();
+                AsyncHttpClient client = httpClient;
 
+                /**
+                 * If length > 0, it means we are resuming a interrupted download. If that's the case,
+                 * we can't re-use the current httpClient because compression is enabled, and supporting
+                 * compression per request is not supported in ahc and may never has it could have
+                 * a performance impact.
+                 */
+                if ( length > 0 )
+                {
+                    AsyncHttpClientConfig config = createConfig( session, repository, false );
+                    client = new AsyncHttpClient( new NettyAsyncHttpProvider( config ) );
+                    request = client.prepareGet( uri ).setRangeOffset( length ).setHeaders( headers ).build();
+                }
+                else
+                {
+                    request = httpClient.prepareGet( uri ).setHeaders( headers ).build();
+                }
+
+                final Request activeRequest = request;
+                final AsyncHttpClient activeHttpClient = client;
                 completionHandler = new CompletionHandler( transferResource, httpClient, logger, RequestType.GET )
                 {
                     private final AtomicBoolean acceptRange = new AtomicBoolean(false);
@@ -448,7 +480,7 @@ class AsyncRepositoryConnector
                         for ( String header : headers.getHeaders().keySet() )
                         {
                             // Make sure the server acceptance of the range requests headers
-                            if ( header.compareToIgnoreCase( "Accept-Range" ) == 0 &&
+                            if ( header.compareToIgnoreCase( "Content-Range" ) == 0 &&
                                 headers.getHeaders().getFirstValue( header ).compareToIgnoreCase( "none" ) != 0 )
                             {
                                 acceptRange.set( true );
@@ -470,8 +502,8 @@ class AsyncRepositoryConnector
                             {
                                 maxRequestTry.incrementAndGet();
                                 Request newRequest =
-                                    new RequestBuilder( request ).setRangeOffset( resumableFile.length() ).build();
-                                httpClient.executeRequest( newRequest, this );
+                                    new RequestBuilder( activeRequest ).setRangeOffset( resumableFile.length() ).build();
+                                activeHttpClient.executeRequest( newRequest, this );
                                 deleteFile.set(false);
                                 return;
                             }
@@ -524,7 +556,7 @@ class AsyncRepositoryConnector
                     public STATE onBodyPartReceived( final HttpResponseBodyPart content )
                         throws Exception
                     {
-                        if ( status() != null && status().getStatusCode() == 200 )
+                        if ( status() != null && ( status().getStatusCode() == 200 || status().getStatusCode() == 206) )
                         {
                             byte[] bytes = content.getBodyPartBytes();
                             try
@@ -562,7 +594,7 @@ class AsyncRepositoryConnector
 
                             if ( !ignoreChecksum )
                             {
-                                httpClient.getConfig().executorService().execute( new Runnable()
+                                activeHttpClient.getConfig().executorService().execute( new Runnable()
                                 {
                                     public void run()
                                     {
@@ -682,7 +714,7 @@ class AsyncRepositoryConnector
                             completionHandler.addTransferListener( sha1 );
                         }
 
-                        httpClient.executeRequest( request, completionHandler );
+                        activeHttpClient.executeRequest( request, completionHandler );
                     }
                 }
                 catch ( Exception ex )
@@ -1113,8 +1145,7 @@ class AsyncRepositoryConnector
             {
                 public boolean accept( File dir, String name )
                 {
-                    // TODO: to loose condition. Must look for the last index.
-                    if ( name.contains( ".tmp" ) )
+                    if ( name.endsWith( ".resumable" ) || (name.lastIndexOf(".") == name.indexOf( ".tmp" ) ) )
                     {
                         return true;
                     }
@@ -1137,8 +1168,16 @@ class AsyncRepositoryConnector
                             {
                                 stream = new FileInputStream( tmpFile );
                                 lock = stream.getChannel().lock( 0, Math.max( 1, tmpFile.length() ), true );
-                                newFile = new File( tmpFile.getCanonicalPath() + ".resumable" );
-                                fileProcessor.move( tmpFile, newFile );
+
+                                if ( !tmpFile.getCanonicalPath().endsWith( ".resumable" ) )
+                                {
+                                    newFile = new File( tmpFile.getCanonicalPath() + ".resumable" );
+                                    fileProcessor.move( tmpFile, newFile );
+                                }
+                                else
+                                {
+                                    newFile = tmpFile;
+                                }
                                 moved = true;
                             }
                             catch ( FileNotFoundException e )
