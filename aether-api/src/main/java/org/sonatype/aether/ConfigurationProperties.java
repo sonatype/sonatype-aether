@@ -117,7 +117,7 @@ public final class ConfigurationProperties
      * 
      * @param properties The configuration properties to read, must not be {@code null}.
      * @param key The property to read, must not be {@code null}.
-     * @param defaultValue The default value to return in case the property isn't set, may be {@code null}.
+     * @param defaultValue The default value to return in case the property isn't set.
      * @return The property value.
      */
     public static int get( Map<?, ?> properties, String key, int defaultValue )
@@ -145,7 +145,7 @@ public final class ConfigurationProperties
      * @param session The repository system session from which to read the configuration property, must not be
      *            {@code null}.
      * @param key The property to read, must not be {@code null}.
-     * @param defaultValue The default value to return in case the property isn't set, may be {@code null}.
+     * @param defaultValue The default value to return in case the property isn't set.
      * @return The property value.
      */
     public static int get( RepositorySystemSession session, String key, int defaultValue )
@@ -158,7 +158,7 @@ public final class ConfigurationProperties
      * 
      * @param properties The configuration properties to read, must not be {@code null}.
      * @param key The property to read, must not be {@code null}.
-     * @param defaultValue The default value to return in case the property isn't set, may be {@code null}.
+     * @param defaultValue The default value to return in case the property isn't set.
      * @return The property value.
      */
     public static boolean get( Map<?, ?> properties, String key, boolean defaultValue )
@@ -183,7 +183,7 @@ public final class ConfigurationProperties
      * @param session The repository system session from which to read the configuration property, must not be
      *            {@code null}.
      * @param key The property to read, must not be {@code null}.
-     * @param defaultValue The default value to return in case the property isn't set, may be {@code null}.
+     * @param defaultValue The default value to return in case the property isn't set.
      * @return The property value.
      */
     public static boolean get( RepositorySystemSession session, String key, boolean defaultValue )
