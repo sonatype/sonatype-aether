@@ -1197,7 +1197,7 @@ class AsyncRepositoryConnector
                                 try
                                 {
                                     stream = new FileInputStream( tmpFile );
-                                    lock = stream.getChannel().lock( 0, Math.max( 1, tmpFile.length() ), false );
+                                    lock = stream.getChannel().lock( 0, Math.max( 1, tmpFile.length() ), true );
 
                                     if ( !tmpFile.getCanonicalPath().endsWith( RESUMABLE_EXT ) )
                                     {
