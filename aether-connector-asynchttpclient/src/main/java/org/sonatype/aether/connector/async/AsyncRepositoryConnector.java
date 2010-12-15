@@ -1190,23 +1190,14 @@ class AsyncRepositoryConnector
                             synchronized ( getLock( tmpFile ) )
                             {
                                 FileInputStream stream = null;
-                                boolean moved = false;
                                 logger.debug( String.format( "Found an incomplete download for file %s.", path ) );
                                 try
                                 {
                                     stream = new FileInputStream( tmpFile );
-                                    if ( !tmpFile.getCanonicalPath().endsWith( RESUMABLE_EXT ) )
-                                    {
-                                        newFile = new File( tmpFile.getCanonicalPath() + RESUMABLE_EXT );
-                                    }
-                                    else
-                                    {
-                                        // Regenerate another file to make sure two processes aren't using the same file.
-                                        newFile = new File( path + ".tmp"
+                                    newFile = new File( path + ".tmp"
                                           + UUID.randomUUID().toString().replace( "-", "" ).substring( 0, 16 ) + RESUMABLE_EXT );
-                                    }
+
                                     fileProcessor.move( tmpFile, newFile );
-                                    moved = true;
                                 }
                                 catch ( FileNotFoundException e )
                                 {
@@ -1214,6 +1205,7 @@ class AsyncRepositoryConnector
                                 catch ( IOException e )
                                 {
                                     logger.debug( "Failed to move " + tmpFile, e );
+
                                     /**
                                      * If we fail to move a file for whatever reason, take any risk and recreate a
                                      * temporary file.
@@ -1225,7 +1217,7 @@ class AsyncRepositoryConnector
                                     close( stream, tmpFile );
                                 }
 
-                                return ( newFile != null && moved ) ? newFile : tmpFile;
+                                return ( newFile != null ) ? newFile : tmpFile;
                             }
                         }
                     }
