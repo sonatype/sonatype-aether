@@ -67,7 +67,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
-import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1215,6 +1214,11 @@ class AsyncRepositoryConnector
                                 catch ( IOException e )
                                 {
                                     logger.debug( "Failed to move " + tmpFile, e );
+                                    /**
+                                     * If we fail to move a file for whatever reason, take any risk and recreate a
+                                     * temporary file.
+                                     */
+                                    newFile = getTmpFile( path );
                                 }
                                 finally
                                 {
