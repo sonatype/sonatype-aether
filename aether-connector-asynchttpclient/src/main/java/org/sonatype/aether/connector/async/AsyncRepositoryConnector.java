@@ -58,8 +58,6 @@ import org.sonatype.aether.util.listener.DefaultTransferResource;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -1151,8 +1149,8 @@ class AsyncRepositoryConnector
 
     private File createOrGetTmpFile( String path )
     {
-
-        if ( !disableResumeSupport )
+        File realFile = new File(path);
+        if ( !disableResumeSupport && !realFile.exists() )
         {
             File f = new File( path + ".tmp" );
             File parentFile = f.getParentFile();
@@ -1189,18 +1187,14 @@ class AsyncRepositoryConnector
                             File newFile = null;
                             synchronized ( getLock( tmpFile ) )
                             {
-                                FileInputStream stream = null;
                                 logger.debug( String.format( "Found an incomplete download for file %s.", path ) );
                                 try
                                 {
-                                    stream = new FileInputStream( tmpFile );
                                     newFile = new File( path + ".tmp"
                                           + UUID.randomUUID().toString().replace( "-", "" ).substring( 0, 16 ) + RESUMABLE_EXT );
 
-                                    fileProcessor.move( tmpFile, newFile );
-                                }
-                                catch ( FileNotFoundException e )
-                                {
+                                    fileProcessor.copy( tmpFile, newFile, null );
+                                    tmpFile.deleteOnExit();
                                 }
                                 catch ( IOException e )
                                 {
@@ -1212,11 +1206,6 @@ class AsyncRepositoryConnector
                                      */
                                     newFile = getTmpFile( path );
                                 }
-                                finally
-                                {
-                                    close( stream, tmpFile );
-                                }
-
                                 return ( newFile != null ) ? newFile : tmpFile;
                             }
                         }
