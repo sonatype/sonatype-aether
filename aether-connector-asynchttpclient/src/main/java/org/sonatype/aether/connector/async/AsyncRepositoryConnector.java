@@ -1191,14 +1191,11 @@ class AsyncRepositoryConnector
                             synchronized ( getLock( tmpFile ) )
                             {
                                 FileInputStream stream = null;
-                                FileLock lock = null;
                                 boolean moved = false;
                                 logger.debug( String.format( "Found an incomplete download for file %s.", path ) );
                                 try
                                 {
                                     stream = new FileInputStream( tmpFile );
-                                    lock = stream.getChannel().lock( 0, Math.max( 1, tmpFile.length() ), true );
-
                                     if ( !tmpFile.getCanonicalPath().endsWith( RESUMABLE_EXT ) )
                                     {
                                         newFile = new File( tmpFile.getCanonicalPath() + RESUMABLE_EXT );
@@ -1221,7 +1218,6 @@ class AsyncRepositoryConnector
                                 }
                                 finally
                                 {
-                                    release( lock, tmpFile );
                                     close( stream, tmpFile );
                                 }
 
@@ -1291,21 +1287,6 @@ class AsyncRepositoryConnector
             if ( !done.getAndSet( true ) )
             {
                 latch.countDown();
-            }
-        }
-    }
-
-    private void release( FileLock lock, File file )
-    {
-        if ( lock != null )
-        {
-            try
-            {
-                lock.release();
-            }
-            catch ( IOException e )
-            {
-                logger.debug( "Error releasing resumable file " + file, e );
             }
         }
     }
