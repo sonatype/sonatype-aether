@@ -1174,7 +1174,7 @@ class AsyncRepositoryConnector
                     if ( tmpFile.length() > 0 && tmpFile.getName().lastIndexOf( "." ) != -1 )
                     {
                         String realPath = null;
-                        if ( tmpFile.getPath().endsWith( "resumable" ) )
+                        if ( tmpFile.getPath().endsWith( RESUMABLE_EXT ) )
                         {
                             int index = tmpFile.getPath().lastIndexOf( "." );
                             realPath =
