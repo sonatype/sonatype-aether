@@ -1206,9 +1206,8 @@ class AsyncRepositoryConnector
                                     else
                                     {
                                         // Regenerate another file to make sure two processes aren't using the same file.
-                                        newFile = new File( path + ".tmp" + UUID.randomUUID().toString().replace( "-",
-                                                                                                                  "" ).substring(
-                                            0, 16 ) + RESUMABLE_EXT );
+                                        newFile = new File( path + ".tmp"
+                                          + UUID.randomUUID().toString().replace( "-", "" ).substring( 0, 16 ) + RESUMABLE_EXT );
                                     }
                                     fileProcessor.move( tmpFile, newFile );
                                     moved = true;
