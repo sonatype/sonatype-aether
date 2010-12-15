@@ -148,7 +148,7 @@ class AsyncRepositoryConnector
         checksumAlgos.put( "SHA-1", ".sha1" );
         checksumAlgos.put( "MD5", ".md5" );
 
-        disableResumeSupport = ConfigurationProperties.get( session, "aether.connector.asynchttpclient.resume", false);
+        disableResumeSupport = ConfigurationProperties.get( session, "aether.connector.ahc.disableResumable", false);
     }
 
     private Realm getRealm( RemoteRepository repository )
