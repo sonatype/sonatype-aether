@@ -109,8 +109,10 @@ class AsyncRepositoryConnector
 
     private boolean useCache = false;
 
+    private final boolean disableResumeSupport;
+
     /**
-     * Create an {@link org.sonatype.aether.connector.async.AsyncRepositoryConnector} instance which connec to the
+     * Create an {@link org.sonatype.aether.connector.async.AsyncRepositoryConnector} instance which connect to the
      * {@link RemoteRepository}
      *
      * @param repository the remote repository
@@ -145,6 +147,8 @@ class AsyncRepositoryConnector
         checksumAlgos = new LinkedHashMap<String, String>();
         checksumAlgos.put( "SHA-1", ".sha1" );
         checksumAlgos.put( "MD5", ".md5" );
+
+        disableResumeSupport = ConfigurationProperties.get( session, "aether.connector.asynchttpclient.resume", false);
     }
 
     private Realm getRealm( RemoteRepository repository )
@@ -418,7 +422,6 @@ class AsyncRepositoryConnector
             final boolean ignoreChecksum = RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy );
             CompletionHandler completionHandler = null;
 
-            // TODO: Is file can really be null?
             final File tmp = ( file != null ) ? createOrGetTmpFile( file.getPath() ) : null;
 
             try
@@ -447,6 +450,7 @@ class AsyncRepositoryConnector
                 Request request = null;
                 final AtomicInteger maxRequestTry = new AtomicInteger();
                 AsyncHttpClient client = httpClient;
+                final AtomicBoolean closeOnComplete = new AtomicBoolean(false);
 
                 /**
                  * If length > 0, it means we are resuming a interrupted download. If that's the case,
@@ -459,6 +463,7 @@ class AsyncRepositoryConnector
                     AsyncHttpClientConfig config = createConfig( session, repository, false );
                     client = new AsyncHttpClient( new NettyAsyncHttpProvider( config ) );
                     request = client.prepareGet( uri ).setRangeOffset( length ).setHeaders( headers ).build();
+                    closeOnComplete.set(true);
                 }
                 else
                 {
@@ -479,14 +484,12 @@ class AsyncRepositoryConnector
                         throws Exception
                     {
 
-                        for ( String header : headers.getHeaders().keySet() )
+                        FluentCaseInsensitiveStringsMap h = headers.getHeaders();
+                        String rangeByteValue = h.getFirstValue( "Content-Range" );
+                        // Make sure the server acceptance of the range requests headers
+                        if ( rangeByteValue != null && rangeByteValue.compareToIgnoreCase( "none" ) != 0 )
                         {
-                            // Make sure the server acceptance of the range requests headers
-                            if ( header.compareToIgnoreCase( "Content-Range" ) == 0 &&
-                                headers.getHeaders().getFirstValue( header ).compareToIgnoreCase( "none" ) != 0 )
-                            {
-                                acceptRange.set( true );
-                            }
+                            acceptRange.set( true );
                         }
                         return super.onHeadersReceived( headers );
                     }
@@ -508,6 +511,11 @@ class AsyncRepositoryConnector
                                 activeHttpClient.executeRequest( newRequest, this );
                                 deleteFile.set(false);
                                 return;
+                            }
+
+                            if ( closeOnComplete.get() )
+                            {
+                                activeHttpClient.close();
                             }
 
                             super.onThrowable( t );
@@ -645,6 +653,11 @@ class AsyncRepositoryConnector
 
                                             deleteFile( tmp );
                                             latch.countDown();
+
+                                            if ( closeOnComplete.get() )
+                                            {
+                                                activeHttpClient.close();
+                                            }
                                         }
                                     }
                                 } );
@@ -1139,83 +1152,84 @@ class AsyncRepositoryConnector
 
     private File createOrGetTmpFile( String path )
     {
-        File f = new File( path + ".tmp" );
-        File parentFile = f.getParentFile();
-        if ( parentFile.isDirectory() && !path.endsWith( ".tmp" ) )
+
+        if ( !disableResumeSupport )
         {
-            for ( File tmpFile : parentFile.listFiles( new FilenameFilter()
+            File f = new File( path + ".tmp" );
+            File parentFile = f.getParentFile();
+            if ( parentFile.isDirectory() && !path.endsWith( ".tmp" ) )
             {
-                public boolean accept( File dir, String name )
+                for ( File tmpFile : parentFile.listFiles( new FilenameFilter()
                 {
-                    if ( name.endsWith( RESUMABLE_EXT ) || ( name.lastIndexOf( "." ) == name.indexOf( ".tmp" ) ) )
+                    public boolean accept( File dir, String name )
                     {
-                        return true;
-                    }
-                    return false;
-                }
-            } ) )
-            {
-                if ( tmpFile.length() > 0 && tmpFile.getName().lastIndexOf( "." ) != -1 )
-                {
-                    String realPath = null;
-                    if ( tmpFile.getPath().endsWith( "resumable" ) )
-                    {
-                        int index = tmpFile.getPath().lastIndexOf( "." );
-                        realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( ".", index - 1 ) );
-                    }
-                    else
-                    {
-                        realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ) );
-                    }
-
-                    if ( realPath.equals( path ) )
-                    {
-                        File newFile = null;
-                        synchronized ( getLock( tmpFile ) )
+                        if ( name.endsWith( RESUMABLE_EXT ) || ( name.lastIndexOf( "." ) == name.indexOf( ".tmp" ) ) )
                         {
-                            FileInputStream stream = null;
-                            FileLock lock = null;
-                            boolean moved = false;
-                            logger.debug(String.format("Found an incomplete download for file %s.", path) );
-                            try
-                            {
-                                stream = new FileInputStream( tmpFile );
-                                lock = stream.getChannel().lock( 0, Math.max( 1, tmpFile.length() ), true );
+                            return true;
+                        }
+                        return false;
+                    }
+                } ) )
+                {
+                    if ( tmpFile.length() > 0 && tmpFile.getName().lastIndexOf( "." ) != -1 )
+                    {
+                        String realPath = null;
+                        if ( tmpFile.getPath().endsWith( "resumable" ) )
+                        {
+                            int index = tmpFile.getPath().lastIndexOf( "." );
+                            realPath =
+                                tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( ".", index - 1 ) );
+                        }
+                        else
+                        {
+                            realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ) );
+                        }
 
-                                if ( !tmpFile.getCanonicalPath().endsWith( RESUMABLE_EXT ) )
+                        if ( realPath.equals( path ) )
+                        {
+                            File newFile = null;
+                            synchronized ( getLock( tmpFile ) )
+                            {
+                                FileInputStream stream = null;
+                                FileLock lock = null;
+                                boolean moved = false;
+                                logger.debug( String.format( "Found an incomplete download for file %s.", path ) );
+                                try
                                 {
-                                    newFile = new File( tmpFile.getCanonicalPath() + RESUMABLE_EXT );
-                                }
-                                else
-                                {
-                                    // Regenerate another file to make sure two processes aren't using the same file.
-                                    newFile = new File( path + ".tmp" +
-                                                            UUID.randomUUID().toString().replace( "-", "" ).substring(
-                                                                0, 16 ) + RESUMABLE_EXT );
-                                }
-                                fileProcessor.move( tmpFile, newFile );
-                                moved = true;
-                            }
-                            catch ( FileNotFoundException e )
-                            {
-                            }
-                            catch ( IOException e )
-                            {
-                                logger.debug( "Failed to move " + tmpFile, e );
-                            }
-                            finally
-                            {
-                                release( lock, tmpFile );
-                                close( stream, tmpFile );
-                            }
+                                    stream = new FileInputStream( tmpFile );
+                                    lock = stream.getChannel().lock( 0, Math.max( 1, tmpFile.length() ), true );
 
-                            return ( newFile != null && moved ) ? newFile : tmpFile;
+                                    if ( !tmpFile.getCanonicalPath().endsWith( RESUMABLE_EXT ) )
+                                    {
+                                        newFile = new File( tmpFile.getCanonicalPath() + RESUMABLE_EXT );
+                                    }
+                                    else
+                                    {
+                                        // Regenerate another file to make sure two processes aren't using the same file.
+                                        newFile = new File( path + ".tmp" + UUID.randomUUID().toString().replace( "-",
+                                                                                                                  "" ).substring(
+                                            0, 16 ) + RESUMABLE_EXT );
+                                    }
+                                    fileProcessor.move( tmpFile, newFile );
+                                    moved = true;
+                                }
+                                catch ( FileNotFoundException e )
+                                {
+                                }
+                                catch ( IOException e )
+                                {
+                                    logger.debug( "Failed to move " + tmpFile, e );
+                                }
+                                finally
+                                {
+                                    release( lock, tmpFile );
+                                    close( stream, tmpFile );
+                                }
+
+                                return ( newFile != null && moved ) ? newFile : tmpFile;
+                            }
                         }
                     }
-                }
-                else if ( tmpFile.length() == 0 )
-                {
-                    tmpFile.deleteOnExit();
                 }
             }
         }
