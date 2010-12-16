@@ -73,6 +73,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -107,6 +108,8 @@ class AsyncRepositoryConnector
     private boolean useCache = false;
 
     private final boolean disableResumeSupport;
+
+    private final ConcurrentHashMap<RandomAccessFile, Boolean> activeDownloadFiles = new ConcurrentHashMap<RandomAccessFile, Boolean>();
 
     /**
      * Create an {@link org.sonatype.aether.connector.async.AsyncRepositoryConnector} instance which connect to the
@@ -1232,15 +1235,26 @@ class AsyncRepositoryConnector
     {
         try
         {
+            if ( activeDownloadFiles.containsKey( tmpFile ) )
+            {
+                return new FileLockCompanion( tmpFile, null );
+            }
+
             RandomAccessFile tmpLock = new RandomAccessFile( tmpFile.getPath() + ".lock", "rw" );
             FileLock lock = tmpLock.getChannel().tryLock( 0, 1, false );
+
+            if ( lock != null )
+            {
+                activeDownloadFiles.put( tmpLock, Boolean.TRUE );
+            }
+
             return new FileLockCompanion( tmpFile, lock );
         }
         catch ( OverlappingFileLockException ex )
         {
             return new FileLockCompanion( tmpFile, null );
         }
-        catch (IOException ex)
+        catch ( IOException ex )
         {
             return new FileLockCompanion( tmpFile, null );
         }
@@ -1257,6 +1271,8 @@ class AsyncRepositoryConnector
                 {
                     fileLockCompanion.getLock().channel().close();
                     fileLockCompanion.getLock().release();
+
+                    activeDownloadFiles.remove( fileLockCompanion.getFile() );
                 }
             }
             catch ( IOException e )
