@@ -430,7 +430,7 @@ class AsyncRepositoryConnector
                 final ChecksumTransferListener md5 = new ChecksumTransferListener( "MD5" );
 
                 long length = 0;
-                if (fileLockCompanion != null) {
+                if (fileLockCompanion != null && fileLockCompanion.getFile() != null) {
                     fileProcessor.mkdirs( fileLockCompanion.getFile().getParentFile() );
                 }
 
