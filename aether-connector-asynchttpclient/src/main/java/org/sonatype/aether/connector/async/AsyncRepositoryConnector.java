@@ -1183,9 +1183,8 @@ class AsyncRepositoryConnector
                         if ( realPath.equals( path ) )
                         {
                             File newFile = tmpFile;
-                            synchronized ( tmpFile.getAbsolutePath().intern() )
+                            synchronized ( activeDownloadFiles )
                             {
-
                                 fileLockCompanion = lockFile( tmpFile );
                                 logger.debug( String.format( "Found an incomplete download for file %s.", path ) );
 
