@@ -1207,6 +1207,9 @@ class AsyncRepositoryConnector
         return new FileLockCompanion( getTmpFile( path ), null);
     }
 
+    /**
+     * Simple placeholder for a File and it's associated lock.
+     */
     private static class FileLockCompanion {
 
         private final File file;
@@ -1230,10 +1233,21 @@ class AsyncRepositoryConnector
 
     }
 
+    /**
+     * Create a temporary file used to lock ({@link FileLock}) an associated incomplete file {@link File}. The {@link FileLock}'s name
+     * is derived from the original file, appending ".lock" at the end. Usually this method gets executed when a
+     * download fail to complete because the JVM goes down. In that case we resume the incomplete download and to prevent
+     * multiple process to work on the same file, we use a dedicated {@link FileLock}.
+     *
+     * @param tmpFile a file on which we want to create a temporary lock file.
+     * @return a {@link FileLockCompanion} contains the {@link File} and a {@link FileLock} if it was possible to lock the file.
+     */
     private FileLockCompanion lockFile( File tmpFile )
     {
         try
         {
+            // On Unix tmpLock.getChannel().tryLock may not fail inside the same process, so we must keep track
+            // of current resumable file.
             if ( activeDownloadFiles.containsKey( tmpFile ) )
             {
                 return new FileLockCompanion( tmpFile, null );
