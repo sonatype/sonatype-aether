@@ -422,7 +422,7 @@ class AsyncRepositoryConnector
             final boolean ignoreChecksum = RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy );
             CompletionHandler completionHandler = null;
 
-            final FileLockCompanion fileLockCompanion = ( file != null ) ? createOrGetTmpFile( file.getPath(), allowResumable ) : null;
+            final FileLockCompanion fileLockCompanion = ( file != null ) ? createOrGetTmpFile( file.getPath(), allowResumable ) : new FileLockCompanion( null, null );
 
             try
             {
@@ -430,7 +430,8 @@ class AsyncRepositoryConnector
                 final ChecksumTransferListener md5 = new ChecksumTransferListener( "MD5" );
 
                 long length = 0;
-                if (fileLockCompanion != null && fileLockCompanion.getFile() != null) {
+                if ( fileLockCompanion.getFile() != null )
+                {
                     fileProcessor.mkdirs( fileLockCompanion.getFile().getParentFile() );
                 }
 
@@ -769,7 +770,6 @@ class AsyncRepositoryConnector
         {
             if ( fileLockCompanion != null && fileLockCompanion.getFile() == null && deleteFile.get() )
             {
-                fileLockCompanion.getFile().delete();
                 unlockFile ( fileLockCompanion );
             }
         }
@@ -1163,7 +1163,7 @@ class AsyncRepositoryConnector
                 {
                     public boolean accept( File dir, String name )
                     {
-                        if ( name.lastIndexOf( "." ) == name.indexOf( ".ahc" ) )
+                        if ( name.indexOf( "." ) > 0 && name.lastIndexOf( "." ) == name.indexOf( ".ahc" ) )
                         {
                             return true;
                         }
@@ -1172,7 +1172,7 @@ class AsyncRepositoryConnector
                 } ) )
                 {
 
-                    if ( tmpFile.length() > 0 && tmpFile.getName().lastIndexOf( "." ) != -1 )
+                    if ( tmpFile.length() > 0 )
                     {
                         String realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ) );
 
@@ -1255,6 +1255,7 @@ class AsyncRepositoryConnector
             {
                 if (fileLockCompanion.getLock() != null)
                 {
+                    fileLockCompanion.getLock().channel().close();
                     fileLockCompanion.getLock().release();
                 }
             }
