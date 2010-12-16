@@ -58,6 +58,8 @@ import org.sonatype.aether.util.listener.DefaultTransferResource;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -84,8 +86,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 class AsyncRepositoryConnector
     implements RepositoryConnector
 {
-    private final static String RESUMABLE_EXT = ".resumable";
-    
     private final Logger logger;
 
     private final FileProcessor fileProcessor;
@@ -245,7 +245,7 @@ class AsyncRepositoryConnector
             String resource = layout.getPath( download.getMetadata() ).getPath();
             GetTask<?> task =
                 new GetTask<MetadataTransfer>( resource, download.getFile(), download.getChecksumPolicy(), latch,
-                                               download, METADATA );
+                                               download, METADATA, false );
             tasks.add( task );
             task.run();
         }
@@ -255,7 +255,7 @@ class AsyncRepositoryConnector
             String resource = layout.getPath( download.getArtifact() ).getPath();
             GetTask<?> task =
                 new GetTask<ArtifactTransfer>( resource, download.isExistenceCheck() ? null : download.getFile(),
-                                               download.getChecksumPolicy(), latch, download, ARTIFACT );
+                                               download.getChecksumPolicy(), latch, download, ARTIFACT, true );
             tasks.add( task );
             task.run();
         }
@@ -390,12 +390,15 @@ class AsyncRepositoryConnector
 
         private final AtomicBoolean deleteFile = new AtomicBoolean(true);
 
+        private final boolean allowResumable;
+
         public GetTask( String path, File file, String checksumPolicy, CountDownLatch latch, T download,
-                        ExceptionWrapper<T> wrapper )
+                        ExceptionWrapper<T> wrapper, boolean allowResumable )
         {
             this.path = path;
             this.file = file;
             this.checksumPolicy = checksumPolicy;
+            this.allowResumable = allowResumable;
             this.latch = new LatchGuard( latch );
             this.download = download;
             this.wrapper = wrapper;
@@ -419,7 +422,7 @@ class AsyncRepositoryConnector
             final boolean ignoreChecksum = RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy );
             CompletionHandler completionHandler = null;
 
-            final File tmp = ( file != null ) ? createOrGetTmpFile( file.getPath() ) : null;
+            final File tmp = ( file != null ) ? createOrGetTmpFile( file.getPath(), allowResumable ) : null;
 
             try
             {
@@ -767,6 +770,7 @@ class AsyncRepositoryConnector
             if ( tmp != null && deleteFile.get() )
             {
                 tmp.delete();
+                unlockFile ( tmp );
             }
         }
 
@@ -1147,20 +1151,19 @@ class AsyncRepositoryConnector
         return ( items != null ) ? items : Collections.<T>emptyList();
     }
 
-    private File createOrGetTmpFile( String path )
+    private File createOrGetTmpFile( String path, boolean allowResumable)
     {
-        File realFile = new File(path);
-        if ( !disableResumeSupport && !realFile.exists() )
+        if ( !disableResumeSupport && allowResumable )
         {
-            File f = new File( path + ".tmp" );
+            File f = new File( path + ".ahc" );
             File parentFile = f.getParentFile();
-            if ( parentFile.isDirectory() && !path.endsWith( ".tmp" ) )
+            if ( parentFile.isDirectory() && !path.endsWith( ".ahc" ) )
             {
                 for ( File tmpFile : parentFile.listFiles( new FilenameFilter()
                 {
                     public boolean accept( File dir, String name )
                     {
-                        if ( name.endsWith( RESUMABLE_EXT ) || ( name.lastIndexOf( "." ) == name.indexOf( ".tmp" ) ) )
+                        if ( name.lastIndexOf( "." ) == name.indexOf( ".ahc" ) )
                         {
                             return true;
                         }
@@ -1168,43 +1171,54 @@ class AsyncRepositoryConnector
                     }
                 } ) )
                 {
+
                     if ( tmpFile.length() > 0 && tmpFile.getName().lastIndexOf( "." ) != -1 )
                     {
-                        String realPath = null;
-                        if ( tmpFile.getPath().endsWith( RESUMABLE_EXT ) )
-                        {
-                            int index = tmpFile.getPath().lastIndexOf( "." );
-                            realPath =
-                                tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( ".", index - 1 ) );
-                        }
-                        else
-                        {
-                            realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ) );
-                        }
+                        String realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ) );
 
                         if ( realPath.equals( path ) )
                         {
-                            File newFile = null;
-                            synchronized ( getLock( tmpFile ) )
+                            File newFile = tmpFile;
+                            synchronized ( tmpFile.getAbsolutePath().intern() )
                             {
-                                logger.debug( String.format( "Found an incomplete download for file %s.", path ) );
                                 try
                                 {
-                                    newFile = new File( path + ".tmp"
-                                          + UUID.randomUUID().toString().replace( "-", "" ).substring( 0, 16 ) + RESUMABLE_EXT );
+                                    lockFile( tmpFile );
 
-                                    fileProcessor.copy( tmpFile, newFile, null );
-                                    tmpFile.deleteOnExit();
+                                    logger.debug( String.format( "Found an incomplete download for file %s.", path ) );
+
+                                }
+                                catch ( FileNotFoundException e )
+                                {
+
                                 }
                                 catch ( IOException e )
                                 {
                                     logger.debug( "Failed to move " + tmpFile, e );
 
                                     /**
-                                     * If we fail to move a file for whatever reason, take any risk and recreate a
-                                     * temporary file.
+                                     * Lock failed so we need to regenerate a new tmp file.
                                      */
                                     newFile = getTmpFile( path );
+
+                                    try
+                                    {
+                                        lockFile( newFile );
+                                        logger.debug(
+                                            String.format( "Found an incomplete download for file %s.", path ) );
+
+                                    }
+                                    catch ( FileNotFoundException e2 )
+                                    {
+                                    }
+                                    catch ( IOException e2 )
+                                    {
+                                        // This exception might rarely happens but there is still risk two process
+                                        // generate the same
+                                        logger.warn(
+                                            String.format( "Failed to obtain a lock for %s,", tmpFile.getPath() ) );
+                                    }
+
                                 }
                                 return ( newFile != null ) ? newFile : tmpFile;
                             }
@@ -1214,6 +1228,32 @@ class AsyncRepositoryConnector
             }
         }
         return getTmpFile( path );
+    }
+
+    private void lockFile( File tmpFile )
+        throws IOException, FileNotFoundException
+    {
+        FileInputStream tmpStream = null;
+        try
+        {
+            File tmpLock = new File( tmpFile.getPath() + ".lock" );
+            tmpStream = new FileInputStream( tmpLock );
+            tmpStream.getChannel().tryLock( 0, Math.max( 1, tmpFile.length() ), false );
+        }
+        finally
+        {
+            if ( tmpStream != null )
+            {
+                tmpStream.close();
+            }
+        }
+    }
+
+    private void unlockFile (File tmpFile ) {
+        if ( !disableResumeSupport )
+        {
+            new File( tmpFile.getPath() + ".lock" ).delete();
+        }
     }
 
     private File getTmpFile( String path )
@@ -1297,8 +1337,4 @@ class AsyncRepositoryConnector
         }
     }
 
-    private Object getLock( File file )
-    {
-        return file.getAbsolutePath().intern();
-    }
 }
