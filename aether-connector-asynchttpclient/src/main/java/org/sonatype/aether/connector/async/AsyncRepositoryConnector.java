@@ -58,8 +58,6 @@ import org.sonatype.aether.util.listener.DefaultTransferResource;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -67,6 +65,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -422,7 +422,7 @@ class AsyncRepositoryConnector
             final boolean ignoreChecksum = RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy );
             CompletionHandler completionHandler = null;
 
-            final File tmp = ( file != null ) ? createOrGetTmpFile( file.getPath(), allowResumable ) : null;
+            final FileLockCompanion fileLockCompanion = ( file != null ) ? createOrGetTmpFile( file.getPath(), allowResumable ) : null;
 
             try
             {
@@ -430,12 +430,12 @@ class AsyncRepositoryConnector
                 final ChecksumTransferListener md5 = new ChecksumTransferListener( "MD5" );
 
                 long length = 0;
-                if (tmp != null) {
-                    fileProcessor.mkdirs( tmp.getParentFile() );
+                if (fileLockCompanion != null) {
+                    fileProcessor.mkdirs( fileLockCompanion.getFile().getParentFile() );
                 }
 
                 // Position the file to the end in case we are resuming an aborded download.
-                final RandomAccessFile resumableFile = tmp == null ? null : new RandomAccessFile( tmp, "rws" );
+                final RandomAccessFile resumableFile = fileLockCompanion.getFile() == null ? null : new RandomAccessFile( fileLockCompanion.getFile(), "rws" );
                 if (resumableFile != null) {
                     length = resumableFile.length();
                 }
@@ -546,7 +546,7 @@ class AsyncRepositoryConnector
                                 }
 
                             }
-                            deleteFile( tmp );
+                            deleteFile( fileLockCompanion );
 
                             latch.countDown();
                             removeListeners();
@@ -572,7 +572,7 @@ class AsyncRepositoryConnector
                             try
                             {
                                 if ( acceptRange.get() ) {
-                                    resumableFile.seek( tmp.length() );
+                                    resumableFile.seek( fileLockCompanion.getFile().length() );
                                 }
                                 resumableFile.write( bytes );
                             }
@@ -643,7 +643,7 @@ class AsyncRepositoryConnector
                                             {
                                                 try
                                                 {
-                                                    rename( tmp, file );
+                                                    rename( fileLockCompanion.getFile() , file );
                                                 }
                                                 catch ( IOException e )
                                                 {
@@ -651,7 +651,7 @@ class AsyncRepositoryConnector
                                                 }
                                             }
 
-                                            deleteFile( tmp );
+                                            deleteFile( fileLockCompanion );
                                             latch.countDown();
 
                                             if ( closeOnComplete.get() )
@@ -681,15 +681,15 @@ class AsyncRepositoryConnector
                         {
                             try
                             {
-                                if ( tmp != null )
+                                if ( fileLockCompanion.getFile() != null )
                                 {
                                     if ( exception != null )
                                     {
-                                        deleteFile( tmp );
+                                        deleteFile( fileLockCompanion );
                                     }
                                     else if ( ignoreChecksum )
                                     {
-                                        rename( tmp, file );
+                                        rename( fileLockCompanion.getFile(), file );
                                     }
                                 }
                             }
@@ -734,14 +734,14 @@ class AsyncRepositoryConnector
                 }
                 catch ( Exception ex )
                 {
-                    deleteFile( tmp );
+                    deleteFile( fileLockCompanion );
                     exception = ex;
                     latch.countDown();
                 }
             }
             catch ( Throwable t )
             {
-                deleteFile( tmp );
+                deleteFile( fileLockCompanion );
                 try
                 {
                     if ( Exception.class.isAssignableFrom( t.getClass() ) )
@@ -765,12 +765,12 @@ class AsyncRepositoryConnector
             }
         }
 
-        private void deleteFile( File tmp )
+        private void deleteFile( FileLockCompanion fileLockCompanion )
         {
-            if ( tmp != null && deleteFile.get() )
+            if ( fileLockCompanion != null && fileLockCompanion.getFile() == null && deleteFile.get() )
             {
-                tmp.delete();
-                unlockFile ( tmp );
+                fileLockCompanion.getFile().delete();
+                unlockFile ( fileLockCompanion );
             }
         }
 
@@ -1151,7 +1151,7 @@ class AsyncRepositoryConnector
         return ( items != null ) ? items : Collections.<T>emptyList();
     }
 
-    private File createOrGetTmpFile( String path, boolean allowResumable)
+    private FileLockCompanion createOrGetTmpFile( String path, boolean allowResumable)
     {
         if ( !disableResumeSupport && allowResumable )
         {
@@ -1176,83 +1176,92 @@ class AsyncRepositoryConnector
                     {
                         String realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ) );
 
+                        FileLockCompanion fileLockCompanion = null;
                         if ( realPath.equals( path ) )
                         {
                             File newFile = tmpFile;
                             synchronized ( tmpFile.getAbsolutePath().intern() )
                             {
-                                try
+
+                                fileLockCompanion = lockFile( tmpFile );
+                                logger.debug( String.format( "Found an incomplete download for file %s.", path ) );
+
+                                if ( fileLockCompanion.getLock() == null )
                                 {
-                                    lockFile( tmpFile );
-
-                                    logger.debug( String.format( "Found an incomplete download for file %s.", path ) );
-
-                                }
-                                catch ( FileNotFoundException e )
-                                {
-
-                                }
-                                catch ( IOException e )
-                                {
-                                    logger.debug( "Failed to move " + tmpFile, e );
-
                                     /**
                                      * Lock failed so we need to regenerate a new tmp file.
                                      */
                                     newFile = getTmpFile( path );
-
-                                    try
-                                    {
-                                        lockFile( newFile );
-                                        logger.debug(
-                                            String.format( "Found an incomplete download for file %s.", path ) );
-
-                                    }
-                                    catch ( FileNotFoundException e2 )
-                                    {
-                                    }
-                                    catch ( IOException e2 )
-                                    {
-                                        // This exception might rarely happens but there is still risk two process
-                                        // generate the same
-                                        logger.warn(
-                                            String.format( "Failed to obtain a lock for %s,", tmpFile.getPath() ) );
-                                    }
+                                    fileLockCompanion = lockFile( newFile );
 
                                 }
-                                return ( newFile != null ) ? newFile : tmpFile;
+                                return fileLockCompanion;
                             }
                         }
                     }
                 }
             }
         }
-        return getTmpFile( path );
+        return new FileLockCompanion( getTmpFile( path ), null);
     }
 
-    private void lockFile( File tmpFile )
-        throws IOException, FileNotFoundException
+    private static class FileLockCompanion {
+
+        private final File file;
+        private final FileLock lock;
+
+        public FileLockCompanion( File file, FileLock lock )
+        {
+            this.file = file;
+            this.lock = lock;
+        }
+
+        public File getFile()
+        {
+            return file;
+        }
+
+        public FileLock getLock()
+        {
+            return lock;
+        }
+
+    }
+
+    private FileLockCompanion lockFile( File tmpFile )
     {
-        FileInputStream tmpStream = null;
         try
         {
-            File tmpLock = new File( tmpFile.getPath() + ".lock" );
-            tmpStream = new FileInputStream( tmpLock );
-            tmpStream.getChannel().tryLock( 0, Math.max( 1, tmpFile.length() ), false );
+            RandomAccessFile tmpLock = new RandomAccessFile( tmpFile.getPath() + ".lock", "rw" );
+            FileLock lock = tmpLock.getChannel().tryLock( 0, 1, false );
+            return new FileLockCompanion( tmpFile, lock );
         }
-        finally
+        catch ( OverlappingFileLockException ex )
         {
-            if ( tmpStream != null )
-            {
-                tmpStream.close();
-            }
+            return new FileLockCompanion( tmpFile, null );
+        }
+        catch (IOException ex)
+        {
+            return new FileLockCompanion( tmpFile, null );
         }
     }
 
-    private void unlockFile (File tmpFile ) {
+    private void unlockFile( FileLockCompanion fileLockCompanion )
+    {
         if ( !disableResumeSupport )
         {
-            new File( tmpFile.getPath() + ".lock" ).delete();
+            fileLockCompanion.getFile().delete();
+            try
+            {
+                if (fileLockCompanion.getLock() != null)
+                {
+                    fileLockCompanion.getLock().release();
+                }
+            }
+            catch ( IOException e )
+            {
+                // Ignore.
+            }
         }
     }
 
