@@ -382,7 +382,13 @@ class WagonRepositoryConnector
 
     private File getTmpFile( String path )
     {
-        return new File( path + ".tmp" + UUID.randomUUID().toString().replace( "-", "" ).substring( 0, 16 ) );
+        File file;
+        do
+        {
+            file = new File( path + ".tmp" + UUID.randomUUID().toString().replace( "-", "" ).substring( 0, 16 ) );
+        }
+        while ( file.exists() );
+        return file;
     }
 
     public void get( Collection<? extends ArtifactDownload> artifactDownloads,
