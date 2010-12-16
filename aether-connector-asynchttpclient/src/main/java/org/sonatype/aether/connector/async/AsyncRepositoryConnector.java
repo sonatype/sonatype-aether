@@ -1218,7 +1218,13 @@ class AsyncRepositoryConnector
 
     private File getTmpFile( String path )
     {
-        return new File( path + ".tmp" + UUID.randomUUID().toString().replace( "-", "" ).substring( 0, 16 ) );
+        File file;
+        do
+        {
+            file = new File( path + ".ahc" + UUID.randomUUID().toString().replace( "-", "" ).substring( 0, 16 ) );
+        }
+        while ( file.exists() );
+        return file;
     }
 
     private static final ExceptionWrapper<MetadataTransfer> METADATA = new ExceptionWrapper<MetadataTransfer>()
