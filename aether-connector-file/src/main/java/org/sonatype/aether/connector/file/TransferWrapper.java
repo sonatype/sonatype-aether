@@ -88,16 +88,24 @@ class TransferWrapper
         File ret = null;
 
         if ( metadataTransfer != null )
+        {
             ret = metadataTransfer.getFile();
+        }
         else if ( artifactTransfer != null )
+        {
             ret = artifactTransfer.getFile();
+        }
 
         if ( ret == null )
         {
             if ( metadataTransfer != null )
+            {
                 ret = metadataTransfer.getMetadata().getFile();
+            }
             else if ( artifactTransfer != null )
+            {
                 ret = artifactTransfer.getArtifact().getFile();
+            }
         }
 
         return ret;
@@ -107,36 +115,54 @@ class TransferWrapper
     public Artifact getArtifact()
     {
         if ( artifactTransfer != null )
+        {
             return artifactTransfer.getArtifact();
+        }
         else
+        {
             throw new IllegalStateException( "TransferWrapper holds the wrong type" );
+        }
 
     }
 
     public void setException( ArtifactTransferException exception )
     {
         if ( artifactTransfer != null )
+        {
             artifactTransfer.setException( exception );
+        }
         else
+        {
             throw new IllegalStateException( "TransferWrapper holds the wrong type" );
+        }
     }
 
     public void setException( MetadataTransferException exception )
     {
         if ( metadataTransfer != null )
+        {
             metadataTransfer.setException( exception );
+        }
         else
+        {
             throw new IllegalStateException( "TransferWrapper holds the wrong type" );
+        }
     }
 
     public Exception getException()
     {
         if ( artifactTransfer != null )
+        {
             return artifactTransfer.getException();
+        }
         else if ( metadataTransfer != null )
+        {
             return metadataTransfer.getException();
+        }
         else
+        {
             throw new IllegalStateException( "TransferWrapper holds the wrong type" );
+        }
     }
 
     public Metadata getMetadata()
@@ -157,10 +183,17 @@ class TransferWrapper
     public String getRelativePath()
     {
         if ( artifactTransfer != null )
+        {
             return new DefaultLayout().getPath( getArtifact() );
+        }
         else if ( metadataTransfer != null )
+        {
             return new DefaultLayout().getPath( getMetadata() );
-        else return null;
+        }
+        else
+        {
+            return null;
+        }
     }
 
 }
