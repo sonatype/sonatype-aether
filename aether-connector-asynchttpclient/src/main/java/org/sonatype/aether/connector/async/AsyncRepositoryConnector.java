@@ -108,7 +108,7 @@ class AsyncRepositoryConnector
 
     private final boolean disableResumeSupport;
 
-    private final ConcurrentHashMap<RandomAccessFile, Boolean> activeDownloadFiles = new ConcurrentHashMap<RandomAccessFile, Boolean>();
+    private final static ConcurrentHashMap<RandomAccessFile, Boolean> activeDownloadFiles = new ConcurrentHashMap<RandomAccessFile, Boolean>();
 
     private final int maxIOExceptionRetry;
 
