@@ -58,7 +58,6 @@ import org.sonatype.aether.util.listener.DefaultTransferResource;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -438,7 +437,7 @@ class AsyncRepositoryConnector
                 }
 
                 // Position the file to the end in case we are resuming an aborded download.
-                final RandomAccessFile resumableFile = fileLockCompanion.getFile() == null ? null : new RandomAccessFile( fileLockCompanion.getFile(), "rws" );
+                final RandomAccessFile resumableFile = fileLockCompanion.getFile() == null ? null : new RandomAccessFile( fileLockCompanion.getFile(), "rw" );
                 if (resumableFile != null) {
                     length = resumableFile.length();
                 }
@@ -515,7 +514,6 @@ class AsyncRepositoryConnector
                                 deleteFile.set(false);
                                 return;
                             }
-                            deleteFile.set(true);
 
                             if ( closeOnComplete.get() )
                             {
@@ -548,7 +546,6 @@ class AsyncRepositoryConnector
                                 catch ( IOException ex )
                                 {
                                 }
-
                             }
                             deleteFile( fileLockCompanion );
 
@@ -591,7 +588,7 @@ class AsyncRepositoryConnector
                     {
                         try
                         {
-                            final Response response = super.onCompleted( r );
+                            deleteFile.set(true);
 
                             try
                             {
@@ -600,6 +597,8 @@ class AsyncRepositoryConnector
                             catch ( IOException ex )
                             {
                             }
+
+                            final Response response = super.onCompleted( r );
 
                             handleResponseCode( uri, response.getStatusCode(), response.getStatusText() );
 
@@ -645,17 +644,20 @@ class AsyncRepositoryConnector
                                             {
                                                 try
                                                 {
-                                                    rename( fileLockCompanion.getFile() , file );
+                                                    rename( fileLockCompanion.getFile(), file );
+                                                    releaseLock( fileLockCompanion );
                                                 }
                                                 catch ( IOException e )
                                                 {
                                                     exception = e;
                                                 }
                                             }
+                                            else
+                                            {
+                                                deleteFile( fileLockCompanion );
+                                            }
 
-                                            deleteFile( fileLockCompanion );
                                             latch.countDown();
-
                                             if ( closeOnComplete.get() )
                                             {
                                                 activeHttpClient.close();
@@ -664,12 +666,14 @@ class AsyncRepositoryConnector
                                     }
                                 } );
                             }
-
-                            if ( ignoreChecksum )
+                            else
                             {
                                 latch.countDown();
+                                if ( closeOnComplete.get() )
+                                {
+                                    activeHttpClient.close();
+                                }
                             }
-
                             removeListeners();
 
                             return response;
@@ -692,6 +696,7 @@ class AsyncRepositoryConnector
                                     else if ( ignoreChecksum )
                                     {
                                         rename( fileLockCompanion.getFile(), file );
+                                        releaseLock( fileLockCompanion );
                                     }
                                 }
                             }
@@ -730,6 +735,16 @@ class AsyncRepositoryConnector
                 }
                 catch ( Exception ex )
                 {
+                    try
+                    {
+                        if ( resumableFile != null )
+                        {
+                            resumableFile.close();
+                        }
+                    }
+                    catch ( IOException ex2 )
+                    {
+                    }
                     deleteFile( fileLockCompanion );
                     exception = ex;
                     latch.countDown();
@@ -765,7 +780,9 @@ class AsyncRepositoryConnector
         {
             if ( fileLockCompanion.getFile() != null && deleteFile.get() )
             {
-                unlockFile ( fileLockCompanion );
+                releaseLock( fileLockCompanion );
+                activeDownloadFiles.remove( fileLockCompanion.getFile() );
+                fileLockCompanion.getFile().delete();
             }
         }
 
@@ -1149,7 +1166,7 @@ class AsyncRepositoryConnector
     /**
      * Create a {@link FileLockCompanion} containing a reference to a temporary {@link File} used when downloading
      * a remote file. If a local and incomplete version of a file is available, use that file and resume bytes downloading.
-     * To prevent multiple process trying to resume the same file, a {@libk FileLock} companion to the tmeporary file is
+     * To prevent multiple process trying to resume the same file, a {@link FileLock} companion to the tmeporary file is
      * created and used to prevent concurrency issue.
      *
      * @param path The downloaded path
@@ -1160,9 +1177,9 @@ class AsyncRepositoryConnector
     {
         if ( !disableResumeSupport && allowResumable )
         {
-            File f = new File( path + ".ahc" );
+            File f = new File( path );
             File parentFile = f.getParentFile();
-            if ( parentFile.isDirectory() && !path.endsWith( ".ahc" ) )
+            if ( parentFile.isDirectory() )
             {
                 for ( File tmpFile : parentFile.listFiles( new FilenameFilter()
                 {
@@ -1192,6 +1209,7 @@ class AsyncRepositoryConnector
 
                                 if ( fileLockCompanion.getLock() == null )
                                 {
+                                    tmpFile.delete();
                                     /**
                                      * Lock failed so we need to regenerate a new tmp file.
                                      */
@@ -1216,11 +1234,20 @@ class AsyncRepositoryConnector
 
         private final File file;
         private final FileLock lock;
+        private final String lockPathName;
 
         public FileLockCompanion( File file, FileLock lock )
         {
             this.file = file;
             this.lock = lock;
+            this.lockPathName = null;
+        }
+
+        public FileLockCompanion( File file, FileLock lock, String lockPathName)
+        {
+            this.file = file;
+            this.lock = lock;
+            this.lockPathName = lockPathName;
         }
 
         public File getFile()
@@ -1231,6 +1258,11 @@ class AsyncRepositoryConnector
         public FileLock getLock()
         {
             return lock;
+        }
+
+        public String getLockedPathFile()
+        {
+            return lockPathName;
         }
 
     }
@@ -1263,7 +1295,7 @@ class AsyncRepositoryConnector
                 activeDownloadFiles.put( tmpLock, Boolean.TRUE );
             }
 
-            return new FileLockCompanion( tmpFile, lock );
+            return new FileLockCompanion( tmpFile, lock, tmpFile.getPath() + ".lock" );
         }
         catch ( OverlappingFileLockException ex )
         {
@@ -1275,29 +1307,25 @@ class AsyncRepositoryConnector
         }
     }
 
-    private void unlockFile( FileLockCompanion fileLockCompanion )
+    private void releaseLock( FileLockCompanion fileLockCompanion )
     {
-        if ( !disableResumeSupport )
+        try
         {
-            try
+            if ( fileLockCompanion.getLock() != null )
             {
-                if (fileLockCompanion.getLock() != null)
-                {
+                try {
                     fileLockCompanion.getLock().channel().close();
                     fileLockCompanion.getLock().release();
+                } finally {
+                    if ( fileLockCompanion.getLockedPathFile() != null ) {
+                        new File(fileLockCompanion.getLockedPathFile()).delete();
+                    }
                 }
             }
-            catch ( IOException e )
-            {
-                // Ignore.
-            }
-
-            if ( fileLockCompanion.getFile() != null )
-            {
-                activeDownloadFiles.remove( fileLockCompanion.getFile() );
-                fileLockCompanion.getFile().delete();
-            }
-
+        }
+        catch ( IOException e )
+        {
+            // Ignore.
         }
     }
 
