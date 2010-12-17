@@ -431,7 +431,6 @@ class AsyncRepositoryConnector
 
             try
             {
-
                 long length = 0;
                 if ( fileLockCompanion.getFile() != null )
                 {
@@ -516,6 +515,7 @@ class AsyncRepositoryConnector
                                 deleteFile.set(false);
                                 return;
                             }
+                            deleteFile.set(true);
 
                             if ( closeOnComplete.get() )
                             {
