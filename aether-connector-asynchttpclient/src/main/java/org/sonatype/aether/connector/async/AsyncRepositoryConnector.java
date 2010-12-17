@@ -431,8 +431,6 @@ class AsyncRepositoryConnector
 
             try
             {
-                final ChecksumTransferListener sha1 = new ChecksumTransferListener( "SHA-1" );
-                final ChecksumTransferListener md5 = new ChecksumTransferListener( "MD5" );
 
                 long length = 0;
                 if ( fileLockCompanion.getFile() != null )
@@ -561,11 +559,6 @@ class AsyncRepositoryConnector
 
                     private void removeListeners()
                     {
-                        if ( !ignoreChecksum )
-                        {
-                            removeTransferListener( md5 );
-                            removeTransferListener( sha1 );
-                        }
                         removeTransferListener( listener );
                     }
 
@@ -620,8 +613,9 @@ class AsyncRepositoryConnector
                                         {
                                             try
                                             {
-                                                if ( !verifyChecksum( file, uri, sha1.getActualChecksum(), ".sha1" ) &&
-                                                    !verifyChecksum( file, uri, md5.getActualChecksum(), ".md5" ) )
+                                                Map<String, Object> checksums = ChecksumUtils.calc( fileLockCompanion.getFile(), checksumAlgos.keySet() );
+                                                if ( !verifyChecksum( file, uri, (String) checksums.get( "SHA-1" ), ".sha1" ) &&
+                                                    !verifyChecksum( file, uri, (String) checksums.get( "MD5" ), ".md5" ) )
                                                 {
                                                     throw new ChecksumFailureException( "Checksum validation failed" +
                                                                                             ", no checksums available from the repository" );
@@ -729,12 +723,6 @@ class AsyncRepositoryConnector
                             completionHandler.addTransferListener( listener );
                             listener.transferInitiated(
                                 newEvent( transferResource, null, RequestType.GET, EventType.INITIATED ) );
-                        }
-
-                        if ( !ignoreChecksum )
-                        {
-                            completionHandler.addTransferListener( md5 );
-                            completionHandler.addTransferListener( sha1 );
                         }
 
                         activeHttpClient.executeRequest( request, completionHandler );
