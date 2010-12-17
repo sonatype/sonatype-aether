@@ -110,6 +110,8 @@ class AsyncRepositoryConnector
 
     private final ConcurrentHashMap<RandomAccessFile, Boolean> activeDownloadFiles = new ConcurrentHashMap<RandomAccessFile, Boolean>();
 
+    private final int maxIOExceptionRetry;
+
     /**
      * Create an {@link org.sonatype.aether.connector.async.AsyncRepositoryConnector} instance which connect to the
      * {@link RemoteRepository}
@@ -147,7 +149,8 @@ class AsyncRepositoryConnector
         checksumAlgos.put( "SHA-1", ".sha1" );
         checksumAlgos.put( "MD5", ".md5" );
 
-        disableResumeSupport = ConfigurationProperties.get( session, "aether.connector.ahc.disableResumable", false);
+        disableResumeSupport = ConfigurationProperties.get( session, "aether.connector.ahc.disableResumable", false );
+        maxIOExceptionRetry = ConfigurationProperties.get( session, "aether.connector.ahc.resumeRety", 3 );
     }
 
     private Realm getRealm( RemoteRepository repository )
@@ -506,7 +509,7 @@ class AsyncRepositoryConnector
                              * If an IOException occurs, let's try to resume the request based on how much bytes has
                              * been so far downloaded. Fail after IOException.
                              */
-                            if ( maxRequestTry.get() < 3 && IOException.class.isAssignableFrom( t.getClass() ) )
+                            if ( maxRequestTry.get() < maxIOExceptionRetry && IOException.class.isAssignableFrom( t.getClass() ) )
                             {
                                 maxRequestTry.incrementAndGet();
                                 Request newRequest =
@@ -574,6 +577,8 @@ class AsyncRepositoryConnector
                             byte[] bytes = content.getBodyPartBytes();
                             try
                             {
+                                // If the content-range header was present, save the bytes at the end of the file
+                                // as we are resuming an existing download.
                                 if ( acceptRange.get() ) {
                                     resumableFile.seek( fileLockCompanion.getFile().length() );
                                 }
