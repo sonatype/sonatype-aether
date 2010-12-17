@@ -763,7 +763,7 @@ class AsyncRepositoryConnector
 
         private void deleteFile( FileLockCompanion fileLockCompanion )
         {
-            if ( fileLockCompanion != null && fileLockCompanion.getFile() == null && deleteFile.get() )
+            if ( fileLockCompanion.getFile() != null && deleteFile.get() )
             {
                 unlockFile ( fileLockCompanion );
             }
@@ -1285,7 +1285,6 @@ class AsyncRepositoryConnector
                 {
                     fileLockCompanion.getLock().channel().close();
                     fileLockCompanion.getLock().release();
-
                 }
             }
             catch ( IOException e )
