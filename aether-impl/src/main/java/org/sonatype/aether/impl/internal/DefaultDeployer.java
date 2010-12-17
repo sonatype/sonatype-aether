@@ -352,23 +352,29 @@ public class DefaultDeployer
                 download.setChecksumPolicy( policy.getChecksumPolicy() );
                 connector.get( null, Arrays.asList( download ) );
 
+                Exception error = download.getException();
+
+                if ( error instanceof MetadataNotFoundException )
+                {
+                    dstFile.delete();
+                }
+
                 {
                     DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADED, session );
                     event.setMetadata( metadata );
                     event.setRepository( repository );
-                    event.setException( download.getException() );
+                    event.setException( error );
                     event.setFile( dstFile );
                     repositoryEventDispatcher.dispatch( event );
 
                     event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVED, session );
                     event.setMetadata( metadata );
                     event.setRepository( repository );
-                    event.setException( download.getException() );
+                    event.setException( error );
                     event.setFile( dstFile );
                     repositoryEventDispatcher.dispatch( event );
                 }
 
-                Exception error = download.getException();
                 if ( error != null && !( error instanceof MetadataNotFoundException ) )
                 {
                     throw new DeploymentException( "Failed to retrieve remote metadata " + metadata + ": "

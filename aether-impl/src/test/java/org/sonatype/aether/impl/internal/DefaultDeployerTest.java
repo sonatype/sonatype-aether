@@ -11,24 +11,30 @@ package org.sonatype.aether.impl.internal;
 import static org.junit.Assert.*;
 import static org.sonatype.aether.test.impl.RecordingRepositoryListener.Type.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonatype.aether.RepositoryEvent;
+import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.deployment.DeployRequest;
 import org.sonatype.aether.deployment.DeploymentException;
 import org.sonatype.aether.impl.UpdateCheckManager;
+import org.sonatype.aether.metadata.MergeableMetadata;
+import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.metadata.Metadata.Nature;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataUpload;
+import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.Transfer.State;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener.EventWrapper;
@@ -36,6 +42,7 @@ import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.transfer.ArtifactTransferException;
+import org.sonatype.aether.transfer.MetadataNotFoundException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.metadata.DefaultMetadata;
@@ -87,6 +94,20 @@ public class DefaultDeployerTest
         session.setRepositoryListener( listener );
     }
 
+    @After
+    public void teardown()
+        throws Exception
+    {
+        if ( session.getLocalRepository() != null )
+        {
+            TestFileUtils.delete( session.getLocalRepository().getBasedir() );
+        }
+        session = null;
+        listener = null;
+        connector = null;
+        manager = null;
+        deployer = null;
+    }
 
     @Test
     public void testSuccessfulDeploy()
@@ -332,13 +353,116 @@ public class DefaultDeployerTest
         }
     }
 
-    @After
-    public void teardown()
+    @Test
+    public void testStaleLocalMetadataCopyGetsDeletedBeforeMergeWhenMetadataIsNotCurrentlyPresentInRemoteRepo()
         throws Exception
     {
-        if ( session.getLocalRepository() != null )
+        MergeableMetadata metadata = new MergeableMetadata()
         {
-            TestFileUtils.delete( session.getLocalRepository().getBasedir() );
-        }
+
+            public Metadata setFile( File file )
+            {
+                return this;
+            }
+
+            public String getVersion()
+            {
+                return "";
+            }
+
+            public String getType()
+            {
+                return "test.properties";
+            }
+
+            public Nature getNature()
+            {
+                return Nature.RELEASE;
+            }
+
+            public String getGroupId()
+            {
+                return "org";
+            }
+
+            public File getFile()
+            {
+                return null;
+            }
+
+            public String getArtifactId()
+            {
+                return "aether";
+            }
+
+            public void merge( File current, File result )
+                throws RepositoryException
+            {
+                Properties props = new Properties();
+
+                try
+                {
+                    if ( current.isFile() )
+                    {
+                        TestFileUtils.read( props, current );
+                    }
+
+                    props.setProperty( "new", "value" );
+
+                    TestFileUtils.write( props, result );
+                }
+                catch ( IOException e )
+                {
+                    throw new RepositoryException( e.getMessage(), e );
+                }
+            }
+
+            public boolean isMerged()
+            {
+                return false;
+            }
+        };
+
+        manager.setConnector( new RepositoryConnector()
+        {
+
+            public void put( Collection<? extends ArtifactUpload> artifactUploads,
+                             Collection<? extends MetadataUpload> metadataUploads )
+            {
+            }
+
+            public void get( Collection<? extends ArtifactDownload> artifactDownloads,
+                             Collection<? extends MetadataDownload> metadataDownloads )
+            {
+                if ( metadataDownloads != null )
+                {
+                    for ( MetadataDownload download : metadataDownloads )
+                    {
+                        download.setException( new MetadataNotFoundException( download.getMetadata(), null, null ) );
+                    }
+                }
+            }
+
+            public void close()
+            {
+            }
+        } );
+
+        request.addMetadata( metadata );
+
+        File metadataFile =
+            new File( session.getLocalRepository().getBasedir(),
+                      session.getLocalRepositoryManager().getPathForRemoteMetadata( metadata, request.getRepository(),
+                                                                                    "" ) );
+        Properties props = new Properties();
+        props.setProperty( "old", "value" );
+        TestFileUtils.write( props, metadataFile );
+
+        deployer.deploy( session, request );
+
+        props = new Properties();
+        TestFileUtils.read( props, metadataFile );
+        assertNull( props.toString(), props.get( "old" ) );
     }
+
 }
