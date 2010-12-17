@@ -56,7 +56,6 @@ import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
 import java.io.BufferedOutputStream;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -1154,7 +1153,17 @@ class AsyncRepositoryConnector
         return ( items != null ) ? items : Collections.<T>emptyList();
     }
 
-    private FileLockCompanion createOrGetTmpFile( String path, boolean allowResumable)
+    /**
+     * Create a {@link FileLockCompanion} containing a reference to a temporary {@link File} used when downloading
+     * a remote file. If a local and incomplete version of a file is available, use that file and resume bytes downloading.
+     * To prevent multiple process trying to resume the same file, a {@libk FileLock} companion to the tmeporary file is
+     * created and used to prevent concurrency issue.
+     *
+     * @param path The downloaded path
+     * @param allowResumable Allow resumable download, or not.
+     * @return
+     */
+    private FileLockCompanion createOrGetTmpFile( String path, boolean allowResumable )
     {
         if ( !disableResumeSupport && allowResumable )
         {
@@ -1361,21 +1370,6 @@ class AsyncRepositoryConnector
             if ( !done.getAndSet( true ) )
             {
                 latch.countDown();
-            }
-        }
-    }
-
-    private void close( Closeable closeable, File file )
-    {
-        if ( closeable != null )
-        {
-            try
-            {
-                closeable.close();
-            }
-            catch ( IOException e )
-            {
-                logger.debug( "Error closing resumable file " + file, e );
             }
         }
     }
