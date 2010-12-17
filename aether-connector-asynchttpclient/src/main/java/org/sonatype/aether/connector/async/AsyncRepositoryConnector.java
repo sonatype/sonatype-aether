@@ -150,7 +150,7 @@ class AsyncRepositoryConnector
         checksumAlgos.put( "MD5", ".md5" );
 
         disableResumeSupport = ConfigurationProperties.get( session, "aether.connector.ahc.disableResumable", false );
-        maxIOExceptionRetry = ConfigurationProperties.get( session, "aether.connector.ahc.resumeRety", 3 );
+        maxIOExceptionRetry = ConfigurationProperties.get( session, "aether.connector.ahc.resumeRetry", 3 );
     }
 
     private Realm getRealm( RemoteRepository repository )
