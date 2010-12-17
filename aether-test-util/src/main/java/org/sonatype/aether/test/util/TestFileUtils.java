@@ -19,6 +19,7 @@ import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Properties;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -266,6 +267,36 @@ public class TestFileUtils
         mkdirs( tmpFile );
 
         return tmpFile;
+    }
+
+    public static void read( Properties props, File file )
+        throws IOException
+    {
+        FileInputStream fis = new FileInputStream( file );
+        try
+        {
+            props.load( fis );
+        }
+        finally
+        {
+            close( fis );
+        }
+    }
+
+    public static void write( Properties props, File file )
+        throws IOException
+    {
+        file.getParentFile().mkdirs();
+
+        FileOutputStream fos = new FileOutputStream( file );
+        try
+        {
+            props.store( fos, "aether-test" );
+        }
+        finally
+        {
+            close( fos );
+        }
     }
 
 }
