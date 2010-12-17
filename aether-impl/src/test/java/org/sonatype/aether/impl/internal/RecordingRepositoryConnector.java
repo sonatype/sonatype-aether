@@ -109,7 +109,7 @@ class RecordingRepositoryConnector
             {
                 // mimic "real" connector
                 artifactUpload.setState( State.ACTIVE );
-                if ( artifactUpload.getArtifact().getFile() == null )
+                if ( artifactUpload.getFile() == null )
                 {
                     artifactUpload.setException( new ArtifactTransferException( artifactUpload.getArtifact(), null,
                                                                                 "no file" ) );
@@ -124,7 +124,7 @@ class RecordingRepositoryConnector
             {
                 // mimic "real" connector
                 metadataUpload.setState( State.ACTIVE );
-                if ( metadataUpload.getMetadata().getFile() == null )
+                if ( metadataUpload.getFile() == null )
                 {
                     metadataUpload.setException( new MetadataTransferException( metadataUpload.getMetadata(), null,
                                                                                 "no file" ) );
