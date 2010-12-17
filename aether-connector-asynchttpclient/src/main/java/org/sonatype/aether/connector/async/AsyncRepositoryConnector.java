@@ -1279,12 +1279,6 @@ class AsyncRepositoryConnector
     {
         if ( !disableResumeSupport )
         {
-            if ( fileLockCompanion.getFile() != null )
-            {
-                activeDownloadFiles.remove( fileLockCompanion.getFile() );
-                fileLockCompanion.getFile().delete();
-            }
-
             try
             {
                 if (fileLockCompanion.getLock() != null)
@@ -1298,6 +1292,13 @@ class AsyncRepositoryConnector
             {
                 // Ignore.
             }
+
+            if ( fileLockCompanion.getFile() != null )
+            {
+                activeDownloadFiles.remove( fileLockCompanion.getFile() );
+                fileLockCompanion.getFile().delete();
+            }
+
         }
     }
 
