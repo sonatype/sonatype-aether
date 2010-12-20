@@ -478,6 +478,7 @@ class AsyncRepositoryConnector
                 completionHandler = new CompletionHandler( transferResource, httpClient, logger, RequestType.GET )
                 {
                     private final AtomicBoolean acceptRange = new AtomicBoolean(false);
+                    private final AtomicBoolean handleTmpFile = new AtomicBoolean(true);
 
                     /**
                      * {@inheritDoc}
@@ -590,7 +591,6 @@ class AsyncRepositoryConnector
                         try
                         {
                             deleteFile.set(true);
-
                             try
                             {
                                 resumableFile.close();
@@ -669,6 +669,13 @@ class AsyncRepositoryConnector
                             }
                             else
                             {
+
+                                rename( fileLockCompanion.getFile(), file );
+                                releaseLock( fileLockCompanion );
+                                handleTmpFile.set(false);
+
+                                // asyncHttpClient.close may takes time before all connections get closed.
+                                // We unlatch first.
                                 latch.countDown();
                                 if ( closeOnComplete.get() )
                                 {
@@ -688,7 +695,7 @@ class AsyncRepositoryConnector
                         {
                             try
                             {
-                                if ( fileLockCompanion.getFile() != null )
+                                if ( handleTmpFile.get() && fileLockCompanion.getFile() != null )
                                 {
                                     if ( exception != null )
                                     {
