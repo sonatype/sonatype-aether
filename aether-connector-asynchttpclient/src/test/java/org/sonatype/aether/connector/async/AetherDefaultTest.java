@@ -75,6 +75,7 @@ public class AetherDefaultTest
                 provider.stop();
                 provider = null;
             }
+            TestFileUtils.deleteTempFiles();
         }
 
     }
