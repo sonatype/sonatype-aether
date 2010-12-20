@@ -1210,7 +1210,6 @@ class AsyncRepositoryConnector
 
                                 if ( fileLockCompanion.getLock() == null )
                                 {
-                                    tmpFile.delete();
                                     /**
                                      * Lock failed so we need to regenerate a new tmp file.
                                      */
