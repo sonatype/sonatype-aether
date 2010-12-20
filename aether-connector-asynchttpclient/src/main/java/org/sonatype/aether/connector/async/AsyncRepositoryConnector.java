@@ -13,13 +13,14 @@ import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.HttpResponseStatus;
+import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.ProxyServer;
 import com.ning.http.client.ProxyServer.Protocol;
 import com.ning.http.client.Realm;
+import com.ning.http.client.Request;
+import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.Response;
 import com.ning.http.client.providers.netty.NettyAsyncHttpProvider;
-
 import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.Authentication;
@@ -57,19 +58,25 @@ import org.sonatype.aether.util.listener.DefaultTransferResource;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A repository connector that uses the Async Http Client.
@@ -95,10 +102,19 @@ class AsyncRepositoryConnector
 
     private final TransferListener listener;
 
+    private final RepositorySystemSession session;
+
     private boolean useCache = false;
 
+    private final boolean disableResumeSupport;
+
+    private final static ConcurrentHashMap<RandomAccessFile, Boolean> activeDownloadFiles =
+        new ConcurrentHashMap<RandomAccessFile, Boolean>();
+
+    private final int maxIOExceptionRetry;
+
     /**
-     * Create an {@link org.sonatype.aether.connector.async.AsyncRepositoryConnector} instance which connec to the
+     * Create an {@link org.sonatype.aether.connector.async.AsyncRepositoryConnector} instance which connect to the
      * {@link RemoteRepository}
      *
      * @param repository the remote repository
@@ -114,24 +130,28 @@ class AsyncRepositoryConnector
         this.repository = repository;
         this.listener = session.getTransferListener();
         this.fileProcessor = fileProcessor;
+        this.session = session;
 
         if ( !"default".equals( repository.getContentType() ) )
         {
             throw new NoRepositoryConnectorException( repository );
         }
 
-        if ( !repository.getProtocol().regionMatches( true, 0, "http", 0, "http".length() )
-            && !repository.getProtocol().regionMatches( true, 0, "dav", 0, "dav".length() ) )
+        if ( !repository.getProtocol().regionMatches( true, 0, "http", 0, "http".length() ) &&
+            !repository.getProtocol().regionMatches( true, 0, "dav", 0, "dav".length() ) )
         {
             throw new NoRepositoryConnectorException( repository );
         }
 
-        AsyncHttpClientConfig config = createConfig( session, repository );
-        httpClient = new AsyncHttpClient( new NettyAsyncHttpProvider( config ), config );
+        AsyncHttpClientConfig config = createConfig( session, repository, true );
+        httpClient = new AsyncHttpClient( new NettyAsyncHttpProvider( config ) );
 
         checksumAlgos = new LinkedHashMap<String, String>();
         checksumAlgos.put( "SHA-1", ".sha1" );
         checksumAlgos.put( "MD5", ".md5" );
+
+        disableResumeSupport = ConfigurationProperties.get( session, "aether.connector.ahc.disableResumable", false );
+        maxIOExceptionRetry = ConfigurationProperties.get( session, "aether.connector.ahc.resumeRetry", 3 );
     }
 
     private Realm getRealm( RemoteRepository repository )
@@ -156,9 +176,8 @@ class AsyncRepositoryConnector
         if ( p != null )
         {
             Authentication a = p.getAuthentication();
-            boolean useSSL =
-                repository.getProtocol().equalsIgnoreCase( "https" )
-                    || repository.getProtocol().equalsIgnoreCase( "dav:https" );
+            boolean useSSL = repository.getProtocol().equalsIgnoreCase( "https" ) ||
+                repository.getProtocol().equalsIgnoreCase( "dav:https" );
             if ( a == null )
             {
                 proxyServer = new ProxyServer( useSSL ? Protocol.HTTPS : Protocol.HTTP, p.getHost(), p.getPort() );
@@ -166,8 +185,8 @@ class AsyncRepositoryConnector
             else
             {
                 proxyServer =
-                    new ProxyServer( useSSL ? Protocol.HTTPS : Protocol.HTTP, p.getHost(), p.getPort(),
-                                     a.getUsername(), a.getPassword() );
+                    new ProxyServer( useSSL ? Protocol.HTTPS : Protocol.HTTP, p.getHost(), p.getPort(), a.getUsername(),
+                                     a.getPassword() );
             }
         }
 
@@ -180,23 +199,22 @@ class AsyncRepositoryConnector
      * @param session {link RepositorySystemSession}
      * @return a configured instance of
      */
-    private AsyncHttpClientConfig createConfig( RepositorySystemSession session, RemoteRepository repository )
+    private AsyncHttpClientConfig createConfig( RepositorySystemSession session, RemoteRepository repository,
+                                                boolean useCompression )
     {
         AsyncHttpClientConfig.Builder configBuilder = new AsyncHttpClientConfig.Builder();
 
-        String userAgent =
-            ConfigurationProperties.get( session, ConfigurationProperties.USER_AGENT,
-                                         ConfigurationProperties.DEFAULT_USER_AGENT );
+        String userAgent = ConfigurationProperties.get( session, ConfigurationProperties.USER_AGENT,
+                                                        ConfigurationProperties.DEFAULT_USER_AGENT );
         if ( !StringUtils.isEmpty( userAgent ) )
         {
             configBuilder.setUserAgent( userAgent );
         }
-        int connectTimeout =
-            ConfigurationProperties.get( session, ConfigurationProperties.CONNECT_TIMEOUT,
-                                         ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
+        int connectTimeout = ConfigurationProperties.get( session, ConfigurationProperties.CONNECT_TIMEOUT,
+                                                          ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
 
         configBuilder.setConnectionTimeoutInMs( connectTimeout );
-        configBuilder.setCompressionEnabled( true );
+        configBuilder.setCompressionEnabled( useCompression );
         configBuilder.setFollowRedirects( true );
         configBuilder.setRequestTimeoutInMs(
             ConfigurationProperties.get( session, ConfigurationProperties.REQUEST_TIMEOUT,
@@ -234,7 +252,7 @@ class AsyncRepositoryConnector
             String resource = layout.getPath( download.getMetadata() ).getPath();
             GetTask<?> task =
                 new GetTask<MetadataTransfer>( resource, download.getFile(), download.getChecksumPolicy(), latch,
-                                               download, METADATA );
+                                               download, METADATA, false );
             tasks.add( task );
             task.run();
         }
@@ -244,7 +262,7 @@ class AsyncRepositoryConnector
             String resource = layout.getPath( download.getArtifact() ).getPath();
             GetTask<?> task =
                 new GetTask<ArtifactTransfer>( resource, download.isExistenceCheck() ? null : download.getFile(),
-                                               download.getChecksumPolicy(), latch, download, ARTIFACT );
+                                               download.getChecksumPolicy(), latch, download, ARTIFACT, true );
             tasks.add( task );
             task.run();
         }
@@ -330,21 +348,21 @@ class AsyncRepositoryConnector
     {
         if ( responseCode == HttpURLConnection.HTTP_NOT_FOUND )
         {
-            throw new ResourceDoesNotExistException( String.format( "Unable to locate resource %s. Error code %s", url,
-                                                                    responseCode ) );
+            throw new ResourceDoesNotExistException(
+                String.format( "Unable to locate resource %s. Error code %s", url, responseCode ) );
         }
 
-        if ( responseCode == HttpURLConnection.HTTP_FORBIDDEN || responseCode == HttpURLConnection.HTTP_UNAUTHORIZED
-            || responseCode == HttpURLConnection.HTTP_PROXY_AUTH )
+        if ( responseCode == HttpURLConnection.HTTP_FORBIDDEN || responseCode == HttpURLConnection.HTTP_UNAUTHORIZED ||
+            responseCode == HttpURLConnection.HTTP_PROXY_AUTH )
         {
-            throw new AuthorizationException( String.format( "Access denied to %s. Error code %s, %s", url,
-                                                             responseCode, responseMsg ) );
+            throw new AuthorizationException(
+                String.format( "Access denied to %s. Error code %s, %s", url, responseCode, responseMsg ) );
         }
 
         if ( responseCode >= HttpURLConnection.HTTP_MULT_CHOICE )
         {
-            throw new TransferException( String.format( "Failed to transfer %s. Error code %s, %s", url, responseCode,
-                                                        responseMsg ) );
+            throw new TransferException(
+                String.format( "Failed to transfer %s. Error code %s, %s", url, responseCode, responseMsg ) );
         }
     }
 
@@ -377,12 +395,17 @@ class AsyncRepositoryConnector
 
         private final ExceptionWrapper<T> wrapper;
 
+        private final AtomicBoolean deleteFile = new AtomicBoolean( true );
+
+        private final boolean allowResumable;
+
         public GetTask( String path, File file, String checksumPolicy, CountDownLatch latch, T download,
-                        ExceptionWrapper<T> wrapper )
+                        ExceptionWrapper<T> wrapper, boolean allowResumable )
         {
             this.path = path;
             this.file = file;
             this.checksumPolicy = checksumPolicy;
+            this.allowResumable = allowResumable;
             this.latch = new LatchGuard( latch );
             this.download = download;
             this.wrapper = wrapper;
@@ -406,21 +429,108 @@ class AsyncRepositoryConnector
             final boolean ignoreChecksum = RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy );
             CompletionHandler completionHandler = null;
 
+            final FileLockCompanion fileLockCompanion = ( file != null )
+                ? createOrGetTmpFile( file.getPath(), allowResumable )
+                : new FileLockCompanion( null, null );
+
             try
             {
-                final ChecksumTransferListener sha1 = new ChecksumTransferListener( "SHA-1" );
-                final ChecksumTransferListener md5 = new ChecksumTransferListener( "MD5" );
-                final File tmp = ( file != null ) ? getTmpFile( file.getPath() ) : null;
+                long length = 0;
+                if ( fileLockCompanion.getFile() != null )
+                {
+                    fileProcessor.mkdirs( fileLockCompanion.getFile().getParentFile() );
+                }
 
+                // Position the file to the end in case we are resuming an aborded download.
+                final RandomAccessFile resumableFile = fileLockCompanion.getFile() == null
+                    ? null
+                    : new RandomAccessFile( fileLockCompanion.getFile(), "rw" );
+                if ( resumableFile != null )
+                {
+                    length = resumableFile.length();
+                }
+
+                FluentCaseInsensitiveStringsMap headers = new FluentCaseInsensitiveStringsMap();
+                if ( !useCache )
+                {
+                    headers.add( "Pragma", "no-cache" );
+                }
+                headers.add( "Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2" );
+
+                Request request = null;
+                final AtomicInteger maxRequestTry = new AtomicInteger();
+                AsyncHttpClient client = httpClient;
+                final AtomicBoolean closeOnComplete = new AtomicBoolean( false );
+
+                /**
+                 * If length > 0, it means we are resuming a interrupted download. If that's the case,
+                 * we can't re-use the current httpClient because compression is enabled, and supporting
+                 * compression per request is not supported in ahc and may never has it could have
+                 * a performance impact.
+                 */
+                if ( length > 0 )
+                {
+                    AsyncHttpClientConfig config = createConfig( session, repository, false );
+                    client = new AsyncHttpClient( new NettyAsyncHttpProvider( config ) );
+                    request = client.prepareGet( uri ).setRangeOffset( length ).setHeaders( headers ).build();
+                    closeOnComplete.set( true );
+                }
+                else
+                {
+                    request = httpClient.prepareGet( uri ).setHeaders( headers ).build();
+                }
+
+                final Request activeRequest = request;
+                final AsyncHttpClient activeHttpClient = client;
                 completionHandler = new CompletionHandler( transferResource, httpClient, logger, RequestType.GET )
                 {
-                    private OutputStream fileOutputStream;
+                    private final AtomicBoolean seekEndOnFile = new AtomicBoolean( false );
+
+                    private final AtomicBoolean handleTmpFile = new AtomicBoolean( true );
+
+                    /**
+                     * {@inheritDoc}
+                     */
+                    @Override
+                    public STATE onHeadersReceived( final HttpResponseHeaders headers )
+                        throws Exception
+                    {
+
+                        FluentCaseInsensitiveStringsMap h = headers.getHeaders();
+                        String rangeByteValue = h.getFirstValue( "Content-Range" );
+                        // Make sure the server acceptance of the range requests headers
+                        if ( rangeByteValue != null && rangeByteValue.compareToIgnoreCase( "none" ) != 0 )
+                        {
+                            seekEndOnFile.set( true );
+                        }
+                        return super.onHeadersReceived( headers );
+                    }
 
                     @Override
                     public void onThrowable( Throwable t )
                     {
                         try
                         {
+                            /**
+                             * If an IOException occurs, let's try to resume the request based on how much bytes has
+                             * been so far downloaded. Fail after IOException.
+                             */
+                            if ( maxRequestTry.get() < maxIOExceptionRetry &&
+                                IOException.class.isAssignableFrom( t.getClass() ) )
+                            {
+                                maxRequestTry.incrementAndGet();
+                                Request newRequest = new RequestBuilder( activeRequest ).setRangeOffset(
+                                    resumableFile.length() ).build();
+                                activeHttpClient.executeRequest( newRequest, this );
+                                deleteFile.set( false );
+                                return;
+                            }
+
+                            if ( closeOnComplete.get() )
+                            {
+                                activeHttpClient.close();
+                            }
+
                             super.onThrowable( t );
                             if ( Exception.class.isAssignableFrom( t.getClass() ) )
                             {
@@ -438,22 +548,17 @@ class AsyncRepositoryConnector
                         }
                         finally
                         {
-                            if ( fileOutputStream != null )
+                            if ( resumableFile != null )
                             {
                                 try
                                 {
-                                    fileOutputStream.close();
+                                    resumableFile.close();
                                 }
                                 catch ( IOException ex )
                                 {
                                 }
-
                             }
-                            // The request timed out we must delete the file.
-                            if ( tmp != null )
-                            {
-                                tmp.delete();
-                            }
+                            deleteFile( fileLockCompanion );
 
                             latch.countDown();
                             removeListeners();
@@ -462,42 +567,28 @@ class AsyncRepositoryConnector
 
                     private void removeListeners()
                     {
-                        if ( !ignoreChecksum )
-                        {
-                            removeTransferListener( md5 );
-                            removeTransferListener( sha1 );
-                        }
                         removeTransferListener( listener );
-                    }
-
-                    public AsyncHandler.STATE onStatusReceived( final HttpResponseStatus status )
-                        throws Exception
-                    {
-                        STATE state = super.onStatusReceived( status );
-                        if ( status.getStatusCode() == 200 )
-                        {
-                            fileProcessor.mkdirs( tmp.getParentFile() );
-                            try
-                            {
-                                fileOutputStream = new BufferedOutputStream( new FileOutputStream( tmp ) );
-                            }
-                            catch ( IOException ex )
-                            {
-                                return AsyncHandler.STATE.ABORT;
-                            }
-                        }
-                        return state;
                     }
 
                     public STATE onBodyPartReceived( final HttpResponseBodyPart content )
                         throws Exception
                     {
-                        if ( status() != null && status().getStatusCode() == 200 )
+                        if ( status() != null &&
+                            ( status().getStatusCode() == 200 || status().getStatusCode() == 206 ) )
                         {
                             byte[] bytes = content.getBodyPartBytes();
                             try
                             {
-                                fileOutputStream.write( bytes );
+                                // If the content-range header was present, save the bytes at the end of the file
+                                // as we are resuming an existing download.
+                                if ( seekEndOnFile.get() )
+                                {
+                                    resumableFile.seek( fileLockCompanion.getFile().length() );
+
+                                    // No need to seek again.
+                                    seekEndOnFile.set( false );
+                                }
+                                resumableFile.write( bytes );
                             }
                             catch ( IOException ex )
                             {
@@ -513,34 +604,22 @@ class AsyncRepositoryConnector
                     {
                         try
                         {
+                            deleteFile.set( true );
+                            try
+                            {
+                                resumableFile.close();
+                            }
+                            catch ( IOException ex )
+                            {
+                            }
+
                             final Response response = super.onCompleted( r );
 
-                            if ( fileOutputStream != null )
-                            {
-                                try
-                                {
-                                    fileOutputStream.flush();
-                                }
-                                catch ( IOException e )
-                                {
-                                    // Ignore
-                                }
-                                finally
-                                {
-                                    try
-                                    {
-                                        fileOutputStream.close();
-                                    }
-                                    catch ( IOException ex )
-                                    {
-                                    }
-                                }
-                            }
                             handleResponseCode( uri, response.getStatusCode(), response.getStatusText() );
 
                             if ( !ignoreChecksum )
                             {
-                                httpClient.getConfig().executorService().execute( new Runnable()
+                                activeHttpClient.getConfig().executorService().execute( new Runnable()
                                 {
                                     public void run()
                                     {
@@ -548,11 +627,16 @@ class AsyncRepositoryConnector
                                         {
                                             try
                                             {
-                                                if ( !verifyChecksum( file, uri, sha1.getActualChecksum(), ".sha1" ) &&
-                                                    !verifyChecksum( file, uri, md5.getActualChecksum(), ".md5" ) )
+                                                Map<String, Object> checksums =
+                                                    ChecksumUtils.calc( fileLockCompanion.getFile(),
+                                                                        checksumAlgos.keySet() );
+                                                if ( !verifyChecksum( file, uri, (String) checksums.get( "SHA-1" ),
+                                                                      ".sha1" ) &&
+                                                    !verifyChecksum( file, uri, (String) checksums.get( "MD5" ),
+                                                                     ".md5" ) )
                                                 {
                                                     throw new ChecksumFailureException( "Checksum validation failed" +
-                                                        ", no checksums available from the repository" );
+                                                                                            ", no checksums available from the repository" );
                                                 }
                                             }
                                             catch ( ChecksumFailureException e )
@@ -579,30 +663,43 @@ class AsyncRepositoryConnector
                                             {
                                                 try
                                                 {
-                                                    rename( tmp, file );
+                                                    rename( fileLockCompanion.getFile(), file );
+                                                    releaseLock( fileLockCompanion );
                                                 }
                                                 catch ( IOException e )
                                                 {
                                                     exception = e;
                                                 }
                                             }
-
-                                            if ( tmp != null )
+                                            else
                                             {
-                                                tmp.delete();
+                                                deleteFile( fileLockCompanion );
                                             }
 
                                             latch.countDown();
+                                            if ( closeOnComplete.get() )
+                                            {
+                                                activeHttpClient.close();
+                                            }
                                         }
                                     }
                                 } );
                             }
-
-                            if ( ignoreChecksum )
+                            else
                             {
-                                latch.countDown();
-                            }
 
+                                rename( fileLockCompanion.getFile(), file );
+                                releaseLock( fileLockCompanion );
+                                handleTmpFile.set( false );
+
+                                // asyncHttpClient.close may takes time before all connections get closed.
+                                // We unlatch first.
+                                latch.countDown();
+                                if ( closeOnComplete.get() )
+                                {
+                                    activeHttpClient.close();
+                                }
+                            }
                             removeListeners();
 
                             return response;
@@ -616,15 +713,16 @@ class AsyncRepositoryConnector
                         {
                             try
                             {
-                                if ( tmp != null )
+                                if ( handleTmpFile.get() && fileLockCompanion.getFile() != null )
                                 {
                                     if ( exception != null )
                                     {
-                                        tmp.delete();
+                                        deleteFile( fileLockCompanion );
                                     }
                                     else if ( ignoreChecksum )
                                     {
-                                        rename( tmp, file );
+                                        rename( fileLockCompanion.getFile(), file );
+                                        releaseLock( fileLockCompanion );
                                     }
                                 }
                             }
@@ -653,38 +751,33 @@ class AsyncRepositoryConnector
                         if ( listener != null )
                         {
                             completionHandler.addTransferListener( listener );
-                            listener.transferInitiated( newEvent( transferResource, null, RequestType.GET,
-                                                                  EventType.INITIATED ) );
+                            listener.transferInitiated(
+                                newEvent( transferResource, null, RequestType.GET, EventType.INITIATED ) );
                         }
 
-                        if ( !ignoreChecksum )
-                        {
-                            completionHandler.addTransferListener( md5 );
-                            completionHandler.addTransferListener( sha1 );
-                        }
-
-                        FluentCaseInsensitiveStringsMap headers = new FluentCaseInsensitiveStringsMap();
-                        if ( !useCache )
-                        {
-                            headers.add( "Pragma", "no-cache" );
-                        }
-                        headers.add( "Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2" );
-
-                        httpClient.prepareGet( uri ).setHeaders( headers ).execute( completionHandler );
+                        activeHttpClient.executeRequest( request, completionHandler );
                     }
                 }
                 catch ( Exception ex )
                 {
-                    if ( tmp != null )
+                    try
                     {
-                        tmp.delete();
+                        if ( resumableFile != null )
+                        {
+                            resumableFile.close();
+                        }
                     }
+                    catch ( IOException ex2 )
+                    {
+                    }
+                    deleteFile( fileLockCompanion );
                     exception = ex;
                     latch.countDown();
                 }
             }
             catch ( Throwable t )
             {
+                deleteFile( fileLockCompanion );
                 try
                 {
                     if ( Exception.class.isAssignableFrom( t.getClass() ) )
@@ -705,6 +798,16 @@ class AsyncRepositoryConnector
                 {
                     latch.countDown();
                 }
+            }
+        }
+
+        private void deleteFile( FileLockCompanion fileLockCompanion )
+        {
+            if ( fileLockCompanion.getFile() != null && deleteFile.get() )
+            {
+                releaseLock( fileLockCompanion );
+                activeDownloadFiles.remove( fileLockCompanion.getFile() );
+                fileLockCompanion.getFile().delete();
             }
         }
 
@@ -833,7 +936,8 @@ class AsyncRepositoryConnector
         public void run()
         {
             upload.setState( Transfer.State.ACTIVE );
-            final DefaultTransferResource transferResource = new DefaultTransferResource( repository.getUrl(), path, file );
+            final DefaultTransferResource transferResource =
+                new DefaultTransferResource( repository.getUrl(), path, file );
 
             try
             {
@@ -923,11 +1027,13 @@ class AsyncRepositoryConnector
                 }
                 transferResource.setContentLength( file.length() );
 
-                httpClient.preparePut( uri ).setBody( new ProgressingFileBodyGenerator( file, completionHandler ) ).execute( completionHandler );
+                httpClient.preparePut( uri ).setBody(
+                    new ProgressingFileBodyGenerator( file, completionHandler ) ).execute( completionHandler );
             }
             catch ( Exception e )
             {
-                try {
+                try
+                {
                     if ( listener != null )
                     {
                         listener.transferFailed( newEvent( transferResource, e, RequestType.PUT, EventType.FAILED ) );
@@ -1082,9 +1188,198 @@ class AsyncRepositoryConnector
         return ( items != null ) ? items : Collections.<T>emptyList();
     }
 
+    /**
+     * Create a {@link FileLockCompanion} containing a reference to a temporary {@link File} used when downloading
+     * a remote file. If a local and incomplete version of a file is available, use that file and resume bytes downloading.
+     * To prevent multiple process trying to resume the same file, a {@link FileLock} companion to the tmeporary file is
+     * created and used to prevent concurrency issue.
+     *
+     * @param path           The downloaded path
+     * @param allowResumable Allow resumable download, or not.
+     * @return
+     */
+    private FileLockCompanion createOrGetTmpFile( String path, boolean allowResumable )
+    {
+        if ( !disableResumeSupport && allowResumable )
+        {
+            File f = new File( path );
+            File parentFile = f.getParentFile();
+            if ( parentFile.isDirectory() )
+            {
+                for ( File tmpFile : parentFile.listFiles( new FilenameFilter()
+                {
+                    public boolean accept( File dir, String name )
+                    {
+                        if ( name.indexOf( "." ) > 0 && name.lastIndexOf( "." ) == name.indexOf( ".ahc" ) )
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+                } ) )
+                {
+
+                    if ( tmpFile.length() > 0 )
+                    {
+                        String realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ) );
+
+                        FileLockCompanion fileLockCompanion = null;
+                        if ( realPath.equals( path ) )
+                        {
+                            File newFile = tmpFile;
+                            synchronized ( activeDownloadFiles )
+                            {
+                                fileLockCompanion = lockFile( tmpFile );
+                                logger.debug( String.format( "Found an incomplete download for file %s.", path ) );
+
+                                if ( fileLockCompanion.getLock() == null )
+                                {
+                                    /**
+                                     * Lock failed so we need to regenerate a new tmp file.
+                                     */
+                                    newFile = getTmpFile( path );
+                                    fileLockCompanion = lockFile( newFile );
+
+                                }
+                                return fileLockCompanion;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return new FileLockCompanion( getTmpFile( path ), null );
+    }
+
+    /**
+     * Simple placeholder for a File and it's associated lock.
+     */
+    private static class FileLockCompanion
+    {
+
+        private final File file;
+
+        private final FileLock lock;
+
+        private final String lockPathName;
+
+        public FileLockCompanion( File file, FileLock lock )
+        {
+            this.file = file;
+            this.lock = lock;
+            this.lockPathName = null;
+        }
+
+        public FileLockCompanion( File file, FileLock lock, String lockPathName )
+        {
+            this.file = file;
+            this.lock = lock;
+            this.lockPathName = lockPathName;
+        }
+
+        public File getFile()
+        {
+            return file;
+        }
+
+        public FileLock getLock()
+        {
+            return lock;
+        }
+
+        public String getLockedPathFile()
+        {
+            return lockPathName;
+        }
+
+    }
+
+    /**
+     * Create a temporary file used to lock ({@link FileLock}) an associated incomplete file {@link File}. The {@link FileLock}'s name
+     * is derived from the original file, appending ".lock" at the end. Usually this method gets executed when a
+     * download fail to complete because the JVM goes down. In that case we resume the incomplete download and to prevent
+     * multiple process to work on the same file, we use a dedicated {@link FileLock}.
+     *
+     * @param tmpFile a file on which we want to create a temporary lock file.
+     * @return a {@link FileLockCompanion} contains the {@link File} and a {@link FileLock} if it was possible to lock the file.
+     */
+    private FileLockCompanion lockFile( File tmpFile )
+    {
+        try
+        {
+            // On Unix tmpLock.getChannel().tryLock may not fail inside the same process, so we must keep track
+            // of current resumable file.
+            if ( activeDownloadFiles.containsKey( tmpFile ) )
+            {
+                return new FileLockCompanion( tmpFile, null );
+            }
+
+            RandomAccessFile tmpLock = new RandomAccessFile( tmpFile.getPath() + ".lock", "rw" );
+            FileLock lock = tmpLock.getChannel().tryLock( 0, 1, false );
+
+            if ( lock != null )
+            {
+                activeDownloadFiles.put( tmpLock, Boolean.TRUE );
+            }
+            else if ( lock == null )
+            {
+                try
+                {
+                    tmpLock.close();
+                }
+                catch ( IOException ex )
+                {
+
+                }
+            }
+
+            return new FileLockCompanion( tmpFile, lock, tmpFile.getPath() + ".lock" );
+        }
+        catch ( OverlappingFileLockException ex )
+        {
+            return new FileLockCompanion( tmpFile, null );
+        }
+        catch ( IOException ex )
+        {
+            return new FileLockCompanion( tmpFile, null );
+        }
+    }
+
+    private void releaseLock( FileLockCompanion fileLockCompanion )
+    {
+        try
+        {
+            if ( fileLockCompanion.getLock() != null )
+            {
+                try
+                {
+                    fileLockCompanion.getLock().channel().close();
+                    fileLockCompanion.getLock().release();
+                }
+                finally
+                {
+                    if ( fileLockCompanion.getLockedPathFile() != null )
+                    {
+                        new File( fileLockCompanion.getLockedPathFile() ).delete();
+                    }
+                }
+            }
+        }
+        catch ( IOException e )
+        {
+            // Ignore.
+        }
+    }
+
     private File getTmpFile( String path )
     {
-        return new File( path + ".tmp" + UUID.randomUUID().toString().replace( "-", "" ).substring( 0, 16 ) );
+        File file;
+        do
+        {
+            file = new File( path + ".ahc" + UUID.randomUUID().toString().replace( "-", "" ).substring( 0, 16 ) );
+        }
+        while ( file.exists() );
+        return file;
     }
 
     private static final ExceptionWrapper<MetadataTransfer> METADATA = new ExceptionWrapper<MetadataTransfer>()
@@ -1125,6 +1420,7 @@ class AsyncRepositoryConnector
     {
 
         private final CountDownLatch latch;
+
         private final AtomicBoolean done = new AtomicBoolean( false );
 
         public LatchGuard( CountDownLatch latch )
@@ -1134,7 +1430,8 @@ class AsyncRepositoryConnector
 
         public void countDown()
         {
-            if (!done.getAndSet( true )) {
+            if ( !done.getAndSet( true ) )
+            {
                 latch.countDown();
             }
         }
