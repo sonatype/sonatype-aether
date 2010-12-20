@@ -8,35 +8,17 @@ package org.sonatype.aether.connector.async;
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
-
-import org.junit.Test;
 import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.repository.RepositoryPolicy;
-import org.sonatype.aether.spi.connector.ArtifactDownload;
-import org.sonatype.aether.spi.connector.ArtifactUpload;
-import org.sonatype.aether.spi.connector.MetadataDownload;
-import org.sonatype.aether.spi.connector.MetadataUpload;
-import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
-import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSetup.AbstractConnectorTestSetup;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSuite;
-import org.sonatype.aether.test.util.impl.StubArtifact;
-import org.sonatype.aether.test.util.impl.StubMetadata;
-import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.tests.http.server.jetty.impl.JettyServerProvider;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import java.util.Map;
 
 /**
  * @author Benjamin Hanzelmann
@@ -75,7 +57,6 @@ public class AetherDefaultTest
                 provider.stop();
                 provider = null;
             }
-            TestFileUtils.deleteTempFiles();
         }
 
     }
