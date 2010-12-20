@@ -590,7 +590,7 @@ class AsyncRepositoryConnector
                     {
                         try
                         {
-                            deleteFile.set(true);
+                            deleteFile.set( true );
                             try
                             {
                                 resumableFile.close();
@@ -1300,6 +1300,17 @@ class AsyncRepositoryConnector
             if ( lock != null )
             {
                 activeDownloadFiles.put( tmpLock, Boolean.TRUE );
+            }
+            else if (lock == null || !lock.isValid() )
+            {
+                try
+                {
+                    tmpLock.close();
+                }
+                catch ( IOException ex )
+                {
+
+                }
             }
 
             return new FileLockCompanion( tmpFile, lock, tmpFile.getPath() + ".lock" );
