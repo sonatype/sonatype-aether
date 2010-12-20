@@ -477,7 +477,7 @@ class AsyncRepositoryConnector
                 final AsyncHttpClient activeHttpClient = client;
                 completionHandler = new CompletionHandler( transferResource, httpClient, logger, RequestType.GET )
                 {
-                    private final AtomicBoolean acceptRange = new AtomicBoolean(false);
+                    private final AtomicBoolean seekEndOnFile = new AtomicBoolean(false);
                     private final AtomicBoolean handleTmpFile = new AtomicBoolean(true);
 
                     /**
@@ -493,7 +493,7 @@ class AsyncRepositoryConnector
                         // Make sure the server acceptance of the range requests headers
                         if ( rangeByteValue != null && rangeByteValue.compareToIgnoreCase( "none" ) != 0 )
                         {
-                            acceptRange.set( true );
+                            seekEndOnFile.set( true );
                         }
                         return super.onHeadersReceived( headers );
                     }
@@ -571,8 +571,11 @@ class AsyncRepositoryConnector
                             {
                                 // If the content-range header was present, save the bytes at the end of the file
                                 // as we are resuming an existing download.
-                                if ( acceptRange.get() ) {
+                                if ( seekEndOnFile.get() ) {
                                     resumableFile.seek( fileLockCompanion.getFile().length() );
+
+                                    // No need to seek again.
+                                    seekEndOnFile.set(false);
                                 }
                                 resumableFile.write( bytes );
                             }
