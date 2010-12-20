@@ -34,7 +34,7 @@ public class ConnectorTestUtils
 
     /**
      * Creates transfer objects according to the given class. If the file parameter is {@code null}, a new temporary
-     * file will be created for uploads. Downloads will just use the parameter as it is.
+     * file will be created for downloads. Uploads will just use the parameter as it is.
      */
     public static <T extends Transfer> List<T> createTransfers( Class<T> cls, int count, File file )
     {
@@ -67,8 +67,7 @@ public class ConnectorTestUtils
                 try
                 {
                     Artifact artifact = ( (Artifact) item ).setVersion( ( i + 1 ) + "-test" );
-                    file = file == null ? TestFileUtils.createTempFile( "" ) : file;
-                    obj = new ArtifactDownload( artifact, context, file, checksumPolicy );
+                    obj = new ArtifactDownload( artifact, context, safeFile( file ), checksumPolicy );
                 }
                 catch ( IOException e )
                 {
@@ -85,8 +84,7 @@ public class ConnectorTestUtils
                 try
                 {
                     Metadata metadata = ( (StubMetadata) item ).setVersion( ( i + 1 ) + "-test" );
-                    file = file == null ? TestFileUtils.createTempFile( "" ) : file;
-                    obj = new MetadataDownload( metadata, context, file, checksumPolicy );
+                    obj = new MetadataDownload( metadata, context, safeFile( file ), checksumPolicy );
                 }
                 catch ( IOException e )
                 {
@@ -98,6 +96,12 @@ public class ConnectorTestUtils
         }
 
         return ret;
+    }
+
+    private static File safeFile( File file )
+        throws IOException
+    {
+        return file == null ? TestFileUtils.createTempFile( "" ) : file;
     }
 
 }
