@@ -1301,7 +1301,7 @@ class AsyncRepositoryConnector
             {
                 activeDownloadFiles.put( tmpLock, Boolean.TRUE );
             }
-            else if (lock == null || !lock.isValid() )
+            else if ( lock == null )
             {
                 try
                 {
