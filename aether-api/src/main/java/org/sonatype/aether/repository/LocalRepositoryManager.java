@@ -91,4 +91,24 @@ public interface LocalRepositoryManager
      */
     void add( RepositorySystemSession session, LocalArtifactRegistration request );
 
+    /**
+     * Queries for the existence of metadata in the local repository. The request could be satisfied by locally built or
+     * previously downloaded metadata.
+     * 
+     * @param session The repository system session during which the request is made, must not be {@code null}.
+     * @param request The metadata request, must not be {@code null}.
+     * @return The result of the request, never {@code null}.
+     */
+    LocalMetadataResult find( RepositorySystemSession session, LocalMetadataRequest request );
+
+    /**
+     * Registers installed or resolved metadata with the local repository. Note that metadata registration is merely
+     * concerned about updating the local repository's internal state, not about actually installing the metadata.
+     * However, this method MUST be called after the actual install to give the repository manager the opportunity to
+     * inspect the added metadata.
+     * 
+     * @param session The repository system session during which the registration is made, must not be {@code null}.
+     * @param request The registration request, must not be {@code null}.
+     */
+    void add( RepositorySystemSession session, LocalMetadataRegistration request );
 }

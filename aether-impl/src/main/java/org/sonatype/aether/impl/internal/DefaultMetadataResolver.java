@@ -12,6 +12,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,9 @@ import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 import org.sonatype.aether.repository.ArtifactRepository;
+import org.sonatype.aether.repository.LocalMetadataRegistration;
+import org.sonatype.aether.repository.LocalMetadataRequest;
+import org.sonatype.aether.repository.LocalMetadataResult;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.LocalRepositoryManager;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -155,8 +159,9 @@ public class DefaultMetadataResolver
 
                 metadataResolving( session, metadata, localRepo );
 
-                File localFile = getFile( session, metadata, null, null );
-                if ( localFile.isFile() )
+                File localFile = getLocalFile( session, metadata );
+
+                if ( localFile != null && localFile.isFile() )
                 {
                     metadata = metadata.setFile( localFile );
                     result.setMetadata( metadata );
@@ -178,12 +183,15 @@ public class DefaultMetadataResolver
             }
 
             metadataResolving( session, metadata, repository );
+            LocalRepositoryManager lrm = session.getLocalRepositoryManager();
+            LocalMetadataRequest localRequest = new LocalMetadataRequest( metadata, repository, request.getRequestContext() );
+            LocalMetadataResult lrmResult = lrm.find( session, localRequest );
 
-            File metadataFile = getFile( session, metadata, repository, request.getRequestContext() );
+            File metadataFile = lrmResult.getFile();
 
             if ( session.isOffline() )
             {
-                if ( metadataFile.isFile() )
+                if ( metadataFile != null && metadataFile.isFile() )
                 {
                     metadata = metadata.setFile( metadataFile );
                     result.setMetadata( metadata );
@@ -203,11 +211,11 @@ public class DefaultMetadataResolver
             Long localLastUpdate = null;
             if ( request.isFavorLocalRepository() )
             {
-                File localFile = getFile( session, metadata, null, null );
+                File localFile = getLocalFile( session, metadata );
                 localLastUpdate = localLastUpdates.get( localFile );
                 if ( localLastUpdate == null )
                 {
-                    localLastUpdate = Long.valueOf( localFile.lastModified() );
+                    localLastUpdate = Long.valueOf( localFile != null ? localFile.lastModified() : 0 );
                     localLastUpdates.put( localFile, localLastUpdate );
                 }
             }
@@ -221,19 +229,32 @@ public class DefaultMetadataResolver
                     new UpdateCheck<Metadata, MetadataTransferException>();
                 check.setLocalLastUpdated( ( localLastUpdate != null ) ? localLastUpdate.longValue() : 0 );
                 check.setItem( metadata );
+                metadataFile =
+                    new File(
+                              session.getLocalRepository().getBasedir(),
+                              session.getLocalRepositoryManager().getPathForRemoteMetadata( metadata,
+                                                                                             repo,
+                                                                                            request.getRequestContext() ) );
                 check.setFile( metadataFile );
                 check.setRepository( repository );
                 check.setAuthoritativeRepository( repo );
                 check.setPolicy( getPolicy( session, repo, metadata.getNature() ).getUpdatePolicy() );
-                updateCheckManager.checkMetadata( session, check );
 
-                if ( check.isRequired() )
+                if ( lrmResult.isStale() )
                 {
                     checks.add( check );
                 }
-                else if ( exception == null )
+                else
                 {
-                    exception = check.getException();
+                    updateCheckManager.checkMetadata( session, check );
+                    if ( check.isRequired() )
+                    {
+                        checks.add( check );
+                    }
+                    else if ( exception == null )
+                    {
+                        exception = check.getException();
+                    }
                 }
             }
 
@@ -310,6 +331,14 @@ public class DefaultMetadataResolver
         return results;
     }
 
+    private File getLocalFile( RepositorySystemSession session, Metadata metadata )
+    {
+        LocalRepositoryManager lrm = session.getLocalRepositoryManager();
+        LocalMetadataResult localResult = lrm.find( session, new LocalMetadataRequest( metadata, null, null ) );
+        File localFile = localResult.getFile();
+        return localFile;
+    }
+
     private List<RemoteRepository> getEnabledSourceRepositories( RemoteRepository repository, Metadata.Nature nature )
     {
         List<RemoteRepository> repositories = new ArrayList<RemoteRepository>();
@@ -351,22 +380,6 @@ public class DefaultMetadataResolver
         boolean releases = !Metadata.Nature.SNAPSHOT.equals( nature );
         boolean snapshots = !Metadata.Nature.RELEASE.equals( nature );
         return remoteRepositoryManager.getPolicy( session, repository, releases, snapshots );
-    }
-
-    private File getFile( RepositorySystemSession session, Metadata metadata, RemoteRepository repository,
-                          String context )
-    {
-        LocalRepositoryManager lrm = session.getLocalRepositoryManager();
-        String path;
-        if ( repository != null )
-        {
-            path = lrm.getPathForRemoteMetadata( metadata, repository, context );
-        }
-        else
-        {
-            path = lrm.getPathForLocalMetadata( metadata );
-        }
-        return new File( lrm.getRepository().getBasedir(), path );
     }
 
     private void metadataResolving( RepositorySystemSession session, Metadata metadata, ArtifactRepository repository )
@@ -472,7 +485,10 @@ public class DefaultMetadataResolver
 
         public void run()
         {
-            metadataDownloading( session, request.getMetadata(), request.getRepository() );
+            Metadata metadata = request.getMetadata();
+            RemoteRepository requestRepository = request.getRepository();
+
+            metadataDownloading( session, metadata, requestRepository );
 
             try
             {
@@ -483,14 +499,14 @@ public class DefaultMetadataResolver
                 }
 
                 MetadataDownload download = new MetadataDownload();
-                download.setMetadata( request.getMetadata() );
+                download.setMetadata( metadata );
                 download.setRequestContext( request.getRequestContext() );
                 download.setFile( metadataFile );
                 download.setChecksumPolicy( policy );
                 download.setRepositories( repositories );
 
                 RepositoryConnector connector =
-                    remoteRepositoryManager.getRepositoryConnector( session, request.getRepository() );
+                    remoteRepositoryManager.getRepositoryConnector( session, requestRepository );
                 try
                 {
                     connector.get( null, Arrays.asList( download ) );
@@ -501,15 +517,23 @@ public class DefaultMetadataResolver
                 }
 
                 exception = download.getException();
+                
+                if ( exception == null )
+                {
 
-                if ( request.isDeleteLocalCopyIfMissing() && exception instanceof MetadataNotFoundException )
+                    List<String> contexts = Collections.singletonList( request.getRequestContext() );
+                    LocalMetadataRegistration registration =
+                        new LocalMetadataRegistration( metadata, requestRepository, contexts );
+
+                    session.getLocalRepositoryManager().add( session, registration );
+                } else if ( request.isDeleteLocalCopyIfMissing() && exception instanceof MetadataNotFoundException )
                 {
                     download.getFile().delete();
                 }
             }
             catch ( NoRepositoryConnectorException e )
             {
-                exception = new MetadataTransferException( request.getMetadata(), request.getRepository(), e );
+                exception = new MetadataTransferException( metadata, requestRepository, e );
             }
             finally
             {
@@ -521,7 +545,7 @@ public class DefaultMetadataResolver
                 updateCheckManager.touchMetadata( session, check.setException( exception ) );
             }
 
-            metadataDownloaded( session, request.getMetadata(), request.getRepository(), metadataFile, exception );
+            metadataDownloaded( session, metadata, requestRepository, metadataFile, exception );
         }
 
     }

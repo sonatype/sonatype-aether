@@ -16,7 +16,7 @@ import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 
-final class StaticUpdateCheckManager
+class StaticUpdateCheckManager
     implements UpdateCheckManager
 {
     boolean checkRequired;

@@ -16,16 +16,20 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.repository.LocalMetadataRegistration;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.resolution.MetadataRequest;
 import org.sonatype.aether.resolution.MetadataResult;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
+import org.sonatype.aether.test.impl.TestLocalRepositoryManager;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubMetadata;
@@ -49,12 +53,15 @@ public class DefaultMetadataResolverTest
 
     private RecordingRepositoryConnector connector;
 
+    private TestLocalRepositoryManager lrm;
+
     @Before
     public void setup()
         throws Exception
     {
         session = new TestRepositorySystemSession();
-        session.setLocalRepositoryManager( new EnhancedLocalRepositoryManager( TestFileUtils.createTempDir() ) );
+        // session.setLocalRepositoryManager( new EnhancedLocalRepositoryManager( TestFileUtils.createTempDir() ) );
+        lrm = (TestLocalRepositoryManager) session.getLocalRepositoryManager();
         manager = new StubRemoteRepositoryManager();
         resolver = new DefaultMetadataResolver();
         resolver.setUpdateCheckManager( new StaticUpdateCheckManager( true ) );
@@ -120,6 +127,10 @@ public class DefaultMetadataResolverTest
         assertEquals( metadata, result.getMetadata().setFile( null ) );
 
         connector.assertSeenExpected();
+        Set<Metadata> metadataRegistration =
+            ( (TestLocalRepositoryManager) session.getLocalRepositoryManager() ).getMetadataRegistration();
+        assertTrue( metadataRegistration.contains( metadata ) );
+        assertEquals( 1, metadataRegistration.size() );
     }
 
     @Test
@@ -187,18 +198,21 @@ public class DefaultMetadataResolverTest
         File file = new File( session.getLocalRepository().getBasedir(), path );
         TestFileUtils.write( file.getAbsolutePath(), file );
 
+        // set file to use in TestLRM find()
+        metadata = metadata.setFile( file );
+
         MetadataRequest request = new MetadataRequest( metadata, repository, "" );
         List<MetadataResult> results = resolver.resolveMetadata( session, Arrays.asList( request ) );
 
         assertEquals( 1, results.size() );
         MetadataResult result = results.get( 0 );
         assertSame( request, result.getRequest() );
-        assertNull( result.getException() );
+        assertNull( String.valueOf( result.getException() ), result.getException() );
         assertNotNull( result.getMetadata() );
         assertNotNull( result.getMetadata().getFile() );
 
         assertEquals( file, result.getMetadata().getFile() );
-        assertEquals( metadata, result.getMetadata().setFile( null ) );
+        assertEquals( metadata.setFile( null ), result.getMetadata().setFile( null ) );
 
         connector.assertSeenExpected();
     }
@@ -207,21 +221,32 @@ public class DefaultMetadataResolverTest
     public void testFavorLocal()
         throws IOException
     {
+        lrm.add( session, new LocalMetadataRegistration( metadata ) );
         String path = session.getLocalRepositoryManager().getPathForLocalMetadata( metadata );
         File file = new File( session.getLocalRepository().getBasedir(), path );
         TestFileUtils.write( file.getAbsolutePath(), file );
+        final long timestamp = file.lastModified();
 
         MetadataRequest request = new MetadataRequest( metadata, repository, "" );
         request.setFavorLocalRepository( true );
-        resolver.setUpdateCheckManager( new StaticUpdateCheckManager( false ) );
+        resolver.setUpdateCheckManager( new StaticUpdateCheckManager( false )
+        {
+
+            @Override
+            public boolean isUpdatedRequired( RepositorySystemSession session, long lastModified, String policy )
+            {
+                assertEquals( timestamp, lastModified );
+                return super.isUpdatedRequired( session, lastModified, policy );
+            }
+
+        } );
 
         List<MetadataResult> results = resolver.resolveMetadata( session, Arrays.asList( request ) );
 
         assertEquals( 1, results.size() );
         MetadataResult result = results.get( 0 );
         assertSame( request, result.getRequest() );
-        assertNull( result.getException() );
-        assertNull( "Remote metadata does not exist in repo", result.getMetadata() );
+        assertNull( String.valueOf( result.getException() ), result.getException() );
 
         connector.assertSeenExpected();
     }

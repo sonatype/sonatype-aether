@@ -18,6 +18,9 @@ import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.repository.LocalArtifactRegistration;
 import org.sonatype.aether.repository.LocalArtifactRequest;
 import org.sonatype.aether.repository.LocalArtifactResult;
+import org.sonatype.aether.repository.LocalMetadataRegistration;
+import org.sonatype.aether.repository.LocalMetadataRequest;
+import org.sonatype.aether.repository.LocalMetadataResult;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.LocalRepositoryManager;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -203,6 +206,39 @@ public class SimpleLocalRepositoryManager
     public String toString()
     {
         return String.valueOf( getRepository() );
+    }
+
+    public LocalMetadataResult find( RepositorySystemSession session, LocalMetadataRequest request )
+    {
+        LocalMetadataResult result = new LocalMetadataResult( request );
+
+        String path;
+
+        Metadata metadata = request.getMetadata();
+        String context = request.getContext();
+        RemoteRepository remote = request.getRepository();
+
+        if ( remote != null )
+        {
+            path = getPathForRemoteMetadata( metadata, remote, context );
+        }
+        else
+        {
+            path = getPathForLocalMetadata( metadata );
+        }
+
+        File file = new File( getRepository().getBasedir(), path );
+        if ( file.isFile() )
+        {
+            result.setFile( file );
+        }
+
+        return result;
+    }
+
+    public void add( RepositorySystemSession session, LocalMetadataRegistration request )
+    {
+        // noop
     }
 
 }

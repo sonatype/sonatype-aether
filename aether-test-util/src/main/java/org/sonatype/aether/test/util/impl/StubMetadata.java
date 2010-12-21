@@ -245,7 +245,7 @@ public final class StubMetadata
         return true;
     }
 
-    public Metadata setVersion( String version )
+    public StubMetadata setVersion( String version )
     {
         return new StubMetadata( groupId, artifactId, version, type, nature, file );
     }

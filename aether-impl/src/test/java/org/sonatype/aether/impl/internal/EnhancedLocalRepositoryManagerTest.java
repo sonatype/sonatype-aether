@@ -22,13 +22,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.metadata.Metadata.Nature;
 import org.sonatype.aether.repository.LocalArtifactRegistration;
 import org.sonatype.aether.repository.LocalArtifactRequest;
 import org.sonatype.aether.repository.LocalArtifactResult;
+import org.sonatype.aether.repository.LocalMetadataRequest;
+import org.sonatype.aether.repository.LocalMetadataResult;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
+import org.sonatype.aether.util.metadata.DefaultMetadata;
 
 public class EnhancedLocalRepositoryManagerTest
 {
@@ -47,6 +52,10 @@ public class EnhancedLocalRepositoryManagerTest
 
     private RepositorySystemSession session;
 
+    private Metadata metadata;
+
+    private Metadata noVerMetadata;
+
     @Before
     public void setup()
         throws IOException
@@ -58,7 +67,16 @@ public class EnhancedLocalRepositoryManagerTest
 
         artifact =
             new DefaultArtifact( "gid", "aid", "", "jar", "1-test", Collections.<String, String> emptyMap(),
-                                 TestFileUtils.createTempFile( "artifact".getBytes(), 1 ) );
+                                 TestFileUtils.createTempFile( "artifact" ) );
+
+        metadata =
+            new DefaultMetadata( "gid", "aid", "1-test", "maven-metadata.xml", Nature.RELEASE,
+                                 TestFileUtils.createTempFile( "metadata" ) );
+
+        noVerMetadata =
+            new DefaultMetadata( "gid", "aid", null, "maven-metadata.xml", Nature.RELEASE,
+                                 TestFileUtils.createTempFile( "metadata" ) );
+
         baseDir = TestFileUtils.createTempDir( "enhanced-repo" );
         manager = new EnhancedLocalRepositoryManager( baseDir );
 
@@ -96,6 +114,16 @@ public class EnhancedLocalRepositoryManagerTest
         manager.add( session, new LocalArtifactRegistration( artifact, repository, contexts ) );
         String path = manager.getPathForRemoteArtifact( artifact, repository, testContext );
         return copy( artifact, path );
+    }
+    
+    private long copy( Metadata metadata, String path )
+        throws IOException
+    {
+        if ( metadata.getFile() == null )
+        {
+            return -1;
+        }
+        return TestFileUtils.copy( metadata.getFile(), new File( baseDir, path ) );
     }
 
     private long copy( Artifact artifact, String path )
@@ -175,5 +203,62 @@ public class EnhancedLocalRepositoryManagerTest
         LocalArtifactRequest request = new LocalArtifactRequest( artifact, Arrays.asList( repository ), testContext );
         LocalArtifactResult result = manager.find( session, request );
         assertTrue( result.isAvailable() );
+    }
+
+    private long addMetadata( Metadata metadata, RemoteRepository repo )
+        throws IOException
+    {
+        String path;
+        if ( repo == null )
+        {
+            path = manager.getPathForLocalMetadata( metadata );
+        }
+        else
+        {
+            path = manager.getPathForRemoteMetadata( metadata, repo, testContext );
+        }
+        System.err.println( path );
+
+        return copy( metadata, path );
+    }
+
+    @Test
+    public void findLocalMetadata()
+        throws IOException
+    {
+        addMetadata( metadata, null );
+
+        LocalMetadataRequest request = new LocalMetadataRequest( metadata, null, testContext );
+        LocalMetadataResult result = manager.find( session, request );
+
+        assertNotNull( result.getFile() );
+    }
+
+    @Test
+    public void findLocalMetadataNoVersion()
+        throws IOException
+    {
+        addMetadata( noVerMetadata, null );
+
+        LocalMetadataRequest request = new LocalMetadataRequest( noVerMetadata, null, testContext );
+        LocalMetadataResult result = manager.find( session, request );
+
+        assertNotNull( result.getFile() );
+    }
+
+    @Test
+    public void doNotFindRemoteMetadataDifferentContext()
+        throws IOException
+    {
+        addMetadata( noVerMetadata, repository );
+        addMetadata( metadata, repository );
+
+        LocalMetadataRequest request = new LocalMetadataRequest( noVerMetadata, repository, "different" );
+        LocalMetadataResult result = manager.find( session, request );
+        assertNull( result.getFile() );
+
+        request = new LocalMetadataRequest( metadata, repository, "different" );
+        result = manager.find( session, request );
+        assertNull( result.getFile() );
     }
 }

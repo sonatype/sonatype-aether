@@ -29,6 +29,9 @@ import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.repository.LocalArtifactRegistration;
 import org.sonatype.aether.repository.LocalArtifactRequest;
 import org.sonatype.aether.repository.LocalArtifactResult;
+import org.sonatype.aether.repository.LocalMetadataRegistration;
+import org.sonatype.aether.repository.LocalMetadataRequest;
+import org.sonatype.aether.repository.LocalMetadataResult;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.LocalRepositoryManager;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -599,6 +602,24 @@ public class DefaultArtifactResolverTest
             public void add( RepositorySystemSession session, LocalArtifactRegistration request )
             {
             }
+
+            public LocalMetadataResult find( RepositorySystemSession session, LocalMetadataRequest request )
+            {
+                LocalMetadataResult result = new LocalMetadataResult( request );
+                try
+                {
+                    result.setFile( TestFileUtils.createTempFile( "" ) );
+                }
+                catch ( IOException e )
+                {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+
+            public void add( RepositorySystemSession session, LocalMetadataRegistration request )
+            {
+            }
         } );
 
         ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
@@ -665,6 +686,16 @@ public class DefaultArtifactResolverTest
             }
 
             public void add( RepositorySystemSession session, LocalArtifactRegistration request )
+            {
+            }
+
+            public LocalMetadataResult find( RepositorySystemSession session, LocalMetadataRequest request )
+            {
+                LocalMetadataResult result = new LocalMetadataResult( request );
+                return result;
+            }
+
+            public void add( RepositorySystemSession session, LocalMetadataRegistration request )
             {
             }
         } );

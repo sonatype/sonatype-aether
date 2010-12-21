@@ -18,6 +18,9 @@ import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.repository.LocalArtifactRegistration;
 import org.sonatype.aether.repository.LocalArtifactRequest;
 import org.sonatype.aether.repository.LocalArtifactResult;
+import org.sonatype.aether.repository.LocalMetadataRegistration;
+import org.sonatype.aether.repository.LocalMetadataRequest;
+import org.sonatype.aether.repository.LocalMetadataResult;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.LocalRepositoryManager;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -29,7 +32,9 @@ public class TestLocalRepositoryManager
 
     private LocalRepository localRepository;
 
-    private Set<Artifact> registration = new HashSet<Artifact>();
+    private Set<Artifact> artifactRegistration = new HashSet<Artifact>();
+
+    private Set<Metadata> metadataRegistration = new HashSet<Metadata>();
 
     public TestLocalRepositoryManager()
         throws IOException
@@ -81,13 +86,39 @@ public class TestLocalRepositoryManager
 
         LocalArtifactResult result = new LocalArtifactResult( request );
 
-        result.setAvailable( registration.contains( artifact ) );
+        result.setAvailable( artifactRegistration.contains( artifact ) );
         return result;
     }
 
     public void add( RepositorySystemSession session, LocalArtifactRegistration request )
     {
-        registration.add( request.getArtifact() );
+        artifactRegistration.add( request.getArtifact() );
+    }
+
+    public LocalMetadataResult find( RepositorySystemSession session, LocalMetadataRequest request )
+    {
+        Metadata metadata = request.getMetadata();
+
+        LocalMetadataResult result = new LocalMetadataResult( request );
+        result.setFile( metadata.getFile() );
+        result.setStale( !this.metadataRegistration.contains( metadata ) );
+
+        return result;
+    }
+
+    public void add( RepositorySystemSession session, LocalMetadataRegistration request )
+    {
+        metadataRegistration.add( request.getMetadata() );
+    }
+
+    public Set<Artifact> getArtifactRegistration()
+    {
+        return artifactRegistration;
+    }
+
+    public Set<Metadata> getMetadataRegistration()
+    {
+        return metadataRegistration;
     }
 
 }

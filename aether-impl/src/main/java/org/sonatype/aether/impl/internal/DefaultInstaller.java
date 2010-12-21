@@ -32,6 +32,7 @@ import org.sonatype.aether.installation.InstallationException;
 import org.sonatype.aether.metadata.MergeableMetadata;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.repository.LocalArtifactRegistration;
+import org.sonatype.aether.repository.LocalMetadataRegistration;
 import org.sonatype.aether.repository.LocalRepositoryManager;
 import org.sonatype.aether.spi.io.FileProcessor;
 import org.sonatype.aether.spi.locator.Service;
@@ -321,6 +322,7 @@ public class DefaultInstaller
             {
                 fileProcessor.copy( metadata.getFile(), dstFile, null );
             }
+            session.getLocalRepositoryManager().add( session, new LocalMetadataRegistration( metadata ) );
         }
         catch ( Exception e )
         {

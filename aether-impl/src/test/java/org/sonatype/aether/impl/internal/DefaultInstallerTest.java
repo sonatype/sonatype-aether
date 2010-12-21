@@ -29,6 +29,7 @@ import org.sonatype.aether.metadata.Metadata.Nature;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener.EventWrapper;
 import org.sonatype.aether.test.impl.TestFileProcessor;
+import org.sonatype.aether.test.impl.TestLocalRepositoryManager;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
@@ -55,6 +56,8 @@ public class DefaultInstallerTest
 
     private File localArtifactFile;
 
+    private TestLocalRepositoryManager lrm;
+
     @Before
     public void setup()
         throws IOException
@@ -77,6 +80,9 @@ public class DefaultInstallerTest
         request = new InstallRequest();
         listener = new RecordingRepositoryListener();
         session.setRepositoryListener( listener );
+
+        lrm = (TestLocalRepositoryManager) session.getLocalRepositoryManager();
+
         TestFileUtils.delete( session.getLocalRepository().getBasedir() );
     }
 
@@ -117,6 +123,11 @@ public class DefaultInstallerTest
 
         assertEquals( result.getMetadata().size(), 1 );
         assertTrue( result.getMetadata().contains( metadata ) );
+
+        assertEquals( 1, lrm.getMetadataRegistration().size() );
+        assertTrue( lrm.getMetadataRegistration().contains( metadata ) );
+        assertEquals( 1, lrm.getArtifactRegistration().size() );
+        assertTrue( lrm.getArtifactRegistration().contains( artifact ) );
     }
 
     @Test( expected = InstallationException.class )
