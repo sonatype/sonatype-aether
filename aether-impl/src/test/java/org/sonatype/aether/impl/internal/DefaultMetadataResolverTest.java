@@ -54,6 +54,7 @@ public class DefaultMetadataResolverTest
         throws Exception
     {
         session = new TestRepositorySystemSession();
+        session.setLocalRepositoryManager( new EnhancedLocalRepositoryManager( TestFileUtils.createTempDir() ) );
         manager = new StubRemoteRepositoryManager();
         resolver = new DefaultMetadataResolver();
         resolver.setUpdateCheckManager( new StaticUpdateCheckManager( true ) );
@@ -98,7 +99,10 @@ public class DefaultMetadataResolverTest
         connector.setExpectGet( metadata );
 
         // prepare "download"
-        File file = new File( session.getLocalRepository().getBasedir(), "gid/aid/ver/gid-aid-ver.xml" );
+        File file =
+            new File( session.getLocalRepository().getBasedir(),
+                      session.getLocalRepositoryManager().getPathForRemoteMetadata( metadata, repository, "" ) );
+
         TestFileUtils.write( file.getAbsolutePath(), file );
 
         MetadataRequest request = new MetadataRequest( metadata, repository, "" );
@@ -116,7 +120,6 @@ public class DefaultMetadataResolverTest
         assertEquals( metadata, result.getMetadata().setFile( null ) );
 
         connector.assertSeenExpected();
-
     }
 
     @Test
@@ -140,7 +143,9 @@ public class DefaultMetadataResolverTest
         };
         manager.setConnector( connector );
 
-        File file = new File( session.getLocalRepository().getBasedir(), "gid/aid/ver/gid-aid-ver.xml" );
+        File file =
+            new File( session.getLocalRepository().getBasedir(),
+                      session.getLocalRepositoryManager().getPathForRemoteMetadata( metadata, repository, "" ) );
         TestFileUtils.write( file.getAbsolutePath(), file );
         metadata.setFile( file );
 
@@ -153,5 +158,71 @@ public class DefaultMetadataResolverTest
 
         assertNotNull( result.getException() );
         assertEquals( false, file.exists() );
+    }
+
+    @Test
+    public void testOfflineSessionResolveMetadataMissing()
+    {
+        session.setOffline( true );
+        MetadataRequest request = new MetadataRequest( metadata, repository, "" );
+        List<MetadataResult> results = resolver.resolveMetadata( session, Arrays.asList( request ) );
+
+        assertEquals( 1, results.size() );
+
+        MetadataResult result = results.get( 0 );
+        assertSame( request, result.getRequest() );
+        assertNotNull( result.getException() );
+        assertNull( result.getMetadata() );
+
+        connector.assertSeenExpected();
+    }
+
+    @Test
+    public void testOfflineSessionResolveMetadata()
+        throws IOException
+    {
+        session.setOffline( true );
+
+        String path = session.getLocalRepositoryManager().getPathForRemoteMetadata( metadata, repository, "" );
+        File file = new File( session.getLocalRepository().getBasedir(), path );
+        TestFileUtils.write( file.getAbsolutePath(), file );
+
+        MetadataRequest request = new MetadataRequest( metadata, repository, "" );
+        List<MetadataResult> results = resolver.resolveMetadata( session, Arrays.asList( request ) );
+
+        assertEquals( 1, results.size() );
+        MetadataResult result = results.get( 0 );
+        assertSame( request, result.getRequest() );
+        assertNull( result.getException() );
+        assertNotNull( result.getMetadata() );
+        assertNotNull( result.getMetadata().getFile() );
+
+        assertEquals( file, result.getMetadata().getFile() );
+        assertEquals( metadata, result.getMetadata().setFile( null ) );
+
+        connector.assertSeenExpected();
+    }
+
+    @Test
+    public void testFavorLocal()
+        throws IOException
+    {
+        String path = session.getLocalRepositoryManager().getPathForLocalMetadata( metadata );
+        File file = new File( session.getLocalRepository().getBasedir(), path );
+        TestFileUtils.write( file.getAbsolutePath(), file );
+
+        MetadataRequest request = new MetadataRequest( metadata, repository, "" );
+        request.setFavorLocalRepository( true );
+        resolver.setUpdateCheckManager( new StaticUpdateCheckManager( false ) );
+
+        List<MetadataResult> results = resolver.resolveMetadata( session, Arrays.asList( request ) );
+
+        assertEquals( 1, results.size() );
+        MetadataResult result = results.get( 0 );
+        assertSame( request, result.getRequest() );
+        assertNull( result.getException() );
+        assertNull( "Remote metadata does not exist in repo", result.getMetadata() );
+
+        connector.assertSeenExpected();
     }
 }

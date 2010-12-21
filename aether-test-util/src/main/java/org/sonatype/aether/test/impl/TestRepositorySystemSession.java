@@ -61,6 +61,8 @@ public class TestRepositorySystemSession
 
     private Map<String, Object> configProperties = new HashMap<String, Object>();
 
+    private boolean offline;
+
     public TestRepositorySystemSession()
         throws IOException
     {
@@ -92,7 +94,7 @@ public class TestRepositorySystemSession
 
     public boolean isOffline()
     {
-        return false;
+        return offline;
     }
 
     public boolean isTransferErrorCachingEnabled()
@@ -296,5 +298,10 @@ public class TestRepositorySystemSession
     {
         this.dependencyManager = manager;
 
+    }
+
+    public void setOffline( boolean offline )
+    {
+        this.offline = offline;
     }
 }

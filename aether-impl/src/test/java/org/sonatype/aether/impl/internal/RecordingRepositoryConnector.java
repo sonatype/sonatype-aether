@@ -155,7 +155,7 @@ class RecordingRepositoryConnector
             expected = new Object[0];
         }
 
-        assertTrue( "different number of expected and actual elements", actual.size() == expected.length );
+        assertEquals( "different number of expected and actual elements:\n", expected.length, actual.size() );
         int idx = 0;
         for ( Object actualObject : actual )
         {
