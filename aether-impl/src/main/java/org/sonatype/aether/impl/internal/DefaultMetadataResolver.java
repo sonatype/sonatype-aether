@@ -161,7 +161,7 @@ public class DefaultMetadataResolver
 
                 File localFile = getLocalFile( session, metadata );
 
-                if ( localFile != null && localFile.isFile() )
+                if ( localFile != null )
                 {
                     metadata = metadata.setFile( localFile );
                     result.setMetadata( metadata );
@@ -192,7 +192,7 @@ public class DefaultMetadataResolver
 
             if ( session.isOffline() )
             {
-                if ( metadataFile != null && metadataFile.isFile() )
+                if ( metadataFile != null )
                 {
                     metadata = metadata.setFile( metadataFile );
                     result.setMetadata( metadata );
@@ -269,7 +269,7 @@ public class DefaultMetadataResolver
             else
             {
                 result.setException( exception );
-                if ( metadataFile.isFile() )
+                if ( metadataFile != null )
                 {
                     metadata = metadata.setFile( metadataFile );
                     result.setMetadata( metadata );
@@ -315,7 +315,7 @@ public class DefaultMetadataResolver
             {
                 Metadata metadata = task.request.getMetadata();
                 File metadataFile = task.metadataFile;
-                if ( metadataFile.isFile() )
+                if ( metadataFile != null )
                 {
                     metadata = metadata.setFile( metadataFile );
                     task.result.setMetadata( metadata );
