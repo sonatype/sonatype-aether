@@ -184,7 +184,8 @@ public class DefaultMetadataResolver
 
             metadataResolving( session, metadata, repository );
             LocalRepositoryManager lrm = session.getLocalRepositoryManager();
-            LocalMetadataRequest localRequest = new LocalMetadataRequest( metadata, repository, request.getRequestContext() );
+            LocalMetadataRequest localRequest =
+                new LocalMetadataRequest( metadata, repository, request.getRequestContext() );
             LocalMetadataResult lrmResult = lrm.find( session, localRequest );
 
             File metadataFile = lrmResult.getFile();
@@ -232,8 +233,7 @@ public class DefaultMetadataResolver
                 metadataFile =
                     new File(
                               session.getLocalRepository().getBasedir(),
-                              session.getLocalRepositoryManager().getPathForRemoteMetadata( metadata,
-                                                                                             repo,
+                              session.getLocalRepositoryManager().getPathForRemoteMetadata( metadata, repo,
                                                                                             request.getRequestContext() ) );
                 check.setFile( metadataFile );
                 check.setRepository( repository );
@@ -517,7 +517,7 @@ public class DefaultMetadataResolver
                 }
 
                 exception = download.getException();
-                
+
                 if ( exception == null )
                 {
 
@@ -526,7 +526,8 @@ public class DefaultMetadataResolver
                         new LocalMetadataRegistration( metadata, requestRepository, contexts );
 
                     session.getLocalRepositoryManager().add( session, registration );
-                } else if ( request.isDeleteLocalCopyIfMissing() && exception instanceof MetadataNotFoundException )
+                }
+                else if ( request.isDeleteLocalCopyIfMissing() && exception instanceof MetadataNotFoundException )
                 {
                     download.getFile().delete();
                 }
