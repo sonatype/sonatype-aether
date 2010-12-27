@@ -230,12 +230,14 @@ public class DefaultMetadataResolver
                     new UpdateCheck<Metadata, MetadataTransferException>();
                 check.setLocalLastUpdated( ( localLastUpdate != null ) ? localLastUpdate.longValue() : 0 );
                 check.setItem( metadata );
-                metadataFile =
+
+                // use 'main' installation file for the check (-> use requested repository)
+                File checkFile =
                     new File(
                               session.getLocalRepository().getBasedir(),
-                              session.getLocalRepositoryManager().getPathForRemoteMetadata( metadata, repo,
+                              session.getLocalRepositoryManager().getPathForRemoteMetadata( metadata, repository,
                                                                                             request.getRequestContext() ) );
-                check.setFile( metadataFile );
+                check.setFile( checkFile );
                 check.setRepository( repository );
                 check.setAuthoritativeRepository( repo );
                 check.setPolicy( getPolicy( session, repo, metadata.getNature() ).getUpdatePolicy() );
@@ -262,8 +264,16 @@ public class DefaultMetadataResolver
             {
                 RepositoryPolicy policy = getPolicy( session, repository, metadata.getNature() );
 
+                // install path may be different from lookup path
+                File installFile =
+                    new File(
+                              session.getLocalRepository().getBasedir(),
+                              session.getLocalRepositoryManager().getPathForRemoteMetadata( metadata,
+                                                                                            request.getRepository(),
+                                                                                            request.getRequestContext() ) );
+
                 ResolveTask task =
-                    new ResolveTask( session, result, metadataFile, checks, policy.getChecksumPolicy(), latch );
+                    new ResolveTask( session, result, installFile, checks, policy.getChecksumPolicy(), latch );
                 tasks.add( task );
             }
             else
@@ -314,7 +324,10 @@ public class DefaultMetadataResolver
             for ( ResolveTask task : tasks )
             {
                 Metadata metadata = task.request.getMetadata();
-                File metadataFile = task.metadataFile;
+                // re-lookup metadata for resolve
+                LocalMetadataRequest localRequest =
+                    new LocalMetadataRequest( metadata, task.request.getRepository(), task.request.getRequestContext() );
+                File metadataFile = session.getLocalRepositoryManager().find( session, localRequest ).getFile();
                 if ( metadataFile != null )
                 {
                     metadata = metadata.setFile( metadataFile );
