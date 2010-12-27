@@ -8,6 +8,7 @@ package org.sonatype.aether.test.impl;
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -85,6 +86,8 @@ public class TestLocalRepositoryManager
         Artifact artifact = request.getArtifact();
 
         LocalArtifactResult result = new LocalArtifactResult( request );
+        File file = new File( localRepository.getBasedir(), getPathForLocalArtifact( artifact ) );
+        result.setFile( file.isFile() ? file : null );
 
         result.setAvailable( artifactRegistration.contains( artifact ) );
         return result;
@@ -100,7 +103,8 @@ public class TestLocalRepositoryManager
         Metadata metadata = request.getMetadata();
 
         LocalMetadataResult result = new LocalMetadataResult( request );
-        result.setFile( metadata.getFile() );
+        File file = new File( localRepository.getBasedir(), getPathForLocalMetadata( metadata ) );
+        result.setFile( file.isFile() ? file : null );
         result.setStale( !this.metadataRegistration.contains( metadata ) );
 
         return result;
