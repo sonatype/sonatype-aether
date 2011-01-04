@@ -139,7 +139,8 @@ public interface RepositorySystem
 
     /**
      * Resolves the paths for an artifact. The Artifact will be downloaded if necessary. An artifacts that is already
-     * resolved will be skipped and is not re-resolved.
+     * resolved will be skipped and is not re-resolved. Note that this method assumes that any relocations have
+     * already been processed.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The resolution request, must not be {@code null}
@@ -152,7 +153,8 @@ public interface RepositorySystem
 
     /**
      * Resolves the paths for a collection of artifacts. Artifacts will be downloaded if necessary. Artifacts that are
-     * already resolved will be skipped and are not re-resolved.
+     * already resolved will be skipped and are not re-resolved. Note that this method assumes that any relocations have
+     * already been processed.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param requests The resolution requests, must not be {@code null}
