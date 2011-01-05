@@ -97,6 +97,15 @@ public class DefaultArtifactResolver
     public DefaultArtifactResolver( Logger logger, FileProcessor fileProcessor,
                                     RepositoryEventDispatcher repositoryEventDispatcher,
                                     VersionResolver versionResolver, UpdateCheckManager updateCheckManager,
+                                    RemoteRepositoryManager remoteRepositoryManager )
+    {
+        this( logger, fileProcessor, repositoryEventDispatcher, versionResolver, updateCheckManager,
+              remoteRepositoryManager, null );
+    }
+
+    public DefaultArtifactResolver( Logger logger, FileProcessor fileProcessor,
+                                    RepositoryEventDispatcher repositoryEventDispatcher,
+                                    VersionResolver versionResolver, UpdateCheckManager updateCheckManager,
                                     RemoteRepositoryManager remoteRepositoryManager,
                                     List<LocalRepositoryMaintainer> localRepositoryMaintainers )
     {
