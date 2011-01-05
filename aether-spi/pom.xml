@@ -14,7 +14,7 @@ http://www.eclipse.org/legal/epl-v10.html
   <parent>
     <groupId>org.sonatype.aether</groupId>
     <artifactId>aether-parent</artifactId>
-    <version>1.9</version>
+    <version>1.10-SNAPSHOT</version>
   </parent>
 
   <artifactId>aether-spi</artifactId>
