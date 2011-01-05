@@ -28,9 +28,9 @@ public interface LocalRepositoryManager
     LocalRepository getRepository();
 
     /**
-     * Gets the relative path for a locally built artifact. Note that the artifact need not actually exist yet at the
-     * returned location. The path uses the forward slash as directory separator regardless of the underlying file
-     * system.
+     * Gets the relative path for a locally installed artifact. Note that the artifact need not actually exist yet at
+     * the returned location, the path merely indicates where the artifact would eventually be stored. The path uses the
+     * forward slash as directory separator regardless of the underlying file system.
      * 
      * @param artifact The artifact for which to determine the path, must not be {@code null}.
      * @return The path, relative to the local repository's base directory.
@@ -39,8 +39,8 @@ public interface LocalRepositoryManager
 
     /**
      * Gets the relative path for an artifact cached from a remote repository. Note that the artifact need not actually
-     * exist yet at the returned location. The path uses the forward slash as directory separator regardless of the
-     * underlying file system.
+     * exist yet at the returned location, the path merely indicates where the artifact would eventually be stored. The
+     * path uses the forward slash as directory separator regardless of the underlying file system.
      * 
      * @param artifact The artifact for which to determine the path, must not be {@code null}.
      * @param repository The source repository of the artifact, must not be {@code null}.
@@ -50,9 +50,9 @@ public interface LocalRepositoryManager
     String getPathForRemoteArtifact( Artifact artifact, RemoteRepository repository, String context );
 
     /**
-     * Gets the relative path for locally built metadata. Note that the metadata need not actually exist yet at the
-     * returned location. The path uses the forward slash as directory separator regardless of the underlying file
-     * system.
+     * Gets the relative path for locally installed metadata. Note that the metadata need not actually exist yet at the
+     * returned location, the path merely indicates where the metadata would eventually be stored. The path uses the
+     * forward slash as directory separator regardless of the underlying file system.
      * 
      * @param metadata The metadata for which to determine the path, must not be {@code null}.
      * @return The path, relative to the local repository's base directory.
@@ -61,8 +61,8 @@ public interface LocalRepositoryManager
 
     /**
      * Gets the relative path for metadata cached from a remote repository. Note that the metadata need not actually
-     * exist yet at the returned location. The path uses the forward slash as directory separator regardless of the
-     * underlying file system.
+     * exist yet at the returned location, the path merely indicates where the metadata would eventually be stored. The
+     * path uses the forward slash as directory separator regardless of the underlying file system.
      * 
      * @param metadata The metadata for which to determine the path, must not be {@code null}.
      * @param repository The source repository of the metadata, must not be {@code null}.
@@ -73,7 +73,7 @@ public interface LocalRepositoryManager
 
     /**
      * Queries for the existence of an artifact in the local repository. The request could be satisfied by a locally
-     * built artifact or a previously downloaded artifact.
+     * installed artifact or a previously downloaded artifact.
      * 
      * @param session The repository system session during which the request is made, must not be {@code null}.
      * @param request The artifact request, must not be {@code null}.
@@ -92,8 +92,8 @@ public interface LocalRepositoryManager
     void add( RepositorySystemSession session, LocalArtifactRegistration request );
 
     /**
-     * Queries for the existence of metadata in the local repository. The request could be satisfied by locally built or
-     * previously downloaded metadata.
+     * Queries for the existence of metadata in the local repository. The request could be satisfied by locally
+     * installed or previously downloaded metadata.
      * 
      * @param session The repository system session during which the request is made, must not be {@code null}.
      * @param request The metadata request, must not be {@code null}.
@@ -111,4 +111,5 @@ public interface LocalRepositoryManager
      * @param request The registration request, must not be {@code null}.
      */
     void add( RepositorySystemSession session, LocalMetadataRegistration request );
+
 }
