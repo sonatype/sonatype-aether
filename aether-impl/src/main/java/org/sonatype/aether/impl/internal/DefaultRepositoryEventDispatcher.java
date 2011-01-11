@@ -14,7 +14,10 @@ import java.util.List;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositoryEvent;
+import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.RepositoryListener;
+import org.sonatype.aether.impl.LocalRepositoryEvent;
+import org.sonatype.aether.impl.LocalRepositoryMaintainer;
 import org.sonatype.aether.impl.RepositoryEventDispatcher;
 import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
@@ -25,6 +28,7 @@ import org.sonatype.aether.spi.log.NullLogger;
  * @author Benjamin Bentmann
  */
 @Component( role = RepositoryEventDispatcher.class )
+@SuppressWarnings( "deprecation" )
 public class DefaultRepositoryEventDispatcher
     implements RepositoryEventDispatcher, Service
 {
@@ -35,6 +39,9 @@ public class DefaultRepositoryEventDispatcher
     @Requirement( role = RepositoryListener.class )
     private List<RepositoryListener> listeners = new ArrayList<RepositoryListener>();
 
+    @Requirement( role = LocalRepositoryMaintainer.class )
+    private List<LocalRepositoryMaintainer> localRepositoryMaintainers = new ArrayList<LocalRepositoryMaintainer>();
+
     public DefaultRepositoryEventDispatcher()
     {
         // enables no-arg constructor
@@ -44,6 +51,13 @@ public class DefaultRepositoryEventDispatcher
     {
         setLogger( logger );
         setListeners( listeners );
+    }
+
+    public DefaultRepositoryEventDispatcher( Logger logger, List<RepositoryListener> listeners,
+                                             List<LocalRepositoryMaintainer> localRepositoryMaintainers )
+    {
+        this( logger, listeners );
+        setLocalRepositoryMaintainers( localRepositoryMaintainers );
     }
 
     public DefaultRepositoryEventDispatcher setLogger( Logger logger )
@@ -75,10 +89,34 @@ public class DefaultRepositoryEventDispatcher
         return this;
     }
 
+    public DefaultRepositoryEventDispatcher addLocalRepositoryMaintainer( LocalRepositoryMaintainer maintainer )
+    {
+        if ( maintainer == null )
+        {
+            throw new IllegalArgumentException( "local repository maintainer has not been specified" );
+        }
+        this.localRepositoryMaintainers.add( maintainer );
+        return this;
+    }
+
+    public DefaultRepositoryEventDispatcher setLocalRepositoryMaintainers( List<LocalRepositoryMaintainer> maintainers )
+    {
+        if ( maintainers == null )
+        {
+            this.localRepositoryMaintainers = new ArrayList<LocalRepositoryMaintainer>();
+        }
+        else
+        {
+            this.localRepositoryMaintainers = maintainers;
+        }
+        return this;
+    }
+
     public void initService( ServiceLocator locator )
     {
         setLogger( locator.getService( Logger.class ) );
         setListeners( locator.getServices( RepositoryListener.class ) );
+        setLocalRepositoryMaintainers( locator.getServices( LocalRepositoryMaintainer.class ) );
     }
 
     public void dispatch( RepositoryEvent event )
@@ -88,6 +126,44 @@ public class DefaultRepositoryEventDispatcher
             for ( RepositoryListener listener : listeners )
             {
                 dispatch( event, listener );
+            }
+        }
+
+        if ( !localRepositoryMaintainers.isEmpty() )
+        {
+            if ( EventType.ARTIFACT_DOWNLOADED.equals( event.getType() ) )
+            {
+                DefaultLocalRepositoryEvent evt =
+                    new DefaultLocalRepositoryEvent( LocalRepositoryEvent.EventType.ARTIFACT_DOWNLOADED,
+                                                     event.getSession(), event.getArtifact(), event.getFile() );
+                for ( LocalRepositoryMaintainer maintainer : localRepositoryMaintainers )
+                {
+                    try
+                    {
+                        maintainer.artifactDownloaded( evt );
+                    }
+                    catch ( Exception e )
+                    {
+                        logError( e, maintainer );
+                    }
+                }
+            }
+            else if ( EventType.ARTIFACT_INSTALLED.equals( event.getType() ) )
+            {
+                DefaultLocalRepositoryEvent evt =
+                    new DefaultLocalRepositoryEvent( LocalRepositoryEvent.EventType.ARTIFACT_INSTALLED,
+                                                     event.getSession(), event.getArtifact(), event.getFile() );
+                for ( LocalRepositoryMaintainer maintainer : localRepositoryMaintainers )
+                {
+                    try
+                    {
+                        maintainer.artifactInstalled( evt );
+                    }
+                    catch ( Exception e )
+                    {
+                        logError( e, maintainer );
+                    }
+                }
             }
         }
 
@@ -168,16 +244,22 @@ public class DefaultRepositoryEventDispatcher
         }
         catch ( Exception e )
         {
-            if ( logger.isDebugEnabled() )
-            {
-                logger.warn( "Failed to dispatch repository event to " + listener.getClass().getCanonicalName() + ": "
-                    + e.getMessage(), e );
-            }
-            else
-            {
-                logger.warn( "Failed to dispatch repository event to " + listener.getClass().getCanonicalName() + ": "
-                    + e.getMessage() );
-            }
+            logError( e, listener );
+        }
+    }
+
+    private void logError( Throwable e, Object listener )
+    {
+        String msg =
+            "Failed to dispatch repository event to " + listener.getClass().getCanonicalName() + ": " + e.getMessage();
+
+        if ( logger.isDebugEnabled() )
+        {
+            logger.warn( msg, e );
+        }
+        else
+        {
+            logger.warn( msg );
         }
     }
 

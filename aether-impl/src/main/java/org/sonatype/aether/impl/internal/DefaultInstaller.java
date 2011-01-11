@@ -21,8 +21,6 @@ import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.Installer;
-import org.sonatype.aether.impl.LocalRepositoryEvent;
-import org.sonatype.aether.impl.LocalRepositoryMaintainer;
 import org.sonatype.aether.impl.MetadataGenerator;
 import org.sonatype.aether.impl.MetadataGeneratorFactory;
 import org.sonatype.aether.impl.RepositoryEventDispatcher;
@@ -45,7 +43,6 @@ import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
  * @author Benjamin Bentmann
  */
 @Component( role = Installer.class )
-@SuppressWarnings( "deprecation" )
 public class DefaultInstaller
     implements Installer, Service
 {
@@ -58,9 +55,6 @@ public class DefaultInstaller
 
     @Requirement
     private RepositoryEventDispatcher repositoryEventDispatcher;
-
-    @Requirement( role = LocalRepositoryMaintainer.class )
-    private List<LocalRepositoryMaintainer> localRepositoryMaintainers = new ArrayList<LocalRepositoryMaintainer>();
 
     @Requirement( role = MetadataGeneratorFactory.class )
     private List<MetadataGeneratorFactory> metadataFactories = new ArrayList<MetadataGeneratorFactory>();
@@ -82,14 +76,12 @@ public class DefaultInstaller
 
     public DefaultInstaller( Logger logger, FileProcessor fileProcessor,
                              RepositoryEventDispatcher repositoryEventDispatcher,
-                             List<MetadataGeneratorFactory> metadataFactories,
-                             List<LocalRepositoryMaintainer> localRepositoryMaintainers )
+                             List<MetadataGeneratorFactory> metadataFactories )
     {
         setLogger( logger );
         setFileProcessor( fileProcessor );
         setRepositoryEventDispatcher( repositoryEventDispatcher );
         setMetadataFactories( metadataFactories );
-        setLocalRepositoryMaintainers( localRepositoryMaintainers );
     }
 
     public void initService( ServiceLocator locator )
@@ -97,7 +89,6 @@ public class DefaultInstaller
         setLogger( locator.getService( Logger.class ) );
         setFileProcessor( locator.getService( FileProcessor.class ) );
         setRepositoryEventDispatcher( locator.getService( RepositoryEventDispatcher.class ) );
-        setLocalRepositoryMaintainers( locator.getServices( LocalRepositoryMaintainer.class ) );
         setMetadataFactories( locator.getServices( MetadataGeneratorFactory.class ) );
     }
 
@@ -124,29 +115,6 @@ public class DefaultInstaller
             throw new IllegalArgumentException( "repository event dispatcher has not been specified" );
         }
         this.repositoryEventDispatcher = repositoryEventDispatcher;
-        return this;
-    }
-
-    public DefaultInstaller addLocalRepositoryMaintainer( LocalRepositoryMaintainer maintainer )
-    {
-        if ( maintainer == null )
-        {
-            throw new IllegalArgumentException( "local repository maintainer has not been specified" );
-        }
-        this.localRepositoryMaintainers.add( maintainer );
-        return this;
-    }
-
-    public DefaultInstaller setLocalRepositoryMaintainers( List<LocalRepositoryMaintainer> maintainers )
-    {
-        if ( maintainers == null )
-        {
-            this.localRepositoryMaintainers = new ArrayList<LocalRepositoryMaintainer>();
-        }
-        else
-        {
-            this.localRepositoryMaintainers = maintainers;
-        }
         return this;
     }
 
@@ -279,17 +247,6 @@ public class DefaultInstaller
             }
 
             lrm.add( session, new LocalArtifactRegistration( artifact ) );
-
-            if ( !localRepositoryMaintainers.isEmpty() )
-            {
-                DefaultLocalRepositoryEvent event =
-                    new DefaultLocalRepositoryEvent( LocalRepositoryEvent.EventType.ARTIFACT_INSTALLED, session,
-                                                     artifact, dstFile );
-                for ( LocalRepositoryMaintainer maintainer : localRepositoryMaintainers )
-                {
-                    maintainer.artifactInstalled( event );
-                }
-            }
         }
         catch ( Exception e )
         {
