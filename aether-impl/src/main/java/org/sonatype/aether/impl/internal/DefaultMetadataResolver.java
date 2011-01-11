@@ -196,7 +196,6 @@ public class DefaultMetadataResolver
                 {
                     metadata = metadata.setFile( metadataFile );
                     result.setMetadata( metadata );
-                    metadataResolved( session, metadata, repository, null );
                 }
                 else
                 {
@@ -204,8 +203,9 @@ public class DefaultMetadataResolver
                         "The repository system is offline but the metadata " + metadata + " from " + repository
                             + " is not available in the local repository.";
                     result.setException( new MetadataNotFoundException( metadata, repository, msg ) );
-                    metadataResolved( session, metadata, repository, result.getException() );
                 }
+
+                metadataResolved( session, metadata, repository, result.getException() );
                 continue;
             }
 
