@@ -37,7 +37,7 @@ public class FileRepositoryConnectorFactory
     @Requirement
     private FileProcessor fileProcessor;
 
-    private static final int FRCF_PRIORITY = 1;
+    private int priority = 1;
 
     public static final String CFG_PREFIX = "aether.connector.file";
 
@@ -101,7 +101,19 @@ public class FileRepositoryConnectorFactory
 
     public int getPriority()
     {
-        return FRCF_PRIORITY;
+        return priority;
+    }
+
+    /**
+     * Sets the priority of this component.
+     * 
+     * @param priority The priority.
+     * @return This component for chaining, never {@code null}.
+     */
+    public FileRepositoryConnectorFactory setPriority( int priority )
+    {
+        this.priority = priority;
+        return this;
     }
 
 }
