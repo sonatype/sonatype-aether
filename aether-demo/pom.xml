@@ -25,7 +25,7 @@ http://www.eclipse.org/legal/epl-v10.html
   </description>
 
   <properties>
-    <mavenVersion>3.0.1</mavenVersion>
+    <mavenVersion>3.0.2</mavenVersion>
     <wagonVersion>1.0-beta-7</wagonVersion>
   </properties>
 
