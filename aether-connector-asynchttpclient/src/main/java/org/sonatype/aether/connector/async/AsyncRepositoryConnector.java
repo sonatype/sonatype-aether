@@ -12,25 +12,17 @@ package org.sonatype.aether.connector.async;
  * You may elect to redistribute this code under either of these licenses.
  *******************************************************************************/
 
-import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.FluentCaseInsensitiveStringsMap;
-import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.ProxyServer;
 import com.ning.http.client.ProxyServer.Protocol;
 import com.ning.http.client.Realm;
-import com.ning.http.client.Request;
-import com.ning.http.client.RequestBuilder;
-import com.ning.http.client.Response;
 import com.ning.http.client.providers.netty.NettyAsyncHttpProvider;
 import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.repository.Proxy;
 import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactTransfer;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
@@ -38,49 +30,27 @@ import org.sonatype.aether.spi.connector.MetadataDownload;
 import org.sonatype.aether.spi.connector.MetadataTransfer;
 import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
-import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.io.FileProcessor;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.transfer.ArtifactTransferException;
-import org.sonatype.aether.transfer.ChecksumFailureException;
 import org.sonatype.aether.transfer.MetadataNotFoundException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
-import org.sonatype.aether.transfer.TransferEvent;
-import org.sonatype.aether.transfer.TransferEvent.EventType;
-import org.sonatype.aether.transfer.TransferEvent.RequestType;
 import org.sonatype.aether.transfer.TransferListener;
-import org.sonatype.aether.transfer.TransferResource;
-import org.sonatype.aether.util.ChecksumUtils;
 import org.sonatype.aether.util.StringUtils;
 import org.sonatype.aether.util.layout.MavenDefaultLayout;
 import org.sonatype.aether.util.layout.RepositoryLayout;
-import org.sonatype.aether.util.listener.DefaultTransferEvent;
-import org.sonatype.aether.util.listener.DefaultTransferResource;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
-import java.net.HttpURLConnection;
 import java.nio.channels.FileLock;
-import java.nio.channels.OverlappingFileLockException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A repository connector that uses the Async Http Client.
@@ -112,8 +82,6 @@ class AsyncRepositoryConnector
 
     private final boolean disableResumeSupport;
 
-    private final static ConcurrentHashMap<RandomAccessFile, Boolean> activeDownloadFiles =
-        new ConcurrentHashMap<RandomAccessFile, Boolean>();
 
     private final int maxIOExceptionRetry;
 
@@ -141,11 +109,7 @@ class AsyncRepositoryConnector
             throw new NoRepositoryConnectorException( repository );
         }
 
-        if ( !repository.getProtocol().regionMatches( true, 0, "http", 0, "http".length() ) &&
-            !repository.getProtocol().regionMatches( true, 0, "dav", 0, "dav".length() ) )
-        {
-            throw new NoRepositoryConnectorException( repository );
-        }
+        validateProtocol( repository );
 
         AsyncHttpClientConfig config = createConfig( session, repository, true );
         httpClient = new AsyncHttpClient( new NettyAsyncHttpProvider( config ) );
@@ -156,6 +120,16 @@ class AsyncRepositoryConnector
 
         disableResumeSupport = ConfigurationProperties.get( session, "aether.connector.ahc.disableResumable", false );
         maxIOExceptionRetry = ConfigurationProperties.get( session, "aether.connector.ahc.resumeRetry", 3 );
+    }
+
+    private void validateProtocol( RemoteRepository repository )
+        throws NoRepositoryConnectorException
+    {
+        if ( !repository.getProtocol().regionMatches( true, 0, "http", 0, "http".length() ) &&
+            !repository.getProtocol().regionMatches( true, 0, "dav", 0, "dav".length() ) )
+        {
+            throw new NoRepositoryConnectorException( repository );
+        }
     }
 
     private Realm getRealm( RemoteRepository repository )
@@ -176,32 +150,38 @@ class AsyncRepositoryConnector
     {
         ProxyServer proxyServer = null;
 
-        Proxy p = repository.getProxy();
-        if ( p != null )
+        Proxy proxy = repository.getProxy();
+        if ( proxy != null )
         {
-            Authentication a = p.getAuthentication();
             boolean useSSL = repository.getProtocol().equalsIgnoreCase( "https" ) ||
                 repository.getProtocol().equalsIgnoreCase( "dav:https" );
-            if ( a == null )
-            {
-                proxyServer = new ProxyServer( useSSL ? Protocol.HTTPS : Protocol.HTTP, p.getHost(), p.getPort() );
-            }
-            else
-            {
-                proxyServer =
-                    new ProxyServer( useSSL ? Protocol.HTTPS : Protocol.HTTP, p.getHost(), p.getPort(), a.getUsername(),
-                                     a.getPassword() );
-            }
+            proxyServer = createProxyServer( proxy, proxy.getAuthentication(), useSSL );
         }
 
         return proxyServer;
     }
 
+    private ProxyServer createProxyServer( Proxy p, Authentication a, boolean useSSL )
+    {
+        ProxyServer proxyServer;
+        if ( a == null )
+        {
+            proxyServer = new ProxyServer( useSSL ? Protocol.HTTPS : Protocol.HTTP, p.getHost(), p.getPort() );
+        }
+        else
+        {
+            proxyServer =
+                new ProxyServer( useSSL ? Protocol.HTTPS : Protocol.HTTP, p.getHost(), p.getPort(), a.getUsername(),
+                                 a.getPassword() );
+        }
+        return proxyServer;
+    }
+
     /**
      * Create an {@link AsyncHttpClientConfig} instance based on the values from {@link RepositorySystemSession}
-     *
+     * 
      * @param session {link RepositorySystemSession}
-     * @return a configured instance of
+     * @return a AHC configuration based on the session's values
      */
     private AsyncHttpClientConfig createConfig( RepositorySystemSession session, RemoteRepository repository,
                                                 boolean useCompression )
@@ -251,12 +231,15 @@ class AsyncRepositoryConnector
 
         Collection<GetTask<?>> tasks = new ArrayList<GetTask<?>>();
 
+        ConnectorConfiguration configuration =
+            new ConnectorConfiguration( httpClient, repository, fileProcessor, session, logger, listener,
+                                        checksumAlgos, this.disableResumeSupport, this.maxIOExceptionRetry,
+                                        this.useCache );
+
         for ( MetadataDownload download : metadataDownloads )
         {
             String resource = layout.getPath( download.getMetadata() ).getPath();
-            GetTask<?> task =
-                new GetTask<MetadataTransfer>( resource, download.getFile(), download.getChecksumPolicy(), latch,
-                                               download, METADATA, false );
+            GetTask<?> task = GetTask.metadataTask( resource, download, latch, configuration );
             tasks.add( task );
             task.run();
         }
@@ -264,9 +247,7 @@ class AsyncRepositoryConnector
         for ( ArtifactDownload download : artifactDownloads )
         {
             String resource = layout.getPath( download.getArtifact() ).getPath();
-            GetTask<?> task =
-                new GetTask<ArtifactTransfer>( resource, download.isExistenceCheck() ? null : download.getFile(),
-                                               download.getChecksumPolicy(), latch, download, ARTIFACT, true );
+            GetTask<?> task = GetTask.artifactTask( resource, download, latch, configuration );
             tasks.add( task );
             task.run();
         }
@@ -315,7 +296,9 @@ class AsyncRepositoryConnector
         {
             String path = layout.getPath( upload.getArtifact() ).getPath();
 
-            PutTask<?> task = new PutTask<ArtifactTransfer>( path, upload.getFile(), latch, upload, ARTIFACT );
+            PutTask<?> task =
+                new PutTask<ArtifactTransfer>( path, upload.getFile(), latch, upload, ARTIFACT_EXCEPTION_WRAPPER,
+                                               httpClient, repository, listener, checksumAlgos, logger );
             tasks.add( task );
             task.run();
         }
@@ -324,7 +307,9 @@ class AsyncRepositoryConnector
         {
             String path = layout.getPath( upload.getMetadata() ).getPath();
 
-            PutTask<?> task = new PutTask<MetadataTransfer>( path, upload.getFile(), latch, upload, METADATA );
+            PutTask<?> task =
+                new PutTask<MetadataTransfer>( path, upload.getFile(), latch, upload, METADATA_EXCEPTION_WRAPPER,
+                                               httpClient, repository, listener, checksumAlgos, logger );
             tasks.add( task );
             task.run();
         }
@@ -347,840 +332,6 @@ class AsyncRepositoryConnector
         }
     }
 
-    private void handleResponseCode( String url, int responseCode, String responseMsg )
-        throws AuthorizationException, ResourceDoesNotExistException, TransferException
-    {
-        if ( responseCode == HttpURLConnection.HTTP_NOT_FOUND )
-        {
-            throw new ResourceDoesNotExistException(
-                String.format( "Unable to locate resource %s. Error code %s", url, responseCode ) );
-        }
-
-        if ( responseCode == HttpURLConnection.HTTP_FORBIDDEN || responseCode == HttpURLConnection.HTTP_UNAUTHORIZED ||
-            responseCode == HttpURLConnection.HTTP_PROXY_AUTH )
-        {
-            throw new AuthorizationException(
-                String.format( "Access denied to %s. Error code %s, %s", url, responseCode, responseMsg ) );
-        }
-
-        if ( responseCode >= HttpURLConnection.HTTP_MULT_CHOICE )
-        {
-            throw new TransferException(
-                String.format( "Failed to transfer %s. Error code %s, %s", url, responseCode, responseMsg ) );
-        }
-    }
-
-    private TransferEvent newEvent( TransferResource resource, Exception e, TransferEvent.RequestType requestType,
-                                    TransferEvent.EventType eventType )
-    {
-        DefaultTransferEvent event = new DefaultTransferEvent();
-        event.setResource( resource );
-        event.setRequestType( requestType );
-        event.setType( eventType );
-        event.setException( e );
-        return event;
-    }
-
-    class GetTask<T extends Transfer>
-        implements Runnable
-    {
-
-        private final T download;
-
-        private final String path;
-
-        private final File file;
-
-        private final String checksumPolicy;
-
-        private final LatchGuard latch;
-
-        private volatile Exception exception;
-
-        private final ExceptionWrapper<T> wrapper;
-
-        private final AtomicBoolean deleteFile = new AtomicBoolean( true );
-
-        private final boolean allowResumable;
-
-        public GetTask( String path, File file, String checksumPolicy, CountDownLatch latch, T download,
-                        ExceptionWrapper<T> wrapper, boolean allowResumable )
-        {
-            this.path = path;
-            this.file = file;
-            this.checksumPolicy = checksumPolicy;
-            this.allowResumable = allowResumable;
-            this.latch = new LatchGuard( latch );
-            this.download = download;
-            this.wrapper = wrapper;
-        }
-
-        public T getDownload()
-        {
-            return download;
-        }
-
-        public Exception getException()
-        {
-            return exception;
-        }
-
-        public void run()
-        {
-            download.setState( Transfer.State.ACTIVE );
-            final String uri = validateUri( path );
-            final TransferResource transferResource = new DefaultTransferResource( repository.getUrl(), path, file );
-            final boolean ignoreChecksum = RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy );
-            CompletionHandler completionHandler = null;
-
-            final FileLockCompanion fileLockCompanion = ( file != null )
-                ? createOrGetTmpFile( file.getPath(), allowResumable )
-                : new FileLockCompanion( null, null );
-
-            try
-            {
-                long length = 0;
-                if ( fileLockCompanion.getFile() != null )
-                {
-                    fileProcessor.mkdirs( fileLockCompanion.getFile().getParentFile() );
-                }
-
-                // Position the file to the end in case we are resuming an aborded download.
-                final RandomAccessFile resumableFile = fileLockCompanion.getFile() == null
-                    ? null
-                    : new RandomAccessFile( fileLockCompanion.getFile(), "rw" );
-                if ( resumableFile != null )
-                {
-                    length = resumableFile.length();
-                }
-
-                FluentCaseInsensitiveStringsMap headers = new FluentCaseInsensitiveStringsMap();
-                if ( !useCache )
-                {
-                    headers.add( "Pragma", "no-cache" );
-                }
-                headers.add( "Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2" );
-
-                Request request = null;
-                final AtomicInteger maxRequestTry = new AtomicInteger();
-                AsyncHttpClient client = httpClient;
-                final AtomicBoolean closeOnComplete = new AtomicBoolean( false );
-
-                /**
-                 * If length > 0, it means we are resuming a interrupted download. If that's the case,
-                 * we can't re-use the current httpClient because compression is enabled, and supporting
-                 * compression per request is not supported in ahc and may never has it could have
-                 * a performance impact.
-                 */
-                if ( length > 0 )
-                {
-                    AsyncHttpClientConfig config = createConfig( session, repository, false );
-                    client = new AsyncHttpClient( new NettyAsyncHttpProvider( config ) );
-                    request = client.prepareGet( uri ).setRangeOffset( length ).setHeaders( headers ).build();
-                    closeOnComplete.set( true );
-                }
-                else
-                {
-                    request = httpClient.prepareGet( uri ).setHeaders( headers ).build();
-                }
-
-                final Request activeRequest = request;
-                final AsyncHttpClient activeHttpClient = client;
-                completionHandler = new CompletionHandler( transferResource, httpClient, logger, RequestType.GET )
-                {
-                    private final AtomicBoolean seekEndOnFile = new AtomicBoolean( false );
-
-                    private final AtomicBoolean handleTmpFile = new AtomicBoolean( true );
-
-                    /**
-                     * {@inheritDoc}
-                     */
-                    @Override
-                    public STATE onHeadersReceived( final HttpResponseHeaders headers )
-                        throws Exception
-                    {
-
-                        FluentCaseInsensitiveStringsMap h = headers.getHeaders();
-                        String rangeByteValue = h.getFirstValue( "Content-Range" );
-                        // Make sure the server acceptance of the range requests headers
-                        if ( rangeByteValue != null && rangeByteValue.compareToIgnoreCase( "none" ) != 0 )
-                        {
-                            seekEndOnFile.set( true );
-                        }
-                        return super.onHeadersReceived( headers );
-                    }
-
-                    @Override
-                    public void onThrowable( Throwable t )
-                    {
-                        try
-                        {
-                            /**
-                             * If an IOException occurs, let's try to resume the request based on how much bytes has
-                             * been so far downloaded. Fail after IOException.
-                             */
-                            if ( maxRequestTry.get() < maxIOExceptionRetry &&
-                                IOException.class.isAssignableFrom( t.getClass() ) )
-                            {
-                                maxRequestTry.incrementAndGet();
-                                Request newRequest = new RequestBuilder( activeRequest ).setRangeOffset(
-                                    resumableFile.length() ).build();
-                                activeHttpClient.executeRequest( newRequest, this );
-                                deleteFile.set( false );
-                                return;
-                            }
-
-                            if ( closeOnComplete.get() )
-                            {
-                                activeHttpClient.close();
-                            }
-
-                            super.onThrowable( t );
-                            if ( Exception.class.isAssignableFrom( t.getClass() ) )
-                            {
-                                exception = Exception.class.cast( t );
-                            }
-                            else
-                            {
-                                exception = new Exception( t );
-                            }
-                            fireTransferFailed();
-                        }
-                        catch ( Throwable ex )
-                        {
-                            logger.debug( "Unexpected exception", ex );
-                        }
-                        finally
-                        {
-                            if ( resumableFile != null )
-                            {
-                                try
-                                {
-                                    resumableFile.close();
-                                }
-                                catch ( IOException ex )
-                                {
-                                }
-                            }
-                            deleteFile( fileLockCompanion );
-
-                            latch.countDown();
-                            removeListeners();
-                        }
-                    }
-
-                    private void removeListeners()
-                    {
-                        removeTransferListener( listener );
-                    }
-
-                    public STATE onBodyPartReceived( final HttpResponseBodyPart content )
-                        throws Exception
-                    {
-                        if ( status() != null &&
-                            ( status().getStatusCode() == 200 || status().getStatusCode() == 206 ) )
-                        {
-                            byte[] bytes = content.getBodyPartBytes();
-                            try
-                            {
-                                // If the content-range header was present, save the bytes at the end of the file
-                                // as we are resuming an existing download.
-                                if ( seekEndOnFile.get() )
-                                {
-                                    resumableFile.seek( fileLockCompanion.getFile().length() );
-
-                                    // No need to seek again.
-                                    seekEndOnFile.set( false );
-                                }
-                                resumableFile.write( bytes );
-                            }
-                            catch ( IOException ex )
-                            {
-                                return AsyncHandler.STATE.ABORT;
-                            }
-                        }
-                        return super.onBodyPartReceived( content );
-                    }
-
-                    @Override
-                    public Response onCompleted( Response r )
-                        throws Exception
-                    {
-                        try
-                        {
-                            deleteFile.set( true );
-                            try
-                            {
-                                resumableFile.close();
-                            }
-                            catch ( IOException ex )
-                            {
-                            }
-
-                            final Response response = super.onCompleted( r );
-
-                            handleResponseCode( uri, response.getStatusCode(), response.getStatusText() );
-
-                            if ( !ignoreChecksum )
-                            {
-                                activeHttpClient.getConfig().executorService().execute( new Runnable()
-                                {
-                                    public void run()
-                                    {
-                                        try
-                                        {
-                                            try
-                                            {
-                                                Map<String, Object> checksums =
-                                                    ChecksumUtils.calc( fileLockCompanion.getFile(),
-                                                                        checksumAlgos.keySet() );
-                                                if ( !verifyChecksum( file, uri, (String) checksums.get( "SHA-1" ),
-                                                                      ".sha1" ) &&
-                                                    !verifyChecksum( file, uri, (String) checksums.get( "MD5" ),
-                                                                     ".md5" ) )
-                                                {
-                                                    throw new ChecksumFailureException( "Checksum validation failed" +
-                                                                                            ", no checksums available from the repository" );
-                                                }
-                                            }
-                                            catch ( ChecksumFailureException e )
-                                            {
-                                                if ( RepositoryPolicy.CHECKSUM_POLICY_FAIL.equals( checksumPolicy ) )
-                                                {
-                                                    throw e;
-                                                }
-                                                if ( listener != null )
-                                                {
-                                                    listener.transferCorrupted(
-                                                        newEvent( transferResource, e, RequestType.GET,
-                                                                  EventType.CORRUPTED ) );
-                                                }
-                                            }
-                                        }
-                                        catch ( Exception ex )
-                                        {
-                                            exception = ex;
-                                        }
-                                        finally
-                                        {
-                                            if ( exception == null )
-                                            {
-                                                try
-                                                {
-                                                    rename( fileLockCompanion.getFile(), file );
-                                                    releaseLock( fileLockCompanion );
-                                                }
-                                                catch ( IOException e )
-                                                {
-                                                    exception = e;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                deleteFile( fileLockCompanion );
-                                            }
-
-                                            latch.countDown();
-                                            if ( closeOnComplete.get() )
-                                            {
-                                                activeHttpClient.close();
-                                            }
-                                        }
-                                    }
-                                } );
-                            }
-                            else
-                            {
-
-                                rename( fileLockCompanion.getFile(), file );
-                                releaseLock( fileLockCompanion );
-                                handleTmpFile.set( false );
-
-                                // asyncHttpClient.close may takes time before all connections get closed.
-                                // We unlatch first.
-                                latch.countDown();
-                                if ( closeOnComplete.get() )
-                                {
-                                    activeHttpClient.close();
-                                }
-                            }
-                            removeListeners();
-
-                            return response;
-                        }
-                        catch ( Exception ex )
-                        {
-                            exception = ex;
-                            throw ex;
-                        }
-                        finally
-                        {
-                            try
-                            {
-                                if ( handleTmpFile.get() && fileLockCompanion.getFile() != null )
-                                {
-                                    if ( exception != null )
-                                    {
-                                        deleteFile( fileLockCompanion );
-                                    }
-                                    else if ( ignoreChecksum )
-                                    {
-                                        rename( fileLockCompanion.getFile(), file );
-                                        releaseLock( fileLockCompanion );
-                                    }
-                                }
-                            }
-                            catch ( IOException ex )
-                            {
-                                exception = ex;
-                            }
-                        }
-                    }
-
-                };
-
-                try
-                {
-                    if ( file == null )
-                    {
-                        if ( !resourceExist( uri ) )
-                        {
-                            throw new ResourceDoesNotExistException(
-                                "Could not find " + uri + " in " + repository.getUrl() );
-                        }
-                        latch.countDown();
-                    }
-                    else
-                    {
-                        if ( listener != null )
-                        {
-                            completionHandler.addTransferListener( listener );
-                            listener.transferInitiated(
-                                newEvent( transferResource, null, RequestType.GET, EventType.INITIATED ) );
-                        }
-
-                        activeHttpClient.executeRequest( request, completionHandler );
-                    }
-                }
-                catch ( Exception ex )
-                {
-                    try
-                    {
-                        if ( resumableFile != null )
-                        {
-                            resumableFile.close();
-                        }
-                    }
-                    catch ( IOException ex2 )
-                    {
-                    }
-                    deleteFile( fileLockCompanion );
-                    exception = ex;
-                    latch.countDown();
-                }
-            }
-            catch ( Throwable t )
-            {
-                deleteFile( fileLockCompanion );
-                try
-                {
-                    if ( Exception.class.isAssignableFrom( t.getClass() ) )
-                    {
-                        exception = Exception.class.cast( t );
-                    }
-                    else
-                    {
-                        exception = new Exception( t );
-                    }
-                    if ( listener != null )
-                    {
-                        listener.transferFailed(
-                            newEvent( transferResource, exception, RequestType.GET, EventType.FAILED ) );
-                    }
-                }
-                finally
-                {
-                    latch.countDown();
-                }
-            }
-        }
-
-        private void deleteFile( FileLockCompanion fileLockCompanion )
-        {
-            if ( fileLockCompanion.getFile() != null && deleteFile.get() )
-            {
-                releaseLock( fileLockCompanion );
-                activeDownloadFiles.remove( fileLockCompanion.getFile() );
-                fileLockCompanion.getFile().delete();
-            }
-        }
-
-        private boolean verifyChecksum( File file, String path, String actual, String ext )
-            throws ChecksumFailureException
-        {
-            File tmp = getTmpFile( file.getPath() + ext );
-            try
-            {
-                try
-                {
-                    Response response = httpClient.prepareGet( path + ext ).execute().get();
-
-                    if ( response.getStatusCode() == HttpURLConnection.HTTP_NOT_FOUND )
-                    {
-                        return false;
-                    }
-
-                    OutputStream fs = new BufferedOutputStream( new FileOutputStream( tmp ) );
-                    try
-                    {
-                        InputStream is = response.getResponseBodyAsStream();
-                        final byte[] buffer = new byte[4 * 1024];
-                        int n = 0;
-                        while ( -1 != ( n = is.read( buffer ) ) )
-                        {
-                            fs.write( buffer, 0, n );
-                        }
-                        fs.flush();
-                    }
-                    finally
-                    {
-                        fs.close();
-                    }
-
-                }
-                catch ( Exception ex )
-                {
-                    throw new ChecksumFailureException( ex );
-                }
-
-                String expected;
-
-                try
-                {
-                    expected = ChecksumUtils.read( tmp );
-                }
-                catch ( IOException e )
-                {
-                    throw new ChecksumFailureException( e );
-                }
-
-                if ( expected.equalsIgnoreCase( actual ) )
-                {
-                    try
-                    {
-                        rename( tmp, new File( file.getPath() + ext ) );
-                    }
-                    catch ( IOException e )
-                    {
-                        // ignored, non-critical
-                    }
-                }
-                else
-                {
-                    throw new ChecksumFailureException( expected, actual );
-                }
-            }
-            finally
-            {
-                tmp.delete();
-            }
-
-            return true;
-        }
-
-        public void flush()
-        {
-            flush( null );
-        }
-
-        public void flush( Exception exception )
-        {
-            Exception e = this.exception;
-            wrapper.wrap( download, ( e != null ) ? e : exception, repository );
-            download.setState( Transfer.State.DONE );
-        }
-
-        private void rename( File from, File to )
-            throws IOException
-        {
-            fileProcessor.move( from, to );
-        }
-    }
-
-    class PutTask<T extends Transfer>
-        implements Runnable
-    {
-
-        private final T upload;
-
-        private final ExceptionWrapper<T> wrapper;
-
-        private final String path;
-
-        private final File file;
-
-        private volatile Exception exception;
-
-        private final LatchGuard latch;
-
-        public PutTask( String path, File file, CountDownLatch latch, T upload, ExceptionWrapper<T> wrapper )
-        {
-            this.path = path;
-            this.file = file;
-            this.upload = upload;
-            this.wrapper = wrapper;
-            this.latch = new LatchGuard( latch );
-        }
-
-        public Exception getException()
-        {
-            return exception;
-        }
-
-        public void run()
-        {
-            upload.setState( Transfer.State.ACTIVE );
-            final DefaultTransferResource transferResource =
-                new DefaultTransferResource( repository.getUrl(), path, file );
-
-            try
-            {
-                final String uri = validateUri( path );
-
-                final CompletionHandler completionHandler =
-                    new CompletionHandler( transferResource, httpClient, logger, RequestType.PUT )
-                    {
-                        @Override
-                        public void onThrowable( Throwable t )
-                        {
-                            try
-                            {
-                                super.onThrowable( t );
-                                if ( Exception.class.isAssignableFrom( t.getClass() ) )
-                                {
-                                    exception = Exception.class.cast( t );
-                                }
-                                else
-                                {
-                                    exception = new Exception( t );
-                                }
-
-                                if ( listener != null )
-                                {
-                                    listener.transferFailed(
-                                        newEvent( transferResource, exception, RequestType.PUT, EventType.FAILED ) );
-                                }
-                            }
-                            finally
-                            {
-                                latch.countDown();
-                            }
-                        }
-
-                        @Override
-                        public Response onCompleted( Response r )
-                            throws Exception
-                        {
-                            try
-                            {
-                                Response response = super.onCompleted( r );
-                                handleResponseCode( uri, response.getStatusCode(), response.getStatusText() );
-
-                                httpClient.getConfig().executorService().execute( new Runnable()
-                                {
-                                    public void run()
-                                    {
-                                        try
-                                        {
-                                            uploadChecksums( file, uri );
-                                        }
-                                        catch ( Exception ex )
-                                        {
-                                            exception = ex;
-                                        }
-                                        finally
-                                        {
-                                            latch.countDown();
-                                        }
-                                    }
-                                } );
-
-                                return r;
-                            }
-
-                            catch ( Exception ex )
-                            {
-                                exception = ex;
-                                throw ex;
-                            }
-
-                        }
-                    };
-
-                if ( listener != null )
-
-                {
-                    completionHandler.addTransferListener( listener );
-                    listener.transferInitiated(
-                        newEvent( transferResource, null, RequestType.PUT, EventType.INITIATED ) );
-                }
-
-                if ( file == null )
-                {
-                    throw new IllegalArgumentException( "no source file specified for upload" );
-                }
-                transferResource.setContentLength( file.length() );
-
-                httpClient.preparePut( uri ).setBody(
-                    new ProgressingFileBodyGenerator( file, completionHandler ) ).execute( completionHandler );
-            }
-            catch ( Exception e )
-            {
-                try
-                {
-                    if ( listener != null )
-                    {
-                        listener.transferFailed( newEvent( transferResource, e, RequestType.PUT, EventType.FAILED ) );
-                    }
-                    exception = e;
-                }
-                finally
-                {
-                    latch.countDown();
-                }
-            }
-        }
-
-        public void flush()
-        {
-            wrapper.wrap( upload, exception, repository );
-            upload.setState( Transfer.State.DONE );
-        }
-
-        public void flush( Exception exception )
-        {
-            Exception e = this.exception;
-            wrapper.wrap( upload, ( e != null ) ? e : exception, repository );
-            upload.setState( Transfer.State.DONE );
-        }
-
-        private void uploadChecksums( File file, String path )
-        {
-            try
-            {
-                Map<String, Object> checksums = ChecksumUtils.calc( file, checksumAlgos.keySet() );
-                for ( Map.Entry<String, Object> entry : checksums.entrySet() )
-                {
-                    uploadChecksum( file, path, entry.getKey(), entry.getValue() );
-                }
-            }
-            catch ( IOException e )
-            {
-                logger.debug( "Failed to upload checksums for " + file + ": " + e.getMessage(), e );
-            }
-        }
-
-        private void uploadChecksum( File file, String path, String algo, Object checksum )
-        {
-            try
-            {
-                if ( checksum instanceof Exception )
-                {
-                    throw (Exception) checksum;
-                }
-
-                String ext = checksumAlgos.get( algo );
-
-                // Here we go blocking as this is a simple request.
-                Response response =
-                    httpClient.preparePut( path + ext ).setBody( String.valueOf( checksum ) ).execute().get();
-
-                if ( response == null || response.getStatusCode() >= HttpURLConnection.HTTP_BAD_REQUEST )
-                {
-                    throw new TransferException(
-                        String.format( "Checksum failed for %s with status code %s", path + ext, response == null
-                            ? HttpURLConnection.HTTP_INTERNAL_ERROR
-                            : response.getStatusCode() ) );
-                }
-            }
-            catch ( Exception e )
-            {
-                logger.debug( "Failed to upload " + algo + " checksum for " + file + ": " + e.getMessage(), e );
-            }
-        }
-
-    }
-
-    /**
-     * Builds a complete URL string from the repository URL and the relative path passed.
-     *
-     * @param path the relative path
-     * @return the complete URL
-     */
-    private String buildUrl( String path )
-    {
-        final String repoUrl = repository.getUrl();
-        path = path.replace( ' ', '+' );
-
-        if ( repoUrl.charAt( repoUrl.length() - 1 ) != '/' )
-        {
-            return repoUrl + '/' + path;
-        }
-        return repoUrl + path;
-    }
-
-    private String validateUri( String path )
-    {
-        String tmpUri = buildUrl( path );
-        // If we get dav request here, switch to http as no need for dav method.
-        String dav = "dav";
-        String davHttp = "dav:http";
-        if ( tmpUri.startsWith( dav ) )
-        {
-            if ( tmpUri.startsWith( davHttp ) )
-            {
-                tmpUri = tmpUri.substring( dav.length() + 1 );
-            }
-            else
-            {
-                tmpUri = "http" + tmpUri.substring( dav.length() );
-            }
-        }
-        return tmpUri;
-    }
-
-    private boolean resourceExist( String url )
-        throws IOException, ExecutionException, InterruptedException, TransferException, AuthorizationException
-    {
-        int statusCode = httpClient.prepareHead( url ).execute().get().getStatusCode();
-
-        switch ( statusCode )
-        {
-            case HttpURLConnection.HTTP_OK:
-                return true;
-
-            case HttpURLConnection.HTTP_FORBIDDEN:
-                throw new AuthorizationException(
-                    String.format( "Access denied to %s . Status code %s", url, statusCode ) );
-
-            case HttpURLConnection.HTTP_NOT_FOUND:
-                return false;
-
-            case HttpURLConnection.HTTP_UNAUTHORIZED:
-                throw new AuthorizationException(
-                    String.format( "Access denied to %s . Status code %s", url, statusCode ) );
-
-            default:
-                throw new TransferException(
-                    "Failed to look for file: " + buildUrl( url ) + ". Return code is: " + statusCode );
-        }
-    }
-
-    static interface ExceptionWrapper<T>
-    {
-        void wrap( T transfer, Exception e, RemoteRepository repository );
-    }
-
     public void close()
     {
         closed.set( true );
@@ -1192,201 +343,8 @@ class AsyncRepositoryConnector
         return ( items != null ) ? items : Collections.<T>emptyList();
     }
 
-    /**
-     * Create a {@link FileLockCompanion} containing a reference to a temporary {@link File} used when downloading
-     * a remote file. If a local and incomplete version of a file is available, use that file and resume bytes downloading.
-     * To prevent multiple process trying to resume the same file, a {@link FileLock} companion to the tmeporary file is
-     * created and used to prevent concurrency issue.
-     *
-     * @param path           The downloaded path
-     * @param allowResumable Allow resumable download, or not.
-     * @return
-     */
-    private FileLockCompanion createOrGetTmpFile( String path, boolean allowResumable )
-    {
-        if ( !disableResumeSupport && allowResumable )
-        {
-            File f = new File( path );
-            File parentFile = f.getParentFile();
-            if ( parentFile.isDirectory() )
-            {
-                for ( File tmpFile : parentFile.listFiles( new FilenameFilter()
-                {
-                    public boolean accept( File dir, String name )
-                    {
-                        if ( name.indexOf( "." ) > 0 && name.lastIndexOf( "." ) == name.indexOf( ".ahc" ) )
-                        {
-                            return true;
-                        }
-                        return false;
-                    }
-                } ) )
-                {
-
-                    if ( tmpFile.length() > 0 )
-                    {
-                        String realPath = tmpFile.getPath().substring( 0, tmpFile.getPath().lastIndexOf( "." ) );
-
-                        FileLockCompanion fileLockCompanion = null;
-                        if ( realPath.equals( path ) )
-                        {
-                            File newFile = tmpFile;
-                            synchronized ( activeDownloadFiles )
-                            {
-                                fileLockCompanion = lockFile( tmpFile );
-                                logger.debug( String.format( "Found an incomplete download for file %s.", path ) );
-
-                                if ( fileLockCompanion.getLock() == null )
-                                {
-                                    /**
-                                     * Lock failed so we need to regenerate a new tmp file.
-                                     */
-                                    newFile = getTmpFile( path );
-                                    fileLockCompanion = lockFile( newFile );
-
-                                }
-                                return fileLockCompanion;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return new FileLockCompanion( getTmpFile( path ), null );
-    }
-
-    /**
-     * Simple placeholder for a File and it's associated lock.
-     */
-    private static class FileLockCompanion
-    {
-
-        private final File file;
-
-        private final FileLock lock;
-
-        private final String lockPathName;
-
-        public FileLockCompanion( File file, FileLock lock )
-        {
-            this.file = file;
-            this.lock = lock;
-            this.lockPathName = null;
-        }
-
-        public FileLockCompanion( File file, FileLock lock, String lockPathName )
-        {
-            this.file = file;
-            this.lock = lock;
-            this.lockPathName = lockPathName;
-        }
-
-        public File getFile()
-        {
-            return file;
-        }
-
-        public FileLock getLock()
-        {
-            return lock;
-        }
-
-        public String getLockedPathFile()
-        {
-            return lockPathName;
-        }
-
-    }
-
-    /**
-     * Create a temporary file used to lock ({@link FileLock}) an associated incomplete file {@link File}. The {@link FileLock}'s name
-     * is derived from the original file, appending ".lock" at the end. Usually this method gets executed when a
-     * download fail to complete because the JVM goes down. In that case we resume the incomplete download and to prevent
-     * multiple process to work on the same file, we use a dedicated {@link FileLock}.
-     *
-     * @param tmpFile a file on which we want to create a temporary lock file.
-     * @return a {@link FileLockCompanion} contains the {@link File} and a {@link FileLock} if it was possible to lock the file.
-     */
-    private FileLockCompanion lockFile( File tmpFile )
-    {
-        try
-        {
-            // On Unix tmpLock.getChannel().tryLock may not fail inside the same process, so we must keep track
-            // of current resumable file.
-            if ( activeDownloadFiles.containsKey( tmpFile ) )
-            {
-                return new FileLockCompanion( tmpFile, null );
-            }
-
-            RandomAccessFile tmpLock = new RandomAccessFile( tmpFile.getPath() + ".lock", "rw" );
-            FileLock lock = tmpLock.getChannel().tryLock( 0, 1, false );
-
-            if ( lock != null )
-            {
-                activeDownloadFiles.put( tmpLock, Boolean.TRUE );
-            }
-            else if ( lock == null )
-            {
-                try
-                {
-                    tmpLock.close();
-                }
-                catch ( IOException ex )
-                {
-
-                }
-            }
-
-            return new FileLockCompanion( tmpFile, lock, tmpFile.getPath() + ".lock" );
-        }
-        catch ( OverlappingFileLockException ex )
-        {
-            return new FileLockCompanion( tmpFile, null );
-        }
-        catch ( IOException ex )
-        {
-            return new FileLockCompanion( tmpFile, null );
-        }
-    }
-
-    private void releaseLock( FileLockCompanion fileLockCompanion )
-    {
-        try
-        {
-            if ( fileLockCompanion.getLock() != null )
-            {
-                try
-                {
-                    fileLockCompanion.getLock().channel().close();
-                    fileLockCompanion.getLock().release();
-                }
-                finally
-                {
-                    if ( fileLockCompanion.getLockedPathFile() != null )
-                    {
-                        new File( fileLockCompanion.getLockedPathFile() ).delete();
-                    }
-                }
-            }
-        }
-        catch ( IOException e )
-        {
-            // Ignore.
-        }
-    }
-
-    private File getTmpFile( String path )
-    {
-        File file;
-        do
-        {
-            file = new File( path + ".ahc" + UUID.randomUUID().toString().replace( "-", "" ).substring( 0, 16 ) );
-        }
-        while ( file.exists() );
-        return file;
-    }
-
-    private static final ExceptionWrapper<MetadataTransfer> METADATA = new ExceptionWrapper<MetadataTransfer>()
+    static final ExceptionWrapper<MetadataTransfer> METADATA_EXCEPTION_WRAPPER =
+        new ExceptionWrapper<MetadataTransfer>()
     {
         public void wrap( MetadataTransfer transfer, Exception e, RemoteRepository repository )
         {
@@ -1403,7 +361,8 @@ class AsyncRepositoryConnector
         }
     };
 
-    private static final ExceptionWrapper<ArtifactTransfer> ARTIFACT = new ExceptionWrapper<ArtifactTransfer>()
+    static final ExceptionWrapper<ArtifactTransfer> ARTIFACT_EXCEPTION_WRAPPER =
+        new ExceptionWrapper<ArtifactTransfer>()
     {
         public void wrap( ArtifactTransfer transfer, Exception e, RemoteRepository repository )
         {
@@ -1420,25 +379,52 @@ class AsyncRepositoryConnector
         }
     };
 
-    private class LatchGuard
+    static interface ExceptionWrapper<T>
     {
+        void wrap( T transfer, Exception e, RemoteRepository repository );
+    }
 
-        private final CountDownLatch latch;
-
-        private final AtomicBoolean done = new AtomicBoolean( false );
-
-        public LatchGuard( CountDownLatch latch )
+    /**
+     * Simple placeholder for a File and it's associated lock.
+     */
+    static class FileLockCompanion
+    {
+    
+        private final File file;
+    
+        private final FileLock lock;
+    
+        private final String lockPathName;
+    
+        public FileLockCompanion( File file, FileLock lock )
         {
-            this.latch = latch;
+            this.file = file;
+            this.lock = lock;
+            this.lockPathName = null;
         }
-
-        public void countDown()
+    
+        public FileLockCompanion( File file, FileLock lock, String lockPathName )
         {
-            if ( !done.getAndSet( true ) )
-            {
-                latch.countDown();
-            }
+            this.file = file;
+            this.lock = lock;
+            this.lockPathName = lockPathName;
         }
+    
+        public File getFile()
+        {
+            return file;
+        }
+    
+        public FileLock getLock()
+        {
+            return lock;
+        }
+    
+        public String getLockedPathFile()
+        {
+            return lockPathName;
+        }
+    
     }
 
 }

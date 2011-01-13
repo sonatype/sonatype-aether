@@ -50,7 +50,7 @@ class CompletionHandler
 
     private final ConcurrentLinkedQueue<TransferListener> listeners = new ConcurrentLinkedQueue<TransferListener>();
 
-    private final AsyncHttpClient httpClient;
+    protected final AsyncHttpClient httpClient;
 
     private final AtomicLong byteTransfered = new AtomicLong();
 
@@ -214,11 +214,13 @@ class CompletionHandler
                 return bytesTransferred;
             }
 
+            @Override
             public ByteBuffer getDataBuffer()
             {
                 return buffer.asReadOnlyBuffer();
             }
 
+            @Override
             public int getDataLength()
             {
                 return buffer.remaining();
