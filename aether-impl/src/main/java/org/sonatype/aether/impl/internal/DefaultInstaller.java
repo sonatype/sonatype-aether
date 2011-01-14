@@ -10,8 +10,6 @@ package org.sonatype.aether.impl.internal;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
 
@@ -19,11 +17,13 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.SyncContext;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.Installer;
 import org.sonatype.aether.impl.MetadataGenerator;
 import org.sonatype.aether.impl.MetadataGeneratorFactory;
 import org.sonatype.aether.impl.RepositoryEventDispatcher;
+import org.sonatype.aether.impl.SyncContextFactory;
 import org.sonatype.aether.installation.InstallRequest;
 import org.sonatype.aether.installation.InstallResult;
 import org.sonatype.aether.installation.InstallationException;
@@ -59,15 +59,8 @@ public class DefaultInstaller
     @Requirement( role = MetadataGeneratorFactory.class )
     private List<MetadataGeneratorFactory> metadataFactories = new ArrayList<MetadataGeneratorFactory>();
 
-    private static final Comparator<MetadataGeneratorFactory> COMPARATOR = new Comparator<MetadataGeneratorFactory>()
-    {
-
-        public int compare( MetadataGeneratorFactory o1, MetadataGeneratorFactory o2 )
-        {
-            return o2.getPriority() - o1.getPriority();
-        }
-
-    };
+    @Requirement
+    private SyncContextFactory syncContextFactory;
 
     public DefaultInstaller()
     {
@@ -76,12 +69,13 @@ public class DefaultInstaller
 
     public DefaultInstaller( Logger logger, FileProcessor fileProcessor,
                              RepositoryEventDispatcher repositoryEventDispatcher,
-                             List<MetadataGeneratorFactory> metadataFactories )
+                             List<MetadataGeneratorFactory> metadataFactories, SyncContextFactory syncContextFactory )
     {
         setLogger( logger );
         setFileProcessor( fileProcessor );
         setRepositoryEventDispatcher( repositoryEventDispatcher );
         setMetadataFactories( metadataFactories );
+        setSyncContextFactory( syncContextFactory );
     }
 
     public void initService( ServiceLocator locator )
@@ -90,6 +84,7 @@ public class DefaultInstaller
         setFileProcessor( locator.getService( FileProcessor.class ) );
         setRepositoryEventDispatcher( locator.getService( RepositoryEventDispatcher.class ) );
         setMetadataFactories( locator.getServices( MetadataGeneratorFactory.class ) );
+        setSyncContextFactory( locator.getService( SyncContextFactory.class ) );
     }
 
     public DefaultInstaller setLogger( Logger logger )
@@ -141,7 +136,32 @@ public class DefaultInstaller
         return this;
     }
 
+    public DefaultInstaller setSyncContextFactory( SyncContextFactory syncContextFactory )
+    {
+        if ( syncContextFactory == null )
+        {
+            throw new IllegalArgumentException( "sync context factory has not been specified" );
+        }
+        this.syncContextFactory = syncContextFactory;
+        return this;
+    }
+
     public InstallResult install( RepositorySystemSession session, InstallRequest request )
+        throws InstallationException
+    {
+        SyncContext syncContext = syncContextFactory.newInstance( session, false );
+
+        try
+        {
+            return install( syncContext, session, request );
+        }
+        finally
+        {
+            syncContext.release();
+        }
+    }
+
+    private InstallResult install( SyncContext syncContext, RepositorySystemSession session, InstallRequest request )
         throws InstallationException
     {
         InstallResult result = new InstallResult( request );
@@ -152,14 +172,15 @@ public class DefaultInstaller
 
         IdentityHashMap<Metadata, Object> processedMetadata = new IdentityHashMap<Metadata, Object>();
 
-        for ( MetadataGenerator generator : generators )
+        List<Metadata> metadatas = Utils.prepareMetadata( generators, artifacts );
+
+        syncContext.acquire( artifacts, Utils.combine( request.getMetadata(), metadatas ) );
+
+        for ( Metadata metadata : metadatas )
         {
-            for ( Metadata metadata : generator.prepare( artifacts ) )
-            {
-                install( session, metadata );
-                processedMetadata.put( metadata, null );
-                result.addMetadata( metadata );
-            }
+            install( session, metadata );
+            processedMetadata.put( metadata, null );
+            result.addMetadata( metadata );
         }
 
         for ( int i = 0; i < artifacts.size(); i++ )
@@ -177,14 +198,15 @@ public class DefaultInstaller
             result.addArtifact( artifact );
         }
 
-        for ( MetadataGenerator generator : generators )
+        metadatas = Utils.finishMetadata( generators, artifacts );
+
+        syncContext.acquire( null, metadatas );
+
+        for ( Metadata metadata : metadatas )
         {
-            for ( Metadata metadata : generator.finish( artifacts ) )
-            {
-                install( session, metadata );
-                processedMetadata.put( metadata, null );
-                result.addMetadata( metadata );
-            }
+            install( session, metadata );
+            processedMetadata.put( metadata, null );
+            result.addMetadata( metadata );
         }
 
         for ( Metadata metadata : request.getMetadata() )
@@ -201,8 +223,7 @@ public class DefaultInstaller
 
     private List<MetadataGenerator> getMetadataGenerators( RepositorySystemSession session, InstallRequest request )
     {
-        List<MetadataGeneratorFactory> factories = new ArrayList<MetadataGeneratorFactory>( this.metadataFactories );
-        Collections.sort( factories, COMPARATOR );
+        List<MetadataGeneratorFactory> factories = Utils.sortMetadataGeneratorFactories( this.metadataFactories );
 
         List<MetadataGenerator> generators = new ArrayList<MetadataGenerator>();
 

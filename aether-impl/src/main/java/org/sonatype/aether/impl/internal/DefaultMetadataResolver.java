@@ -26,11 +26,13 @@ import java.util.concurrent.TimeUnit;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.ConfigurationProperties;
+import org.sonatype.aether.SyncContext;
 import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.MetadataResolver;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.RepositoryEventDispatcher;
+import org.sonatype.aether.impl.SyncContextFactory;
 import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.metadata.Metadata;
@@ -76,6 +78,9 @@ public class DefaultMetadataResolver
     @Requirement
     private RemoteRepositoryManager remoteRepositoryManager;
 
+    @Requirement
+    private SyncContextFactory syncContextFactory;
+
     public DefaultMetadataResolver()
     {
         // enables default constructor
@@ -83,12 +88,14 @@ public class DefaultMetadataResolver
 
     public DefaultMetadataResolver( Logger logger, RepositoryEventDispatcher repositoryEventDispatcher,
                                     UpdateCheckManager updateCheckManager,
-                                    RemoteRepositoryManager remoteRepositoryManager )
+                                    RemoteRepositoryManager remoteRepositoryManager,
+                                    SyncContextFactory syncContextFactory )
     {
         setLogger( logger );
         setRepositoryEventDispatcher( repositoryEventDispatcher );
         setUpdateCheckManager( updateCheckManager );
         setRemoteRepositoryManager( remoteRepositoryManager );
+        setSyncContextFactory( syncContextFactory );
     }
 
     public void initService( ServiceLocator locator )
@@ -97,6 +104,7 @@ public class DefaultMetadataResolver
         setRepositoryEventDispatcher( locator.getService( RepositoryEventDispatcher.class ) );
         setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
         setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
+        setSyncContextFactory( locator.getService( SyncContextFactory.class ) );
     }
 
     public DefaultMetadataResolver setLogger( Logger logger )
@@ -135,8 +143,41 @@ public class DefaultMetadataResolver
         return this;
     }
 
+    public DefaultMetadataResolver setSyncContextFactory( SyncContextFactory syncContextFactory )
+    {
+        if ( syncContextFactory == null )
+        {
+            throw new IllegalArgumentException( "sync context factory has not been specified" );
+        }
+        this.syncContextFactory = syncContextFactory;
+        return this;
+    }
+
     public List<MetadataResult> resolveMetadata( RepositorySystemSession session,
                                                  Collection<? extends MetadataRequest> requests )
+    {
+        SyncContext syncContext = syncContextFactory.newInstance( session, false );
+
+        try
+        {
+            Collection<Metadata> metadata = new ArrayList<Metadata>( requests.size() );
+            for ( MetadataRequest request : requests )
+            {
+                metadata.add( request.getMetadata() );
+            }
+
+            syncContext.acquire( null, metadata );
+
+            return resolve( session, requests );
+        }
+        finally
+        {
+            syncContext.release();
+        }
+    }
+
+    private List<MetadataResult> resolve( RepositorySystemSession session,
+                                          Collection<? extends MetadataRequest> requests )
     {
         List<MetadataResult> results = new ArrayList<MetadataResult>( requests.size() );
 

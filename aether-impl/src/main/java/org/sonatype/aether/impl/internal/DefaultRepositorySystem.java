@@ -19,6 +19,7 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.SyncContext;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.collection.CollectResult;
@@ -35,6 +36,7 @@ import org.sonatype.aether.impl.DependencyCollector;
 import org.sonatype.aether.impl.Deployer;
 import org.sonatype.aether.impl.Installer;
 import org.sonatype.aether.impl.MetadataResolver;
+import org.sonatype.aether.impl.SyncContextFactory;
 import org.sonatype.aether.impl.VersionRangeResolver;
 import org.sonatype.aether.impl.VersionResolver;
 import org.sonatype.aether.installation.InstallRequest;
@@ -114,6 +116,9 @@ public class DefaultRepositorySystem
     @Requirement( role = LocalRepositoryManagerFactory.class )
     private List<LocalRepositoryManagerFactory> managerFactories = new ArrayList<LocalRepositoryManagerFactory>();
 
+    @Requirement
+    private SyncContextFactory syncContextFactory;
+
     public DefaultRepositorySystem()
     {
         // enables default constructor
@@ -123,7 +128,8 @@ public class DefaultRepositorySystem
                                     VersionRangeResolver versionRangeResolver, ArtifactResolver artifactResolver,
                                     MetadataResolver metadataResolver,
                                     ArtifactDescriptorReader artifactDescriptorReader,
-                                    DependencyCollector dependencyCollector, Installer installer, Deployer deployer )
+                                    DependencyCollector dependencyCollector, Installer installer, Deployer deployer,
+                                    SyncContextFactory syncContextFactory )
     {
         setLogger( logger );
         setVersionResolver( versionResolver );
@@ -134,6 +140,7 @@ public class DefaultRepositorySystem
         setDependencyCollector( dependencyCollector );
         setInstaller( installer );
         setDeployer( deployer );
+        setSyncContextFactory( syncContextFactory );
     }
 
     public void initService( ServiceLocator locator )
@@ -148,6 +155,7 @@ public class DefaultRepositorySystem
         setInstaller( locator.getService( Installer.class ) );
         setDeployer( locator.getService( Deployer.class ) );
         setLocalRepositoryManagerFactories( locator.getServices( LocalRepositoryManagerFactory.class ) );
+        setSyncContextFactory( locator.getService( SyncContextFactory.class ) );
     }
 
     /**
@@ -264,6 +272,16 @@ public class DefaultRepositorySystem
             throw new IllegalArgumentException( "deployer has not been specified" );
         }
         this.deployer = deployer;
+        return this;
+    }
+
+    public DefaultRepositorySystem setSyncContextFactory( SyncContextFactory syncContextFactory )
+    {
+        if ( syncContextFactory == null )
+        {
+            throw new IllegalArgumentException( "sync context factory has not been specified" );
+        }
+        this.syncContextFactory = syncContextFactory;
         return this;
     }
 
@@ -425,6 +443,12 @@ public class DefaultRepositorySystem
         }
 
         throw new IllegalArgumentException( buffer.toString(), new NoLocalRepositoryManagerException( localRepository ) );
+    }
+
+    public SyncContext newSyncContext( RepositorySystemSession session, boolean shared )
+    {
+        validateSession( session );
+        return syncContextFactory.newInstance( session, shared );
     }
 
     private void validateSession( RepositorySystemSession session )

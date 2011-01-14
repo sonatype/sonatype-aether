@@ -77,6 +77,7 @@ public class DefaultInstallerTest
         installer = new DefaultInstaller();
         installer.setFileProcessor( TestFileProcessor.INSTANCE );
         installer.setRepositoryEventDispatcher( new StubRepositoryEventDispatcher() );
+        installer.setSyncContextFactory( new StubSyncContextFactory() );
         request = new InstallRequest();
         listener = new RecordingRepositoryListener();
         session.setRepositoryListener( listener );

@@ -67,6 +67,7 @@ public class DefaultMetadataResolverTest
         resolver.setUpdateCheckManager( new StaticUpdateCheckManager( true ) );
         resolver.setRepositoryEventDispatcher( new StubRepositoryEventDispatcher() );
         resolver.setRemoteRepositoryManager( manager );
+        resolver.setSyncContextFactory( new StubSyncContextFactory() );
         repository =
             new RemoteRepository( "test-DMRT", "default", TestFileUtils.createTempDir().toURI().toURL().toString() );
         metadata = new StubMetadata( "gid", "aid", "ver", "maven-metadata.xml", Metadata.Nature.RELEASE_OR_SNAPSHOT );

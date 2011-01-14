@@ -139,8 +139,8 @@ public interface RepositorySystem
 
     /**
      * Resolves the paths for an artifact. The Artifact will be downloaded if necessary. An artifacts that is already
-     * resolved will be skipped and is not re-resolved. Note that this method assumes that any relocations have
-     * already been processed.
+     * resolved will be skipped and is not re-resolved. Note that this method assumes that any relocations have already
+     * been processed.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The resolution request, must not be {@code null}
@@ -209,5 +209,15 @@ public interface RepositorySystem
      *             given.
      */
     LocalRepositoryManager newLocalRepositoryManager( LocalRepository localRepository );
+
+    /**
+     * Creates a new synchronization context.
+     * 
+     * @param session The repository session during which the context will be used, must not be {@code null}.
+     * @param shared A flag indicating whether access to the artifacts/metadata associated with the new context can be
+     *            shared among concurrent readers or whether access needs to be exclusive to the calling thread.
+     * @return The synchronization context, never {@code null}.
+     */
+    SyncContext newSyncContext( RepositorySystemSession session, boolean shared );
 
 }

@@ -85,6 +85,7 @@ public class DefaultDeployerTest
         UpdateCheckManager updateCheckManager = new StaticUpdateCheckManager( true );
         deployer.setUpdateCheckManager( updateCheckManager );
         deployer.setFileProcessor( TestFileProcessor.INSTANCE );
+        deployer.setSyncContextFactory( new StubSyncContextFactory() );
 
         request = new DeployRequest();
         connector = new RecordingRepositoryConnector();

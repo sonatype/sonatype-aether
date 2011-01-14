@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
 
@@ -23,6 +21,7 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.SyncContext;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.deployment.DeployRequest;
 import org.sonatype.aether.deployment.DeployResult;
@@ -32,6 +31,7 @@ import org.sonatype.aether.impl.MetadataGenerator;
 import org.sonatype.aether.impl.MetadataGeneratorFactory;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.RepositoryEventDispatcher;
+import org.sonatype.aether.impl.SyncContextFactory;
 import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.metadata.MergeableMetadata;
@@ -82,15 +82,8 @@ public class DefaultDeployer
     @Requirement( role = MetadataGeneratorFactory.class )
     private List<MetadataGeneratorFactory> metadataFactories = new ArrayList<MetadataGeneratorFactory>();
 
-    private static final Comparator<MetadataGeneratorFactory> COMPARATOR = new Comparator<MetadataGeneratorFactory>()
-    {
-
-        public int compare( MetadataGeneratorFactory o1, MetadataGeneratorFactory o2 )
-        {
-            return o2.getPriority() - o1.getPriority();
-        }
-
-    };
+    @Requirement
+    private SyncContextFactory syncContextFactory;
 
     public DefaultDeployer()
     {
@@ -100,7 +93,7 @@ public class DefaultDeployer
     public DefaultDeployer( Logger logger, FileProcessor fileProcessor,
                             RepositoryEventDispatcher repositoryEventDispatcher,
                             RemoteRepositoryManager remoteRepositoryManager, UpdateCheckManager updateCheckManager,
-                            List<MetadataGeneratorFactory> metadataFactories )
+                            List<MetadataGeneratorFactory> metadataFactories, SyncContextFactory syncContextFactory )
     {
         setLogger( logger );
         setFileProcessor( fileProcessor );
@@ -108,6 +101,7 @@ public class DefaultDeployer
         setRemoteRepositoryManager( remoteRepositoryManager );
         setUpdateCheckManager( updateCheckManager );
         setMetadataFactories( metadataFactories );
+        setSyncContextFactory( syncContextFactory );
     }
 
     public void initService( ServiceLocator locator )
@@ -118,6 +112,7 @@ public class DefaultDeployer
         setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
         setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
         setMetadataFactories( locator.getServices( MetadataGeneratorFactory.class ) );
+        setSyncContextFactory( locator.getService( SyncContextFactory.class ) );
     }
 
     public DefaultDeployer setLogger( Logger logger )
@@ -189,15 +184,40 @@ public class DefaultDeployer
         return this;
     }
 
+    public DefaultDeployer setSyncContextFactory( SyncContextFactory syncContextFactory )
+    {
+        if ( syncContextFactory == null )
+        {
+            throw new IllegalArgumentException( "sync context factory has not been specified" );
+        }
+        this.syncContextFactory = syncContextFactory;
+        return this;
+    }
+
     public DeployResult deploy( RepositorySystemSession session, DeployRequest request )
         throws DeploymentException
     {
-        DeployResult result = new DeployResult( request );
-
         if ( session.isOffline() )
         {
             throw new DeploymentException( "The repository system is in offline mode, deployment impossible" );
         }
+
+        SyncContext syncContext = syncContextFactory.newInstance( session, false );
+
+        try
+        {
+            return deploy( syncContext, session, request );
+        }
+        finally
+        {
+            syncContext.release();
+        }
+    }
+
+    private DeployResult deploy( SyncContext syncContext, RepositorySystemSession session, DeployRequest request )
+        throws DeploymentException
+    {
+        DeployResult result = new DeployResult( request );
 
         RemoteRepository repository = request.getRepository();
 
@@ -223,13 +243,14 @@ public class DefaultDeployer
 
             List<Artifact> artifacts = new ArrayList<Artifact>( request.getArtifacts() );
 
-            for ( MetadataGenerator generator : generators )
+            List<Metadata> metadatas = Utils.prepareMetadata( generators, artifacts );
+
+            syncContext.acquire( artifacts, Utils.combine( request.getMetadata(), metadatas ) );
+
+            for ( Metadata metadata : metadatas )
             {
-                for ( Metadata metadata : generator.prepare( artifacts ) )
-                {
-                    upload( metadataUploads, session, metadata, repository, connector, catapult );
-                    processedMetadata.put( metadata, null );
-                }
+                upload( metadataUploads, session, metadata, repository, connector, catapult );
+                processedMetadata.put( metadata, null );
             }
 
             for ( int i = 0; i < artifacts.size(); i++ )
@@ -246,10 +267,6 @@ public class DefaultDeployer
                 artifactUploads.add( new ArtifactUploadEx( artifact, artifact.getFile(), catapult ) );
             }
 
-            /*
-             * NOTE: As a workaround for NXCM-2204, we flush the artifact uploads now instead of delaying them until we
-             * have all the metadata gathered.
-             */
             connector.put( artifactUploads, null );
 
             for ( ArtifactUpload upload : artifactUploads )
@@ -262,13 +279,14 @@ public class DefaultDeployer
                 result.addArtifact( upload.getArtifact() );
             }
 
-            for ( MetadataGenerator generator : generators )
+            metadatas = Utils.finishMetadata( generators, artifacts );
+
+            syncContext.acquire( null, metadatas );
+
+            for ( Metadata metadata : metadatas )
             {
-                for ( Metadata metadata : generator.finish( artifacts ) )
-                {
-                    upload( metadataUploads, session, metadata, repository, connector, catapult );
-                    processedMetadata.put( metadata, null );
-                }
+                upload( metadataUploads, session, metadata, repository, connector, catapult );
+                processedMetadata.put( metadata, null );
             }
 
             for ( Metadata metadata : request.getMetadata() )
@@ -302,8 +320,7 @@ public class DefaultDeployer
 
     private List<MetadataGenerator> getMetadataGenerators( RepositorySystemSession session, DeployRequest request )
     {
-        List<MetadataGeneratorFactory> factories = new ArrayList<MetadataGeneratorFactory>( this.metadataFactories );
-        Collections.sort( factories, COMPARATOR );
+        List<MetadataGeneratorFactory> factories = Utils.sortMetadataGeneratorFactories( this.metadataFactories );
 
         List<MetadataGenerator> generators = new ArrayList<MetadataGenerator>();
 

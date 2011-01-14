@@ -22,10 +22,12 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.SyncContext;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.ArtifactResolver;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.RepositoryEventDispatcher;
+import org.sonatype.aether.impl.SyncContextFactory;
 import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.impl.VersionResolver;
@@ -83,6 +85,9 @@ public class DefaultArtifactResolver
     @Requirement
     private RemoteRepositoryManager remoteRepositoryManager;
 
+    @Requirement
+    private SyncContextFactory syncContextFactory;
+
     public DefaultArtifactResolver()
     {
         // enables default constructor
@@ -91,7 +96,8 @@ public class DefaultArtifactResolver
     public DefaultArtifactResolver( Logger logger, FileProcessor fileProcessor,
                                     RepositoryEventDispatcher repositoryEventDispatcher,
                                     VersionResolver versionResolver, UpdateCheckManager updateCheckManager,
-                                    RemoteRepositoryManager remoteRepositoryManager )
+                                    RemoteRepositoryManager remoteRepositoryManager,
+                                    SyncContextFactory syncContextFactory )
     {
         setLogger( logger );
         setFileProcessor( fileProcessor );
@@ -99,6 +105,7 @@ public class DefaultArtifactResolver
         setVersionResolver( versionResolver );
         setUpdateCheckManager( updateCheckManager );
         setRemoteRepositoryManager( remoteRepositoryManager );
+        setSyncContextFactory( syncContextFactory );
     }
 
     public void initService( ServiceLocator locator )
@@ -109,6 +116,7 @@ public class DefaultArtifactResolver
         setVersionResolver( locator.getService( VersionResolver.class ) );
         setUpdateCheckManager( locator.getService( UpdateCheckManager.class ) );
         setRemoteRepositoryManager( locator.getService( RemoteRepositoryManager.class ) );
+        setSyncContextFactory( locator.getService( SyncContextFactory.class ) );
     }
 
     public DefaultArtifactResolver setLogger( Logger logger )
@@ -167,6 +175,16 @@ public class DefaultArtifactResolver
         return this;
     }
 
+    public DefaultArtifactResolver setSyncContextFactory( SyncContextFactory syncContextFactory )
+    {
+        if ( syncContextFactory == null )
+        {
+            throw new IllegalArgumentException( "sync context factory has not been specified" );
+        }
+        this.syncContextFactory = syncContextFactory;
+        return this;
+    }
+
     public ArtifactResult resolveArtifact( RepositorySystemSession session, ArtifactRequest request )
         throws ArtifactResolutionException
     {
@@ -175,6 +193,34 @@ public class DefaultArtifactResolver
 
     public List<ArtifactResult> resolveArtifacts( RepositorySystemSession session,
                                                   Collection<? extends ArtifactRequest> requests )
+        throws ArtifactResolutionException
+    {
+        SyncContext syncContext = syncContextFactory.newInstance( session, false );
+
+        try
+        {
+            Collection<Artifact> artifacts = new ArrayList<Artifact>( requests.size() );
+            for ( ArtifactRequest request : requests )
+            {
+                if ( request.getArtifact().getProperty( ArtifactProperties.LOCAL_PATH, null ) != null )
+                {
+                    continue;
+                }
+                artifacts.add( request.getArtifact() );
+            }
+
+            syncContext.acquire( artifacts, null );
+
+            return resolve( session, requests );
+        }
+        finally
+        {
+            syncContext.release();
+        }
+    }
+
+    private List<ArtifactResult> resolve( RepositorySystemSession session,
+                                          Collection<? extends ArtifactRequest> requests )
         throws ArtifactResolutionException
     {
         List<ArtifactResult> results = new ArrayList<ArtifactResult>( requests.size() );

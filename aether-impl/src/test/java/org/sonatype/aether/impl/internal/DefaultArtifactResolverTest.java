@@ -83,7 +83,7 @@ public class DefaultArtifactResolverTest
         resolver =
             new DefaultArtifactResolver( NullLogger.INSTANCE, TestFileProcessor.INSTANCE,
                                          new StubRepositoryEventDispatcher(), versionResolver, updateCheckManager,
-                                         remoteRepositoryManager );
+                                         remoteRepositoryManager, new StubSyncContextFactory() );
 
         artifact = new StubArtifact( "gid", "aid", "", "ext", "ver" );
 
