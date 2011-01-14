@@ -300,7 +300,8 @@ public class DefaultInstaller
             {
                 fileProcessor.copy( metadata.getFile(), dstFile, null );
             }
-            session.getLocalRepositoryManager().add( session, new LocalMetadataRegistration( metadata ) );
+
+            lrm.add( session, new LocalMetadataRegistration( metadata ) );
         }
         catch ( Exception e )
         {
