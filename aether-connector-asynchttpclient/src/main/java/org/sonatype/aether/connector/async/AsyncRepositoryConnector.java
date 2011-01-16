@@ -12,12 +12,15 @@ package org.sonatype.aether.connector.async;
  * You may elect to redistribute this code under either of these licenses.
  *******************************************************************************/
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.ProxyServer;
-import com.ning.http.client.ProxyServer.Protocol;
-import com.ning.http.client.Realm;
-import com.ning.http.client.providers.netty.NettyAsyncHttpProvider;
+import java.io.File;
+import java.nio.channels.FileLock;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.Authentication;
@@ -39,22 +42,14 @@ import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.util.StringUtils;
-import org.sonatype.aether.util.layout.MavenDefaultLayout;
-import org.sonatype.aether.util.layout.RepositoryLayout;
-
-import java.io.File;
-import java.nio.channels.FileLock;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
+import com.ning.http.client.AsyncHttpClientConfig;
+import com.ning.http.client.ProxyServer.Protocol;
+import com.ning.http.client.Realm;
+import com.ning.http.client.SimpleAsyncHttpClient;
 
 /**
  * A repository connector that uses the Async Http Client.
- *
+ * 
  * @author Jeanfrancois Arcand
  */
 class AsyncRepositoryConnector
@@ -66,22 +61,17 @@ class AsyncRepositoryConnector
 
     private final RemoteRepository repository;
 
-    private final AsyncHttpClient httpClient;
+    private final SimpleAsyncHttpClient httpClient;
 
     private final Map<String, String> checksumAlgos;
 
     private final AtomicBoolean closed = new AtomicBoolean( false );
 
-    private final RepositoryLayout layout = new MavenDefaultLayout();
-
     private final TransferListener listener;
 
     private final RepositorySystemSession session;
 
-    private boolean useCache = false;
-
     private final boolean disableResumeSupport;
-
 
     private final int maxIOExceptionRetry;
 
@@ -111,8 +101,7 @@ class AsyncRepositoryConnector
 
         validateProtocol( repository );
 
-        AsyncHttpClientConfig config = createConfig( session, repository, true );
-        httpClient = new AsyncHttpClient( new NettyAsyncHttpProvider( config ) );
+        httpClient = createClient( session, repository, true );
 
         checksumAlgos = new LinkedHashMap<String, String>();
         checksumAlgos.put( "SHA-1", ".sha1" );
@@ -132,49 +121,19 @@ class AsyncRepositoryConnector
         }
     }
 
-    private Realm getRealm( RemoteRepository repository )
+    private Realm addRealm( RemoteRepository repository, SimpleAsyncHttpClient.Builder sahc )
     {
         Realm realm = null;
 
-        Authentication a = repository.getAuthentication();
-        if ( a != null && a.getUsername() != null )
+        Authentication authentication = repository.getAuthentication();
+        if ( authentication != null && authentication.getUsername() != null )
         {
-            realm = new Realm.RealmBuilder().setPrincipal( a.getUsername() ).setPassword(
-                a.getPassword() ).setUsePreemptiveAuth( false ).build();
+            sahc.setRealmPrincipal( authentication.getUsername() );
+            sahc.setRealmPassword( authentication.getPassword() );
+            sahc.setRealmUsePreemptiveAuth( false );
         }
 
         return realm;
-    }
-
-    private ProxyServer getProxy( RemoteRepository repository )
-    {
-        ProxyServer proxyServer = null;
-
-        Proxy proxy = repository.getProxy();
-        if ( proxy != null )
-        {
-            boolean useSSL = repository.getProtocol().equalsIgnoreCase( "https" ) ||
-                repository.getProtocol().equalsIgnoreCase( "dav:https" );
-            proxyServer = createProxyServer( proxy, proxy.getAuthentication(), useSSL );
-        }
-
-        return proxyServer;
-    }
-
-    private ProxyServer createProxyServer( Proxy p, Authentication a, boolean useSSL )
-    {
-        ProxyServer proxyServer;
-        if ( a == null )
-        {
-            proxyServer = new ProxyServer( useSSL ? Protocol.HTTPS : Protocol.HTTP, p.getHost(), p.getPort() );
-        }
-        else
-        {
-            proxyServer =
-                new ProxyServer( useSSL ? Protocol.HTTPS : Protocol.HTTP, p.getHost(), p.getPort(), a.getUsername(),
-                                 a.getPassword() );
-        }
-        return proxyServer;
     }
 
     /**
@@ -183,31 +142,70 @@ class AsyncRepositoryConnector
      * @param session {link RepositorySystemSession}
      * @return a AHC configuration based on the session's values
      */
-    private AsyncHttpClientConfig createConfig( RepositorySystemSession session, RemoteRepository repository,
+    private SimpleAsyncHttpClient createClient( RepositorySystemSession session, RemoteRepository repository,
                                                 boolean useCompression )
     {
-        AsyncHttpClientConfig.Builder configBuilder = new AsyncHttpClientConfig.Builder();
 
-        String userAgent = ConfigurationProperties.get( session, ConfigurationProperties.USER_AGENT,
-                                                        ConfigurationProperties.DEFAULT_USER_AGENT );
-        if ( !StringUtils.isEmpty( userAgent ) )
-        {
-            configBuilder.setUserAgent( userAgent );
-        }
+        SimpleAsyncHttpClient.Builder configBuilder = new SimpleAsyncHttpClient.Builder();
+
+        configBuilder.setIgnoreErrorDocuments( true );
+
+        addUserAgent( session, configBuilder );
+
+        addTimeouts( session, configBuilder );
+
+        configBuilder.setCompressionEnabled( useCompression );
+        configBuilder.setFollowRedirects( true );
+
+        configBuilder.setHeader( "Pragma", "no-cache" );
+        configBuilder.setHeader( "Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2" );
+
+        addProxy( repository, configBuilder );
+        addRealm( repository, configBuilder );
+
+        return configBuilder.build();
+    }
+
+    private void addTimeouts( RepositorySystemSession session, SimpleAsyncHttpClient.Builder configBuilder )
+    {
         int connectTimeout = ConfigurationProperties.get( session, ConfigurationProperties.CONNECT_TIMEOUT,
                                                           ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
 
         configBuilder.setConnectionTimeoutInMs( connectTimeout );
-        configBuilder.setCompressionEnabled( useCompression );
-        configBuilder.setFollowRedirects( true );
         configBuilder.setRequestTimeoutInMs(
             ConfigurationProperties.get( session, ConfigurationProperties.REQUEST_TIMEOUT,
                                          ConfigurationProperties.DEFAULT_REQUEST_TIMEOUT ) );
+    }
 
-        configBuilder.setProxyServer( getProxy( repository ) );
-        configBuilder.setRealm( getRealm( repository ) );
+    private void addUserAgent( RepositorySystemSession session, SimpleAsyncHttpClient.Builder configBuilder )
+    {
+        String userAgent =
+            ConfigurationProperties.get( session, ConfigurationProperties.USER_AGENT,
+                                         ConfigurationProperties.DEFAULT_USER_AGENT );
+        if ( !StringUtils.isEmpty( userAgent ) )
+        {
+            configBuilder.setUserAgent( userAgent );
+        }
+    }
 
-        return configBuilder.build();
+    private void addProxy( RemoteRepository repository, SimpleAsyncHttpClient.Builder configBuilder )
+    {
+        Proxy proxy = repository.getProxy();
+        if ( proxy != null )
+        {
+            configBuilder.setProxyHost( proxy.getHost() );
+            configBuilder.setProxyPort( proxy.getPort() );
+            Protocol protocol =
+                repository.getProtocol().equalsIgnoreCase( "https" )
+                    || repository.getProtocol().equalsIgnoreCase( "dav:https" ) ? Protocol.HTTPS : Protocol.HTTP;
+            configBuilder.setProxyProtocol( protocol );
+            Authentication proxyAuth = proxy.getAuthentication();
+            if ( proxyAuth != null )
+            {
+                configBuilder.setProxyPrincipal( proxyAuth.getUsername() );
+                configBuilder.setProxyPassword( proxyAuth.getPassword() );
+            }
+        }
     }
 
     /**
@@ -227,48 +225,32 @@ class AsyncRepositoryConnector
         artifactDownloads = safe( artifactDownloads );
         metadataDownloads = safe( metadataDownloads );
 
-        CountDownLatch latch = new CountDownLatch( artifactDownloads.size() + metadataDownloads.size() );
-
-        Collection<GetTask<?>> tasks = new ArrayList<GetTask<?>>();
+        Collection<SimpleGetTask> tasks = new ArrayList<SimpleGetTask>();
 
         ConnectorConfiguration configuration =
             new ConnectorConfiguration( httpClient, repository, fileProcessor, session, logger, listener,
-                                        checksumAlgos, this.disableResumeSupport, this.maxIOExceptionRetry,
-                                        this.useCache );
+                                        checksumAlgos, this.disableResumeSupport, this.maxIOExceptionRetry );
 
         for ( MetadataDownload download : metadataDownloads )
         {
-            String resource = layout.getPath( download.getMetadata() ).getPath();
-            GetTask<?> task = GetTask.metadataTask( resource, download, latch, configuration );
+            SimpleGetTask task = new SimpleGetTask( download, configuration );
+
             tasks.add( task );
             task.run();
         }
 
         for ( ArtifactDownload download : artifactDownloads )
         {
-            String resource = layout.getPath( download.getArtifact() ).getPath();
-            GetTask<?> task = GetTask.artifactTask( resource, download, latch, configuration );
+            SimpleGetTask task = new SimpleGetTask( download, configuration );
             tasks.add( task );
             task.run();
         }
 
-        try
+        // TODO local IO is not done in parallel - change this?
+        for ( SimpleGetTask task : tasks )
         {
-            latch.await();
-
-            for ( GetTask<?> task : tasks )
-            {
-                task.flush();
-            }
+            task.flush();
         }
-        catch ( InterruptedException e )
-        {
-            for ( GetTask<?> task : tasks )
-            {
-                task.flush( e );
-            }
-        }
-
     }
 
     /**
@@ -288,47 +270,29 @@ class AsyncRepositoryConnector
         artifactUploads = safe( artifactUploads );
         metadataUploads = safe( metadataUploads );
 
-        CountDownLatch latch = new CountDownLatch( artifactUploads.size() + metadataUploads.size() );
+        Collection<SimplePutTask> tasks = new ArrayList<SimplePutTask>();
 
-        Collection<PutTask<?>> tasks = new ArrayList<PutTask<?>>();
+        ConnectorConfiguration configuration =
+            new ConnectorConfiguration( httpClient, repository, fileProcessor, session, logger, listener,
+                                        checksumAlgos, this.disableResumeSupport, this.maxIOExceptionRetry );
 
         for ( ArtifactUpload upload : artifactUploads )
         {
-            String path = layout.getPath( upload.getArtifact() ).getPath();
-
-            PutTask<?> task =
-                new PutTask<ArtifactTransfer>( path, upload.getFile(), latch, upload, ARTIFACT_EXCEPTION_WRAPPER,
-                                               httpClient, repository, listener, checksumAlgos, logger );
+            SimplePutTask task = new SimplePutTask( upload, configuration );
             tasks.add( task );
             task.run();
         }
 
         for ( MetadataUpload upload : metadataUploads )
         {
-            String path = layout.getPath( upload.getMetadata() ).getPath();
-
-            PutTask<?> task =
-                new PutTask<MetadataTransfer>( path, upload.getFile(), latch, upload, METADATA_EXCEPTION_WRAPPER,
-                                               httpClient, repository, listener, checksumAlgos, logger );
+            SimplePutTask task = new SimplePutTask( upload, configuration );
             tasks.add( task );
             task.run();
         }
 
-        try
+        for ( SimplePutTask task : tasks )
         {
-            latch.await();
-
-            for ( PutTask<?> task : tasks )
-            {
-                task.flush();
-            }
-        }
-        catch ( InterruptedException e )
-        {
-            for ( PutTask<?> task : tasks )
-            {
-                task.flush( e );
-            }
+            task.flush();
         }
     }
 

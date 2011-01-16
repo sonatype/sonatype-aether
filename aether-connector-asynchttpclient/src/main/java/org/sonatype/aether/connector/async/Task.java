@@ -10,41 +10,23 @@ package org.sonatype.aether.connector.async;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.transfer.TransferEvent;
+import org.sonatype.aether.spi.connector.Transfer;
+import org.sonatype.aether.spi.connector.Transfer.State;
+import org.sonatype.aether.transfer.ArtifactNotFoundException;
+import org.sonatype.aether.transfer.ArtifactTransferException;
+import org.sonatype.aether.transfer.MetadataNotFoundException;
+import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.transfer.TransferResource;
-import org.sonatype.aether.util.listener.DefaultTransferEvent;
 
 import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.Request;
+import com.ning.http.client.RequestBuilder;
 
 public class Task
 {
-
-    static class LatchGuard
-    {
-    
-        private final CountDownLatch latch;
-    
-        private final AtomicBoolean done = new AtomicBoolean( false );
-    
-        public LatchGuard( CountDownLatch latch )
-        {
-            this.latch = latch;
-        }
-    
-        public void countDown()
-        {
-            if ( !done.getAndSet( true ) )
-            {
-                latch.countDown();
-            }
-        }
-    }
 
     protected AsyncHttpClient httpClient;
 
@@ -52,10 +34,22 @@ public class Task
 
     protected TransferListener listener;
 
+    protected TransferResource transferResource;
+
+    protected TransferWrapper transfer;
+
+    protected ConnectorConfiguration configuration;
+
     public Task( AsyncHttpClient httpClient, RemoteRepository repository, TransferListener listener )
     {
         super();
         this.httpClient = httpClient;
+        this.repository = repository;
+        this.listener = listener;
+    }
+
+    public Task( RemoteRepository repository, TransferListener listener )
+    {
         this.repository = repository;
         this.listener = listener;
     }
@@ -125,17 +119,6 @@ public class Task
         }
     }
 
-    protected TransferEvent newEvent( TransferResource resource, Exception e, TransferEvent.RequestType requestType,
-                                    TransferEvent.EventType eventType )
-    {
-        DefaultTransferEvent event = new DefaultTransferEvent();
-        event.setResource( resource );
-        event.setRequestType( requestType );
-        event.setType( eventType );
-        event.setException( e );
-        return event;
-    }
-
     protected void handleResponseCode( String url, int responseCode, String responseMsg )
         throws AuthorizationException, ResourceDoesNotExistException, TransferException
     {
@@ -156,6 +139,83 @@ public class Task
         {
             throw new TransferException(
                 String.format( "Failed to transfer %s. Error code %s, %s", url, responseCode, responseMsg ) );
+        }
+    }
+
+    protected String url( RemoteRepository repository, TransferWrapper download )
+    {
+        return repository.getUrl() + "/" + download.getRelativePath();
+    }
+
+    /**
+     * @param extension
+     * @return
+     */
+    protected Request newRequest( String url, String extension )
+    {
+        Request request = new RequestBuilder().setUrl( url + extension ).build();
+        return request;
+    }
+
+    /**
+     * 
+     */
+    protected void advanceState()
+    {
+        Transfer realTransfer = transfer.getTransfer();
+        State state = realTransfer.getState();
+        switch ( state )
+        {
+            case NEW:
+                transfer.setState( State.ACTIVE );
+                break;
+            case ACTIVE:
+                transfer.setState( State.DONE );
+                break;
+        }
+    }
+
+    protected void addException( TransferWrapper transfer, Throwable e )
+    {
+        RemoteRepository repository = configuration.getRepository();
+        if ( transfer.getType().equals( TransferWrapper.Type.METADATA ) )
+        {
+            MetadataTransferException ex = null;
+            if ( e instanceof ResourceDoesNotExistException )
+            {
+                ex = new MetadataNotFoundException( transfer.getMetadata(), repository );
+            }
+            else if ( e != null )
+            {
+                ex = new MetadataTransferException( transfer.getMetadata(), repository, e );
+            }
+            transfer.setException( ex );
+        }
+        else
+        {
+            ArtifactTransferException ex = null;
+            if ( e instanceof ResourceDoesNotExistException )
+            {
+                ex = new ArtifactNotFoundException( transfer.getArtifact(), repository );
+            }
+            else if ( e != null )
+            {
+                ex = new ArtifactTransferException( transfer.getArtifact(), repository, e );
+            }
+            transfer.setException( ex );
+        }
+    }
+
+    protected boolean alreadyFailed()
+    {
+        return transfer.getException() != null;
+    }
+
+    protected void sanityCheck()
+    {
+        if ( transfer.getFile() == null )
+        {
+            throw new IllegalArgumentException( "Target file is set to null." );
         }
     }
 

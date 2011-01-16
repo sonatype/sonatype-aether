@@ -19,19 +19,20 @@ import java.nio.channels.WritableByteChannel;
 
 import org.sonatype.aether.transfer.TransferCancelledException;
 
-import com.ning.http.client.generators.FileBodyGenerator;
 import com.ning.http.client.RandomAccessBody;
 
 class ProgressingFileBodyGenerator
-    extends FileBodyGenerator
+    extends com.ning.http.client.generators.FileBodyGenerator implements ProgressedEventHandler
 {
 
-    private final CompletionHandler completionHandler;
+    private TransferEventCatapult catapult;
 
-    public ProgressingFileBodyGenerator( File file, CompletionHandler completionHandler )
+    private long transferredBytes;
+
+    public ProgressingFileBodyGenerator( File file, TransferEventCatapult listener )
     {
         super( file );
-        this.completionHandler = completionHandler;
+        this.catapult = listener;
     }
 
     @Override
@@ -39,6 +40,27 @@ class ProgressingFileBodyGenerator
         throws IOException
     {
         return new ProgressingBody( super.createBody() );
+    }
+
+    /* (non-Javadoc)
+     * @see org.sonatype.aether.connector.async.ProgressedEventHandler#fireTransferProgressed(java.nio.ByteBuffer)
+     */
+    public void fireTransferProgressed( final ByteBuffer buffer )
+        throws TransferCancelledException
+    {
+        if ( catapult != null )
+        {
+            transferredBytes += buffer.remaining();
+            catapult.fireProgressed( buffer, transferredBytes );
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.sonatype.aether.connector.async.ProgressedEventHandler#getTransferredBytes()
+     */
+    public long getTransferredBytes()
+    {
+        return transferredBytes;
     }
 
     final class ProgressingBody
@@ -62,14 +84,14 @@ class ProgressingFileBodyGenerator
         public long read( ByteBuffer buffer )
             throws IOException
         {
-            ByteBuffer event = buffer.slice();
+            ByteBuffer eventBuffer = buffer.slice();
             long read = delegate.read( buffer );
             if ( read > 0 )
             {
                 try
                 {
-                    event.limit( (int) read );
-                    completionHandler.fireTransferProgressed( event );
+                    eventBuffer.limit( (int) read );
+                    fireTransferProgressed( eventBuffer );
                 }
                 catch ( TransferCancelledException e )
                 {
@@ -96,48 +118,48 @@ class ProgressingFileBodyGenerator
             delegate.close();
         }
 
-    }
-
-    final class ProgressingWritableByteChannel
-        implements WritableByteChannel
-    {
-
-        final WritableByteChannel delegate;
-
-        public ProgressingWritableByteChannel( WritableByteChannel delegate )
+        final class ProgressingWritableByteChannel
+            implements WritableByteChannel
         {
-            this.delegate = delegate;
-        }
 
-        public boolean isOpen()
-        {
-            return delegate.isOpen();
-        }
+            final WritableByteChannel delegate;
 
-        public void close()
-            throws IOException
-        {
-            delegate.close();
-        }
-
-        public int write( ByteBuffer src )
-            throws IOException
-        {
-            ByteBuffer event = src.slice();
-            int written = delegate.write( src );
-            if ( written > 0 )
+            public ProgressingWritableByteChannel( WritableByteChannel delegate )
             {
-                try
-                {
-                    event.limit( written );
-                    completionHandler.fireTransferProgressed( event );
-                }
-                catch ( TransferCancelledException e )
-                {
-                    throw (IOException) new IOException( e.getMessage() ).initCause( e );
-                }
+                this.delegate = delegate;
             }
-            return written;
+
+            public boolean isOpen()
+            {
+                return delegate.isOpen();
+            }
+
+            public void close()
+                throws IOException
+            {
+                delegate.close();
+            }
+
+            public int write( ByteBuffer src )
+                throws IOException
+            {
+                ByteBuffer event = src.slice();
+                int written = delegate.write( src );
+                if ( written > 0 )
+                {
+                    try
+                    {
+                        event.limit( written );
+                        fireTransferProgressed( event );
+                    }
+                    catch ( TransferCancelledException e )
+                    {
+                        throw (IOException) new IOException( e.getMessage() ).initCause( e );
+                    }
+                }
+                return written;
+            }
+
         }
 
     }

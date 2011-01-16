@@ -21,7 +21,7 @@ import org.sonatype.aether.spi.io.FileProcessor;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.transfer.TransferListener;
 
-import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.SimpleAsyncHttpClient;
 
 /**
  * @author Benjamin Hanzelmann
@@ -29,7 +29,7 @@ import com.ning.http.client.AsyncHttpClient;
 class ConnectorConfiguration
 {
 
-    private AsyncHttpClient httpClient;
+    private SimpleAsyncHttpClient httpClient;
 
     private RemoteRepository repository;
 
@@ -47,12 +47,10 @@ class ConnectorConfiguration
 
     private int maxIOExceptionRetry;
 
-    private boolean useCache;
-
-    public ConnectorConfiguration( AsyncHttpClient httpClient, RemoteRepository repository,
+    public ConnectorConfiguration( SimpleAsyncHttpClient httpClient, RemoteRepository repository,
                                    FileProcessor fileProcessor, RepositorySystemSession session, Logger logger,
                                    TransferListener listener, Map<String, String> checksumAlgos,
-                                   boolean disableResumeSupport, int maxIOExceptionRetry, boolean useCache )
+                                   boolean disableResumeSupport, int maxIOExceptionRetry )
     {
         this.httpClient = httpClient;
         this.repository = repository;
@@ -63,10 +61,9 @@ class ConnectorConfiguration
         this.checksumAlgos = checksumAlgos;
         this.disableResumeSupport = disableResumeSupport;
         this.maxIOExceptionRetry = maxIOExceptionRetry;
-        this.useCache = useCache;
     }
 
-    protected AsyncHttpClient getHttpClient()
+    protected SimpleAsyncHttpClient getHttpClient()
     {
         return httpClient;
     }
@@ -109,11 +106,6 @@ class ConnectorConfiguration
     protected int getMaxIOExceptionRetry()
     {
         return maxIOExceptionRetry;
-    }
-
-    protected boolean isUseCache()
-    {
-        return useCache;
     }
 
 }
