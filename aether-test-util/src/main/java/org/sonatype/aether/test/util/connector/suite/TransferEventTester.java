@@ -186,7 +186,7 @@ public class TransferEventTester
 
         RepositoryConnector connector = factory.newInstance( session, repository );
 
-        byte[] pattern = "tmpFile".getBytes();
+        byte[] pattern = "tmpFile".getBytes( "us-ascii" );
         File tmpFile = TestFileUtils.createTempFile( pattern, 10000 );
 
         Collection<ArtifactUpload> artUps = ConnectorTestUtils.createTransfers( ArtifactUpload.class, 1, null );
