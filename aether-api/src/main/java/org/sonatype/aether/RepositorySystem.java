@@ -64,7 +64,7 @@ public interface RepositorySystem
 
     /**
      * Resolves an artifact's meta version (if any) to a concrete version. For example, resolves "1.0-SNAPSHOT" to
-     * "1.0-20090208.132618-23" or "RELEASE"/"LATEST" to "2.0".
+     * "1.0-20090208.132618-23".
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The version request, must not be {@code null}
