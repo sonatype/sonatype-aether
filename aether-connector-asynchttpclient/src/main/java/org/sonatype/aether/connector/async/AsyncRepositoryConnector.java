@@ -55,6 +55,8 @@ import com.ning.http.client.SimpleAsyncHttpClient;
 class AsyncRepositoryConnector
     implements RepositoryConnector
 {
+    public static final String CONFIG_MAX_CONNECTIONS = "aether.connector.async.connections";
+
     private final Logger logger;
 
     private final FileProcessor fileProcessor;
@@ -121,7 +123,7 @@ class AsyncRepositoryConnector
         }
     }
 
-    private Realm addRealm( RemoteRepository repository, SimpleAsyncHttpClient.Builder sahc )
+    private Realm setRealm( RemoteRepository repository, SimpleAsyncHttpClient.Builder sahc )
     {
         Realm realm = null;
 
@@ -142,17 +144,20 @@ class AsyncRepositoryConnector
      * @param session {link RepositorySystemSession}
      * @return a AHC configuration based on the session's values
      */
-    private SimpleAsyncHttpClient createClient( RepositorySystemSession session, RemoteRepository repository,
+    SimpleAsyncHttpClient createClient( RepositorySystemSession session, RemoteRepository repository,
                                                 boolean useCompression )
     {
 
         SimpleAsyncHttpClient.Builder configBuilder = new SimpleAsyncHttpClient.Builder();
 
-        configBuilder.setIgnoreErrorDocuments( true );
+        setUserAgent( session, configBuilder );
 
-        addUserAgent( session, configBuilder );
+        setTimeouts( session, configBuilder );
 
-        addTimeouts( session, configBuilder );
+        setProxy( repository, configBuilder );
+        setRealm( repository, configBuilder );
+
+        configBuilder.setMaximumConnectionsTotal( ConfigurationProperties.get( session, CONFIG_MAX_CONNECTIONS, 5 ) );
 
         configBuilder.setCompressionEnabled( useCompression );
         configBuilder.setFollowRedirects( true );
@@ -160,13 +165,12 @@ class AsyncRepositoryConnector
         configBuilder.setHeader( "Pragma", "no-cache" );
         configBuilder.setHeader( "Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2" );
 
-        addProxy( repository, configBuilder );
-        addRealm( repository, configBuilder );
+        configBuilder.setIgnoreErrorDocuments( true );
 
         return configBuilder.build();
     }
 
-    private void addTimeouts( RepositorySystemSession session, SimpleAsyncHttpClient.Builder configBuilder )
+    private void setTimeouts( RepositorySystemSession session, SimpleAsyncHttpClient.Builder configBuilder )
     {
         int connectTimeout = ConfigurationProperties.get( session, ConfigurationProperties.CONNECT_TIMEOUT,
                                                           ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
@@ -177,7 +181,7 @@ class AsyncRepositoryConnector
                                          ConfigurationProperties.DEFAULT_REQUEST_TIMEOUT ) );
     }
 
-    private void addUserAgent( RepositorySystemSession session, SimpleAsyncHttpClient.Builder configBuilder )
+    private void setUserAgent( RepositorySystemSession session, SimpleAsyncHttpClient.Builder configBuilder )
     {
         String userAgent =
             ConfigurationProperties.get( session, ConfigurationProperties.USER_AGENT,
@@ -188,7 +192,7 @@ class AsyncRepositoryConnector
         }
     }
 
-    private void addProxy( RemoteRepository repository, SimpleAsyncHttpClient.Builder configBuilder )
+    private void setProxy( RemoteRepository repository, SimpleAsyncHttpClient.Builder configBuilder )
     {
         Proxy proxy = repository.getProxy();
         if ( proxy != null )
