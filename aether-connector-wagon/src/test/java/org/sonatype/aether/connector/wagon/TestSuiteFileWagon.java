@@ -16,6 +16,8 @@ import java.util.Map;
 import org.apache.maven.wagon.ConnectionException;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.providers.file.FileWagon;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
@@ -110,6 +112,15 @@ public class TestSuiteFileWagon
     public TestSuiteFileWagon()
     {
         super( new FileWagonConnectorTestSetup() );
+    }
+
+    @Override
+    @Test
+    @Ignore( "bug in wagon - LazyOutputStream is too lazy and does not create empty files (see AETHER-8)" )
+    public void testTransferZeroBytesFile()
+        throws IOException, NoRepositoryConnectorException
+    {
+        super.testTransferZeroBytesFile();
     }
 
 }
