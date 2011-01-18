@@ -22,7 +22,7 @@ import org.sonatype.aether.transfer.TransferCancelledException;
 import com.ning.http.client.RandomAccessBody;
 
 class ProgressingFileBodyGenerator
-    extends com.ning.http.client.generators.FileBodyGenerator implements ProgressedEventHandler
+    extends com.ning.http.client.generators.FileBodyGenerator implements Progressor
 {
 
     private TransferEventCatapult catapult;
@@ -42,9 +42,6 @@ class ProgressingFileBodyGenerator
         return new ProgressingBody( super.createBody() );
     }
 
-    /* (non-Javadoc)
-     * @see org.sonatype.aether.connector.async.ProgressedEventHandler#fireTransferProgressed(java.nio.ByteBuffer)
-     */
     public void fireTransferProgressed( final ByteBuffer buffer )
         throws TransferCancelledException
     {
@@ -67,7 +64,7 @@ class ProgressingFileBodyGenerator
         implements RandomAccessBody
     {
 
-        final RandomAccessBody delegate;
+        private final RandomAccessBody delegate;
 
         private ProgressingWritableByteChannel channel;
 
@@ -143,14 +140,14 @@ class ProgressingFileBodyGenerator
             public int write( ByteBuffer src )
                 throws IOException
             {
-                ByteBuffer event = src.slice();
+                ByteBuffer eventBuffer = src.slice();
                 int written = delegate.write( src );
                 if ( written > 0 )
                 {
                     try
                     {
-                        event.limit( written );
-                        fireTransferProgressed( event );
+                        eventBuffer.limit( written );
+                        fireTransferProgressed( eventBuffer );
                     }
                     catch ( TransferCancelledException e )
                     {

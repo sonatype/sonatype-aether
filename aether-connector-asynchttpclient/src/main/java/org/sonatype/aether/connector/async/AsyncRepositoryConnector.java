@@ -12,8 +12,6 @@ package org.sonatype.aether.connector.async;
  * You may elect to redistribute this code under either of these licenses.
  *******************************************************************************/
 
-import java.io.File;
-import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +40,7 @@ import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.util.StringUtils;
+
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.ProxyServer.Protocol;
 import com.ning.http.client.Realm;
@@ -167,6 +166,7 @@ class AsyncRepositoryConnector
 
         configBuilder.setIgnoreErrorDocuments( true );
 
+
         return configBuilder.build();
     }
 
@@ -250,7 +250,6 @@ class AsyncRepositoryConnector
             task.run();
         }
 
-        // TODO local IO is not done in parallel - change this?
         for ( SimpleGetTask task : tasks )
         {
             task.flush();
@@ -350,49 +349,6 @@ class AsyncRepositoryConnector
     static interface ExceptionWrapper<T>
     {
         void wrap( T transfer, Exception e, RemoteRepository repository );
-    }
-
-    /**
-     * Simple placeholder for a File and it's associated lock.
-     */
-    static class FileLockCompanion
-    {
-    
-        private final File file;
-    
-        private final FileLock lock;
-    
-        private final String lockPathName;
-    
-        public FileLockCompanion( File file, FileLock lock )
-        {
-            this.file = file;
-            this.lock = lock;
-            this.lockPathName = null;
-        }
-    
-        public FileLockCompanion( File file, FileLock lock, String lockPathName )
-        {
-            this.file = file;
-            this.lock = lock;
-            this.lockPathName = lockPathName;
-        }
-    
-        public File getFile()
-        {
-            return file;
-        }
-    
-        public FileLock getLock()
-        {
-            return lock;
-        }
-    
-        public String getLockedPathFile()
-        {
-            return lockPathName;
-        }
-    
     }
 
 }

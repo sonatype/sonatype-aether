@@ -21,18 +21,11 @@ class ResourceDoesNotExistException
     extends Exception
 {
 
-    /**
-     * @param message
-     */
     public ResourceDoesNotExistException( final String message )
     {
         super( message );
     }
 
-    /**
-     * @param message
-     * @param cause
-     */
     public ResourceDoesNotExistException( final String message, final Throwable cause )
     {
         super( message, cause );

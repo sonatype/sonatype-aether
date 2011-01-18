@@ -20,18 +20,11 @@ package org.sonatype.aether.connector.async;
 class TransferException
     extends Exception
 {
-    /**
-     * @param message
-     */
     public TransferException( final String message )
     {
         super( message );
     }
 
-    /**
-     * @param message
-     * @param cause
-     */
     public TransferException( final String message, final Throwable cause )
     {
         super( message, cause );

@@ -27,7 +27,7 @@ import com.ning.http.client.consumers.FileBodyConsumer;
  */
 public class ProgressingFileBodyConsumer
     extends FileBodyConsumer
-    implements ProgressedEventHandler
+    implements Progressor
 {
 
     private long transferredBytes;

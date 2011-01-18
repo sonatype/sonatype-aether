@@ -1,23 +1,19 @@
 package org.sonatype.aether.connector.async;
 
-/*
- * Copyright (c) 2010 Sonatype, Inc. All rights reserved.
- *
- * This program is licensed to you under the Apache License Version 2.0, 
- * and you may not use this file except in compliance with the Apache License Version 2.0. 
- * You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the Apache License Version 2.0 is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
- * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
- */
+/*******************************************************************************
+ * Copyright (c) 2010-2011 Sonatype, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.sonatype.aether.spi.connector.ArtifactUpload;
@@ -83,7 +79,6 @@ public class SimplePutTask
             futures.add( new FutureBody( futureResponse, bodyGenerator ) );
 
             generateAndUploadChecksums();
-
         }
         catch ( Exception e )
         {
@@ -147,16 +142,7 @@ public class SimplePutTask
 
         try
         {
-            for ( FutureBody futureBody : futures )
-            {
-                Response response = futureBody.future.get();
-                handleResponseCode( url, response.getStatusCode(), response.getStatusText() );
-
-                if ( futureBody.progressEventHandler != null )
-                {
-                    catapult.fireSucceeded( futureBody.progressEventHandler.getTransferredBytes() );
-                }
-            }
+            processResponse();
         }
         catch ( InterruptedException e )
         {
@@ -175,13 +161,29 @@ public class SimplePutTask
         }
     }
 
+    private void processResponse()
+        throws InterruptedException, ExecutionException, AuthorizationException, ResourceDoesNotExistException,
+        TransferException
+    {
+        for ( FutureBody futureBody : futures )
+        {
+            Response response = futureBody.future.get();
+            handleResponseCode( url, response.getStatusCode(), response.getStatusText() );
+
+            if ( futureBody.progressEventHandler != null )
+            {
+                catapult.fireSucceeded( futureBody.progressEventHandler.getTransferredBytes() );
+            }
+        }
+    }
+
     private static class FutureBody
     {
         Future<Response> future;
 
-        ProgressedEventHandler progressEventHandler;
+        Progressor progressEventHandler;
 
-        public FutureBody( Future<Response> future, ProgressedEventHandler progressedEventHandler )
+        public FutureBody( Future<Response> future, Progressor progressedEventHandler )
         {
             super();
             this.future = future;
