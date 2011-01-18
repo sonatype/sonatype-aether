@@ -71,12 +71,6 @@ http://www.eclipse.org/legal/epl-v10.html
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven.wagon</groupId>
-      <artifactId>wagon-file</artifactId>
-      <version>${wagonVersion}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
     	<groupId>org.apache.maven.wagon</groupId>
     	<artifactId>wagon-http-lightweight</artifactId>
     	<version>${wagonVersion}</version>
