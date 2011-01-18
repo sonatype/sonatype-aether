@@ -263,8 +263,14 @@ public abstract class ConnectorTestSuite
         connector.put( Arrays.asList( upA ), Arrays.asList( upM ) );
         connector.get( Arrays.asList( downA ), Arrays.asList( downM ) );
 
+        assertNull( String.valueOf( upA.getException() ), upA.getException() );
+        assertNull( String.valueOf( upM.getException() ), upM.getException() );
+        assertNull( String.valueOf( downA.getException() ), downA.getException() );
+        assertNull( String.valueOf( downM.getException() ), downM.getException() );
+
         assertEquals( 0, downAFile.length() );
         assertEquals( 0, downMFile.length() );
+
 
         connector.close();
     }
