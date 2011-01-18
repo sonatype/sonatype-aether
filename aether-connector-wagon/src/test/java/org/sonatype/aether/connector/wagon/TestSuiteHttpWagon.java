@@ -22,6 +22,7 @@ import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSetup.AbstractConnectorTestSetup;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSuite;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.tests.http.server.jetty.behaviour.ResourceServer;
 import org.sonatype.tests.http.server.jetty.impl.JettyServerProvider;
 
 /**
@@ -42,7 +43,7 @@ public class TestSuiteHttpWagon
         {
             provider = new JettyServerProvider();
             provider.initServer();
-            provider.addBehaviour( "/*", new FileServer() );
+            provider.addBehaviour( "/*", new ResourceServer() );
             provider.start();
             return new RemoteRepository( "jetty-repo", "default", provider.getUrl().toString() + "/repo" );
         }
