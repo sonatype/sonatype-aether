@@ -166,6 +166,7 @@ class AsyncRepositoryConnector
 
         configBuilder.setIgnoreErrorDocuments( true );
 
+        configBuilder.setResumableDownload( !disableResumeSupport );
 
         return configBuilder.build();
     }
