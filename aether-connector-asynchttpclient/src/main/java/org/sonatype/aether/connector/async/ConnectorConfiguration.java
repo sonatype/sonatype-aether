@@ -45,12 +45,10 @@ class ConnectorConfiguration
 
     private boolean disableResumeSupport;
 
-    private int maxIOExceptionRetry;
-
     public ConnectorConfiguration( SimpleAsyncHttpClient httpClient, RemoteRepository repository,
                                    FileProcessor fileProcessor, RepositorySystemSession session, Logger logger,
                                    TransferListener listener, Map<String, String> checksumAlgos,
-                                   boolean disableResumeSupport, int maxIOExceptionRetry )
+                                   boolean disableResumeSupport )
     {
         this.httpClient = httpClient;
         this.repository = repository;
@@ -60,52 +58,46 @@ class ConnectorConfiguration
         this.listener = listener;
         this.checksumAlgos = checksumAlgos;
         this.disableResumeSupport = disableResumeSupport;
-        this.maxIOExceptionRetry = maxIOExceptionRetry;
     }
 
-    protected SimpleAsyncHttpClient getHttpClient()
+    public SimpleAsyncHttpClient getHttpClient()
     {
         return httpClient;
     }
 
-    protected RemoteRepository getRepository()
+    public RemoteRepository getRepository()
     {
         return repository;
     }
 
-    protected FileProcessor getFileProcessor()
+    public FileProcessor getFileProcessor()
     {
         return fileProcessor;
     }
 
-    protected RepositorySystemSession getSession()
+    public RepositorySystemSession getSession()
     {
         return session;
     }
 
-    protected TransferListener getListener()
+    public TransferListener getListener()
     {
         return listener;
     }
 
-    protected Logger getLogger()
+    public Logger getLogger()
     {
         return logger;
     }
 
-    protected Map<String, String> getChecksumAlgos()
+    public Map<String, String> getChecksumAlgos()
     {
         return checksumAlgos;
     }
 
-    protected boolean isDisableResumeSupport()
+    public boolean isDisableResumeSupport()
     {
         return disableResumeSupport;
-    }
-
-    protected int getMaxIOExceptionRetry()
-    {
-        return maxIOExceptionRetry;
     }
 
 }

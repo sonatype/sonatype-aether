@@ -54,8 +54,6 @@ import com.ning.http.client.SimpleAsyncHttpClient;
 class AsyncRepositoryConnector
     implements RepositoryConnector
 {
-    public static final String CONFIG_MAX_CONNECTIONS = "aether.connector.async.connections";
-
     private final Logger logger;
 
     private final FileProcessor fileProcessor;
@@ -74,7 +72,7 @@ class AsyncRepositoryConnector
 
     private final boolean disableResumeSupport;
 
-    private final int maxIOExceptionRetry;
+    // private final int maxIOExceptionRetry;
 
     /**
      * Create an {@link org.sonatype.aether.connector.async.AsyncRepositoryConnector} instance which connect to the
@@ -109,7 +107,7 @@ class AsyncRepositoryConnector
         checksumAlgos.put( "MD5", ".md5" );
 
         disableResumeSupport = ConfigurationProperties.get( session, "aether.connector.ahc.disableResumable", false );
-        maxIOExceptionRetry = ConfigurationProperties.get( session, "aether.connector.ahc.resumeRetry", 3 );
+        // maxIOExceptionRetry = ConfigurationProperties.get( session, "aether.connector.ahc.resumeRetry", 3 );
     }
 
     private void validateProtocol( RemoteRepository repository )
@@ -155,8 +153,6 @@ class AsyncRepositoryConnector
 
         setProxy( repository, configBuilder );
         setRealm( repository, configBuilder );
-
-        configBuilder.setMaximumConnectionsTotal( ConfigurationProperties.get( session, CONFIG_MAX_CONNECTIONS, 5 ) );
 
         configBuilder.setCompressionEnabled( useCompression );
         configBuilder.setFollowRedirects( true );
@@ -234,7 +230,7 @@ class AsyncRepositoryConnector
 
         ConnectorConfiguration configuration =
             new ConnectorConfiguration( httpClient, repository, fileProcessor, session, logger, listener,
-                                        checksumAlgos, this.disableResumeSupport, this.maxIOExceptionRetry );
+                                        checksumAlgos, this.disableResumeSupport );
 
         for ( MetadataDownload download : metadataDownloads )
         {
@@ -278,7 +274,7 @@ class AsyncRepositoryConnector
 
         ConnectorConfiguration configuration =
             new ConnectorConfiguration( httpClient, repository, fileProcessor, session, logger, listener,
-                                        checksumAlgos, this.disableResumeSupport, this.maxIOExceptionRetry );
+                                        checksumAlgos, this.disableResumeSupport );
 
         for ( ArtifactUpload upload : artifactUploads )
         {
