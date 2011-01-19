@@ -80,12 +80,13 @@ public class SimpleGetTask
 
             if ( transfer.isExistenceCheck() )
             {
-                futureResponse = configuration.getHttpClient().head( requestUrl( "" ) );
+                futureResponse = configuration.getHttpClient().derive().setUrl( requestUrl( "" ) ).build().head();
             }
             else
             {
                 consumer = newConsumer();
-                futureResponse = configuration.getHttpClient().get( requestUrl( "" ), consumer );
+                futureResponse =
+                    configuration.getHttpClient().derive().setUrl( requestUrl( "" ) ).build().get( consumer );
 
                 for ( String algo : configuration.getChecksumAlgos().keySet() )
                 {
@@ -248,7 +249,7 @@ public class SimpleGetTask
 
         OutputStreamBodyConsumer target = new OutputStreamBodyConsumer( new FileOutputStream( targetFile ) );
         SimpleAsyncHttpClient httpClient = configuration.getHttpClient();
-        Future<Response> future = httpClient.get( requestUrl( extension ), target );
+        Future<Response> future = httpClient.derive().setUrl( requestUrl( extension ) ).build().get( target );
         return future;
     }
 

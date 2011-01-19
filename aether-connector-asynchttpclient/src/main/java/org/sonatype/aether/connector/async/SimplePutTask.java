@@ -73,7 +73,8 @@ public class SimplePutTask
 
             ProgressingFileBodyGenerator bodyGenerator = newGenerator();
 
-            futureResponse = configuration.getHttpClient().put( requestUrl( "" ), bodyGenerator );
+            futureResponse =
+                configuration.getHttpClient().derive().setUrl( requestUrl( "" ) ).build().put( bodyGenerator );
             futures.add( new FutureBody( futureResponse, bodyGenerator ) );
 
             generateAndUploadChecksums();
@@ -115,7 +116,8 @@ public class SimplePutTask
         byte[] bytes = sum.getBytes( "us-ascii" );
 
         InputStreamBodyGenerator generator = new InputStreamBodyGenerator( new ByteArrayInputStream( bytes ) );
-        Future<Response> future = configuration.getHttpClient().put( requestUrl( extension ), generator );
+        Future<Response> future =
+            configuration.getHttpClient().derive().setUrl( requestUrl( extension ) ).build().put( generator );
 
         futures.add( new FutureBody( future, null ) );
     }

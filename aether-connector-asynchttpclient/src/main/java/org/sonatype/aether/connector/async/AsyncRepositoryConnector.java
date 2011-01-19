@@ -43,6 +43,7 @@ import org.sonatype.aether.util.StringUtils;
 
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.ProxyServer.Protocol;
+import com.ning.http.client.SimpleAsyncHttpClient.ErrorDocumentBehaviour;
 import com.ning.http.client.Realm;
 import com.ning.http.client.SimpleAsyncHttpClient;
 
@@ -107,7 +108,6 @@ class AsyncRepositoryConnector
         checksumAlgos.put( "MD5", ".md5" );
 
         disableResumeSupport = ConfigurationProperties.get( session, "aether.connector.ahc.disableResumable", false );
-        // maxIOExceptionRetry = ConfigurationProperties.get( session, "aether.connector.ahc.resumeRetry", 3 );
     }
 
     private void validateProtocol( RemoteRepository repository )
@@ -147,9 +147,6 @@ class AsyncRepositoryConnector
 
         SimpleAsyncHttpClient.Builder configBuilder = new SimpleAsyncHttpClient.Builder();
 
-        // AHC workaround - see AHC-6, get(String) would fail if no URL is set
-        configBuilder.setUrl( "http://localhost" );
-
         setUserAgent( session, configBuilder );
 
         setTimeouts( session, configBuilder );
@@ -163,7 +160,7 @@ class AsyncRepositoryConnector
         configBuilder.setHeader( "Pragma", "no-cache" );
         configBuilder.setHeader( "Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2" );
 
-        configBuilder.setIgnoreErrorDocuments( true );
+        configBuilder.setErrorDocumentBehaviour( ErrorDocumentBehaviour.OMIT );
 
         configBuilder.setResumableDownload( !disableResumeSupport );
 
