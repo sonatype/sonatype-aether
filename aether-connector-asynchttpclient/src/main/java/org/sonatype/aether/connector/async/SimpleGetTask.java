@@ -78,13 +78,19 @@ public class SimpleGetTask
 
             sanityCheck();
 
-            consumer = newConsumer();
-
-            futureResponse = configuration.getHttpClient().get( requestUrl( "" ), consumer );
-
-            for ( String algo : configuration.getChecksumAlgos().keySet() )
+            if ( transfer.isExistenceCheck() )
             {
-                checksumDownloads.put( algo, downloadChecksum( algo ) );
+                futureResponse = configuration.getHttpClient().head( requestUrl( "" ) );
+            }
+            else
+            {
+                consumer = newConsumer();
+                futureResponse = configuration.getHttpClient().get( requestUrl( "" ), consumer );
+
+                for ( String algo : configuration.getChecksumAlgos().keySet() )
+                {
+                    checksumDownloads.put( algo, downloadChecksum( algo ) );
+                }
             }
         }
         catch ( Exception e )
@@ -150,11 +156,16 @@ public class SimpleGetTask
 
         handleResponseCode( url, response.getStatusCode(), response.getStatusText() );
 
-        verifyChecksum();
+        if ( !transfer.isExistenceCheck() )
+        {
+            verifyChecksum();
 
-        configuration.getFileProcessor().move( tmpFile(), transfer.getFile() );
+            configuration.getFileProcessor().move( tmpFile(), transfer.getFile() );
+        }
 
-        catapult.fireSucceeded( consumer.getTransferredBytes() );
+        long transferredBytes = consumer == null ? 0 : consumer.getTransferredBytes();
+
+        catapult.fireSucceeded( transferredBytes );
     }
 
     private void verifyChecksum()

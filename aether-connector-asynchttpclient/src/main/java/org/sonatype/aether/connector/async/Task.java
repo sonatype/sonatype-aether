@@ -143,7 +143,8 @@ public class Task
     protected String url( RemoteRepository repository, TransferWrapper download )
     {
         String url = repository.getUrl();
-        return normalizeUri( url + "/" + download.getRelativePath() );
+        url = url.endsWith( "/" ) ? url : url + "/";
+        return normalizeUri( url + download.getRelativePath() );
     }
 
     protected void advanceState()
