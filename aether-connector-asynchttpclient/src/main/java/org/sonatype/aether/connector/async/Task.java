@@ -22,8 +22,6 @@ import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.transfer.TransferResource;
 
 import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.Request;
-import com.ning.http.client.RequestBuilder;
 
 public class Task
 {
@@ -56,7 +54,7 @@ public class Task
 
     protected String normalizeUri( String path )
     {
-        String tmpUri = buildUrl( path );
+        String tmpUri = path;
         // If we get dav request here, switch to http as no need for dav method.
         String dav = "dav";
         String davHttp = "dav:http";
@@ -144,22 +142,10 @@ public class Task
 
     protected String url( RemoteRepository repository, TransferWrapper download )
     {
-        return repository.getUrl() + "/" + download.getRelativePath();
+        String url = repository.getUrl();
+        return normalizeUri( url + "/" + download.getRelativePath() );
     }
 
-    /**
-     * @param extension
-     * @return
-     */
-    protected Request newRequest( String url, String extension )
-    {
-        Request request = new RequestBuilder().setUrl( url + extension ).build();
-        return request;
-    }
-
-    /**
-     * 
-     */
     protected void advanceState()
     {
         Transfer realTransfer = transfer.getTransfer();

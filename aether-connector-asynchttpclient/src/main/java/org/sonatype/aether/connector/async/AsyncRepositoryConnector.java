@@ -147,6 +147,9 @@ class AsyncRepositoryConnector
 
         SimpleAsyncHttpClient.Builder configBuilder = new SimpleAsyncHttpClient.Builder();
 
+        // AHC workaround - see AHC-6, get(String) would fail if no URL is set
+        configBuilder.setUrl( "http://localhost" );
+
         setUserAgent( session, configBuilder );
 
         setTimeouts( session, configBuilder );

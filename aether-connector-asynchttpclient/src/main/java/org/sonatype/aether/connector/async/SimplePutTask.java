@@ -21,7 +21,6 @@ import org.sonatype.aether.spi.connector.MetadataUpload;
 import org.sonatype.aether.util.ChecksumUtils;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
-import com.ning.http.client.Request;
 import com.ning.http.client.Response;
 import com.ning.http.client.generators.InputStreamBodyGenerator;
 
@@ -73,9 +72,8 @@ public class SimplePutTask
             sanityCheck();
 
             ProgressingFileBodyGenerator bodyGenerator = newGenerator();
-            Request request = newRequest();
 
-            futureResponse = configuration.getHttpClient().put( request, bodyGenerator );
+            futureResponse = configuration.getHttpClient().put( requestUrl( "" ), bodyGenerator );
             futures.add( new FutureBody( futureResponse, bodyGenerator ) );
 
             generateAndUploadChecksums();
@@ -114,18 +112,17 @@ public class SimplePutTask
         throws IOException
     {
         String extension = configuration.getChecksumAlgos().get( algo );
-        Request request = newRequest( url, extension );
         byte[] bytes = sum.getBytes( "us-ascii" );
 
         InputStreamBodyGenerator generator = new InputStreamBodyGenerator( new ByteArrayInputStream( bytes ) );
-        Future<Response> future = configuration.getHttpClient().put( request, generator );
+        Future<Response> future = configuration.getHttpClient().put( requestUrl( extension ), generator );
 
         futures.add( new FutureBody( future, null ) );
     }
 
-    private Request newRequest()
+    private String requestUrl( String extension )
     {
-        return newRequest( url, "" );
+        return url + extension;
     }
 
     private ProgressingFileBodyGenerator newGenerator()

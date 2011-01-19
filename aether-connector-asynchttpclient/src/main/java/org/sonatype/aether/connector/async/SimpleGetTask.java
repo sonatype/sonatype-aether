@@ -25,7 +25,6 @@ import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.util.ChecksumUtils;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
-import com.ning.http.client.Request;
 import com.ning.http.client.Response;
 import com.ning.http.client.SimpleAsyncHttpClient;
 import com.ning.http.client.consumers.OutputStreamBodyConsumer;
@@ -80,9 +79,8 @@ public class SimpleGetTask
             sanityCheck();
 
             consumer = newConsumer();
-            Request request = newRequest();
 
-            futureResponse = configuration.getHttpClient().get( request, consumer );
+            futureResponse = configuration.getHttpClient().get( requestUrl( "" ), consumer );
 
             for ( String algo : configuration.getChecksumAlgos().keySet() )
             {
@@ -142,11 +140,6 @@ public class SimpleGetTask
     private File extensionFile( String extension )
     {
         return new File( transfer.getFile().getAbsolutePath() + extension );
-    }
-
-    private Request newRequest()
-    {
-        return newRequest( url, "" );
     }
 
     public void processResponse()
@@ -244,8 +237,12 @@ public class SimpleGetTask
 
         OutputStreamBodyConsumer target = new OutputStreamBodyConsumer( new FileOutputStream( targetFile ) );
         SimpleAsyncHttpClient httpClient = configuration.getHttpClient();
-        Future<Response> future = httpClient.get( newRequest( url, extension ), target );
+        Future<Response> future = httpClient.get( requestUrl( extension ), target );
         return future;
     }
 
+    private String requestUrl( String extension )
+    {
+        return url + extension;
+    }
 }
