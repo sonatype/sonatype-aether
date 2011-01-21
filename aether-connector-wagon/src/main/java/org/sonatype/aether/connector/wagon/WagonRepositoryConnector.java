@@ -282,6 +282,10 @@ class WagonRepositoryConnector
                 headers.setProperty( "User-Agent", userAgent );
                 setHttpHeaders.invoke( wagon, headers );
             }
+            catch ( NoSuchMethodException e )
+            {
+                // normal for non-http wagons
+            }
             catch ( Exception e )
             {
                 logger.debug( "Could not set user agent for wagon " + wagon.getClass().getName() + ": " + e );
