@@ -63,6 +63,10 @@ public class TestRepositorySystemSession
 
     private boolean offline;
 
+    private String updatePolicy = RepositoryPolicy.UPDATE_POLICY_ALWAYS;
+
+    private String checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_FAIL;
+
     public TestRepositorySystemSession()
         throws IOException
     {
@@ -119,12 +123,22 @@ public class TestRepositorySystemSession
 
     public String getChecksumPolicy()
     {
-        return RepositoryPolicy.CHECKSUM_POLICY_FAIL;
+        return checksumPolicy;
+    }
+
+    public void setChecksumPolicy( String checksumPolicy )
+    {
+        this.checksumPolicy = checksumPolicy;
     }
 
     public String getUpdatePolicy()
     {
-        return RepositoryPolicy.UPDATE_POLICY_ALWAYS;
+        return updatePolicy;
+    }
+
+    public void setUpdatePolicy( String updatePolicy )
+    {
+        this.updatePolicy = updatePolicy;
     }
 
     public LocalRepository getLocalRepository()

@@ -265,8 +265,8 @@ public class DefaultRemoteRepositoryManager
             }
 
             String updates =
-                updateCheckManager.getEffectiveUpdatePolicy( session, policy1.getChecksumPolicy(),
-                                                             policy2.getChecksumPolicy() );
+                updateCheckManager.getEffectiveUpdatePolicy( session, policy1.getUpdatePolicy(),
+                                                             policy2.getUpdatePolicy() );
 
             policy = new RepositoryPolicy( true, updates, checksums );
         }
