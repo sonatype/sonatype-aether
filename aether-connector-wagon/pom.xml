@@ -79,7 +79,7 @@ http://www.eclipse.org/legal/epl-v10.html
     <dependency>
     	<groupId>org.sonatype.http-testing-harness</groupId>
     	<artifactId>server-provider</artifactId>
-    	<version>0.4.1-SNAPSHOT</version>
+    	<version>0.4.1</version>
     	<scope>test</scope>
     </dependency>
   </dependencies>
