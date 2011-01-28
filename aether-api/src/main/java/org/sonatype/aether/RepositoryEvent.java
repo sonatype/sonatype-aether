@@ -20,7 +20,9 @@ import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.repository.ArtifactRepository;
 
 /**
- * An event describing an action performed by the repository system.
+ * An event describing an action performed by the repository system. Note that events which indicate the end of an
+ * action like {@link EventType#ARTIFACT_RESOLVED} are generally fired in both the success and the failure case. Use
+ * {@link #getException()} to check whether an event denotes success or failure.
  * 
  * @author Benjamin Bentmann
  * @see RepositoryListener
@@ -97,14 +99,16 @@ public interface RepositoryEvent
     ArtifactRepository getRepository();
 
     /**
-     * Gets the exception that caused the event (if any).
+     * Gets the exception that caused the event (if any). As a rule of thumb, an event accompanied by an exception
+     * indicates a failure of the corresponding action.
      * 
      * @return The exception or {@code null} if none.
      */
     Exception getException();
 
     /**
-     * Gets the exceptions that caused the event (if any).
+     * Gets the exceptions that caused the event (if any). As a rule of thumb, an event accompanied by exceptions
+     * indicates a failure of the corresponding action.
      * 
      * @return The exceptions, never {@code null}.
      */
