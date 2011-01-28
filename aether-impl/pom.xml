@@ -18,7 +18,7 @@
   <parent>
     <groupId>org.sonatype.aether</groupId>
     <artifactId>aether-parent</artifactId>
-    <version>1.8.1-SNAPSHOT</version>
+    <version>1.8.1</version>
   </parent>
 
   <artifactId>aether-impl</artifactId>
