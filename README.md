@@ -25,4 +25,5 @@ Source code uses the Maven code style: <http://maven.apache.org/developers/maven
 
 License
 =======
-[Eclipse Public License, v1.0](http://www.eclipse.org/legal/epl-v10.html)
+[Eclipse Public License, v1.0](http://www.eclipse.org/legal/epl-v10.html)  
+[Apache License, v2.0](http://www.apache.org/licenses/LICENSE-2.0.html)  
