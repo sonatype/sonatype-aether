@@ -100,7 +100,8 @@ public interface RepositoryEvent
 
     /**
      * Gets the exception that caused the event (if any). As a rule of thumb, an event accompanied by an exception
-     * indicates a failure of the corresponding action.
+     * indicates a failure of the corresponding action. If multiple exceptions occurred, this method returns the first
+     * exception.
      * 
      * @return The exception or {@code null} if none.
      */
