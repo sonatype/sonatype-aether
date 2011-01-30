@@ -305,6 +305,11 @@ public class DefaultRemoteRepositoryManager
     public RepositoryConnector getRepositoryConnector( RepositorySystemSession session, RemoteRepository repository )
         throws NoRepositoryConnectorException
     {
+        if ( repository == null )
+        {
+            throw new IllegalArgumentException( "remote repository has not been specified" );
+        }
+
         List<RepositoryConnectorFactory> factories = new ArrayList<RepositoryConnectorFactory>( connectorFactories );
         Collections.sort( factories, COMPARATOR );
 
