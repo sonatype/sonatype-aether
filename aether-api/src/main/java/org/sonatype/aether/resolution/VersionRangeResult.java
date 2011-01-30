@@ -129,6 +129,34 @@ public class VersionRangeResult
     }
 
     /**
+     * Gets the lowest version matching the requested range.
+     * 
+     * @return The lowest matching version or {@code null} if no versions matched the requested range.
+     */
+    public Version getLowestVersion()
+    {
+        if ( versions.isEmpty() )
+        {
+            return null;
+        }
+        return versions.get( 0 );
+    }
+
+    /**
+     * Gets the highest version matching the requested range.
+     * 
+     * @return The highest matching version or {@code null} if no versions matched the requested range.
+     */
+    public Version getHighestVersion()
+    {
+        if ( versions.isEmpty() )
+        {
+            return null;
+        }
+        return versions.get( versions.size() - 1 );
+    }
+
+    /**
      * Gets the repository from which the specified version was resolved.
      * 
      * @param version The version whose source repository should be retrieved, must not be {@code null}.
