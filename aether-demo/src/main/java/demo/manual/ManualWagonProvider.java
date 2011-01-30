@@ -1,4 +1,4 @@
-package demo;
+package demo.manual;
 
 /*******************************************************************************
  * Copyright (c) 2010-2011 Sonatype, Inc.
@@ -13,10 +13,12 @@ package demo;
  *******************************************************************************/
 
 import org.apache.maven.wagon.Wagon;
-import org.apache.maven.wagon.providers.file.FileWagon;
 import org.apache.maven.wagon.providers.http.LightweightHttpWagon;
 import org.sonatype.aether.connector.wagon.WagonProvider;
 
+/**
+ * A simplistic provider for wagon instances when no Plexus-compatible IoC container is used.
+ */
 public class ManualWagonProvider
     implements WagonProvider
 {
@@ -24,11 +26,7 @@ public class ManualWagonProvider
     public Wagon lookup( String roleHint )
         throws Exception
     {
-        if ( "file".equals( roleHint ) )
-        {
-            return new FileWagon();
-        }
-        else if ( "http".equals( roleHint ) )
+        if ( "http".equals( roleHint ) )
         {
             return new LightweightHttpWagon();
         }

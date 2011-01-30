@@ -14,9 +14,7 @@ package demo;
 
 import java.io.File;
 
-import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
-import org.codehaus.plexus.DefaultPlexusContainer;
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
@@ -24,11 +22,8 @@ import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.resolution.VersionRangeRequest;
 import org.sonatype.aether.resolution.VersionRangeResult;
-import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
-import org.sonatype.aether.connector.wagon.WagonProvider;
-import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
 import org.sonatype.aether.deployment.DeployRequest;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyNode;
@@ -37,6 +32,12 @@ import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.SubArtifact;
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
 import org.sonatype.aether.version.Version;
+
+import demo.manual.ManualRepositorySystemFactory;
+import demo.plexus.PlexusRepositorySystemFactory;
+import demo.util.ConsoleDependencyGraphDumper;
+import demo.util.ConsoleRepositoryListener;
+import demo.util.ConsoleTransferListener;
 
 public class RepoSys
 {
@@ -51,7 +52,7 @@ public class RepoSys
         System.out.println( "============================================================" );
 
         // System managed by IoC container (Plexus in this case)
-        repoSystem = newManagedSystem();
+        repoSystem = PlexusRepositorySystemFactory.newRepositorySystem();
         playTheDanceBaby( repoSystem );
 
         System.out.println();
@@ -60,7 +61,7 @@ public class RepoSys
         System.out.println( "============================================================" );
 
         // System manually managed, no IoC container (manually wired up)
-        repoSystem = newManualSystem();
+        repoSystem = ManualRepositorySystemFactory.newRepositorySystem();
         playTheDanceBaby( repoSystem );
     }
 
@@ -103,7 +104,7 @@ public class RepoSys
 
         System.out.println( "------------------------------------------------------------" );
         System.out.println( "Resolution results" );
-        dump( node, "" );
+        node.accept( new ConsoleDependencyGraphDumper() );
 
         PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
         node.accept( nlg );
@@ -132,24 +133,9 @@ public class RepoSys
 
         DeployRequest deployRequest = new DeployRequest();
         deployRequest.addArtifact( projectOutput ).addArtifact( projectPom );
-        deployRequest.setRepository( new RemoteRepository( "nexus", "default",
+        deployRequest.setRepository( new RemoteRepository( "demo", "default",
             new File( "target/dist-repo" ).toURI().toString() ) );
         repoSystem.deploy( session, deployRequest );
-    }
-
-    private static RepositorySystem newManagedSystem()
-        throws Exception
-    {
-        return new DefaultPlexusContainer().lookup( RepositorySystem.class );
-    }
-
-    private static RepositorySystem newManualSystem()
-    {
-        DefaultServiceLocator locator = new DefaultServiceLocator();
-        locator.setServices( WagonProvider.class, new ManualWagonProvider() );
-        locator.addService( RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class );
-
-        return locator.getService( RepositorySystem.class );
     }
 
     private static RepositorySystemSession newSession( RepositorySystem system )
@@ -159,23 +145,13 @@ public class RepoSys
         LocalRepository localRepo = new LocalRepository( "target/local-repo" );
         session.setLocalRepositoryManager( system.newLocalRepositoryManager( localRepo ) );
 
-        session.setTransferListener( new ConsoleTransferListener( System.out ) );
-        session.setRepositoryListener( new ConsoleRepositoryListener( System.out ) );
+        session.setTransferListener( new ConsoleTransferListener() );
+        session.setRepositoryListener( new ConsoleRepositoryListener() );
 
         // uncomment to generate dirty trees
         // session.setDependencyGraphTransformer( null );
 
         return session;
-    }
-
-    private static void dump( DependencyNode node, String indent )
-    {
-        System.out.println( indent + node.getDependency() );
-        indent += "  ";
-        for ( DependencyNode child : node.getChildren() )
-        {
-            dump( child, indent );
-        }
     }
 
 }

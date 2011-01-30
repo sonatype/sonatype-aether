@@ -1,4 +1,4 @@
-package demo;
+package demo.util;
 
 /*******************************************************************************
  * Copyright (c) 2010-2011 Sonatype, Inc.
@@ -23,6 +23,9 @@ import org.sonatype.aether.transfer.AbstractTransferListener;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferResource;
 
+/**
+ * A simplistic transfer listener that logs uploads/downloads to the console.
+ */
 public class ConsoleTransferListener
     extends AbstractTransferListener
 {
@@ -32,6 +35,11 @@ public class ConsoleTransferListener
     private Map<TransferResource, Long> downloads = new ConcurrentHashMap<TransferResource, Long>();
 
     private int lastLength;
+
+    public ConsoleTransferListener()
+    {
+        this( null );
+    }
 
     public ConsoleTransferListener( PrintStream out )
     {

@@ -12,6 +12,9 @@ package demo.aether;
  * You may elect to redistribute this code under either of these licenses.
  *******************************************************************************/
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.sonatype.aether.RepositorySystem;
@@ -35,14 +38,17 @@ import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
 
-import demo.ConsoleRepositoryListener;
-import demo.ConsoleTransferListener;
-import demo.ManualWagonProvider;
+import demo.manual.ManualWagonProvider;
+import demo.util.ConsoleDependencyGraphDumper;
+import demo.util.ConsoleRepositoryListener;
+import demo.util.ConsoleTransferListener;
 
 public class Aether
 {
     private String remoteRepository;
+
     private RepositorySystem repositorySystem;
+
     private LocalRepository localRepository;
 
     public Aether( String remoteRepository, String localRepository )
@@ -69,16 +75,17 @@ public class Aether
     {
         MavenRepositorySystemSession session = new MavenRepositorySystemSession();
         session.setLocalRepositoryManager( repositorySystem.newLocalRepositoryManager( localRepository ) );
-        session.setTransferListener( new ConsoleTransferListener( System.out ) );
-        session.setRepositoryListener( new ConsoleRepositoryListener( System.out ) );
+        session.setTransferListener( new ConsoleTransferListener() );
+        session.setRepositoryListener( new ConsoleRepositoryListener() );
         return session;
     }
-    
+
     public AetherResult resolve( String groupId, String artifactId, String version )
         throws DependencyCollectionException, ArtifactResolutionException
     {
         RepositorySystemSession session = newSession();
-        Dependency dependency = new Dependency( new DefaultArtifact( groupId, artifactId, "", "jar", version ), "runtime" );
+        Dependency dependency =
+            new Dependency( new DefaultArtifact( groupId, artifactId, "", "jar", version ), "runtime" );
         RemoteRepository central = new RemoteRepository( "central", "default", remoteRepository );
 
         CollectRequest collectRequest = new CollectRequest();
@@ -89,8 +96,8 @@ public class Aether
 
         repositorySystem.resolveDependencies( session, rootNode, null );
 
-        StringBuffer dump = new StringBuffer();
-        displayTree( rootNode, "", dump );
+        StringBuilder dump = new StringBuilder();
+        displayTree( rootNode, dump );
 
         PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
         rootNode.accept( nlg );
@@ -105,7 +112,7 @@ public class Aether
 
         InstallRequest installRequest = new InstallRequest();
         installRequest.addArtifact( artifact ).addArtifact( pom );
-        
+
         repositorySystem.install( session, installRequest );
     }
 
@@ -119,20 +126,17 @@ public class Aether
         nexus.setAuthentication( authentication );
 
         DeployRequest deployRequest = new DeployRequest();
-        deployRequest.addArtifact( artifact ).addArtifact( pom );        
+        deployRequest.addArtifact( artifact ).addArtifact( pom );
         deployRequest.setRepository( nexus );
-        
+
         repositorySystem.deploy( session, deployRequest );
     }
 
-    private void displayTree( DependencyNode node, String indent, StringBuffer sb )
+    private void displayTree( DependencyNode node, StringBuilder sb )
     {
-        sb.append( indent + node.getDependency() ).append( "\n" );
-        indent += "  ";
-        for ( DependencyNode child : node.getChildren() )
-        {
-            displayTree( child, indent, sb );
-        }
+        ByteArrayOutputStream os = new ByteArrayOutputStream( 1024 );
+        node.accept( new ConsoleDependencyGraphDumper( new PrintStream( os ) ) );
+        sb.append( os.toString() );
     }
 
 }
