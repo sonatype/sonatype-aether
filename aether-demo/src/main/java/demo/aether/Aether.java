@@ -15,15 +15,12 @@ package demo.aether;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.collection.DependencyCollectionException;
-import org.sonatype.aether.connector.wagon.WagonProvider;
-import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
 import org.sonatype.aether.deployment.DeployRequest;
 import org.sonatype.aether.deployment.DeploymentException;
 import org.sonatype.aether.graph.Dependency;
@@ -34,11 +31,10 @@ import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.resolution.ArtifactResolutionException;
-import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
 
-import demo.manual.ManualWagonProvider;
+import demo.util.Booter;
 import demo.util.ConsoleDependencyGraphDumper;
 import demo.util.ConsoleRepositoryListener;
 import demo.util.ConsoleTransferListener;
@@ -54,21 +50,8 @@ public class Aether
     public Aether( String remoteRepository, String localRepository )
     {
         this.remoteRepository = remoteRepository;
-        this.repositorySystem = newManualSystem();
+        this.repositorySystem = Booter.newRepositorySystem();
         this.localRepository = new LocalRepository( localRepository );
-    }
-
-    //
-    // Setting up the repository system with the mechanism to find components
-    // and setting up the implementations to use. This would be much easier
-    // using Guice, but we want Aether to be easily embedded.
-    //
-    private RepositorySystem newManualSystem()
-    {
-        DefaultServiceLocator locator = new DefaultServiceLocator();
-        locator.setServices( WagonProvider.class, new ManualWagonProvider() );
-        locator.addService( RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class );
-        return locator.getService( RepositorySystem.class );
     }
 
     private RepositorySystemSession newSession()

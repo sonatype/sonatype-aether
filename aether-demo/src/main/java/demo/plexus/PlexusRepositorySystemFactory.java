@@ -22,13 +22,19 @@ public class PlexusRepositorySystemFactory
 {
 
     public static RepositorySystem newRepositorySystem()
-        throws Exception
     {
         /*
          * Aether's components are equipped with plexus-specific metadata to enable discovery and wiring of components
          * by a Plexus container so this is as easy as looking up the implementation.
          */
-        return new DefaultPlexusContainer().lookup( RepositorySystem.class );
+        try
+        {
+            return new DefaultPlexusContainer().lookup( RepositorySystem.class );
+        }
+        catch ( Exception e )
+        {
+            throw new IllegalStateException( "dependency injection failed", e );
+        }
     }
 
 }

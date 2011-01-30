@@ -27,7 +27,6 @@ public class ManualRepositorySystemFactory
 {
 
     public static RepositorySystem newRepositorySystem()
-        throws Exception
     {
         /*
          * Aether's components implement org.sonatype.aether.spi.locator.Service to ease manual wiring and using the
