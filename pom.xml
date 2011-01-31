@@ -235,7 +235,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.7.1</version>
           <configuration>
-            <argLine>-Xmx64m</argLine>
+            <argLine>-Xmx128m</argLine>
             <systemPropertyVariables>
               <java.io.tmpdir>${project.build.directory}/surefire-tmp</java.io.tmpdir>
             </systemPropertyVariables>
