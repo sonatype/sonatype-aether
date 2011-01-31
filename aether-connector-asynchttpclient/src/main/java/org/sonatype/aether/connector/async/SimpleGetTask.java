@@ -9,9 +9,9 @@ package org.sonatype.aether.connector.async;
  *******************************************************************************/
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -25,9 +25,10 @@ import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.util.ChecksumUtils;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
+import com.ning.http.client.BodyConsumer;
 import com.ning.http.client.Response;
 import com.ning.http.client.SimpleAsyncHttpClient;
-import com.ning.http.client.consumers.OutputStreamBodyConsumer;
+import com.ning.http.client.consumers.FileBodyConsumer;
 
 /**
  * @author Benjamin Hanzelmann
@@ -124,8 +125,25 @@ public class SimpleGetTask
         }
         finally
         {
+            try
+            {
+                flushFutures( checksumDownloads.values() );
+            }
+            catch ( Exception e )
+            {
+                // we tried...
+            }
             advanceState();
         }
+    }
+
+    private void flushFutures( Collection<Future<Response>> values )
+        throws InterruptedException, ExecutionException
+    {
+        for (Future<Response> future : values) {
+            future.get();
+        }
+        
     }
 
     private ProgressingFileBodyConsumer newConsumer()
@@ -199,7 +217,7 @@ public class SimpleGetTask
                 verified = sum.equalsIgnoreCase( crcs.get( algorithm ).toString() );
                 if ( !verified )
                 {
-                    throw new ChecksumFailureException( sum, crcs.get( algorithm ).toString() );
+                    throw new ChecksumFailureException( crcs.get( algorithm ).toString(), sum );
                 }
                 break;
             }
@@ -247,7 +265,7 @@ public class SimpleGetTask
         File targetFile = extensionFile( extension );
         configuration.getFileProcessor().mkdirs( targetFile.getParentFile() );
 
-        OutputStreamBodyConsumer target = new OutputStreamBodyConsumer( new FileOutputStream( targetFile ) );
+        BodyConsumer target = new FileBodyConsumer( new RandomAccessFile( targetFile, "rw" ) );
         SimpleAsyncHttpClient httpClient = configuration.getHttpClient();
         Future<Response> future = httpClient.derive().setUrl( requestUrl( extension ) ).build().get( target );
         return future;
