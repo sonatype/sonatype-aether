@@ -3,3 +3,7 @@ target/
 .classpath
 .settings/
 bin/
+.idea
+*.iml
+*.ipr
+*.iws
