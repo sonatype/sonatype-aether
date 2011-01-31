@@ -180,6 +180,7 @@ public class SimpleGetTask
             verifyChecksum();
 
             configuration.getFileProcessor().move( tmpFile(), transfer.getFile() );
+
         }
 
         long transferredBytes = consumer == null ? 0 : consumer.getTransferredBytes();
@@ -210,6 +211,7 @@ public class SimpleGetTask
                 }
                 catch ( Exception e )
                 {
+                    e.printStackTrace();
                     // skip verify - try next algorithm
                     continue;
                 }
@@ -254,6 +256,9 @@ public class SimpleGetTask
         Future<Response> future = checksumDownloads.get( algorithm );
         Response response = future.get();
         handleResponseCode( url, response.getStatusCode(), response.getStatusText() );
+
+        String extension = configuration.getChecksumAlgos().get( algorithm );
+        configuration.getFileProcessor().move( extensionFile( extension + ".tmp" ), extensionFile( extension ) );
     }
 
     private Future<Response> downloadChecksum( String algorithm )
@@ -262,7 +267,7 @@ public class SimpleGetTask
         Map<String, String> checksumAlgos = configuration.getChecksumAlgos();
         String extension = checksumAlgos.get( algorithm );
 
-        File targetFile = extensionFile( extension );
+        File targetFile = extensionFile( extension + ".tmp" );
         configuration.getFileProcessor().mkdirs( targetFile.getParentFile() );
 
         BodyConsumer target = new FileBodyConsumer( new RandomAccessFile( targetFile, "rw" ) );
