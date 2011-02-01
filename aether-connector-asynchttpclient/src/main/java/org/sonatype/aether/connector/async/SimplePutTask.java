@@ -77,8 +77,7 @@ public class SimplePutTask
 
             ProgressingFileBodyGenerator bodyGenerator = newGenerator();
 
-            futureResponse =
-                configuration.getHttpClient().derive().setUrl( requestUrl( "" ) ).build().put( bodyGenerator );
+            futureResponse = deriveClient( requestUrl( "" ) ).put( bodyGenerator );
             futures.add( new FutureBody( futureResponse, bodyGenerator ) );
 
             generateAndUploadChecksums();
@@ -120,8 +119,7 @@ public class SimplePutTask
         byte[] bytes = sum.getBytes( "us-ascii" );
 
         InputStreamBodyGenerator generator = new InputStreamBodyGenerator( new ByteArrayInputStream( bytes ) );
-        Future<Response> future =
-            configuration.getHttpClient().derive().setUrl( requestUrl( extension ) ).build().put( generator );
+        Future<Response> future = deriveClient( requestUrl( extension ) ).put( generator );
 
         futures.add( new FutureBody( future, null ) );
     }
@@ -160,6 +158,8 @@ public class SimplePutTask
         }
         finally
         {
+            cancelLeftoverUploads();
+            closeDerivedClients();
             advanceState();
         }
     }
@@ -176,6 +176,18 @@ public class SimplePutTask
             if ( futureBody.progressEventHandler != null )
             {
                 catapult.fireSucceeded( futureBody.progressEventHandler.getTransferredBytes() );
+            }
+        }
+    }
+
+    private void cancelLeftoverUploads()
+    {
+        for ( FutureBody fb : futures )
+        {
+            Future<Response> future = fb.future;
+            if ( !future.isDone() )
+            {
+                future.cancel( true );
             }
         }
     }

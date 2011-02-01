@@ -14,6 +14,8 @@ package org.sonatype.aether.connector.async;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.Transfer;
@@ -26,6 +28,7 @@ import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.transfer.TransferResource;
 
 import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.SimpleAsyncHttpClient;
 
 public class Task
 {
@@ -41,6 +44,8 @@ public class Task
     protected TransferWrapper transfer;
 
     protected ConnectorConfiguration configuration;
+
+    private Set<SimpleAsyncHttpClient> derivedClients = new HashSet<SimpleAsyncHttpClient>();
 
     public Task( AsyncHttpClient httpClient, RemoteRepository repository, TransferListener listener )
     {
@@ -210,6 +215,21 @@ public class Task
         if ( transfer.getFile() == null )
         {
             throw new IllegalArgumentException( "Target file is set to null." );
+        }
+    }
+
+    protected SimpleAsyncHttpClient deriveClient( String reqUrl )
+    {
+        SimpleAsyncHttpClient derivedClient = configuration.getHttpClient().derive().setUrl( reqUrl ).build();
+        derivedClients.add( derivedClient );
+        return derivedClient;
+    }
+
+    protected void closeDerivedClients()
+    {
+        for ( SimpleAsyncHttpClient client : derivedClients )
+        {
+            client.close();
         }
     }
 

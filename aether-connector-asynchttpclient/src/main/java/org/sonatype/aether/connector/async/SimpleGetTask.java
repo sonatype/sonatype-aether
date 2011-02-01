@@ -83,15 +83,17 @@ public class SimpleGetTask
 
             sanityCheck();
 
+            SimpleAsyncHttpClient derivedClient = deriveClient( requestUrl( "" ) );
+
             if ( transfer.isExistenceCheck() )
             {
-                futureResponse = configuration.getHttpClient().derive().setUrl( requestUrl( "" ) ).build().head();
+                futureResponse = derivedClient.head();
             }
             else
             {
                 consumer = newConsumer();
                 futureResponse =
-                    configuration.getHttpClient().derive().setUrl( requestUrl( "" ) ).build().get( consumer );
+                    derivedClient.get( consumer );
 
                 for ( String algo : configuration.getChecksumAlgos().keySet() )
                 {
@@ -130,6 +132,7 @@ public class SimpleGetTask
         finally
         {
             cancelLeftoverChecksumDownloads();
+            closeDerivedClients();
             advanceState();
         }
     }
@@ -271,8 +274,10 @@ public class SimpleGetTask
         configuration.getFileProcessor().mkdirs( targetFile.getParentFile() );
 
         BodyConsumer target = new FileBodyConsumer( new RandomAccessFile( targetFile, "rw" ) );
-        SimpleAsyncHttpClient httpClient = configuration.getHttpClient();
-        Future<Response> future = httpClient.derive().setUrl( requestUrl( extension ) ).build().get( target );
+        SimpleAsyncHttpClient derivedClient = deriveClient( requestUrl( extension ) );
+
+        Future<Response> future = derivedClient.get( target );
+
         return future;
     }
 
