@@ -12,11 +12,8 @@ package org.sonatype.aether.connector.async;
  * You may elect to redistribute this code under either of these licenses.
  *******************************************************************************/
 
-import java.io.IOException;
 import java.util.Map;
 
-import org.junit.Ignore;
-import org.junit.Test;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
@@ -25,7 +22,6 @@ import org.sonatype.aether.test.impl.TestFileProcessor;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSetup.AbstractConnectorTestSetup;
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSuite;
 import org.sonatype.tests.http.server.jetty.behaviour.ResourceServer;
-import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.tests.http.server.jetty.impl.JettyServerProvider;
 
 /**
@@ -75,15 +71,6 @@ public class AetherDefaultTest
     public AetherDefaultTest()
     {
         super( new JettyConnectorTestSetup() );
-    }
-
-    @Override
-    @Ignore( "https://issues.sonatype.org/browse/AHC-5" )
-    @Test
-    public void testTransferZeroBytesFile()
-        throws IOException, NoRepositoryConnectorException
-    {
-        super.testTransferZeroBytesFile();
     }
 
 }
