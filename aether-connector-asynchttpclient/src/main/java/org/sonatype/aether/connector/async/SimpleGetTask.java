@@ -215,7 +215,6 @@ public class SimpleGetTask
                 }
                 catch ( Exception e )
                 {
-                    e.printStackTrace();
                     // skip verify - try next algorithm
                     continue;
                 }
