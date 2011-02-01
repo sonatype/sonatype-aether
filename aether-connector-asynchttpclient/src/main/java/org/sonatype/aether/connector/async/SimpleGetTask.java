@@ -15,9 +15,9 @@ package org.sonatype.aether.connector.async;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -129,25 +129,22 @@ public class SimpleGetTask
         }
         finally
         {
-            try
-            {
-                flushFutures( checksumDownloads.values() );
-            }
-            catch ( Exception e )
-            {
-                // we tried...
-            }
+            cancelLeftoverChecksumDownloads();
             advanceState();
         }
     }
 
-    private void flushFutures( Collection<Future<Response>> values )
-        throws InterruptedException, ExecutionException
+    private void cancelLeftoverChecksumDownloads()
     {
-        for (Future<Response> future : values) {
-            future.get();
+        for ( Entry<String, Future<Response>> entry : checksumDownloads.entrySet() )
+        {
+            Future<Response> future = entry.getValue();
+            if ( !future.isDone() )
+            {
+                future.cancel( true );
+                extensionFile( entry.getKey() + ".tmp" ).delete();
+            }
         }
-        
     }
 
     private ProgressingFileBodyConsumer newConsumer()
