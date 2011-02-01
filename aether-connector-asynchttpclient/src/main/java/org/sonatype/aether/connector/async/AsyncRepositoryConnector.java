@@ -164,6 +164,12 @@ class AsyncRepositoryConnector
 
         configBuilder.setResumableDownload( !disableResumeSupport );
 
+        configBuilder.setMaximumConnectionsPerHost( 10 );
+        configBuilder.setIdleConnectionInPoolTimeoutInMs( 1 );
+        // This is not a throttling limit, but fails if the limit is reached
+        // configBuilder.setMaximumConnectionsTotal( 100 );
+        // TODO add throttling limit as soon as it exists.
+
         return configBuilder.build();
     }
 
