@@ -165,7 +165,11 @@ class AsyncRepositoryConnector
         configBuilder.setResumableDownload( !disableResumeSupport );
 
         configBuilder.setMaximumConnectionsPerHost( 10 );
-        configBuilder.setIdleConnectionInPoolTimeoutInMs( 1 );
+
+        // This is way too low. Either we turn off connection pool or we set it to at least 60. This has
+        // a side effect on how auth works (AHC bug # )
+        // configBuilder.setIdleConnectionInPoolTimeoutInMs( 1 );
+
         // This is not a throttling limit, but fails if the limit is reached
         // configBuilder.setMaximumConnectionsTotal( 100 );
         // TODO add throttling limit as soon as it exists.
