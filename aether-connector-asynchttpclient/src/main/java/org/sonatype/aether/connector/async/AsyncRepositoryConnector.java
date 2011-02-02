@@ -167,7 +167,7 @@ class AsyncRepositoryConnector
         configBuilder.setMaximumConnectionsPerHost( 10 );
 
         // This is way too low. Either we turn off connection pool or we set it to at least 60. This has
-        // a side effect on how auth works (AHC bug # )
+        // a side effect on how auth works (AHC bug AHC-17)
         // configBuilder.setIdleConnectionInPoolTimeoutInMs( 1 );
 
         // This is not a throttling limit, but fails if the limit is reached
