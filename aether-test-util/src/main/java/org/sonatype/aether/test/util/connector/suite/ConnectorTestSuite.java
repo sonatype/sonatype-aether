@@ -198,7 +198,7 @@ public abstract class ConnectorTestSuite
         ArtifactDownload[] artDowns = new ArtifactDownload[numTransfers];
         MetadataDownload[] metaDowns = new MetadataDownload[numTransfers];
 
-        for ( int m = 0; m < 30; m++ )
+        for ( int m = 0; m < 20; m++ )
         {
             for ( int i = 0; i < numTransfers; i++ )
             {

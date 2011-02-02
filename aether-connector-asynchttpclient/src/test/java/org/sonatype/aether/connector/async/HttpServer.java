@@ -722,7 +722,14 @@ public class HttpServer
                     else if ( HttpMethods.PUT.equals( request.getMethod() ) ||
                         HttpMethods.POST.equals( request.getMethod() ) )
                     {
-                        file.getParentFile().mkdirs();
+                        int i = 0;
+                        while ( !file.getParentFile().exists() && !file.getParentFile().mkdirs() )
+                        {
+                            if ( i++ > 5 )
+                            {
+                                break;
+                            }
+                        }
                         FileOutputStream os = new FileOutputStream( file );
                         try
                         {

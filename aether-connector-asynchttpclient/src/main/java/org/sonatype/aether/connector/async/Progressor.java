@@ -12,22 +12,16 @@ package org.sonatype.aether.connector.async;
  * You may elect to redistribute this code under either of these licenses.
  *******************************************************************************/
 
-/**
- * Simple exception when a transfer fail.
- *
- * @author Jeanfrancois Arcand
- */
-class TransferException
-    extends Exception
-{
-    public TransferException( final String message )
-    {
-        super( message );
-    }
+import java.nio.ByteBuffer;
 
-    public TransferException( final String message, final Throwable cause )
-    {
-        super( message, cause );
-    }
+import org.sonatype.aether.transfer.TransferCancelledException;
+
+interface Progressor
+{
+
+    public abstract void fireTransferProgressed( final ByteBuffer buffer )
+        throws TransferCancelledException;
+
+    public abstract long getTransferredBytes();
 
 }

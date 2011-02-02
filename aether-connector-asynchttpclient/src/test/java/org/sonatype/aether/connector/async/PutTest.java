@@ -17,6 +17,7 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.sonatype.aether.artifact.Artifact;
@@ -101,4 +102,42 @@ public class PutTest
         connector().close();
     }
 
+    @Test
+    @Ignore( "https://issues.sonatype.org/browse/AHC-5" )
+    public void testArtifactWithZeroBytesFile()
+        throws Exception
+    {
+        String content = "";
+        addExpectation( "gid/aid/version/aid-version-classifier.extension", content );
+        addExpectation( "gid/aid/version/aid-version-classifier.extension.sha1", sha1( content ) );
+        addExpectation( "gid/aid/version/aid-version-classifier.extension.md5", md5( content ) );
+
+        Artifact artifact = artifact( content );
+        ArtifactUpload up = new ArtifactUpload( artifact, artifact.getFile() );
+        List<ArtifactUpload> uploads = Arrays.asList( up );
+        connector().put( uploads, null );
+
+        ArtifactTransferException ex = up.getException();
+        assertNull( ex != null ? ex.getMessage() : "", ex );
+        assertExpectations();
+    }
+
+    @Test
+    @Ignore( "https://issues.sonatype.org/browse/AHC-5" )
+    public void testMetadataWithZeroBytesFile()
+        throws Exception
+    {
+        String content = "";
+        addExpectation( "gid/aid/version/maven-metadata.xml", content );
+        addExpectation( "gid/aid/version/maven-metadata.xml.sha1", sha1( content ) );
+        addExpectation( "gid/aid/version/maven-metadata.xml.md5", md5( content ) );
+
+        Metadata metadata = metadata( content );
+
+        List<MetadataUpload> uploads = Arrays.asList( new MetadataUpload( metadata, metadata.getFile() ) );
+        connector().put( null, uploads );
+
+        assertExpectations();
+    }
+    
 }

@@ -12,6 +12,8 @@ package org.sonatype.aether.connector.async;
  * You may elect to redistribute this code under either of these licenses.
  *******************************************************************************/
 
+import java.util.Map;
+
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
@@ -21,8 +23,6 @@ import org.sonatype.aether.test.util.connector.suite.ConnectorTestSetup.Abstract
 import org.sonatype.aether.test.util.connector.suite.ConnectorTestSuite;
 import org.sonatype.tests.http.server.jetty.behaviour.ResourceServer;
 import org.sonatype.tests.http.server.jetty.impl.JettyServerProvider;
-
-import java.util.Map;
 
 /**
  * @author Benjamin Hanzelmann
