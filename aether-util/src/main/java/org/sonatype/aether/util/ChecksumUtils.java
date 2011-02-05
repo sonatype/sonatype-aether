@@ -150,22 +150,27 @@ public class ChecksumUtils
         {
             byte[] bytes = entry.getValue().digest();
 
-            StringBuilder buffer = new StringBuilder( 64 );
-
-            for ( int i = 0; i < bytes.length; i++ )
-            {
-                int b = bytes[i] & 0xFF;
-                if ( b < 0x10 )
-                {
-                    buffer.append( '0' );
-                }
-                buffer.append( Integer.toHexString( b ) );
-            }
-
-            results.put( entry.getKey(), buffer.toString() );
+            results.put( entry.getKey(), toHexString( bytes ) );
         }
 
         return results;
+    }
+
+    private static String toHexString( byte[] bytes )
+    {
+        StringBuilder buffer = new StringBuilder( bytes.length * 2 );
+
+        for ( int i = 0; i < bytes.length; i++ )
+        {
+            int b = bytes[i] & 0xFF;
+            if ( b < 0x10 )
+            {
+                buffer.append( '0' );
+            }
+            buffer.append( Integer.toHexString( b ) );
+        }
+
+        return buffer.toString();
     }
 
 }
