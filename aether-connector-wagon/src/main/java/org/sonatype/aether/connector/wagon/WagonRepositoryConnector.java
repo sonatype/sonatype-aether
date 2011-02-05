@@ -162,9 +162,18 @@ class WagonRepositoryConnector
         {
             threads = ConfigurationProperties.get( session, "maven.artifact.threads", 5 );
         }
+        executor = getExecutor( threads );
+
+        checksumAlgos = new LinkedHashMap<String, String>();
+        checksumAlgos.put( "SHA-1", ".sha1" );
+        checksumAlgos.put( "MD5", ".md5" );
+    }
+
+    private Executor getExecutor( int threads )
+    {
         if ( threads <= 1 )
         {
-            executor = new Executor()
+            return new Executor()
             {
                 public void execute( Runnable command )
                 {
@@ -174,13 +183,8 @@ class WagonRepositoryConnector
         }
         else
         {
-            executor =
-                new ThreadPoolExecutor( threads, threads, 3, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>() );
+            return new ThreadPoolExecutor( threads, threads, 3, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>() );
         }
-
-        checksumAlgos = new LinkedHashMap<String, String>();
-        checksumAlgos.put( "SHA-1", ".sha1" );
-        checksumAlgos.put( "MD5", ".md5" );
     }
 
     private static RepositoryPermissions getPermissions( String repoId, RepositorySystemSession session )
@@ -493,6 +497,11 @@ class WagonRepositoryConnector
             releaseWagon( wagon );
         }
 
+        shutdown( executor );
+    }
+
+    private void shutdown( Executor executor )
+    {
         if ( executor instanceof ExecutorService )
         {
             ( (ExecutorService) executor ).shutdown();
