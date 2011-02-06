@@ -21,7 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
@@ -89,21 +88,11 @@ class FileRepositoryWorker
 
     private final RemoteRepository repository;
 
-    private CountDownLatch latch = null;
-
     private final TransferEventCatapult catapult;
 
     private final Direction direction;
 
     private TransferResource resource;
-
-    /**
-     * Set the latch to count down after all work is done.
-     */
-    public void setLatch( CountDownLatch latch )
-    {
-        this.latch = latch;
-    }
 
     static
     {
@@ -305,42 +294,31 @@ class FileRepositoryWorker
         finally
         {
             transfer.setState( State.DONE );
-            try
+            if ( transfer.getException() == null )
             {
-                if ( transfer.getException() == null )
-                {
-                    DefaultTransferEvent event = newEvent( transfer );
-                    event.setTransferredBytes( (int) totalTransferred );
-                    catapult.fireSucceeded( event );
-                }
-                else
-                {
-                    // cleanup
-                    if ( direction.equals( Direction.UPLOAD ) )
-                    {
-                        for ( String ext : checksumAlgos.values() )
-                        {
-                            new File( target.getPath() + ext ).delete();
-                        }
-                    }
-                    if ( target != null )
-                    {
-                        target.delete();
-                    }
-
-                    DefaultTransferEvent event = newEvent( transfer );
-                    catapult.fireFailed( event );
-                }
+                DefaultTransferEvent event = newEvent( transfer );
+                event.setTransferredBytes( (int) totalTransferred );
+                catapult.fireSucceeded( event );
             }
-            finally
+            else
             {
-                if ( latch != null )
+                // cleanup
+                if ( direction.equals( Direction.UPLOAD ) )
                 {
-                    latch.countDown();
+                    for ( String ext : checksumAlgos.values() )
+                    {
+                        new File( target.getPath() + ext ).delete();
+                    }
                 }
+                if ( target != null )
+                {
+                    target.delete();
+                }
+
+                DefaultTransferEvent event = newEvent( transfer );
+                catapult.fireFailed( event );
             }
         }
-
     }
 
     private void writeChecksum( File src, String targetPath )

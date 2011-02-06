@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -43,6 +42,7 @@ import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.transfer.MetadataNotFoundException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.concurrency.RunnableErrorForwarder;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 import org.sonatype.aether.repository.ArtifactRepository;
 import org.sonatype.aether.repository.LocalMetadataRegistration;
@@ -186,7 +186,6 @@ public class DefaultMetadataResolver
         List<MetadataResult> results = new ArrayList<MetadataResult>( requests.size() );
 
         List<ResolveTask> tasks = new ArrayList<ResolveTask>( requests.size() );
-        CountDownLatch latch = new CountDownLatch( requests.size() );
 
         Map<File, Long> localLastUpdates = new HashMap<File, Long>();
 
@@ -317,8 +316,7 @@ public class DefaultMetadataResolver
                                                                                             request.getRepository(),
                                                                                             request.getRequestContext() ) );
 
-                ResolveTask task =
-                    new ResolveTask( session, result, installFile, checks, policy.getChecksumPolicy(), latch );
+                ResolveTask task = new ResolveTask( session, result, installFile, checks, policy.getChecksumPolicy() );
                 tasks.add( task );
             }
             else
@@ -339,27 +337,18 @@ public class DefaultMetadataResolver
             Executor executor = getExecutor( Math.min( tasks.size(), threads ) );
             try
             {
-                while ( latch.getCount() > tasks.size() )
-                {
-                    latch.countDown();
-                }
+                RunnableErrorForwarder errorForwarder = new RunnableErrorForwarder();
+
                 for ( ResolveTask task : tasks )
                 {
-                    executor.execute( task );
+                    executor.execute( errorForwarder.wrap( task ) );
                 }
-                latch.await();
+
+                errorForwarder.await();
+
                 for ( ResolveTask task : tasks )
                 {
                     task.result.setException( task.exception );
-                }
-            }
-            catch ( InterruptedException e )
-            {
-                for ( ResolveTask task : tasks )
-                {
-                    MetadataResult result = task.result;
-                    result.setException( new MetadataTransferException( result.getRequest().getMetadata(),
-                                                                        result.getRequest().getRepository(), e ) );
                 }
             }
             finally
@@ -524,13 +513,10 @@ public class DefaultMetadataResolver
 
         final List<UpdateCheck<Metadata, MetadataTransferException>> checks;
 
-        final CountDownLatch latch;
-
         volatile MetadataTransferException exception;
 
         public ResolveTask( RepositorySystemSession session, MetadataResult result, File metadataFile,
-                            List<UpdateCheck<Metadata, MetadataTransferException>> checks, String policy,
-                            CountDownLatch latch )
+                            List<UpdateCheck<Metadata, MetadataTransferException>> checks, String policy )
         {
             this.session = session;
             this.result = result;
@@ -538,7 +524,6 @@ public class DefaultMetadataResolver
             this.metadataFile = metadataFile;
             this.policy = policy;
             this.checks = checks;
-            this.latch = latch;
         }
 
         public void run()
@@ -593,10 +578,6 @@ public class DefaultMetadataResolver
             catch ( NoRepositoryConnectorException e )
             {
                 exception = new MetadataTransferException( metadata, requestRepository, e );
-            }
-            finally
-            {
-                latch.countDown();
             }
 
             for ( UpdateCheck<Metadata, MetadataTransferException> check : checks )

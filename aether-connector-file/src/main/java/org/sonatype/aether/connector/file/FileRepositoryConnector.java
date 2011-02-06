@@ -14,7 +14,6 @@ package org.sonatype.aether.connector.file;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.CountDownLatch;
 
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -27,6 +26,7 @@ import org.sonatype.aether.spi.io.FileProcessor;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.concurrency.RunnableErrorForwarder;
 
 /**
  * A connector for file://-URLs.
@@ -71,37 +71,25 @@ public class FileRepositoryConnector
         artifactDownloads = notNull( artifactDownloads );
         metadataDownloads = notNull( metadataDownloads );
 
-        CountDownLatch latch = new CountDownLatch( artifactDownloads.size() + metadataDownloads.size() );
+        RunnableErrorForwarder errorForwarder = new RunnableErrorForwarder();
 
         for ( ArtifactDownload artifactDownload : artifactDownloads )
         {
             FileRepositoryWorker worker = new FileRepositoryWorker( artifactDownload, repository, session );
-            worker.setLatch( latch );
             worker.setLogger( logger );
             worker.setFileProcessor( fileProcessor );
-            executor.execute( worker );
+            executor.execute( errorForwarder.wrap( worker ) );
         }
 
         for ( MetadataDownload metadataDownload : metadataDownloads )
         {
             FileRepositoryWorker worker = new FileRepositoryWorker( metadataDownload, repository, session );
-            worker.setLatch( latch );
             worker.setLogger( logger );
             worker.setFileProcessor( fileProcessor );
-            executor.execute( worker );
+            executor.execute( errorForwarder.wrap( worker ) );
         }
 
-        while ( latch.getCount() > 0 )
-        {
-            try
-            {
-                latch.await();
-            }
-            catch ( InterruptedException e )
-            {
-                // ignore
-            }
-        }
+        errorForwarder.await();
     }
 
     private <E> Collection<E> notNull( Collection<E> col )
@@ -117,36 +105,24 @@ public class FileRepositoryConnector
         artifactUploads = notNull( artifactUploads );
         metadataUploads = notNull( metadataUploads );
 
-        CountDownLatch latch = new CountDownLatch( artifactUploads.size() + metadataUploads.size() );
+        RunnableErrorForwarder errorForwarder = new RunnableErrorForwarder();
 
         for ( ArtifactUpload artifactUpload : artifactUploads )
         {
             FileRepositoryWorker worker = new FileRepositoryWorker( artifactUpload, repository, session );
-            worker.setLatch( latch );
             worker.setLogger( logger );
             worker.setFileProcessor( fileProcessor );
-            executor.execute( worker );
+            executor.execute( errorForwarder.wrap( worker ) );
         }
         for ( MetadataUpload metadataUpload : metadataUploads )
         {
             FileRepositoryWorker worker = new FileRepositoryWorker( metadataUpload, repository, session );
-            worker.setLatch( latch );
             worker.setLogger( logger );
             worker.setFileProcessor( fileProcessor );
-            executor.execute( worker );
+            executor.execute( errorForwarder.wrap( worker ) );
         }
 
-        while ( latch.getCount() > 0 )
-        {
-            try
-            {
-                latch.await();
-            }
-            catch ( InterruptedException e )
-            {
-                // ignore
-            }
-        }
+        errorForwarder.await();
     }
 
     @Override

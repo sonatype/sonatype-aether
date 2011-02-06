@@ -25,7 +25,6 @@ import java.util.Properties;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -67,6 +66,7 @@ import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.util.ChecksumUtils;
 import org.sonatype.aether.util.StringUtils;
+import org.sonatype.aether.util.concurrency.RunnableErrorForwarder;
 import org.sonatype.aether.util.layout.MavenDefaultLayout;
 import org.sonatype.aether.util.layout.RepositoryLayout;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
@@ -414,18 +414,18 @@ class WagonRepositoryConnector
         artifactDownloads = safe( artifactDownloads );
         metadataDownloads = safe( metadataDownloads );
 
-        CountDownLatch latch = new CountDownLatch( artifactDownloads.size() + metadataDownloads.size() );
-
         Collection<GetTask<?>> tasks = new ArrayList<GetTask<?>>();
+
+        RunnableErrorForwarder errorForwarder = new RunnableErrorForwarder();
 
         for ( MetadataDownload download : metadataDownloads )
         {
             String resource = layout.getPath( download.getMetadata() ).getPath();
             GetTask<?> task =
-                new GetTask<MetadataTransfer>( resource, download.getFile(), download.getChecksumPolicy(), latch,
-                                               download, METADATA );
+                new GetTask<MetadataTransfer>( resource, download.getFile(), download.getChecksumPolicy(), download,
+                                               METADATA );
             tasks.add( task );
-            executor.execute( task );
+            executor.execute( errorForwarder.wrap( task ) );
         }
 
         for ( ArtifactDownload download : artifactDownloads )
@@ -433,28 +433,17 @@ class WagonRepositoryConnector
             String resource = layout.getPath( download.getArtifact() ).getPath();
             GetTask<?> task =
                 new GetTask<ArtifactTransfer>( resource, download.isExistenceCheck() ? null : download.getFile(),
-                                               download.getChecksumPolicy(), latch, download, ARTIFACT );
+                                               download.getChecksumPolicy(), download, ARTIFACT );
             tasks.add( task );
-            executor.execute( task );
+            executor.execute( errorForwarder.wrap( task ) );
         }
 
-        try
+        errorForwarder.await();
+
+        for ( GetTask<?> task : tasks )
         {
-            latch.await();
-
-            for ( GetTask<?> task : tasks )
-            {
-                task.flush();
-            }
+            task.flush();
         }
-        catch ( InterruptedException e )
-        {
-            for ( GetTask<?> task : tasks )
-            {
-                task.flush( e );
-            }
-        }
-
     }
 
     public void put( Collection<? extends ArtifactUpload> artifactUploads,
@@ -540,19 +529,15 @@ class WagonRepositoryConnector
 
         private final String checksumPolicy;
 
-        private final CountDownLatch latch;
-
         private volatile Exception exception;
 
         private final ExceptionWrapper<T> wrapper;
 
-        public GetTask( String path, File file, String checksumPolicy, CountDownLatch latch, T download,
-                        ExceptionWrapper<T> wrapper )
+        public GetTask( String path, File file, String checksumPolicy, T download, ExceptionWrapper<T> wrapper )
         {
             this.path = path;
             this.file = file;
             this.checksumPolicy = checksumPolicy;
-            this.latch = latch;
             this.download = download;
             this.wrapper = wrapper;
         }
@@ -695,10 +680,6 @@ class WagonRepositoryConnector
                     event.setException( e );
                     listener.transferFailed( event );
                 }
-            }
-            finally
-            {
-                latch.countDown();
             }
         }
 
