@@ -310,7 +310,7 @@ public class TestRepositorySystemSession
     }
 
     /**
-     * @param classicDependencyManager
+     * @param manager
      */
     public void setDependencyManager( DependencyManager manager )
     {

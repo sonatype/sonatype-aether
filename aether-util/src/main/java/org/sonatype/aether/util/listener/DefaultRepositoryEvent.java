@@ -95,7 +95,7 @@ public class DefaultRepositoryEvent
     /**
      * Sets the artifact involved in the event.
      * 
-     * @param file The involved artifact, may be {@code null}.
+     * @param artifact The involved artifact, may be {@code null}.
      * @return This event for chaining, never {@code null}.
      */
     public DefaultRepositoryEvent setArtifact( Artifact artifact )
@@ -112,7 +112,7 @@ public class DefaultRepositoryEvent
     /**
      * Sets the metadata involved in the event.
      * 
-     * @param file The involved metadata, may be {@code null}.
+     * @param metadata The involved metadata, may be {@code null}.
      * @return This event for chaining, never {@code null}.
      */
     public DefaultRepositoryEvent setMetadata( Metadata metadata )
@@ -129,7 +129,7 @@ public class DefaultRepositoryEvent
     /**
      * Sets the repository involved in the event.
      * 
-     * @param file The involved repository, may be {@code null}.
+     * @param repository The involved repository, may be {@code null}.
      * @return This event for chaining, never {@code null}.
      */
     public DefaultRepositoryEvent setRepository( ArtifactRepository repository )
