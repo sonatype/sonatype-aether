@@ -23,7 +23,7 @@
 
   <groupId>org.sonatype.aether</groupId>
   <artifactId>aether-parent</artifactId>
-  <version>1.10-SNAPSHOT</version>
+  <version>1.10</version>
   <packaging>pom</packaging>
 
   <name>Aether</name>
