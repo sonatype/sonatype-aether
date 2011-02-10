@@ -107,11 +107,7 @@ class AsyncRepositoryConnector
         checksumAlgos.put( "SHA-1", ".sha1" );
         checksumAlgos.put( "MD5", ".md5" );
 
-        // support old 'disable' option
-        resumeTransfers =
-            ConfigurationProperties.get( session, "aether.connector.ahc.resumeTransfers", false )
-                && ( !ConfigurationProperties.get( session, "aether.connector.ahc.disableResumable", false ) );
-
+        resumeTransfers = ConfigurationProperties.get( session, "aether.connector.ahc.resumeTransfers", false );
     }
 
     private void validateProtocol( RemoteRepository repository )
