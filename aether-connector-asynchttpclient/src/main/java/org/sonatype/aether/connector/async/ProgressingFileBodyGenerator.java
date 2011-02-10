@@ -17,22 +17,21 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
+import com.ning.http.client.generators.FileBodyGenerator;
 import org.sonatype.aether.transfer.TransferCancelledException;
 
 import com.ning.http.client.RandomAccessBody;
 
 class ProgressingFileBodyGenerator
-    extends com.ning.http.client.generators.FileBodyGenerator implements Progressor
+    extends FileBodyGenerator
 {
 
-    private TransferEventCatapult catapult;
+    private final CompletionHandler completionHandler;
 
-    private long transferredBytes;
-
-    public ProgressingFileBodyGenerator( File file, TransferEventCatapult listener )
+    public ProgressingFileBodyGenerator( File file, CompletionHandler completionHandler )
     {
         super( file );
-        this.catapult = listener;
+        this.completionHandler = completionHandler;
     }
 
     @Override
@@ -42,29 +41,11 @@ class ProgressingFileBodyGenerator
         return new ProgressingBody( super.createBody() );
     }
 
-    public void fireTransferProgressed( final ByteBuffer buffer )
-        throws TransferCancelledException
-    {
-        if ( catapult != null )
-        {
-            transferredBytes += buffer.remaining();
-            catapult.fireProgressed( buffer, transferredBytes );
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see org.sonatype.aether.connector.async.ProgressedEventHandler#getTransferredBytes()
-     */
-    public long getTransferredBytes()
-    {
-        return transferredBytes;
-    }
-
     final class ProgressingBody
         implements RandomAccessBody
     {
 
-        private final RandomAccessBody delegate;
+        final RandomAccessBody delegate;
 
         private ProgressingWritableByteChannel channel;
 
@@ -81,14 +62,14 @@ class ProgressingFileBodyGenerator
         public long read( ByteBuffer buffer )
             throws IOException
         {
-            ByteBuffer eventBuffer = buffer.slice();
+            ByteBuffer event = buffer.slice();
             long read = delegate.read( buffer );
             if ( read > 0 )
             {
                 try
                 {
-                    eventBuffer.limit( (int) read );
-                    fireTransferProgressed( eventBuffer );
+                    event.limit( (int) read );
+                    completionHandler.fireTransferProgressed( event );
                 }
                 catch ( TransferCancelledException e )
                 {
@@ -115,48 +96,48 @@ class ProgressingFileBodyGenerator
             delegate.close();
         }
 
-        final class ProgressingWritableByteChannel
-            implements WritableByteChannel
+    }
+
+    final class ProgressingWritableByteChannel
+        implements WritableByteChannel
+    {
+
+        final WritableByteChannel delegate;
+
+        public ProgressingWritableByteChannel( WritableByteChannel delegate )
         {
+            this.delegate = delegate;
+        }
 
-            final WritableByteChannel delegate;
+        public boolean isOpen()
+        {
+            return delegate.isOpen();
+        }
 
-            public ProgressingWritableByteChannel( WritableByteChannel delegate )
+        public void close()
+            throws IOException
+        {
+            delegate.close();
+        }
+
+        public int write( ByteBuffer src )
+            throws IOException
+        {
+            ByteBuffer event = src.slice();
+            int written = delegate.write( src );
+            if ( written > 0 )
             {
-                this.delegate = delegate;
-            }
-
-            public boolean isOpen()
-            {
-                return delegate.isOpen();
-            }
-
-            public void close()
-                throws IOException
-            {
-                delegate.close();
-            }
-
-            public int write( ByteBuffer src )
-                throws IOException
-            {
-                ByteBuffer eventBuffer = src.slice();
-                int written = delegate.write( src );
-                if ( written > 0 )
+                try
                 {
-                    try
-                    {
-                        eventBuffer.limit( written );
-                        fireTransferProgressed( eventBuffer );
-                    }
-                    catch ( TransferCancelledException e )
-                    {
-                        throw (IOException) new IOException( e.getMessage() ).initCause( e );
-                    }
+                    event.limit( written );
+                    completionHandler.fireTransferProgressed( event );
                 }
-                return written;
+                catch ( TransferCancelledException e )
+                {
+                    throw (IOException) new IOException( e.getMessage() ).initCause( e );
+                }
             }
-
+            return written;
         }
 
     }
