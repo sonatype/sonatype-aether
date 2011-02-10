@@ -42,12 +42,9 @@ class ConnectorConfiguration
 
     private Map<String, String> checksumAlgos;
 
-    private boolean disableResumeSupport;
-
     public ConnectorConfiguration( SimpleAsyncHttpClient httpClient, RemoteRepository repository,
                                    FileProcessor fileProcessor, RepositorySystemSession session, Logger logger,
-                                   TransferListener listener, Map<String, String> checksumAlgos,
-                                   boolean disableResumeSupport )
+                                   TransferListener listener, Map<String, String> checksumAlgos )
     {
         this.httpClient = httpClient;
         this.repository = repository;
@@ -56,7 +53,6 @@ class ConnectorConfiguration
         this.logger = logger;
         this.listener = listener;
         this.checksumAlgos = checksumAlgos;
-        this.disableResumeSupport = disableResumeSupport;
     }
 
     public SimpleAsyncHttpClient getHttpClient()
@@ -92,11 +88,6 @@ class ConnectorConfiguration
     public Map<String, String> getChecksumAlgos()
     {
         return checksumAlgos;
-    }
-
-    public boolean isDisableResumeSupport()
-    {
-        return disableResumeSupport;
     }
 
 }

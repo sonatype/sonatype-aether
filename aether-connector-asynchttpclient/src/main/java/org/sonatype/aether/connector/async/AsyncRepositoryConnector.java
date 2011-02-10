@@ -71,7 +71,7 @@ class AsyncRepositoryConnector
 
     private final RepositorySystemSession session;
 
-    private final boolean disableResumeSupport;
+    private final boolean resumeTransfers;
 
     // private final int maxIOExceptionRetry;
 
@@ -107,7 +107,11 @@ class AsyncRepositoryConnector
         checksumAlgos.put( "SHA-1", ".sha1" );
         checksumAlgos.put( "MD5", ".md5" );
 
-        disableResumeSupport = ConfigurationProperties.get( session, "aether.connector.ahc.disableResumable", false );
+        // support old 'disable' option
+        resumeTransfers =
+            ConfigurationProperties.get( session, "aether.connector.ahc.resumeTransfers", false )
+                && ( !ConfigurationProperties.get( session, "aether.connector.ahc.disableResumable", false ) );
+
     }
 
     private void validateProtocol( RemoteRepository repository )
@@ -162,7 +166,7 @@ class AsyncRepositoryConnector
 
         configBuilder.setErrorDocumentBehaviour( ErrorDocumentBehaviour.OMIT );
 
-        configBuilder.setResumableDownload( !disableResumeSupport );
+        configBuilder.setResumableDownload( resumeTransfers );
 
         configBuilder.setMaximumConnectionsPerHost( 10 );
 
@@ -237,8 +241,7 @@ class AsyncRepositoryConnector
         Collection<SimpleGetTask> tasks = new ArrayList<SimpleGetTask>();
 
         ConnectorConfiguration configuration =
-            new ConnectorConfiguration( httpClient, repository, fileProcessor, session, logger, listener,
-                                        checksumAlgos, this.disableResumeSupport );
+            new ConnectorConfiguration( httpClient, repository, fileProcessor, session, logger, listener, checksumAlgos );
 
         for ( MetadataDownload download : metadataDownloads )
         {
@@ -281,8 +284,8 @@ class AsyncRepositoryConnector
         Collection<SimplePutTask> tasks = new ArrayList<SimplePutTask>();
 
         ConnectorConfiguration configuration =
-            new ConnectorConfiguration( httpClient, repository, fileProcessor, session, logger, listener,
-                                        checksumAlgos, this.disableResumeSupport );
+            new ConnectorConfiguration( httpClient, repository, fileProcessor, session, logger, listener, checksumAlgos );
+
 
         for ( ArtifactUpload upload : artifactUploads )
         {
