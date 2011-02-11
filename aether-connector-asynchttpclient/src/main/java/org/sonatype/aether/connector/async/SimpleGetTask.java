@@ -15,12 +15,13 @@ package org.sonatype.aether.connector.async;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
+import java.util.concurrent.TimeUnit;
 import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
@@ -52,6 +53,8 @@ public class SimpleGetTask
     private TransferEventCatapult catapult;
 
     private ProgressingFileBodyConsumer consumer;
+
+    private Iterator<String> checksumAlgoIterator;
 
     public SimpleGetTask( ArtifactDownload download, ConnectorConfiguration configuration )
     {
@@ -95,10 +98,7 @@ public class SimpleGetTask
                 futureResponse =
                     derivedClient.get( consumer );
 
-                for ( String algo : configuration.getChecksumAlgos().keySet() )
-                {
-                    checksumDownloads.put( algo, downloadChecksum( algo ) );
-                }
+                downloadChecksum( configuration.getChecksumAlgos().keySet().iterator().next() );
             }
         }
         catch ( Exception e )
@@ -142,10 +142,20 @@ public class SimpleGetTask
         for ( Entry<String, Future<Response>> entry : checksumDownloads.entrySet() )
         {
             Future<Response> future = entry.getValue();
-            if ( !future.isDone() )
+            try {
+                // see if download is done "soon"
+                Response response = future.get( 1, TimeUnit.SECONDS );
+                handleResponseCode( url, response.getStatusCode(), response.getStatusText() );
+
+                String extension = configuration.getChecksumAlgos().get( entry.getKey() );
+                configuration.getFileProcessor().move( extensionFile( extension + ".tmp" ), extensionFile( extension ) );
+            }
+            catch ( Exception e )
             {
+                // we are only cleaning up here, don't propagate
                 future.cancel( true );
-                extensionFile( entry.getKey() + ".tmp" ).delete();
+                File tmpfile = extensionFile( entry.getKey() + ".tmp" );
+                tmpfile.delete();
             }
         }
     }
@@ -184,7 +194,6 @@ public class SimpleGetTask
             verifyChecksum();
 
             configuration.getFileProcessor().move( tmpFile(), transfer.getFile() );
-
         }
 
         long transferredBytes = consumer == null ? 0 : consumer.getTransferredBytes();
@@ -257,7 +266,16 @@ public class SimpleGetTask
         throws Exception
     {
         Future<Response> future = checksumDownloads.get( algorithm );
+
+        if ( future == null )
+        {
+            future = downloadChecksum( algorithm );
+        }
+
         Response response = future.get();
+
+        checksumDownloads.remove( algorithm );
+
         handleResponseCode( url, response.getStatusCode(), response.getStatusText() );
 
         String extension = configuration.getChecksumAlgos().get( algorithm );
@@ -277,6 +295,8 @@ public class SimpleGetTask
         SimpleAsyncHttpClient derivedClient = deriveClient( requestUrl( extension ) );
 
         Future<Response> future = derivedClient.get( target );
+
+        checksumDownloads.put( algorithm, future );
 
         return future;
     }
