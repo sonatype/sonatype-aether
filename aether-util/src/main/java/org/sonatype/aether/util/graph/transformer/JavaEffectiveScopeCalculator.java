@@ -57,6 +57,8 @@ public class JavaEffectiveScopeCalculator
             throw new RepositoryException( "conflict groups have not been identified" );
         }
 
+        Boolean cyclicConflictIds = (Boolean) context.get( TransformationContextKeys.CYCLIC_CONFLICT_IDS );
+
         Map<Object, ConflictGroup> groups = new HashMap<Object, ConflictGroup>( 256 );
 
         buildConflictGroups( groups, node, null, conflictIds );
@@ -73,10 +75,21 @@ public class JavaEffectiveScopeCalculator
             groups.get( key ).scope = getInheritedScope( rootScope, child.getDependency().getScope() );
         }
 
+        Set<Object> prequisites = null;
+        if ( Boolean.TRUE.equals( cyclicConflictIds ) )
+        {
+            prequisites = new HashSet<Object>( sortedConflictIds.size() * 2 );
+        }
+
         for ( Object key : sortedConflictIds )
         {
+            if ( prequisites != null )
+            {
+                prequisites.add( key );
+            }
+
             ConflictGroup group = groups.get( key );
-            resolve( group );
+            resolve( group, conflictIds, prequisites );
         }
 
         return node;
@@ -118,11 +131,11 @@ public class JavaEffectiveScopeCalculator
         }
     }
 
-    private void resolve( ConflictGroup group )
+    private void resolve( ConflictGroup group, Map<?, ?> conflictIds, Set<?> prerequisites )
     {
         if ( group.scope == null )
         {
-            Set<String> inheritedScopes = getInheritedScopes( group );
+            Set<String> inheritedScopes = getInheritedScopes( group, conflictIds, prerequisites );
             group.scope = chooseEffectiveScope( inheritedScopes );
         }
 
@@ -139,7 +152,7 @@ public class JavaEffectiveScopeCalculator
         }
     }
 
-    private Set<String> getInheritedScopes( ConflictGroup group )
+    private Set<String> getInheritedScopes( ConflictGroup group, Map<?, ?> conflictIds, Set<?> prerequisites )
     {
         Set<String> inheritedScopes = new HashSet<String>();
 
@@ -155,6 +168,15 @@ public class JavaEffectiveScopeCalculator
             {
                 for ( DependencyNode parent : entry.getValue() )
                 {
+                    if ( prerequisites != null && !prerequisites.contains( conflictIds.get( parent ) ) )
+                    {
+                        /*
+                         * There's a cycle and the parent node belongs to a later group, i.e. its scope is not yet
+                         * calculated so ignore it.
+                         */
+                        continue;
+                    }
+
                     String parentScope = parent.getDependency().getScope();
                     String inheritedScope = getInheritedScope( parentScope, childScope );
                     inheritedScopes.add( inheritedScope );
