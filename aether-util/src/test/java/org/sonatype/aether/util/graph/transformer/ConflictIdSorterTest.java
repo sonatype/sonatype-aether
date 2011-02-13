@@ -46,16 +46,6 @@ public class ConflictIdSorterTest
         parser = new DependencyGraphParser( "conflictid-sorter-test/" );
     }
 
-    @Test
-    public void testSimple()
-        throws IOException, RepositoryException
-    {
-        DependencyNode node = parser.parse( "simple.txt" );
-        node = transform( node );
-
-        expectOrder( "gid2:aid::ext", "gid:aid::ext", "gid:aid2::ext" );
-    }
-
     private void expectOrder( List<String> sorted, String... id )
     {
         Queue<String> queue = new LinkedList<String>( sorted );
@@ -78,12 +68,28 @@ public class ConflictIdSorterTest
         expectOrder( sorted, id );
     }
 
+    private void expectCycle( boolean cycle )
+    {
+        assertEquals( Boolean.valueOf( cycle ), ctx.get( TransformationContextKeys.CYCLIC_CONFLICT_IDS ) );
+    }
+
     public DependencyNode transform( DependencyNode node )
         throws RepositoryException
     {
         node = new SimpleConflictMarker().transformGraph( node, ctx );
         node = sorter.transformGraph( node, ctx );
         return node;
+    }
+
+    @Test
+    public void testSimple()
+        throws IOException, RepositoryException
+    {
+        DependencyNode node = parser.parse( "simple.txt" );
+        node = transform( node );
+
+        expectOrder( "gid2:aid::ext", "gid:aid::ext", "gid:aid2::ext" );
+        expectCycle( false );
     }
 
     @Test
@@ -94,6 +100,7 @@ public class ConflictIdSorterTest
         node = transform( node );
 
         expectOrder( "gid:aid::ext", "gid2:aid::ext" );
+        expectCycle( true );
     }
 
     @Test
@@ -104,6 +111,7 @@ public class ConflictIdSorterTest
         node = transform( node );
 
         expectOrder( "gid:aid::ext", "gid3:aid::ext", "gid2:aid::ext", "gid4:aid::ext" );
-
+        expectCycle( false );
     }
+
 }

@@ -35,7 +35,9 @@ import org.sonatype.aether.graph.DependencyNode;
  * existing mapping of nodes to their conflicts ids. In absence of this map, the transformer will automatically invoke
  * the {@link ConflictMarker} to calculate the conflict ids. When this transformer has executed, the transformation
  * context holds a {@code List<Object>} that denotes the topologically sorted conflict ids. The list will be stored
- * using the key {@link TransformationContextKeys#SORTED_CONFLICT_IDS}.
+ * using the key {@link TransformationContextKeys#SORTED_CONFLICT_IDS}. In addition, the transformer will store a
+ * {@code Boolean} using the key {@link TransformationContextKeys#CYCLIC_CONFLICT_IDS} that indicates whether the
+ * conflict ids have cyclic dependencies.
  * 
  * @author Benjamin Bentmann
  */
@@ -71,9 +73,7 @@ public class ConflictIdSorter
             buildConflitIdDAG( ids, node, id, visited, conflictIds );
         }
 
-        List<Object> sorted = topsortConflictIds( ids.values() );
-
-        context.put( TransformationContextKeys.SORTED_CONFLICT_IDS, sorted );
+        topsortConflictIds( ids.values(), context );
 
         return node;
     }
@@ -107,7 +107,7 @@ public class ConflictIdSorter
         }
     }
 
-    private List<Object> topsortConflictIds( Collection<ConflictId> conflictIds )
+    private void topsortConflictIds( Collection<ConflictId> conflictIds, DependencyGraphTransformationContext context )
     {
         List<Object> sorted = new ArrayList<Object>( conflictIds.size() );
 
@@ -135,6 +135,8 @@ public class ConflictIdSorter
                 }
             }
         }
+
+        boolean cycle = sorted.size() < conflictIds.size();
 
         while ( sorted.size() < conflictIds.size() )
         {
@@ -174,7 +176,8 @@ public class ConflictIdSorter
             }
         }
 
-        return sorted;
+        context.put( TransformationContextKeys.SORTED_CONFLICT_IDS, sorted );
+        context.put( TransformationContextKeys.CYCLIC_CONFLICT_IDS, Boolean.valueOf( cycle ) );
     }
 
     static final class ConflictId

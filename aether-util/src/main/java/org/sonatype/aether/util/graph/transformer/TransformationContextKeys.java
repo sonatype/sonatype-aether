@@ -39,6 +39,14 @@ public final class TransformationContextKeys
      */
     public static final Object SORTED_CONFLICT_IDS = "sortedConflictIds";
 
+    /**
+     * The key in the graph transformation context where a {@code Boolean} is stored that indicates whether the
+     * dependencies between conflict ids form a cycle.
+     * 
+     * @see ConflictIdSorter
+     */
+    public static final Object CYCLIC_CONFLICT_IDS = "cyclicConflictIds";
+
     private TransformationContextKeys()
     {
         // hide constructor
