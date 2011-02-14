@@ -79,7 +79,7 @@ public interface RepositorySystem
         throws VersionResolutionException;
 
     /**
-     * Gets information about an artifact like its direct dependencies.
+     * Gets information about an artifact like its direct dependencies and potential relocations.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The descriptor request, must not be {@code null}
@@ -142,14 +142,14 @@ public interface RepositorySystem
         throws DependencyCollectionException, ArtifactResolutionException;
 
     /**
-     * Resolves the paths for an artifact. The Artifact will be downloaded if necessary. An artifacts that is already
+     * Resolves the paths for an artifact. The artifact will be downloaded if necessary. An artifacts that is already
      * resolved will be skipped and is not re-resolved. Note that this method assumes that any relocations have already
      * been processed.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The resolution request, must not be {@code null}
      * @return The resolution result, never {@code null}.
-     * @throws ArtifactResolutionException If any artifact could not be resolved.
+     * @throws ArtifactResolutionException If the artifact could not be resolved.
      * @see Artifact#getFile()
      */
     ArtifactResult resolveArtifact( RepositorySystemSession session, ArtifactRequest request )
