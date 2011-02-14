@@ -65,7 +65,8 @@ public class ArtifactResult
     }
 
     /**
-     * Gets the resolved artifact (if any).
+     * Gets the resolved artifact (if any). Use {@link #getExceptions()} to query the errors that occurred while trying
+     * to resolve the artifact.
      * 
      * @return The resolved artifact or {@code null} if the resolution failed.
      */
@@ -87,9 +88,12 @@ public class ArtifactResult
     }
 
     /**
-     * Gets the exceptions that occurred while resolving the artifact.
+     * Gets the exceptions that occurred while resolving the artifact. Note that this list can be non-empty even if the
+     * artifact was successfully resolved, e.g. when one of the contacted remote repositories didn't contain the
+     * artifact but a later repository eventually contained it.
      * 
      * @return The exceptions that occurred, never {@code null}.
+     * @see #isResolved()
      */
     public List<Exception> getExceptions()
     {
