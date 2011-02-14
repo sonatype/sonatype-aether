@@ -38,6 +38,11 @@ public class ArtifactResolutionException
         return results;
     }
 
+    public ArtifactResult getResult()
+    {
+        return !results.isEmpty() ? results.get( 0 ) : null;
+    }
+
     private static String getMessage( List<? extends ArtifactResult> results )
     {
         StringBuilder buffer = new StringBuilder( 256 );
