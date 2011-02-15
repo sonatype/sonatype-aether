@@ -73,7 +73,7 @@ public class DefaultRequestTrace
 
     public RequestTrace newChild( Object data )
     {
-        return new DefaultRequestTrace( parent, data );
+        return new DefaultRequestTrace( this, data );
     }
 
     @Override
