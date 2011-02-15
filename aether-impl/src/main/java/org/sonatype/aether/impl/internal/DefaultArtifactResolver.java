@@ -26,6 +26,7 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.SyncContext;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.ArtifactResolver;
@@ -60,6 +61,7 @@ import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.DefaultRequestTrace;
 import org.sonatype.aether.util.artifact.ArtifactProperties;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 
@@ -237,13 +239,15 @@ public class DefaultArtifactResolver
 
         for ( ArtifactRequest request : requests )
         {
+            RequestTrace trace = DefaultRequestTrace.newChild( request.getTrace(), request );
+
             ArtifactResult result = new ArtifactResult( request );
             results.add( result );
 
             Artifact artifact = request.getArtifact();
             List<RemoteRepository> repos = request.getRepositories();
 
-            artifactResolving( session, artifact );
+            artifactResolving( session, trace, artifact );
 
             String localPath = artifact.getProperty( ArtifactProperties.LOCAL_PATH, null );
             if ( localPath != null )
@@ -259,7 +263,7 @@ public class DefaultArtifactResolver
                 {
                     artifact = artifact.setFile( file );
                     result.setArtifact( artifact );
-                    artifactResolved( session, artifact, null, result.getExceptions() );
+                    artifactResolved( session, trace, artifact, null, result.getExceptions() );
                 }
                 continue;
             }
@@ -268,6 +272,7 @@ public class DefaultArtifactResolver
             try
             {
                 VersionRequest versionRequest = new VersionRequest( artifact, repos, request.getRequestContext() );
+                versionRequest.setTrace( trace );
                 versionResult = versionResolver.resolveVersion( session, versionRequest );
             }
             catch ( VersionResolutionException e )
@@ -298,7 +303,7 @@ public class DefaultArtifactResolver
                     artifact = artifact.setFile( file );
                     result.setArtifact( artifact );
                     result.setRepository( workspace.getRepository() );
-                    artifactResolved( session, artifact, workspace.getRepository(), null );
+                    artifactResolved( session, trace, artifact, workspace.getRepository(), null );
                     continue;
                 }
             }
@@ -313,7 +318,7 @@ public class DefaultArtifactResolver
                 {
                     artifact = artifact.setFile( getFile( session, artifact, local.getFile() ) );
                     result.setArtifact( artifact );
-                    artifactResolved( session, artifact, lrm.getRepository(), null );
+                    artifactResolved( session, trace, artifact, lrm.getRepository(), null );
                 }
                 catch ( ArtifactTransferException e )
                 {
@@ -341,7 +346,7 @@ public class DefaultArtifactResolver
                     new ArtifactNotFoundException( artifact, null, "The repository system is offline but the artifact "
                         + artifact + " is not available in the local repository." );
                 result.addException( exception );
-                artifactResolved( session, artifact, null, result.getExceptions() );
+                artifactResolved( session, trace, artifact, null, result.getExceptions() );
                 continue;
             }
 
@@ -369,13 +374,13 @@ public class DefaultArtifactResolver
                     groups.add( group );
                     groupIt = Collections.<ResolutionGroup> emptyList().iterator();
                 }
-                group.items.add( new ResolutionItem( artifact, resolved, result, local, repo ) );
+                group.items.add( new ResolutionItem( trace, artifact, resolved, result, local, repo ) );
             }
         }
 
         for ( ResolutionGroup group : groups )
         {
-            List<ArtifactDownload> downloads = new ArrayList<ArtifactDownload>();
+            List<ArtifactDownloadEx> downloads = new ArrayList<ArtifactDownloadEx>();
             for ( ResolutionItem item : group.items )
             {
                 Artifact artifact = item.artifact;
@@ -386,7 +391,7 @@ public class DefaultArtifactResolver
                     continue;
                 }
 
-                ArtifactDownload download = new ArtifactDownload();
+                ArtifactDownloadEx download = new ArtifactDownloadEx( item.trace );
                 download.setArtifact( artifact );
                 download.setRequestContext( item.request.getRequestContext() );
                 if ( item.local.getFile() != null )
@@ -433,9 +438,9 @@ public class DefaultArtifactResolver
                 continue;
             }
 
-            for ( ArtifactDownload download : downloads )
+            for ( ArtifactDownloadEx download : downloads )
             {
-                artifactDownloading( session, download.getArtifact(), group.repository );
+                artifactDownloading( session, download.trace, download.getArtifact(), group.repository );
             }
 
             try
@@ -461,7 +466,7 @@ public class DefaultArtifactResolver
 
             for ( ResolutionItem item : group.items )
             {
-                ArtifactDownload download = item.download;
+                ArtifactDownloadEx download = item.download;
                 if ( download == null )
                 {
                     continue;
@@ -491,31 +496,35 @@ public class DefaultArtifactResolver
                     lrm.add( session,
                              new LocalArtifactRegistration( artifact, group.repository, download.getSupportedContexts() ) );
 
-                    artifactDownloaded( session, artifact, group.repository, null );
+                    artifactDownloaded( session, download.trace, artifact, group.repository, null );
 
-                    artifactResolved( session, artifact, group.repository, null );
+                    artifactResolved( session, download.trace, artifact, group.repository, null );
                 }
                 else
                 {
                     item.result.addException( download.getException() );
 
-                    artifactDownloaded( session, download.getArtifact(), group.repository, download.getException() );
+                    artifactDownloaded( session, download.trace, download.getArtifact(), group.repository,
+                                        download.getException() );
                 }
             }
         }
 
         for ( ArtifactResult result : results )
         {
+            ArtifactRequest request = result.getRequest();
+
             Artifact artifact = result.getArtifact();
             if ( artifact == null || artifact.getFile() == null )
             {
                 failures = true;
                 if ( result.getExceptions().isEmpty() )
                 {
-                    Exception exception = new ArtifactNotFoundException( result.getRequest().getArtifact(), null );
+                    Exception exception = new ArtifactNotFoundException( request.getArtifact(), null );
                     result.addException( exception );
                 }
-                artifactResolved( session, result.getRequest().getArtifact(), null, result.getExceptions() );
+                RequestTrace trace = DefaultRequestTrace.newChild( request.getTrace(), request );
+                artifactResolved( session, trace, request.getArtifact(), null, result.getExceptions() );
             }
         }
 
@@ -556,18 +565,18 @@ public class DefaultArtifactResolver
         return file;
     }
 
-    private void artifactResolving( RepositorySystemSession session, Artifact artifact )
+    private void artifactResolving( RepositorySystemSession session, RequestTrace trace, Artifact artifact )
     {
-        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_RESOLVING, session );
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_RESOLVING, session, trace );
         event.setArtifact( artifact );
 
         repositoryEventDispatcher.dispatch( event );
     }
 
-    private void artifactResolved( RepositorySystemSession session, Artifact artifact, ArtifactRepository repository,
-                                   List<Exception> exceptions )
+    private void artifactResolved( RepositorySystemSession session, RequestTrace trace, Artifact artifact,
+                                   ArtifactRepository repository, List<Exception> exceptions )
     {
-        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_RESOLVED, session );
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_RESOLVED, session, trace );
         event.setArtifact( artifact );
         event.setRepository( repository );
         event.setExceptions( exceptions );
@@ -579,19 +588,20 @@ public class DefaultArtifactResolver
         repositoryEventDispatcher.dispatch( event );
     }
 
-    private void artifactDownloading( RepositorySystemSession session, Artifact artifact, RemoteRepository repository )
+    private void artifactDownloading( RepositorySystemSession session, RequestTrace trace, Artifact artifact,
+                                      RemoteRepository repository )
     {
-        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DOWNLOADING, session );
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DOWNLOADING, session, trace );
         event.setArtifact( artifact );
         event.setRepository( repository );
 
         repositoryEventDispatcher.dispatch( event );
     }
 
-    private void artifactDownloaded( RepositorySystemSession session, Artifact artifact, RemoteRepository repository,
-                                     Exception exception )
+    private void artifactDownloaded( RepositorySystemSession session, RequestTrace trace, Artifact artifact,
+                                     RemoteRepository repository, Exception exception )
     {
-        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DOWNLOADED, session );
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DOWNLOADED, session, trace );
         event.setArtifact( artifact );
         event.setRepository( repository );
         event.setException( exception );
@@ -627,6 +637,8 @@ public class DefaultArtifactResolver
     static class ResolutionItem
     {
 
+        final RequestTrace trace;
+
         final ArtifactRequest request;
 
         final ArtifactResult result;
@@ -639,19 +651,33 @@ public class DefaultArtifactResolver
 
         final AtomicBoolean resolved;
 
-        ArtifactDownload download;
+        ArtifactDownloadEx download;
 
         UpdateCheck<Artifact, ArtifactTransferException> updateCheck;
 
-        ResolutionItem( Artifact artifact, AtomicBoolean resolved, ArtifactResult result, LocalArtifactResult local,
-                        RemoteRepository repository )
+        ResolutionItem( RequestTrace trace, Artifact artifact, AtomicBoolean resolved, ArtifactResult result,
+                        LocalArtifactResult local, RemoteRepository repository )
         {
+            this.trace = trace;
             this.artifact = artifact;
             this.resolved = resolved;
             this.result = result;
             this.request = result.getRequest();
             this.local = local;
             this.repository = repository;
+        }
+
+    }
+
+    static class ArtifactDownloadEx
+        extends ArtifactDownload
+    {
+
+        final RequestTrace trace;
+
+        public ArtifactDownloadEx( RequestTrace trace )
+        {
+            this.trace = trace;
         }
 
     }

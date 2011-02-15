@@ -23,6 +23,7 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.SyncContext;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
@@ -71,6 +72,7 @@ import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.util.DefaultRequestTrace;
 import org.sonatype.aether.util.graph.FilteringDependencyVisitor;
 import org.sonatype.aether.util.graph.TreeDependencyVisitor;
 
@@ -348,6 +350,8 @@ public class DefaultRepositorySystem
     {
         validateSession( session );
 
+        RequestTrace trace = DefaultRequestTrace.newChild( request.getTrace(), request );
+
         DependencyResult result = new DependencyResult( request );
 
         DependencyCollectionException dce = null;
@@ -362,6 +366,7 @@ public class DefaultRepositorySystem
             CollectResult collectResult;
             try
             {
+                request.getCollectRequest().setTrace( trace );
                 collectResult = dependencyCollector.collectDependencies( session, request.getCollectRequest() );
             }
             catch ( DependencyCollectionException e )
@@ -377,7 +382,7 @@ public class DefaultRepositorySystem
             throw new IllegalArgumentException( "dependency node or collect request missing" );
         }
 
-        ArtifactRequestBuilder builder = new ArtifactRequestBuilder();
+        ArtifactRequestBuilder builder = new ArtifactRequestBuilder( trace );
         DependencyFilter filter = request.getFilter();
         DependencyVisitor visitor = ( filter != null ) ? new FilteringDependencyVisitor( builder, filter ) : builder;
         visitor = new TreeDependencyVisitor( visitor );
@@ -415,7 +420,10 @@ public class DefaultRepositorySystem
         throws ArtifactResolutionException
     {
         validateSession( session );
-        ArtifactRequestBuilder builder = new ArtifactRequestBuilder();
+
+        RequestTrace trace = DefaultRequestTrace.newChild( null, node );
+
+        ArtifactRequestBuilder builder = new ArtifactRequestBuilder( trace );
         DependencyVisitor visitor = ( filter != null ) ? new FilteringDependencyVisitor( builder, filter ) : builder;
         visitor = new TreeDependencyVisitor( visitor );
         node.accept( visitor );

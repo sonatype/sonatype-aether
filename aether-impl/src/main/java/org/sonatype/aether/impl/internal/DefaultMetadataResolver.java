@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.ConfigurationProperties;
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.SyncContext;
 import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.RepositorySystemSession;
@@ -42,6 +43,7 @@ import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.transfer.MetadataNotFoundException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.DefaultRequestTrace;
 import org.sonatype.aether.util.concurrency.RunnableErrorForwarder;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 import org.sonatype.aether.repository.ArtifactRepository;
@@ -191,6 +193,8 @@ public class DefaultMetadataResolver
 
         for ( MetadataRequest request : requests )
         {
+            RequestTrace trace = DefaultRequestTrace.newChild( request.getTrace(), request );
+
             MetadataResult result = new MetadataResult( request );
             results.add( result );
 
@@ -201,7 +205,7 @@ public class DefaultMetadataResolver
             {
                 LocalRepository localRepo = session.getLocalRepositoryManager().getRepository();
 
-                metadataResolving( session, metadata, localRepo );
+                metadataResolving( session, trace, metadata, localRepo );
 
                 File localFile = getLocalFile( session, metadata );
 
@@ -215,7 +219,7 @@ public class DefaultMetadataResolver
                     result.setException( new MetadataNotFoundException( metadata, localRepo ) );
                 }
 
-                metadataResolved( session, metadata, localRepo, result.getException() );
+                metadataResolved( session, trace, metadata, localRepo, result.getException() );
                 continue;
             }
 
@@ -226,7 +230,7 @@ public class DefaultMetadataResolver
                 continue;
             }
 
-            metadataResolving( session, metadata, repository );
+            metadataResolving( session, trace, metadata, repository );
             LocalRepositoryManager lrm = session.getLocalRepositoryManager();
             LocalMetadataRequest localRequest =
                 new LocalMetadataRequest( metadata, repository, request.getRequestContext() );
@@ -249,7 +253,7 @@ public class DefaultMetadataResolver
                     result.setException( new MetadataNotFoundException( metadata, repository, msg ) );
                 }
 
-                metadataResolved( session, metadata, repository, result.getException() );
+                metadataResolved( session, trace, metadata, repository, result.getException() );
                 continue;
             }
 
@@ -316,7 +320,8 @@ public class DefaultMetadataResolver
                                                                                             request.getRepository(),
                                                                                             request.getRequestContext() ) );
 
-                ResolveTask task = new ResolveTask( session, result, installFile, checks, policy.getChecksumPolicy() );
+                ResolveTask task =
+                    new ResolveTask( session, trace, result, installFile, checks, policy.getChecksumPolicy() );
                 tasks.add( task );
             }
             else
@@ -327,7 +332,7 @@ public class DefaultMetadataResolver
                     metadata = metadata.setFile( metadataFile );
                     result.setMetadata( metadata );
                 }
-                metadataResolved( session, metadata, repository, result.getException() );
+                metadataResolved( session, trace, metadata, repository, result.getException() );
             }
         }
 
@@ -371,7 +376,8 @@ public class DefaultMetadataResolver
                 {
                     task.result.setUpdated( true );
                 }
-                metadataResolved( session, metadata, task.request.getRepository(), task.result.getException() );
+                metadataResolved( session, task.trace, metadata, task.request.getRepository(),
+                                  task.result.getException() );
             }
         }
 
@@ -429,19 +435,20 @@ public class DefaultMetadataResolver
         return remoteRepositoryManager.getPolicy( session, repository, releases, snapshots );
     }
 
-    private void metadataResolving( RepositorySystemSession session, Metadata metadata, ArtifactRepository repository )
+    private void metadataResolving( RepositorySystemSession session, RequestTrace trace, Metadata metadata,
+                                    ArtifactRepository repository )
     {
-        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVING, session );
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVING, session, trace );
         event.setMetadata( metadata );
         event.setRepository( repository );
 
         repositoryEventDispatcher.dispatch( event );
     }
 
-    private void metadataResolved( RepositorySystemSession session, Metadata metadata, ArtifactRepository repository,
-                                   Exception exception )
+    private void metadataResolved( RepositorySystemSession session, RequestTrace trace, Metadata metadata,
+                                   ArtifactRepository repository, Exception exception )
     {
-        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVED, session );
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVED, session, trace );
         event.setMetadata( metadata );
         event.setRepository( repository );
         event.setException( exception );
@@ -450,19 +457,20 @@ public class DefaultMetadataResolver
         repositoryEventDispatcher.dispatch( event );
     }
 
-    private void metadataDownloading( RepositorySystemSession session, Metadata metadata, ArtifactRepository repository )
+    private void metadataDownloading( RepositorySystemSession session, RequestTrace trace, Metadata metadata,
+                                      ArtifactRepository repository )
     {
-        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADING, session );
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADING, session, trace );
         event.setMetadata( metadata );
         event.setRepository( repository );
 
         repositoryEventDispatcher.dispatch( event );
     }
 
-    private void metadataDownloaded( RepositorySystemSession session, Metadata metadata, ArtifactRepository repository,
-                                     File file, Exception exception )
+    private void metadataDownloaded( RepositorySystemSession session, RequestTrace trace, Metadata metadata,
+                                     ArtifactRepository repository, File file, Exception exception )
     {
-        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADED, session );
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADED, session, trace );
         event.setMetadata( metadata );
         event.setRepository( repository );
         event.setException( exception );
@@ -503,6 +511,8 @@ public class DefaultMetadataResolver
 
         final RepositorySystemSession session;
 
+        final RequestTrace trace;
+
         final MetadataResult result;
 
         final MetadataRequest request;
@@ -515,10 +525,12 @@ public class DefaultMetadataResolver
 
         volatile MetadataTransferException exception;
 
-        public ResolveTask( RepositorySystemSession session, MetadataResult result, File metadataFile,
-                            List<UpdateCheck<Metadata, MetadataTransferException>> checks, String policy )
+        public ResolveTask( RepositorySystemSession session, RequestTrace trace, MetadataResult result,
+                            File metadataFile, List<UpdateCheck<Metadata, MetadataTransferException>> checks,
+                            String policy )
         {
             this.session = session;
+            this.trace = trace;
             this.result = result;
             this.request = result.getRequest();
             this.metadataFile = metadataFile;
@@ -531,7 +543,7 @@ public class DefaultMetadataResolver
             Metadata metadata = request.getMetadata();
             RemoteRepository requestRepository = request.getRepository();
 
-            metadataDownloading( session, metadata, requestRepository );
+            metadataDownloading( session, trace, metadata, requestRepository );
 
             try
             {
@@ -585,7 +597,7 @@ public class DefaultMetadataResolver
                 updateCheckManager.touchMetadata( session, check.setException( exception ) );
             }
 
-            metadataDownloaded( session, metadata, requestRepository, metadataFile, exception );
+            metadataDownloaded( session, trace, metadata, requestRepository, metadataFile, exception );
         }
 
     }

@@ -48,7 +48,7 @@ public class DefaultRepositoryEventDispatcherTest
 
         for ( RepositoryEvent.EventType type : RepositoryEvent.EventType.values() )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( type, session );
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( type, session, null );
 
             handler.methodName = null;
 

@@ -21,6 +21,7 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.SyncContext;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.Installer;
@@ -41,6 +42,7 @@ import org.sonatype.aether.spi.locator.Service;
 import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
+import org.sonatype.aether.util.DefaultRequestTrace;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 
 /**
@@ -170,6 +172,8 @@ public class DefaultInstaller
     {
         InstallResult result = new InstallResult( request );
 
+        RequestTrace trace = DefaultRequestTrace.newChild( request.getTrace(), request );
+
         List<MetadataGenerator> generators = getMetadataGenerators( session, request );
 
         List<Artifact> artifacts = new ArrayList<Artifact>( request.getArtifacts() );
@@ -182,7 +186,7 @@ public class DefaultInstaller
 
         for ( Metadata metadata : metadatas )
         {
-            install( session, metadata );
+            install( session, trace, metadata );
             processedMetadata.put( metadata, null );
             result.addMetadata( metadata );
         }
@@ -198,7 +202,7 @@ public class DefaultInstaller
 
             artifacts.set( i, artifact );
 
-            install( session, artifact );
+            install( session, trace, artifact );
             result.addArtifact( artifact );
         }
 
@@ -208,7 +212,7 @@ public class DefaultInstaller
 
         for ( Metadata metadata : metadatas )
         {
-            install( session, metadata );
+            install( session, trace, metadata );
             processedMetadata.put( metadata, null );
             result.addMetadata( metadata );
         }
@@ -217,7 +221,7 @@ public class DefaultInstaller
         {
             if ( !processedMetadata.containsKey( metadata ) )
             {
-                install( session, metadata );
+                install( session, trace, metadata );
                 result.addMetadata( metadata );
             }
         }
@@ -243,7 +247,7 @@ public class DefaultInstaller
         return generators;
     }
 
-    private void install( RepositorySystemSession session, Artifact artifact )
+    private void install( RepositorySystemSession session, RequestTrace trace, Artifact artifact )
         throws InstallationException
     {
         LocalRepositoryManager lrm = session.getLocalRepositoryManager();
@@ -252,7 +256,7 @@ public class DefaultInstaller
 
         File dstFile = new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalArtifact( artifact ) );
 
-        artifactInstalling( session, artifact, dstFile );
+        artifactInstalling( session, trace, artifact, dstFile );
 
         Exception exception = null;
         try
@@ -280,18 +284,18 @@ public class DefaultInstaller
         }
         finally
         {
-            artifactInstalled( session, artifact, dstFile, exception );
+            artifactInstalled( session, trace, artifact, dstFile, exception );
         }
     }
 
-    private void install( RepositorySystemSession session, Metadata metadata )
+    private void install( RepositorySystemSession session, RequestTrace trace, Metadata metadata )
         throws InstallationException
     {
         LocalRepositoryManager lrm = session.getLocalRepositoryManager();
 
         File dstFile = new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalMetadata( metadata ) );
 
-        metadataInstalling( session, metadata, dstFile );
+        metadataInstalling( session, trace, metadata, dstFile );
 
         Exception exception = null;
         try
@@ -314,13 +318,14 @@ public class DefaultInstaller
         }
         finally
         {
-            metadataInstalled( session, metadata, dstFile, exception );
+            metadataInstalled( session, trace, metadata, dstFile, exception );
         }
     }
 
-    private void artifactInstalling( RepositorySystemSession session, Artifact artifact, File dstFile )
+    private void artifactInstalling( RepositorySystemSession session, RequestTrace trace, Artifact artifact,
+                                     File dstFile )
     {
-        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_INSTALLING, session );
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_INSTALLING, session, trace );
         event.setArtifact( artifact );
         event.setRepository( session.getLocalRepositoryManager().getRepository() );
         event.setFile( dstFile );
@@ -328,10 +333,10 @@ public class DefaultInstaller
         repositoryEventDispatcher.dispatch( event );
     }
 
-    private void artifactInstalled( RepositorySystemSession session, Artifact artifact, File dstFile,
-                                    Exception exception )
+    private void artifactInstalled( RepositorySystemSession session, RequestTrace trace, Artifact artifact,
+                                    File dstFile, Exception exception )
     {
-        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_INSTALLED, session );
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_INSTALLED, session, trace );
         event.setArtifact( artifact );
         event.setRepository( session.getLocalRepositoryManager().getRepository() );
         event.setFile( dstFile );
@@ -340,9 +345,10 @@ public class DefaultInstaller
         repositoryEventDispatcher.dispatch( event );
     }
 
-    private void metadataInstalling( RepositorySystemSession session, Metadata metadata, File dstFile )
+    private void metadataInstalling( RepositorySystemSession session, RequestTrace trace, Metadata metadata,
+                                     File dstFile )
     {
-        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_INSTALLING, session );
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_INSTALLING, session, trace );
         event.setMetadata( metadata );
         event.setRepository( session.getLocalRepositoryManager().getRepository() );
         event.setFile( dstFile );
@@ -350,10 +356,10 @@ public class DefaultInstaller
         repositoryEventDispatcher.dispatch( event );
     }
 
-    private void metadataInstalled( RepositorySystemSession session, Metadata metadata, File dstFile,
-                                    Exception exception )
+    private void metadataInstalled( RepositorySystemSession session, RequestTrace trace, Metadata metadata,
+                                    File dstFile, Exception exception )
     {
-        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_INSTALLED, session );
+        DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_INSTALLED, session, trace );
         event.setMetadata( metadata );
         event.setRepository( session.getLocalRepositoryManager().getRepository() );
         event.setFile( dstFile );

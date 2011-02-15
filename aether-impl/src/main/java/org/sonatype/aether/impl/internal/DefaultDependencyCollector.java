@@ -23,6 +23,7 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.collection.CollectResult;
@@ -50,6 +51,7 @@ import org.sonatype.aether.spi.locator.ServiceLocator;
 import org.sonatype.aether.spi.log.Logger;
 import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
+import org.sonatype.aether.util.DefaultRequestTrace;
 import org.sonatype.aether.util.artifact.ArtifactProperties;
 import org.sonatype.aether.version.Version;
 
@@ -138,6 +140,8 @@ public class DefaultDependencyCollector
     {
         session = optimizeSession( session );
 
+        RequestTrace trace = DefaultRequestTrace.newChild( request.getTrace(), request );
+
         CollectResult result = new CollectResult( request );
 
         DependencySelector depSelector = session.getDependencySelector();
@@ -157,6 +161,7 @@ public class DefaultDependencyCollector
             {
                 VersionRangeRequest rangeRequest =
                     new VersionRangeRequest( root.getArtifact(), request.getRepositories(), request.getRequestContext() );
+                rangeRequest.setTrace( trace );
                 rangeResult = versionRangeResolver.resolveVersionRange( session, rangeRequest );
 
                 if ( rangeResult.getVersions().isEmpty() )
@@ -181,6 +186,7 @@ public class DefaultDependencyCollector
                 descriptorRequest.setArtifact( root.getArtifact() );
                 descriptorRequest.setRepositories( request.getRepositories() );
                 descriptorRequest.setRequestContext( request.getRequestContext() );
+                descriptorRequest.setTrace( trace );
                 if ( isLackingDescriptor( root.getArtifact() ) )
                 {
                     descriptorResult = new ArtifactDescriptorResult( descriptorRequest );
@@ -234,8 +240,9 @@ public class DefaultDependencyCollector
             DefaultDependencyCollectionContext context =
                 new DefaultDependencyCollectionContext( session, root, managedDependencies );
 
-            process( session, result, edges, dependencies, repositories, depSelector.deriveChildSelector( context ),
-                     depManager.deriveChildManager( context ), depTraverser.deriveChildTraverser( context ), pool );
+            process( session, trace, result, edges, dependencies, repositories,
+                     depSelector.deriveChildSelector( context ), depManager.deriveChildManager( context ),
+                     depTraverser.deriveChildTraverser( context ), pool );
         }
 
         DependencyGraphTransformer transformer = session.getDependencyGraphTransformer();
@@ -301,10 +308,10 @@ public class DefaultDependencyCollector
         return a.getGroupId() + ':' + a.getArtifactId() + ':' + a.getClassifier() + ':' + a.getExtension();
     }
 
-    private void process( RepositorySystemSession session, CollectResult result, LinkedList<GraphEdge> edges,
-                          List<Dependency> dependencies, List<RemoteRepository> repositories,
-                          DependencySelector depSelector, DependencyManager depManager,
-                          DependencyTraverser depTraverser, DataPool pool )
+    private void process( RepositorySystemSession session, RequestTrace trace, CollectResult result,
+                          LinkedList<GraphEdge> edges, List<Dependency> dependencies,
+                          List<RemoteRepository> repositories, DependencySelector depSelector,
+                          DependencyManager depManager, DependencyTraverser depTraverser, DataPool pool )
         throws DependencyCollectionException
     {
         nextDependency: for ( Dependency dependency : dependencies )
@@ -360,6 +367,7 @@ public class DefaultDependencyCollector
                     rangeRequest.setArtifact( dependency.getArtifact() );
                     rangeRequest.setRepositories( repositories );
                     rangeRequest.setRequestContext( result.getRequest().getRequestContext() );
+                    rangeRequest.setTrace( trace );
 
                     Object key = pool.toKey( rangeRequest );
                     rangeResult = pool.getConstraint( key, rangeRequest );
@@ -409,6 +417,7 @@ public class DefaultDependencyCollector
                         descriptorRequest.setArtifact( d.getArtifact() );
                         descriptorRequest.setRepositories( repos );
                         descriptorRequest.setRequestContext( result.getRequest().getRequestContext() );
+                        descriptorRequest.setTrace( trace );
 
                         if ( noDescriptor )
                         {
@@ -516,8 +525,8 @@ public class DefaultDependencyCollector
                     {
                         edges.addFirst( edge );
 
-                        process( session, result, edges, descriptorResult.getDependencies(), childRepos, childSelector,
-                                 childManager, childTraverser, pool );
+                        process( session, trace, result, edges, descriptorResult.getDependencies(), childRepos,
+                                 childSelector, childManager, childTraverser, pool );
 
                         edges.removeFirst();
                     }

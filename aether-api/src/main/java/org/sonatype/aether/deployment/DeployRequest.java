@@ -17,6 +17,7 @@ import java.util.Collection;
 
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -35,6 +36,8 @@ public class DeployRequest
     private Collection<Metadata> metadata = new ArrayList<Metadata>();
 
     private RemoteRepository repository;
+
+    private RequestTrace trace;
 
     /**
      * Gets the artifact to deploy.
@@ -143,6 +146,28 @@ public class DeployRequest
     public DeployRequest setRepository( RemoteRepository repository )
     {
         this.repository = repository;
+        return this;
+    }
+
+    /**
+     * Gets the trace information that describes the higher level request/operation in which this request is issued.
+     * 
+     * @return The trace information about the higher level operation or {@code null} if none.
+     */
+    public RequestTrace getTrace()
+    {
+        return trace;
+    }
+
+    /**
+     * Sets the trace information that describes the higher level request/operation in which this request is issued.
+     * 
+     * @param trace The trace information about the higher level operation, may be {@code null}.
+     * @return This request for chaining, never {@code null}.
+     */
+    public DeployRequest setTrace( RequestTrace trace )
+    {
+        this.trace = trace;
         return this;
     }
 

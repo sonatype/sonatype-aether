@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.sonatype.aether.RepositoryEvent;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.repository.ArtifactRepository;
@@ -45,10 +46,32 @@ public class DefaultRepositoryEvent
 
     private List<Exception> exceptions = Collections.emptyList();
 
+    private RequestTrace trace;
+
+    /**
+     * Creates a new event with the specified properties.
+     * 
+     * @param type The type of the event, must not be {@code null}.
+     * @param session The repository system session, must not be {@code null}.
+     */
+    @Deprecated
     public DefaultRepositoryEvent( EventType type, RepositorySystemSession session )
+    {
+        this( type, session, null );
+    }
+
+    /**
+     * Creates a new event with the specified properties.
+     * 
+     * @param type The type of the event, must not be {@code null}.
+     * @param session The repository system session, must not be {@code null}.
+     * @param trace The trace information, may be {@code null}.
+     */
+    public DefaultRepositoryEvent( EventType type, RepositorySystemSession session, RequestTrace trace )
     {
         setType( type );
         setSession( session );
+        setTrace( trace );
     }
 
     public EventType getType()
@@ -200,6 +223,23 @@ public class DefaultRepositoryEvent
         {
             this.exceptions = Collections.emptyList();
         }
+        return this;
+    }
+
+    public RequestTrace getTrace()
+    {
+        return trace;
+    }
+
+    /**
+     * Sets the trace information about the request during which the event occurred.
+     * 
+     * @param trace The trace information, may be {@code null}.
+     * @return This event for chaining, never {@code null}.
+     */
+    public DefaultRepositoryEvent setTrace( RequestTrace trace )
+    {
+        this.trace = trace;
         return this;
     }
 

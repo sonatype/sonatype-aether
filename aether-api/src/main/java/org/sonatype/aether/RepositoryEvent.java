@@ -115,4 +115,11 @@ public interface RepositoryEvent
      */
     List<Exception> getExceptions();
 
+    /**
+     * Gets the trace information about the request during which the event occurred.
+     * 
+     * @return The trace information or {@code null} if none.
+     */
+    RequestTrace getTrace();
+
 }

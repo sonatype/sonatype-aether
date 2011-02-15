@@ -25,6 +25,7 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositoryEvent.EventType;
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.SyncContext;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.deployment.DeployRequest;
@@ -57,6 +58,7 @@ import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.MetadataNotFoundException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.DefaultRequestTrace;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
 
 /**
@@ -223,6 +225,8 @@ public class DefaultDeployer
     {
         DeployResult result = new DeployResult( request );
 
+        RequestTrace trace = DefaultRequestTrace.newChild( request.getTrace(), request );
+
         RemoteRepository repository = request.getRepository();
 
         RepositoryConnector connector;
@@ -243,7 +247,7 @@ public class DefaultDeployer
             List<MetadataUpload> metadataUploads = new ArrayList<MetadataUpload>();
             IdentityHashMap<Metadata, Object> processedMetadata = new IdentityHashMap<Metadata, Object>();
 
-            EventCatapult catapult = new EventCatapult( session, repository, repositoryEventDispatcher );
+            EventCatapult catapult = new EventCatapult( session, trace, repository, repositoryEventDispatcher );
 
             List<Artifact> artifacts = new ArrayList<Artifact>( request.getArtifacts() );
 
@@ -355,12 +359,13 @@ public class DefaultDeployer
             if ( !( (MergeableMetadata) metadata ).isMerged() )
             {
                 {
-                    DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVING, session );
+                    DefaultRepositoryEvent event =
+                        new DefaultRepositoryEvent( EventType.METADATA_RESOLVING, session, catapult.getTrace() );
                     event.setMetadata( metadata );
                     event.setRepository( repository );
                     repositoryEventDispatcher.dispatch( event );
 
-                    event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADING, session );
+                    event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADING, session, catapult.getTrace() );
                     event.setMetadata( metadata );
                     event.setRepository( repository );
                     repositoryEventDispatcher.dispatch( event );
@@ -381,14 +386,15 @@ public class DefaultDeployer
                 }
 
                 {
-                    DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADED, session );
+                    DefaultRepositoryEvent event =
+                        new DefaultRepositoryEvent( EventType.METADATA_DOWNLOADED, session, catapult.getTrace() );
                     event.setMetadata( metadata );
                     event.setRepository( repository );
                     event.setException( error );
                     event.setFile( dstFile );
                     repositoryEventDispatcher.dispatch( event );
 
-                    event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVED, session );
+                    event = new DefaultRepositoryEvent( EventType.METADATA_RESOLVED, session, catapult.getTrace() );
                     event.setMetadata( metadata );
                     event.setRepository( repository );
                     event.setException( error );
@@ -451,21 +457,29 @@ public class DefaultDeployer
 
         private final RepositorySystemSession session;
 
+        private final RequestTrace trace;
+
         private final RemoteRepository repository;
 
         private final RepositoryEventDispatcher dispatcher;
 
-        public EventCatapult( RepositorySystemSession session, RemoteRepository repository,
+        public EventCatapult( RepositorySystemSession session, RequestTrace trace, RemoteRepository repository,
                               RepositoryEventDispatcher dispatcher )
         {
             this.session = session;
+            this.trace = trace;
             this.repository = repository;
             this.dispatcher = dispatcher;
         }
 
+        public RequestTrace getTrace()
+        {
+            return trace;
+        }
+
         public void artifactDeploying( Artifact artifact, File file )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DEPLOYING, session );
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DEPLOYING, session, trace );
             event.setArtifact( artifact );
             event.setRepository( repository );
             event.setFile( file );
@@ -475,7 +489,7 @@ public class DefaultDeployer
 
         public void artifactDeployed( Artifact artifact, File file, ArtifactTransferException exception )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DEPLOYED, session );
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.ARTIFACT_DEPLOYED, session, trace );
             event.setArtifact( artifact );
             event.setRepository( repository );
             event.setFile( file );
@@ -486,7 +500,7 @@ public class DefaultDeployer
 
         public void metadataDeploying( Metadata metadata, File file )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DEPLOYING, session );
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DEPLOYING, session, trace );
             event.setMetadata( metadata );
             event.setRepository( repository );
             event.setFile( file );
@@ -496,7 +510,7 @@ public class DefaultDeployer
 
         public void metadataDeployed( Metadata metadata, File file, Exception exception )
         {
-            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DEPLOYED, session );
+            DefaultRepositoryEvent event = new DefaultRepositoryEvent( EventType.METADATA_DEPLOYED, session, trace );
             event.setMetadata( metadata );
             event.setRepository( repository );
             event.setFile( file );
