@@ -380,7 +380,7 @@ public class DefaultArtifactResolver
 
         for ( ResolutionGroup group : groups )
         {
-            List<ArtifactDownloadEx> downloads = new ArrayList<ArtifactDownloadEx>();
+            List<ArtifactDownload> downloads = new ArrayList<ArtifactDownload>();
             for ( ResolutionItem item : group.items )
             {
                 Artifact artifact = item.artifact;
@@ -391,9 +391,10 @@ public class DefaultArtifactResolver
                     continue;
                 }
 
-                ArtifactDownloadEx download = new ArtifactDownloadEx( item.trace );
+                ArtifactDownload download = new ArtifactDownload();
                 download.setArtifact( artifact );
                 download.setRequestContext( item.request.getRequestContext() );
+                download.setTrace( item.trace );
                 if ( item.local.getFile() != null )
                 {
                     download.setFile( item.local.getFile() );
@@ -438,9 +439,9 @@ public class DefaultArtifactResolver
                 continue;
             }
 
-            for ( ArtifactDownloadEx download : downloads )
+            for ( ArtifactDownload download : downloads )
             {
-                artifactDownloading( session, download.trace, download.getArtifact(), group.repository );
+                artifactDownloading( session, download.getTrace(), download.getArtifact(), group.repository );
             }
 
             try
@@ -466,7 +467,7 @@ public class DefaultArtifactResolver
 
             for ( ResolutionItem item : group.items )
             {
-                ArtifactDownloadEx download = item.download;
+                ArtifactDownload download = item.download;
                 if ( download == null )
                 {
                     continue;
@@ -496,15 +497,15 @@ public class DefaultArtifactResolver
                     lrm.add( session,
                              new LocalArtifactRegistration( artifact, group.repository, download.getSupportedContexts() ) );
 
-                    artifactDownloaded( session, download.trace, artifact, group.repository, null );
+                    artifactDownloaded( session, download.getTrace(), artifact, group.repository, null );
 
-                    artifactResolved( session, download.trace, artifact, group.repository, null );
+                    artifactResolved( session, download.getTrace(), artifact, group.repository, null );
                 }
                 else
                 {
                     item.result.addException( download.getException() );
 
-                    artifactDownloaded( session, download.trace, download.getArtifact(), group.repository,
+                    artifactDownloaded( session, download.getTrace(), download.getArtifact(), group.repository,
                                         download.getException() );
                 }
             }
@@ -651,7 +652,7 @@ public class DefaultArtifactResolver
 
         final AtomicBoolean resolved;
 
-        ArtifactDownloadEx download;
+        ArtifactDownload download;
 
         UpdateCheck<Artifact, ArtifactTransferException> updateCheck;
 
@@ -665,19 +666,6 @@ public class DefaultArtifactResolver
             this.request = result.getRequest();
             this.local = local;
             this.repository = repository;
-        }
-
-    }
-
-    static class ArtifactDownloadEx
-        extends ArtifactDownload
-    {
-
-        final RequestTrace trace;
-
-        public ArtifactDownloadEx( RequestTrace trace )
-        {
-            this.trace = trace;
         }
 
     }

@@ -429,7 +429,8 @@ class AsyncRepositoryConnector
         {
             download.setState( Transfer.State.ACTIVE );
             final String uri = validateUri( path );
-            final TransferResource transferResource = new DefaultTransferResource( repository.getUrl(), path, file );
+            final TransferResource transferResource =
+                new DefaultTransferResource( repository.getUrl(), path, file, download.getTrace() );
             final boolean ignoreChecksum = RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy );
             CompletionHandler completionHandler = null;
 
@@ -941,7 +942,7 @@ class AsyncRepositoryConnector
         {
             upload.setState( Transfer.State.ACTIVE );
             final DefaultTransferResource transferResource =
-                new DefaultTransferResource( repository.getUrl(), path, file );
+                new DefaultTransferResource( repository.getUrl(), path, file, upload.getTrace() );
 
             try
             {

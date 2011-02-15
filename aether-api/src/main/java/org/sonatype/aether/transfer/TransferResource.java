@@ -14,6 +14,8 @@ package org.sonatype.aether.transfer;
 
 import java.io.File;
 
+import org.sonatype.aether.RequestTrace;
+
 /**
  * Describes a resource being uploaded or downloaded by the repository system.
  * 
@@ -58,5 +60,13 @@ public interface TransferResource
      * @return The timestamp when the transfer of this resource was started.
      */
     long getTransferStartTime();
+
+    /**
+     * Gets the trace information that describes the higher level request/operation during which this resource is
+     * transferred.
+     * 
+     * @return The trace information about the higher level operation or {@code null} if none.
+     */
+    RequestTrace getTrace();
 
 }

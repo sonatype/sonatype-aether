@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.transfer.ArtifactTransferException;
@@ -235,6 +236,13 @@ public class ArtifactDownload
     public ArtifactDownload setException( ArtifactTransferException exception )
     {
         super.setException( exception );
+        return this;
+    }
+
+    @Override
+    public ArtifactDownload setTrace( RequestTrace trace )
+    {
+        super.setTrace( trace );
         return this;
     }
 

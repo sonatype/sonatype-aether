@@ -457,8 +457,8 @@ class FileRepositoryWorker
                 resourceName = new DefaultLayout().getPath( metadata );
                 break;
         }
-        return new DefaultTransferResource( PathUtils.decode( repository.getUrl() ), resourceName,
-                                                        transfer.getFile() );
+        return new DefaultTransferResource( PathUtils.decode( repository.getUrl() ), resourceName, transfer.getFile(),
+                                            transfer.getTrace() );
     }
 
     public void setLogger( Logger logger )

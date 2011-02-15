@@ -14,6 +14,7 @@ package org.sonatype.aether.spi.connector;
 
 import java.io.File;
 
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.transfer.MetadataTransferException;
 
@@ -65,6 +66,13 @@ public class MetadataUpload
     public MetadataUpload setException( MetadataTransferException exception )
     {
         super.setException( exception );
+        return this;
+    }
+
+    @Override
+    public MetadataUpload setTrace( RequestTrace trace )
+    {
+        super.setTrace( trace );
         return this;
     }
 

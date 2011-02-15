@@ -16,6 +16,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.transfer.MetadataTransferException;
@@ -153,6 +154,13 @@ public class MetadataDownload
     public MetadataDownload setException( MetadataTransferException exception )
     {
         super.setException( exception );
+        return this;
+    }
+
+    @Override
+    public MetadataDownload setTrace( RequestTrace trace )
+    {
+        super.setTrace( trace );
         return this;
     }
 

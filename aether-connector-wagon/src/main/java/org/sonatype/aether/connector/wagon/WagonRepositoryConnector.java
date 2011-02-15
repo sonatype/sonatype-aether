@@ -559,7 +559,8 @@ class WagonRepositoryConnector
             WagonTransferListenerAdapter wagonListener = null;
             if ( listener != null )
             {
-                wagonListener = new WagonTransferListenerAdapter( listener, wagonRepo.getUrl(), path, file );
+                wagonListener =
+                    new WagonTransferListenerAdapter( listener, wagonRepo.getUrl(), path, file, download.getTrace() );
             }
 
             try
@@ -799,7 +800,8 @@ class WagonRepositoryConnector
             WagonTransferListenerAdapter wagonListener = null;
             if ( listener != null )
             {
-                wagonListener = new WagonTransferListenerAdapter( listener, wagonRepo.getUrl(), path, file );
+                wagonListener =
+                    new WagonTransferListenerAdapter( listener, wagonRepo.getUrl(), path, file, upload.getTrace() );
             }
 
             try

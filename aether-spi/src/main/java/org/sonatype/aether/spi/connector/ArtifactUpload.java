@@ -14,6 +14,7 @@ package org.sonatype.aether.spi.connector;
 
 import java.io.File;
 
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 
@@ -65,6 +66,13 @@ public class ArtifactUpload
     public ArtifactUpload setException( ArtifactTransferException exception )
     {
         super.setException( exception );
+        return this;
+    }
+
+    @Override
+    public ArtifactUpload setTrace( RequestTrace trace )
+    {
+        super.setTrace( trace );
         return this;
     }
 
