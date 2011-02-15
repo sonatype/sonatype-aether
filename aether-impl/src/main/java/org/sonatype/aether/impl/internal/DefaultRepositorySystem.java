@@ -55,6 +55,9 @@ import org.sonatype.aether.resolution.ArtifactDescriptorResult;
 import org.sonatype.aether.resolution.ArtifactRequest;
 import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.resolution.ArtifactResult;
+import org.sonatype.aether.resolution.DependencyRequest;
+import org.sonatype.aether.resolution.DependencyResolutionException;
+import org.sonatype.aether.resolution.DependencyResult;
 import org.sonatype.aether.resolution.MetadataRequest;
 import org.sonatype.aether.resolution.MetadataResult;
 import org.sonatype.aether.resolution.VersionRangeRequest;
@@ -338,6 +341,73 @@ public class DefaultRepositorySystem
     {
         validateSession( session );
         return dependencyCollector.collectDependencies( session, request );
+    }
+
+    public DependencyResult resolveDependencies( RepositorySystemSession session, DependencyRequest request )
+        throws DependencyResolutionException
+    {
+        validateSession( session );
+
+        DependencyResult result = new DependencyResult( request );
+
+        DependencyCollectionException dce = null;
+        ArtifactResolutionException are = null;
+
+        if ( request.getRoot() != null )
+        {
+            result.setRoot( request.getRoot() );
+        }
+        else if ( request.getCollectRequest() != null )
+        {
+            CollectResult collectResult;
+            try
+            {
+                collectResult = dependencyCollector.collectDependencies( session, request.getCollectRequest() );
+            }
+            catch ( DependencyCollectionException e )
+            {
+                dce = e;
+                collectResult = e.getResult();
+            }
+            result.setRoot( collectResult.getRoot() );
+            result.setCollectExceptions( collectResult.getExceptions() );
+        }
+        else
+        {
+            throw new IllegalArgumentException( "dependency node or collect request missing" );
+        }
+
+        ArtifactRequestBuilder builder = new ArtifactRequestBuilder();
+        DependencyFilter filter = request.getFilter();
+        DependencyVisitor visitor = ( filter != null ) ? new FilteringDependencyVisitor( builder, filter ) : builder;
+        visitor = new TreeDependencyVisitor( visitor );
+        result.getRoot().accept( visitor );
+        List<ArtifactRequest> requests = builder.getRequests();
+
+        List<ArtifactResult> results;
+        try
+        {
+            results = artifactResolver.resolveArtifacts( session, requests );
+        }
+        catch ( ArtifactResolutionException e )
+        {
+            are = e;
+            results = e.getResults();
+        }
+        result.setArtifactResults( results );
+
+        updateNodesWithResolvedArtifacts( results );
+
+        if ( dce != null )
+        {
+            throw new DependencyResolutionException( result, dce );
+        }
+        else if ( are != null )
+        {
+            throw new DependencyResolutionException( result, are );
+        }
+
+        return result;
     }
 
     public List<ArtifactResult> resolveDependencies( RepositorySystemSession session, DependencyNode node,

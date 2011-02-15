@@ -20,7 +20,6 @@ import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
-import org.sonatype.aether.collection.DependencyCollectionException;
 import org.sonatype.aether.deployment.DeployRequest;
 import org.sonatype.aether.deployment.DeploymentException;
 import org.sonatype.aether.graph.Dependency;
@@ -30,7 +29,8 @@ import org.sonatype.aether.installation.InstallationException;
 import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.resolution.ArtifactResolutionException;
+import org.sonatype.aether.resolution.DependencyRequest;
+import org.sonatype.aether.resolution.DependencyResolutionException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
 
@@ -64,7 +64,7 @@ public class Aether
     }
 
     public AetherResult resolve( String groupId, String artifactId, String version )
-        throws DependencyCollectionException, ArtifactResolutionException
+        throws DependencyResolutionException
     {
         RepositorySystemSession session = newSession();
         Dependency dependency =
@@ -75,9 +75,10 @@ public class Aether
         collectRequest.setRoot( dependency );
         collectRequest.addRepository( central );
 
-        DependencyNode rootNode = repositorySystem.collectDependencies( session, collectRequest ).getRoot();
+        DependencyRequest dependencyRequest = new DependencyRequest();
+        dependencyRequest.setCollectRequest( collectRequest );
 
-        repositorySystem.resolveDependencies( session, rootNode, null );
+        DependencyNode rootNode = repositorySystem.resolveDependencies( session, dependencyRequest ).getRoot();
 
         StringBuilder dump = new StringBuilder();
         displayTree( rootNode, dump );

@@ -16,19 +16,19 @@ import java.io.File;
 import java.util.List;
 
 import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.collection.DependencyCollectionException;
 import org.sonatype.aether.deployment.DeploymentException;
 import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.installation.InstallationException;
-import org.sonatype.aether.resolution.ArtifactResolutionException;
+import org.sonatype.aether.resolution.DependencyResolutionException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.SubArtifact;
 
 @SuppressWarnings( "unused" )
 public class AetherDemo
 {
+
     public void resolve() 
-        throws DependencyCollectionException, ArtifactResolutionException
+        throws DependencyResolutionException
     {
         Aether aether = new Aether( "http://localhost:8081/nexus/content/groups/public", "/Users/jvanzyl/aether-repo" );
                 
@@ -65,4 +65,5 @@ public class AetherDemo
         //
         aether.deploy( artifact, pom, "http://localhost:8081/nexus/content/repositories/snapshots/" );
     }
+
 }
