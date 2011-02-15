@@ -303,7 +303,7 @@ public class DefaultArtifactResolver
                     artifact = artifact.setFile( file );
                     result.setArtifact( artifact );
                     result.setRepository( workspace.getRepository() );
-                    artifactResolved( session, trace, artifact, workspace.getRepository(), null );
+                    artifactResolved( session, trace, artifact, result.getRepository(), null );
                     continue;
                 }
             }
@@ -313,12 +313,19 @@ public class DefaultArtifactResolver
             if ( local.isAvailable()
                 || ( local.getFile() != null && versionResult.getRepository() instanceof LocalRepository ) )
             {
-                result.setRepository( lrm.getRepository() );
+                if ( local.getRepository() != null )
+                {
+                    result.setRepository( local.getRepository() );
+                }
+                else
+                {
+                    result.setRepository( lrm.getRepository() );
+                }
                 try
                 {
                     artifact = artifact.setFile( getFile( session, artifact, local.getFile() ) );
                     result.setArtifact( artifact );
-                    artifactResolved( session, trace, artifact, lrm.getRepository(), null );
+                    artifactResolved( session, trace, artifact, result.getRepository(), null );
                 }
                 catch ( ArtifactTransferException e )
                 {
