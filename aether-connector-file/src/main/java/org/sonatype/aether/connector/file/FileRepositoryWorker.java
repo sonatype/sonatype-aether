@@ -201,7 +201,7 @@ class FileRepositoryWorker
         long totalTransferred = -1;
         try
         {
-            transfer.setState( State.NEW );
+            transfer.setState( State.ACTIVE );
             resource = newResource( transfer, repository );
             DefaultTransferEvent event = newEvent( transfer );
             catapult.fireInitiated( event );
