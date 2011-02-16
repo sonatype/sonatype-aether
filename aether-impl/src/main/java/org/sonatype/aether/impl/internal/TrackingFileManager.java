@@ -17,10 +17,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.util.Map;
 import java.util.Properties;
 
@@ -51,22 +52,23 @@ class TrackingFileManager
             FileInputStream stream = null;
             try
             {
+                if ( !file.exists() )
+                {
+                    return null;
+                }
+
                 stream = new FileInputStream( file );
 
-                lock = stream.getChannel().lock( 0, Math.max( 1, file.length() ), true );
+                lock = lock( stream.getChannel(), Math.max( 1, file.length() ), true );
 
                 Properties props = new Properties();
                 props.load( stream );
 
                 return props;
             }
-            catch ( FileNotFoundException e )
-            {
-                // not unusual
-            }
             catch ( IOException e )
             {
-                logger.debug( "Failed to read resolution tracking file " + file, e );
+                logger.warn( "Failed to read resolution tracking file " + file, e );
             }
             finally
             {
@@ -87,7 +89,7 @@ class TrackingFileManager
             File directory = file.getParentFile();
             if ( !directory.exists() && !directory.mkdirs() )
             {
-                logger.debug( "Failed to create parent directories for resolution tracking file " + file );
+                logger.warn( "Failed to create parent directories for resolution tracking file " + file );
                 return props;
             }
 
@@ -96,7 +98,7 @@ class TrackingFileManager
             try
             {
                 raf = new RandomAccessFile( file, "rw" );
-                lock = raf.getChannel().lock( 0, Math.max( 1, raf.length() ), false );
+                lock = lock( raf.getChannel(), Math.max( 1, raf.length() ), false );
 
                 if ( file.canRead() )
                 {
@@ -126,8 +128,8 @@ class TrackingFileManager
                 ByteArrayOutputStream stream = new ByteArrayOutputStream( 1024 * 2 );
 
                 logger.debug( "Writing resolution tracking file " + file );
-                props.store( stream,
-                             "NOTE: This is an internal implementation file, its format can be changed without prior notice." );
+                props.store( stream, "NOTE: This is an internal implementation file"
+                    + ", its format can be changed without prior notice." );
 
                 raf.seek( 0 );
                 raf.write( stream.toByteArray() );
@@ -135,7 +137,7 @@ class TrackingFileManager
             }
             catch ( IOException e )
             {
-                logger.debug( "Failed to write resolution tracking file " + file, e );
+                logger.warn( "Failed to write resolution tracking file " + file, e );
             }
             finally
             {
@@ -179,7 +181,57 @@ class TrackingFileManager
 
     private Object getLock( File file )
     {
-        return file.getAbsolutePath().intern();
+        /*
+         * NOTE: Locks held by one JVM must not overlap and using the canonical path is our best bet, still another
+         * piece of code might have locked the same file (unlikely though) or the canonical path fails to capture file
+         * identity sufficiently as is the case with Java 1.6 and symlinks on Windows.
+         */
+        try
+        {
+            return file.getCanonicalPath().intern();
+        }
+        catch ( IOException e )
+        {
+            logger.warn( "Failed to canonicalize path " + file + ": " + e.getMessage() );
+            return file.getAbsolutePath().intern();
+        }
+    }
+
+    private FileLock lock( FileChannel channel, long size, boolean shared )
+        throws IOException
+    {
+        FileLock lock = null;
+
+        for ( int attempts = 8; attempts >= 0; attempts-- )
+        {
+            try
+            {
+                lock = channel.lock( 0, size, shared );
+                break;
+            }
+            catch ( OverlappingFileLockException e )
+            {
+                if ( attempts <= 0 )
+                {
+                    throw (IOException) new IOException().initCause( e );
+                }
+                try
+                {
+                    Thread.sleep( 50 );
+                }
+                catch ( InterruptedException e1 )
+                {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+
+        if ( lock == null )
+        {
+            throw new IOException( "Could not lock file" );
+        }
+
+        return lock;
     }
 
 }
