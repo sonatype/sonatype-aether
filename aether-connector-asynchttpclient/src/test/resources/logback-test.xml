@@ -23,7 +23,7 @@
   <logger name="org.sonatype.tests.jetty.server.behaviour" level="DEBUG"/>
   <logger name="org.sonatype.tests" level="DEBUG"/>
 
-  <root level="WARN">
+  <root level="debug">
     <appender-ref ref="CONSOLE"/>
   </root>
 </configuration>
