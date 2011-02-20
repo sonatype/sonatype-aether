@@ -162,21 +162,6 @@ public class JavaEffectiveScopeCalculatorTest
         expectScope( "runtime", root, 1, 0, 0 );
     }
 
-    @Test
-    public void testCycleD()
-        throws Exception
-    {
-        DependencyNode root = parser.parse( "cycle-d.txt" );
-        root = transform( root );
-
-        expectScope( "runtime", root, 0 );
-        expectScope( "runtime", root, 0, 0 );
-        expectScope( "runtime", root, 0, 0, 0 );
-        expectScope( "runtime", root, 1 );
-        expectScope( "runtime", root, 1, 0 );
-        expectScope( "runtime", root, 1, 0, 0 );
-    }
-
     @Before
     public void setup()
     {
