@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.collection.CollectResult;
 import org.sonatype.aether.collection.DependencyCollectionContext;
@@ -32,14 +31,10 @@ import org.sonatype.aether.collection.DependencyManagement;
 import org.sonatype.aether.collection.DependencyManager;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyNode;
-import org.sonatype.aether.impl.ArtifactDescriptorReader;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.resolution.ArtifactDescriptorException;
-import org.sonatype.aether.resolution.ArtifactDescriptorRequest;
-import org.sonatype.aether.resolution.ArtifactDescriptorResult;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.DependencyGraphParser;
-import org.sonatype.aether.test.util.IniArtifactDescriptorReader;
 import org.sonatype.aether.util.artifact.ArtifactProperties;
 import org.sonatype.aether.util.graph.manager.ClassicDependencyManager;
 
@@ -50,8 +45,6 @@ public class DefaultDependencyCollectorTest
 {
 
     private DefaultDependencyCollector collector;
-
-    private StubRemoteRepositoryManager manager;
 
     private TestRepositorySystemSession session;
 
@@ -66,23 +59,9 @@ public class DefaultDependencyCollectorTest
         session = new TestRepositorySystemSession();
 
         collector = new DefaultDependencyCollector();
-        collector.setArtifactDescriptorReader( new ArtifactDescriptorReader()
-        {
-            IniArtifactDescriptorReader reader = new IniArtifactDescriptorReader( "artifact-descriptions/" );
-
-            public ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session,
-                                                                    ArtifactDescriptorRequest request )
-                throws ArtifactDescriptorException
-            {
-                return reader.readArtifactDescriptor( session, request );
-            }
-        } );
-
+        collector.setArtifactDescriptorReader( new IniArtifactDescriptorReader( "artifact-descriptions/" ) );
         collector.setVersionRangeResolver( new StubVersionRangeResolver() );
-
-        manager = new StubRemoteRepositoryManager();
-
-        collector.setRemoteRepositoryManager( manager );
+        collector.setRemoteRepositoryManager( new StubRemoteRepositoryManager() );
 
         parser = new DependencyGraphParser( "artifact-descriptions/" );
 
@@ -227,7 +206,6 @@ public class DefaultDependencyCollectorTest
     public void testPartialResultOnError()
         throws IOException
     {
-
         DependencyNode root = parser.parse( "expectedPartialSubtreeOnError.txt" );
 
         Dependency dependency = root.getDependency();
@@ -306,17 +284,7 @@ public class DefaultDependencyCollectorTest
     public void testDependencyManagement()
         throws IOException, DependencyCollectionException
     {
-        collector.setArtifactDescriptorReader( new ArtifactDescriptorReader()
-        {
-            IniArtifactDescriptorReader reader = new IniArtifactDescriptorReader( "artifact-descriptions/managed/" );
-
-            public ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session,
-                                                                    ArtifactDescriptorRequest request )
-                throws ArtifactDescriptorException
-            {
-                return reader.readArtifactDescriptor( session, request );
-            }
-        } );
+        collector.setArtifactDescriptorReader( new IniArtifactDescriptorReader( "artifact-descriptions/managed/" ) );
 
         DependencyNode root = parser.parse( "expectedSubtreeComparisonResult.txt" );
         TestDependencyManager depMgmt = new TestDependencyManager();
