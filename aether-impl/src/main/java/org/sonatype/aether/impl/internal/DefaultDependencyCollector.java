@@ -533,8 +533,8 @@ public class DefaultDependencyCollector
                         if ( process( session, trace, result, edges, descriptorResult.getDependencies(), childRepos,
                                       childSelector, childManager, childTraverser, pool ) )
                         {
-                            cacheNode = false;
                             cycle = true;
+                            cacheNode = false;
                         }
 
                         edges.removeFirst();
