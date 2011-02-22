@@ -308,12 +308,14 @@ public class DefaultDependencyCollector
         return a.getGroupId() + ':' + a.getArtifactId() + ':' + a.getClassifier() + ':' + a.getExtension();
     }
 
-    private void process( RepositorySystemSession session, RequestTrace trace, CollectResult result,
-                          LinkedList<GraphEdge> edges, List<Dependency> dependencies,
-                          List<RemoteRepository> repositories, DependencySelector depSelector,
-                          DependencyManager depManager, DependencyTraverser depTraverser, DataPool pool )
+    private boolean process( RepositorySystemSession session, RequestTrace trace, CollectResult result,
+                             LinkedList<GraphEdge> edges, List<Dependency> dependencies,
+                             List<RemoteRepository> repositories, DependencySelector depSelector,
+                             DependencyManager depManager, DependencyTraverser depTraverser, DataPool pool )
         throws DependencyCollectionException
     {
+        boolean cycle = false;
+
         nextDependency: for ( Dependency dependency : dependencies )
         {
             boolean disableVersionManagement = false;
@@ -444,6 +446,7 @@ public class DefaultDependencyCollector
 
                     if ( findDuplicate( edges, d.getArtifact() ) != null )
                     {
+                        cycle = true;
                         continue;
                     }
 
@@ -489,13 +492,15 @@ public class DefaultDependencyCollector
                         key = pool.toKey( d.getArtifact(), repositories );
                     }
 
+                    boolean cacheNode = false;
+
                     GraphNode child = pool.getNode( key );
                     if ( child == null )
                     {
                         child = new GraphNode();
                         child.setAliases( descriptorResult.getAliases() );
                         child.setRepositories( repos );
-                        pool.putNode( key, child );
+                        cacheNode = true;
                     }
                     else
                     {
@@ -525,16 +530,27 @@ public class DefaultDependencyCollector
                     {
                         edges.addFirst( edge );
 
-                        process( session, trace, result, edges, descriptorResult.getDependencies(), childRepos,
-                                 childSelector, childManager, childTraverser, pool );
+                        if ( process( session, trace, result, edges, descriptorResult.getDependencies(), childRepos,
+                                      childSelector, childManager, childTraverser, pool ) )
+                        {
+                            cacheNode = false;
+                            cycle = true;
+                        }
 
                         edges.removeFirst();
+                    }
+
+                    if ( cacheNode )
+                    {
+                        pool.putNode( key, child );
                     }
                 }
 
                 break;
             }
         }
+
+        return cycle;
     }
 
     private GraphEdge findDuplicate( List<GraphEdge> edges, Artifact artifact )

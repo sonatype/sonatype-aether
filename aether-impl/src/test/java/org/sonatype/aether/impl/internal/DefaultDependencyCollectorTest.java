@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -68,19 +69,29 @@ public class DefaultDependencyCollectorTest
         repository = new RemoteRepository( "id", "default", "file:///" );
     }
 
-    private static void assertEqualSubtree( DependencyNode root1, DependencyNode root2 )
+    private static void assertEqualSubtree( DependencyNode expected, DependencyNode actual )
     {
-        assertEquals( root1.getDependency(), root2.getDependency() );
-        assertEquals( root1.getChildren().size(), root2.getChildren().size() );
+        assertEqualSubtree( expected, actual, new LinkedList<DependencyNode>() );
+    }
 
-        Iterator<DependencyNode> iterator1 = root1.getChildren().iterator();
-        Iterator<DependencyNode> iterator2 = root2.getChildren().iterator();
+    private static void assertEqualSubtree( DependencyNode expected, DependencyNode actual,
+                                            LinkedList<DependencyNode> parents )
+    {
+        assertEquals( "path: " + parents, expected.getDependency(), actual.getDependency() );
+
+        parents.addLast( expected );
+
+        assertEquals( "path: " + parents + ", expected: " + expected.getChildren() + ", actual: "
+                          + actual.getChildren(), expected.getChildren().size(), actual.getChildren().size() );
+
+        Iterator<DependencyNode> iterator1 = expected.getChildren().iterator();
+        Iterator<DependencyNode> iterator2 = actual.getChildren().iterator();
 
         while ( iterator1.hasNext() )
         {
-            assertEqualSubtree( iterator1.next(), iterator2.next() );
+            assertEqualSubtree( iterator1.next(), iterator2.next(), parents );
         }
-
+        parents.removeLast();
     }
 
     private Dependency dep( DependencyNode root, int... coords )
@@ -99,7 +110,6 @@ public class DefaultDependencyCollectorTest
             }
 
             return node;
-
         }
         catch ( IndexOutOfBoundsException e )
         {
@@ -109,7 +119,6 @@ public class DefaultDependencyCollectorTest
         {
             throw new IllegalArgumentException( "Illegal coordinates for child", e );
         }
-
     }
 
     @Test
@@ -198,6 +207,16 @@ public class DefaultDependencyCollectorTest
         Dependency dependency = root.getDependency();
         CollectRequest request = new CollectRequest( dependency, Arrays.asList( repository ) );
 
+        CollectResult result = collector.collectDependencies( session, request );
+        assertEqualSubtree( root, result.getRoot() );
+    }
+
+    @Test
+    public void testCyclicDependencies()
+        throws Exception
+    {
+        DependencyNode root = parser.parse( "cycle.txt" );
+        CollectRequest request = new CollectRequest( root.getDependency(), Arrays.asList( repository ) );
         CollectResult result = collector.collectDependencies( session, request );
         assertEqualSubtree( root, result.getRoot() );
     }
