@@ -45,7 +45,7 @@ public class JavaEffectiveScopeCalculatorTest
     @Before
     public void setup()
     {
-        parser = new DependencyGraphParser( "scope-calculator-test/" );
+        parser = new DependencyGraphParser( "scope-calculator/" );
         ctx = new SimpleDependencyGraphTransformationContext();
     }
 
@@ -72,8 +72,7 @@ public class JavaEffectiveScopeCalculatorTest
             DependencyNode node = root;
             node = path( node, coords );
 
-            assertEquals( msg + "\nculprit: " + node.toString() + "\n", expected,
-                          node.getDependency().getScope() );
+            assertEquals( msg + "\nculprit: " + node.toString() + "\n", expected, node.getDependency().getScope() );
         }
         catch ( IndexOutOfBoundsException e )
         {

@@ -110,7 +110,6 @@ public class DefaultDependencyCollectorTest
 
         DependencyNode expect = parser.parseLiteral( "gid:aid2:ext:ver:compile" );
         assertEquals( expect.getDependency(), newRoot.getChildren().get( 0 ).getDependency() );
-
     }
 
     @Test
@@ -360,11 +359,11 @@ public class DefaultDependencyCollectorTest
             paths.put( d, localPath );
         }
 
-        public DependencyManagement manageDependency( Dependency d)
+        public DependencyManagement manageDependency( Dependency d )
         {
             DependencyManagement mgmt = new DependencyManagement();
-            mgmt.setVersion( versions.get(d) );
-            mgmt.setScope( scopes.get(d) );
+            mgmt.setVersion( versions.get( d ) );
+            mgmt.setScope( scopes.get( d ) );
             String path = paths.get( d );
             if ( path != null )
             {

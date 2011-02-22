@@ -43,7 +43,7 @@ public class ConflictIdSorterTest
     {
         sorter = new ConflictIdSorter();
         ctx = new SimpleDependencyGraphTransformationContext();
-        parser = new DependencyGraphParser( "conflictid-sorter-test/" );
+        parser = new DependencyGraphParser( "conflict-id-sorter/" );
     }
 
     private void expectOrder( List<String> sorted, String... id )
