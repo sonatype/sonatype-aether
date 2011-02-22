@@ -89,6 +89,50 @@ public class DefaultDependencyCollectorTest
         repository = new RemoteRepository( "id", "default", "file:///" );
     }
 
+    private static void assertEqualSubtree( DependencyNode root1, DependencyNode root2 )
+    {
+        assertEquals( root1.getDependency(), root2.getDependency() );
+        assertEquals( root1.getChildren().size(), root2.getChildren().size() );
+
+        Iterator<DependencyNode> iterator1 = root1.getChildren().iterator();
+        Iterator<DependencyNode> iterator2 = root2.getChildren().iterator();
+
+        while ( iterator1.hasNext() )
+        {
+            assertEqualSubtree( iterator1.next(), iterator2.next() );
+        }
+
+    }
+
+    private Dependency dep( DependencyNode root, int... coords )
+    {
+        return path( root, coords ).getDependency();
+    }
+
+    private DependencyNode path( DependencyNode root, int... coords )
+    {
+        try
+        {
+            DependencyNode node = root;
+            for ( int i = 0; i < coords.length; i++ )
+            {
+                node = node.getChildren().get( coords[i] );
+            }
+
+            return node;
+
+        }
+        catch ( IndexOutOfBoundsException e )
+        {
+            throw new IllegalArgumentException( "Illegal coordinates for child", e );
+        }
+        catch ( NullPointerException e )
+        {
+            throw new IllegalArgumentException( "Illegal coordinates for child", e );
+        }
+
+    }
+
     @Test
     public void testSimpleCollection()
         throws IOException, DependencyCollectionException
@@ -177,22 +221,6 @@ public class DefaultDependencyCollectorTest
 
         CollectResult result = collector.collectDependencies( session, request );
         assertEqualSubtree( root, result.getRoot() );
-
-    }
-
-    private static void assertEqualSubtree( DependencyNode root1, DependencyNode root2 )
-    {
-        assertEquals( root1.getDependency(), root2.getDependency() );
-        assertEquals( root1.getChildren().size(), root2.getChildren().size() );
-
-        Iterator<DependencyNode> iterator1 = root1.getChildren().iterator();
-        Iterator<DependencyNode> iterator2 = root2.getChildren().iterator();
-
-        while ( iterator1.hasNext() )
-        {
-            assertEqualSubtree( iterator1.next(), iterator2.next() );
-        }
-
     }
 
     @Test
@@ -223,7 +251,6 @@ public class DefaultDependencyCollectorTest
 
             assertEqualSubtree( root, result.getRoot() );
         }
-
     }
 
     @Test
@@ -245,35 +272,6 @@ public class DefaultDependencyCollectorTest
 
         assertEquals( 0, path( result.getRoot(), 1 ).getChildren().size() );
         assertEquals( root2.getDependency(), dep( result.getRoot(), 1 ) );
-    }
-
-    private Dependency dep( DependencyNode root, int... coords )
-    {
-        return path( root, coords ).getDependency();
-    }
-
-    private DependencyNode path( DependencyNode root, int... coords )
-    {
-        try
-        {
-            DependencyNode node = root;
-            for ( int i = 0; i < coords.length; i++ )
-            {
-                node = node.getChildren().get( coords[i] );
-            }
-
-            return node;
-
-        }
-        catch ( IndexOutOfBoundsException e )
-        {
-            throw new IllegalArgumentException( "Illegal coordinates for child", e );
-        }
-        catch ( NullPointerException e )
-        {
-            throw new IllegalArgumentException( "Illegal coordinates for child", e );
-        }
-
     }
 
     @Test
