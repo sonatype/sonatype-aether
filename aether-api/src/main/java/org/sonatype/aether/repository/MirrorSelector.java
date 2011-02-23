@@ -25,6 +25,7 @@ public interface MirrorSelector
      * 
      * @param repository The repository to select a mirror for, must not be {@code null}.
      * @return The selected mirror or {@code null} if none.
+     * @see RemoteRepository#getMirroredRepositories()
      */
     RemoteRepository getMirror( RemoteRepository repository );
 
