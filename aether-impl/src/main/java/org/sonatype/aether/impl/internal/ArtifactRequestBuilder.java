@@ -15,6 +15,7 @@ package org.sonatype.aether.impl.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.graph.DependencyVisitor;
 import org.sonatype.aether.resolution.ArtifactRequest;
@@ -26,10 +27,13 @@ class ArtifactRequestBuilder
     implements DependencyVisitor
 {
 
+    private final RequestTrace trace;
+
     private List<ArtifactRequest> requests;
 
-    public ArtifactRequestBuilder()
+    public ArtifactRequestBuilder( RequestTrace trace )
     {
+        this.trace = trace;
         this.requests = new ArrayList<ArtifactRequest>();
     }
 
@@ -43,6 +47,7 @@ class ArtifactRequestBuilder
         if ( node.getDependency() != null )
         {
             ArtifactRequest request = new ArtifactRequest( node );
+            request.setTrace( trace );
             requests.add( request );
         }
 

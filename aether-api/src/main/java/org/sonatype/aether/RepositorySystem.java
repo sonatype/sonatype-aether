@@ -36,6 +36,9 @@ import org.sonatype.aether.resolution.ArtifactDescriptorResult;
 import org.sonatype.aether.resolution.ArtifactRequest;
 import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.resolution.ArtifactResult;
+import org.sonatype.aether.resolution.DependencyRequest;
+import org.sonatype.aether.resolution.DependencyResolutionException;
+import org.sonatype.aether.resolution.DependencyResult;
 import org.sonatype.aether.resolution.MetadataRequest;
 import org.sonatype.aether.resolution.MetadataResult;
 import org.sonatype.aether.resolution.VersionRangeRequest;
@@ -79,7 +82,7 @@ public interface RepositorySystem
         throws VersionResolutionException;
 
     /**
-     * Gets information about an artifact like its direct dependencies.
+     * Gets information about an artifact like its direct dependencies and potential relocations.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The descriptor request, must not be {@code null}
@@ -92,7 +95,9 @@ public interface RepositorySystem
         throws ArtifactDescriptorException;
 
     /**
-     * Collects the transitive dependencies of an artifact and builds a dependency graph.
+     * Collects the transitive dependencies of an artifact and builds a dependency graph. Note that this operation is
+     * only concerned about determining the coordinates of the transitive dependencies. To also resolve the actual
+     * artifact files, use {@link #resolveDependencies(RepositorySystemSession, DependencyRequest)}.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The collection request, must not be {@code null}
@@ -107,6 +112,20 @@ public interface RepositorySystem
         throws DependencyCollectionException;
 
     /**
+     * Collects and resolves the transitive dependencies of an artifact. This operation is essentially a combination of
+     * {@link #collectDependencies(RepositorySystemSession, CollectRequest)} and
+     * {@link #resolveArtifacts(RepositorySystemSession, Collection)}.
+     * 
+     * @param session The repository session, must not be {@code null}.
+     * @param request The dependency request, must not be {@code null}
+     * @return The dependency result, never {@code null}.
+     * @throws DependencyResolutionException If the dependency tree could not be built or any dependency artifact could
+     *             not be resolved.
+     */
+    DependencyResult resolveDependencies( RepositorySystemSession session, DependencyRequest request )
+        throws DependencyResolutionException;
+
+    /**
      * Resolves the paths for the artifacts referenced by the specified dependency graph. The dependency graph will be
      * updated to reflect each successfully resolved artifact. Artifacts will be downloaded if necessary. Artifacts that
      * are already resolved will be skipped and are not re-resolved.
@@ -118,7 +137,9 @@ public interface RepositorySystem
      * @return The resolution results, never {@code null}.
      * @throws ArtifactResolutionException If any artifact could not be resolved.
      * @see Artifact#getFile()
+     * @deprecated Use {@link #resolveDependencies(RepositorySystemSession, DependencyRequest)} instead.
      */
+    @Deprecated
     List<ArtifactResult> resolveDependencies( RepositorySystemSession session, DependencyNode node,
                                               DependencyFilter filter )
         throws ArtifactResolutionException;
@@ -136,20 +157,22 @@ public interface RepositorySystem
      * @return The resolution results, never {@code null}.
      * @throws DependencyCollectionException If the dependency tree could not be built.
      * @throws ArtifactResolutionException If any artifact could not be resolved.
+     * @deprecated Use {@link #resolveDependencies(RepositorySystemSession, DependencyRequest)} instead.
      */
+    @Deprecated
     List<ArtifactResult> resolveDependencies( RepositorySystemSession session, CollectRequest request,
                                               DependencyFilter filter )
         throws DependencyCollectionException, ArtifactResolutionException;
 
     /**
-     * Resolves the paths for an artifact. The Artifact will be downloaded if necessary. An artifacts that is already
+     * Resolves the paths for an artifact. The artifact will be downloaded if necessary. An artifacts that is already
      * resolved will be skipped and is not re-resolved. Note that this method assumes that any relocations have already
      * been processed.
      * 
      * @param session The repository session, must not be {@code null}.
      * @param request The resolution request, must not be {@code null}
      * @return The resolution result, never {@code null}.
-     * @throws ArtifactResolutionException If any artifact could not be resolved.
+     * @throws ArtifactResolutionException If the artifact could not be resolved.
      * @see Artifact#getFile()
      */
     ArtifactResult resolveArtifact( RepositorySystemSession session, ArtifactRequest request )

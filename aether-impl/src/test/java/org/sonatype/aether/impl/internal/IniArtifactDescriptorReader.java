@@ -1,4 +1,4 @@
-package org.sonatype.aether.repository;
+package org.sonatype.aether.impl.internal;
 
 /*******************************************************************************
  * Copyright (c) 2010-2011 Sonatype, Inc.
@@ -12,21 +12,21 @@ package org.sonatype.aether.repository;
  * You may elect to redistribute this code under either of these licenses.
  *******************************************************************************/
 
+import org.sonatype.aether.impl.ArtifactDescriptorReader;
+
 /**
- * Selects a mirror for a given remote repository.
- * 
- * @author Benjamin Bentmann
  */
-public interface MirrorSelector
+public class IniArtifactDescriptorReader
+    extends org.sonatype.aether.test.util.IniArtifactDescriptorReader
+    implements ArtifactDescriptorReader
 {
 
     /**
-     * Selects a mirror for the specified repository.
-     * 
-     * @param repository The repository to select a mirror for, must not be {@code null}.
-     * @return The selected mirror or {@code null} if none.
-     * @see RemoteRepository#getMirroredRepositories()
+     * Use the given prefix to load the artifact descriptions.
      */
-    RemoteRepository getMirror( RemoteRepository repository );
+    public IniArtifactDescriptorReader( String prefix )
+    {
+        super( prefix );
+    }
 
 }

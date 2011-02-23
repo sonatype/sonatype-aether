@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -39,6 +40,8 @@ public class ArtifactRequest
     private List<RemoteRepository> repositories = Collections.emptyList();
 
     private String context = "";
+
+    private RequestTrace trace;
 
     /**
      * Creates an unitialized request.
@@ -189,6 +192,28 @@ public class ArtifactRequest
     public ArtifactRequest setRequestContext( String context )
     {
         this.context = ( context != null ) ? context : "";
+        return this;
+    }
+
+    /**
+     * Gets the trace information that describes the higher level request/operation in which this request is issued.
+     * 
+     * @return The trace information about the higher level operation or {@code null} if none.
+     */
+    public RequestTrace getTrace()
+    {
+        return trace;
+    }
+
+    /**
+     * Sets the trace information that describes the higher level request/operation in which this request is issued.
+     * 
+     * @param trace The trace information about the higher level operation, may be {@code null}.
+     * @return This request for chaining, never {@code null}.
+     */
+    public ArtifactRequest setTrace( RequestTrace trace )
+    {
+        this.trace = trace;
         return this;
     }
 

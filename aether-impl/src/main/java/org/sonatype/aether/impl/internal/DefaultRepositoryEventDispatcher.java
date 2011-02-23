@@ -250,6 +250,10 @@ public class DefaultRepositoryEventDispatcher
         {
             logError( e, listener );
         }
+        catch ( LinkageError e )
+        {
+            logError( e, listener );
+        }
     }
 
     private void logError( Throwable e, Object listener )

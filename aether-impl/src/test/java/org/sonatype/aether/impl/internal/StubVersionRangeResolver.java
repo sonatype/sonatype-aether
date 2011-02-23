@@ -15,7 +15,6 @@ package org.sonatype.aether.impl.internal;
 import java.util.Arrays;
 
 import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.VersionRangeResolver;
 import org.sonatype.aether.resolution.VersionRangeRequest;
 import org.sonatype.aether.resolution.VersionRangeResolutionException;
@@ -25,7 +24,6 @@ import org.sonatype.aether.version.Version;
 
 /**
  * @author Benjamin Hanzelmann
- *
  */
 public class StubVersionRangeResolver
     implements VersionRangeResolver
@@ -34,10 +32,22 @@ public class StubVersionRangeResolver
     public VersionRangeResult resolveVersionRange( RepositorySystemSession session, VersionRangeRequest request )
         throws VersionRangeResolutionException
     {
-        Artifact artifact = request.getArtifact();
+        String version = request.getArtifact().getVersion();
+        boolean range = false;
+
+        if ( version.matches( "\\[[^,]+,.*" ) )
+        {
+            version = version.substring( 1, version.indexOf( ',', 1 ) );
+            range = true;
+        }
 
         VersionRangeResult result = new VersionRangeResult( request );
-        result.setVersions( Arrays.asList( (Version) new StubVersion( artifact.getVersion() ) ) );
+        StubVersion ver = new StubVersion( version );
+        result.setVersions( Arrays.asList( (Version) ver ) );
+        if ( range && !request.getRepositories().isEmpty() )
+        {
+            result.setRepository( ver, request.getRepositories().get( 0 ) );
+        }
 
         return result;
     }

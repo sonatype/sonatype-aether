@@ -42,22 +42,18 @@ public class JavaEffectiveScopeCalculatorTest
         }
     }
 
+    @Before
+    public void setup()
+    {
+        parser = new DependencyGraphParser( "scope-calculator/" );
+        ctx = new SimpleDependencyGraphTransformationContext();
+    }
+
     private DependencyNode parse( String name, String... substitutions )
         throws IOException
     {
         parser.setSubstitutions( Arrays.asList( substitutions ) );
         return parser.parse( name );
-    }
-
-    @Test
-    public void testScopeInheritanceProvided()
-        throws IOException, RepositoryException
-    {
-        String resource = "inheritance.txt";
-
-        String expected = "provided";
-        int[] coords = new int[] { 0, 0 };
-        expectScope( expected, transform( parse( resource, "provided", "test" ) ), coords );
     }
 
     private void expectScope( String expected, DependencyNode root, int... coords )
@@ -76,8 +72,7 @@ public class JavaEffectiveScopeCalculatorTest
             DependencyNode node = root;
             node = path( node, coords );
 
-            assertEquals( msg + "\nculprit: " + node.toString() + "\n", expected,
-                          node.getDependency().getScope() );
+            assertEquals( msg + "\nculprit: " + node.toString() + "\n", expected, node.getDependency().getScope() );
         }
         catch ( IndexOutOfBoundsException e )
         {
@@ -97,6 +92,25 @@ public class JavaEffectiveScopeCalculatorTest
             node = node.getChildren().get( coords[i] );
         }
         return node;
+    }
+
+    private DependencyNode transform( DependencyNode root )
+        throws RepositoryException
+    {
+        root = new SimpleConflictMarker().transformGraph( root, ctx );
+        root = new JavaEffectiveScopeCalculator().transformGraph( root, ctx );
+        return root;
+    }
+
+    @Test
+    public void testScopeInheritanceProvided()
+        throws IOException, RepositoryException
+    {
+        String resource = "inheritance.txt";
+
+        String expected = "provided";
+        int[] coords = new int[] { 0, 0 };
+        expectScope( expected, transform( parse( resource, "provided", "test" ) ), coords );
     }
 
     @Test
@@ -160,36 +174,6 @@ public class JavaEffectiveScopeCalculatorTest
         expectScope( "runtime", root, 1 );
         expectScope( "runtime", root, 1, 0 );
         expectScope( "runtime", root, 1, 0, 0 );
-    }
-
-    @Test
-    public void testCycleD()
-        throws Exception
-    {
-        DependencyNode root = parser.parse( "cycle-d.txt" );
-        root = transform( root );
-
-        expectScope( "runtime", root, 0 );
-        expectScope( "runtime", root, 0, 0 );
-        expectScope( "runtime", root, 0, 0, 0 );
-        expectScope( "runtime", root, 1 );
-        expectScope( "runtime", root, 1, 0 );
-        expectScope( "runtime", root, 1, 0, 0 );
-    }
-
-    @Before
-    public void setup()
-    {
-        parser = new DependencyGraphParser( "scope-calculator-test/" );
-        ctx = new SimpleDependencyGraphTransformationContext();
-    }
-
-    private DependencyNode transform( DependencyNode root )
-        throws RepositoryException
-    {
-        root = new SimpleConflictMarker().transformGraph( root, ctx );
-        root = new JavaEffectiveScopeCalculator().transformGraph( root, ctx );
-        return root;
     }
 
     @Test

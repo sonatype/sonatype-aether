@@ -12,6 +12,8 @@ package org.sonatype.aether.spi.connector;
  * You may elect to redistribute this code under either of these licenses.
  *******************************************************************************/
 
+import org.sonatype.aether.RequestTrace;
+
 /**
  * An artifact/metadata transfer.
  * 
@@ -40,6 +42,8 @@ public abstract class Transfer
 
     private State state = State.NEW;
 
+    private RequestTrace trace;
+
     /**
      * Gets the state of this transfer.
      * 
@@ -63,6 +67,28 @@ public abstract class Transfer
             throw new IllegalArgumentException( "no transfer state specified" );
         }
         this.state = state;
+        return this;
+    }
+
+    /**
+     * Gets the trace information that describes the higher level request/operation in which this transfer is issued.
+     * 
+     * @return The trace information about the higher level operation or {@code null} if none.
+     */
+    public RequestTrace getTrace()
+    {
+        return trace;
+    }
+
+    /**
+     * Sets the trace information that describes the higher level request/operation in which this transfer is issued.
+     * 
+     * @param trace The trace information about the higher level operation, may be {@code null}.
+     * @return This transfer for chaining, never {@code null}.
+     */
+    public Transfer setTrace( RequestTrace trace )
+    {
+        this.trace = trace;
         return this;
     }
 

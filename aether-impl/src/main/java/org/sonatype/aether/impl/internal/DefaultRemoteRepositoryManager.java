@@ -164,43 +164,11 @@ public class DefaultRemoteRepositoryManager
                     if ( !dominantRepository.getMirroredRepositories().isEmpty()
                         && !repository.getMirroredRepositories().isEmpty() )
                     {
-                        RemoteRepository mergedRepository = new RemoteRepository();
-
-                        mergedRepository.setRepositoryManager( dominantRepository.isRepositoryManager() );
-
-                        mergedRepository.setId( dominantRepository.getId() );
-                        mergedRepository.setContentType( dominantRepository.getContentType() );
-                        mergedRepository.setUrl( dominantRepository.getUrl() );
-
-                        mergedRepository.setAuthentication( dominantRepository.getAuthentication() );
-                        mergedRepository.setProxy( dominantRepository.getProxy() );
-
-                        mergedRepository.setPolicy( true,
-                                                    merge( session, dominantRepository.getPolicy( true ),
-                                                           repository.getPolicy( true ) ) );
-                        mergedRepository.setPolicy( false,
-                                                    merge( session, dominantRepository.getPolicy( false ),
-                                                           repository.getPolicy( false ) ) );
-
-                        List<RemoteRepository> mirroredRepositories = dominantRepository.getMirroredRepositories();
-                        String rawKey = getKey( recessiveRepository );
-                        RemoteRepository mirroredRepository = null;
-                        for ( RemoteRepository repo : mirroredRepositories )
+                        RemoteRepository mergedRepository = mergeMirrors( session, dominantRepository, repository );
+                        if ( mergedRepository != dominantRepository )
                         {
-                            if ( rawKey.equals( getKey( repo ) ) )
-                            {
-                                mirroredRepository = repo;
-                                break;
-                            }
+                            it.set( mergedRepository );
                         }
-                        if ( mirroredRepository == null )
-                        {
-                            mirroredRepositories = new ArrayList<RemoteRepository>( mirroredRepositories );
-                            mirroredRepositories.add( recessiveRepository );
-                        }
-                        mergedRepository.setMirroredRepositories( mirroredRepositories );
-
-                        it.set( mergedRepository );
                     }
 
                     continue next;
@@ -222,6 +190,51 @@ public class DefaultRemoteRepositoryManager
     private String getKey( RemoteRepository repository )
     {
         return repository.getId();
+    }
+
+    private RemoteRepository mergeMirrors( RepositorySystemSession session, RemoteRepository dominant,
+                                           RemoteRepository recessive )
+    {
+        RemoteRepository merged = dominant;
+
+        next: for ( RemoteRepository rec : recessive.getMirroredRepositories() )
+        {
+            String recKey = getKey( rec );
+
+            for ( RemoteRepository dom : dominant.getMirroredRepositories() )
+            {
+                if ( recKey.equals( getKey( dom ) ) )
+                {
+                    continue next;
+                }
+            }
+
+            if ( merged == dominant )
+            {
+                merged = new RemoteRepository();
+
+                merged.setRepositoryManager( dominant.isRepositoryManager() );
+
+                merged.setId( dominant.getId() );
+                merged.setContentType( dominant.getContentType() );
+                merged.setUrl( dominant.getUrl() );
+
+                merged.setAuthentication( dominant.getAuthentication() );
+                merged.setProxy( dominant.getProxy() );
+
+                merged.setPolicy( false, dominant.getPolicy( false ) );
+                merged.setPolicy( true, dominant.getPolicy( true ) );
+
+                merged.setMirroredRepositories( new ArrayList<RemoteRepository>( dominant.getMirroredRepositories() ) );
+            }
+
+            merged.setPolicy( false, merge( session, merged.getPolicy( false ), rec.getPolicy( false ) ) );
+            merged.setPolicy( true, merge( session, merged.getPolicy( true ), rec.getPolicy( true ) ) );
+
+            merged.getMirroredRepositories().add( rec );
+        }
+
+        return merged;
     }
 
     public RepositoryPolicy getPolicy( RepositorySystemSession session, RemoteRepository repository, boolean releases,

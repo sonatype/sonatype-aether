@@ -31,6 +31,8 @@ public class LocalArtifactResult
 
     private boolean available;
 
+    private RemoteRepository repository;
+
     /**
      * Creates a new result for the specified request.
      * 
@@ -58,7 +60,7 @@ public class LocalArtifactResult
     /**
      * Gets the file to the requested artifact. Note that this file must not be used unless {@link #isAvailable()}
      * returns {@code true}. An artifact file can be found but considered unavailable if the artifact was cached from a
-     * remote repository that is not part of the list of remote repositories used for this query.
+     * remote repository that is not part of the list of remote repositories used for the query.
      * 
      * @return The file to the requested artifact or {@code null}.
      */
@@ -83,9 +85,10 @@ public class LocalArtifactResult
      * Indicates whether the requested artifact is available for use. As a minimum, the file needs to be physically
      * existent in the local repository to be available. Additionally, a local repository manager can consider the list
      * of supplied remote repositories to determine whether the artifact is logically available and mark an artifact
-     * unavailable if it is not known to be hosted by any of the provided repositories.
+     * unavailable (despite its physical existence) if it is not known to be hosted by any of the provided repositories.
      * 
      * @return {@code true} if the artifact is available, {@code false} otherwise.
+     * @see LocalArtifactRequest#getRepositories()
      */
     public boolean isAvailable()
     {
@@ -96,11 +99,36 @@ public class LocalArtifactResult
      * Sets whether the artifact is available.
      * 
      * @param available {@code true} if the artifact is available, {@code false} otherwise.
-     * @return This query for chaining, never {@code null}.
+     * @return This result for chaining, never {@code null}.
      */
     public LocalArtifactResult setAvailable( boolean available )
     {
         this.available = available;
+        return this;
+    }
+
+    /**
+     * Gets the (first) remote repository from which the artifact was cached (if any).
+     * 
+     * @return The remote repository from which the artifact was originally retrieved or {@code null} if unkown or if
+     *         the artifact has been locally installed.
+     * @see LocalArtifactRequest#getRepositories()
+     */
+    public RemoteRepository getRepository()
+    {
+        return repository;
+    }
+
+    /**
+     * Sets the (first) remote repository from which the artifact was cached.
+     * 
+     * @param repository The remote repository from which the artifact was originally retrieved, maybe {@code null} if
+     *            unknown or if the artifact has been locally installed.
+     * @return This result for chaining, never {@code null}.
+     */
+    public LocalArtifactResult setRepository( RemoteRepository repository )
+    {
+        this.repository = repository;
         return this;
     }
 

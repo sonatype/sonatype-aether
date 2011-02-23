@@ -327,9 +327,27 @@ public class RemoteRepository
         StringBuilder buffer = new StringBuilder( 256 );
         buffer.append( getId() );
         buffer.append( " (" ).append( getUrl() );
-        buffer.append( ", releases=" ).append( getPolicy( false ).isEnabled() );
-        buffer.append( ", snapshots=" ).append( getPolicy( true ).isEnabled() );
-        buffer.append( ", managed=" ).append( isRepositoryManager() );
+        boolean r = getPolicy( false ).isEnabled(), s = getPolicy( true ).isEnabled();
+        if ( r && s )
+        {
+            buffer.append( ", releases+snapshots" );
+        }
+        else if ( r )
+        {
+            buffer.append( ", releases" );
+        }
+        else if ( s )
+        {
+            buffer.append( ", snapshots" );
+        }
+        else
+        {
+            buffer.append( ", disabled" );
+        }
+        if ( isRepositoryManager() )
+        {
+            buffer.append( ", managed" );
+        }
         buffer.append( ")" );
         return buffer.toString();
     }

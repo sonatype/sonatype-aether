@@ -84,6 +84,7 @@ public class EnhancedLocalRepositoryManager
                     if ( props.get( getKey( file, getRepositoryKey( repository, context ) ) ) != null )
                     {
                         result.setAvailable( true );
+                        result.setRepository( repository );
                         break;
                     }
                 }

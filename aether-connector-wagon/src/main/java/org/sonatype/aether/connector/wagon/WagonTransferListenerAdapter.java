@@ -16,6 +16,7 @@ import java.io.File;
 
 import org.apache.maven.wagon.events.TransferEvent;
 import org.apache.maven.wagon.observers.AbstractTransferListener;
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.transfer.TransferEvent.EventType;
 import org.sonatype.aether.transfer.TransferEvent.RequestType;
@@ -39,10 +40,11 @@ class WagonTransferListenerAdapter
 
     private long transferredBytes;
 
-    public WagonTransferListenerAdapter( TransferListener delegate, String repositoryUrl, String resourceName, File file )
+    public WagonTransferListenerAdapter( TransferListener delegate, String repositoryUrl, String resourceName,
+                                         File file, RequestTrace trace )
     {
         this.delegate = delegate;
-        resource = new DefaultTransferResource( repositoryUrl, resourceName, file );
+        resource = new DefaultTransferResource( repositoryUrl, resourceName, file, trace );
     }
 
     @Override

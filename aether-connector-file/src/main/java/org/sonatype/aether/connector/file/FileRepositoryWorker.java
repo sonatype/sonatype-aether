@@ -201,7 +201,7 @@ class FileRepositoryWorker
         long totalTransferred = -1;
         try
         {
-            transfer.setState( State.NEW );
+            transfer.setState( State.ACTIVE );
             resource = newResource( transfer, repository );
             DefaultTransferEvent event = newEvent( transfer );
             catapult.fireInitiated( event );
@@ -457,8 +457,8 @@ class FileRepositoryWorker
                 resourceName = new DefaultLayout().getPath( metadata );
                 break;
         }
-        return new DefaultTransferResource( PathUtils.decode( repository.getUrl() ), resourceName,
-                                                        transfer.getFile() );
+        return new DefaultTransferResource( PathUtils.decode( repository.getUrl() ), resourceName, transfer.getFile(),
+                                            transfer.getTrace() );
     }
 
     public void setLogger( Logger logger )

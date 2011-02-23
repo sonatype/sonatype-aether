@@ -15,9 +15,11 @@ package org.sonatype.aether.impl.internal;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +41,6 @@ import org.sonatype.aether.resolution.ArtifactDescriptorRequest;
 import org.sonatype.aether.resolution.ArtifactDescriptorResult;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.DependencyGraphParser;
-import org.sonatype.aether.test.util.IniArtifactDescriptorReader;
 import org.sonatype.aether.util.artifact.ArtifactProperties;
 import org.sonatype.aether.util.graph.manager.ClassicDependencyManager;
 
@@ -50,8 +51,6 @@ public class DefaultDependencyCollectorTest
 {
 
     private DefaultDependencyCollector collector;
-
-    private StubRemoteRepositoryManager manager;
 
     private TestRepositorySystemSession session;
 
@@ -66,27 +65,65 @@ public class DefaultDependencyCollectorTest
         session = new TestRepositorySystemSession();
 
         collector = new DefaultDependencyCollector();
-        collector.setArtifactDescriptorReader( new ArtifactDescriptorReader()
-        {
-            IniArtifactDescriptorReader reader = new IniArtifactDescriptorReader( "artifact-descriptions/" );
-
-            public ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session,
-                                                                    ArtifactDescriptorRequest request )
-                throws ArtifactDescriptorException
-            {
-                return reader.readArtifactDescriptor( session, request );
-            }
-        } );
-
+        collector.setArtifactDescriptorReader( new IniArtifactDescriptorReader( "artifact-descriptions/" ) );
         collector.setVersionRangeResolver( new StubVersionRangeResolver() );
-
-        manager = new StubRemoteRepositoryManager();
-
-        collector.setRemoteRepositoryManager( manager );
+        collector.setRemoteRepositoryManager( new StubRemoteRepositoryManager() );
 
         parser = new DependencyGraphParser( "artifact-descriptions/" );
 
         repository = new RemoteRepository( "id", "default", "file:///" );
+    }
+
+    private static void assertEqualSubtree( DependencyNode expected, DependencyNode actual )
+    {
+        assertEqualSubtree( expected, actual, new LinkedList<DependencyNode>() );
+    }
+
+    private static void assertEqualSubtree( DependencyNode expected, DependencyNode actual,
+                                            LinkedList<DependencyNode> parents )
+    {
+        assertEquals( "path: " + parents, expected.getDependency(), actual.getDependency() );
+
+        parents.addLast( expected );
+
+        assertEquals( "path: " + parents + ", expected: " + expected.getChildren() + ", actual: "
+                          + actual.getChildren(), expected.getChildren().size(), actual.getChildren().size() );
+
+        Iterator<DependencyNode> iterator1 = expected.getChildren().iterator();
+        Iterator<DependencyNode> iterator2 = actual.getChildren().iterator();
+
+        while ( iterator1.hasNext() )
+        {
+            assertEqualSubtree( iterator1.next(), iterator2.next(), parents );
+        }
+        parents.removeLast();
+    }
+
+    private Dependency dep( DependencyNode root, int... coords )
+    {
+        return path( root, coords ).getDependency();
+    }
+
+    private DependencyNode path( DependencyNode root, int... coords )
+    {
+        try
+        {
+            DependencyNode node = root;
+            for ( int i = 0; i < coords.length; i++ )
+            {
+                node = node.getChildren().get( coords[i] );
+            }
+
+            return node;
+        }
+        catch ( IndexOutOfBoundsException e )
+        {
+            throw new IllegalArgumentException( "Illegal coordinates for child", e );
+        }
+        catch ( NullPointerException e )
+        {
+            throw new IllegalArgumentException( "Illegal coordinates for child", e );
+        }
     }
 
     @Test
@@ -110,7 +147,6 @@ public class DefaultDependencyCollectorTest
 
         DependencyNode expect = parser.parseLiteral( "gid:aid2:ext:ver:compile" );
         assertEquals( expect.getDependency(), newRoot.getChildren().get( 0 ).getDependency() );
-
     }
 
     @Test
@@ -178,29 +214,22 @@ public class DefaultDependencyCollectorTest
 
         CollectResult result = collector.collectDependencies( session, request );
         assertEqualSubtree( root, result.getRoot() );
-
     }
 
-    private static void assertEqualSubtree( DependencyNode root1, DependencyNode root2 )
+    @Test
+    public void testCyclicDependencies()
+        throws Exception
     {
-        assertEquals( root1.getDependency(), root2.getDependency() );
-        assertEquals( root1.getChildren().size(), root2.getChildren().size() );
-
-        Iterator<DependencyNode> iterator1 = root1.getChildren().iterator();
-        Iterator<DependencyNode> iterator2 = root2.getChildren().iterator();
-
-        while ( iterator1.hasNext() )
-        {
-            assertEqualSubtree( iterator1.next(), iterator2.next() );
-        }
-
+        DependencyNode root = parser.parse( "cycle.txt" );
+        CollectRequest request = new CollectRequest( root.getDependency(), Arrays.asList( repository ) );
+        CollectResult result = collector.collectDependencies( session, request );
+        assertEqualSubtree( root, result.getRoot() );
     }
 
     @Test
     public void testPartialResultOnError()
         throws IOException
     {
-
         DependencyNode root = parser.parse( "expectedPartialSubtreeOnError.txt" );
 
         Dependency dependency = root.getDependency();
@@ -224,7 +253,6 @@ public class DefaultDependencyCollectorTest
 
             assertEqualSubtree( root, result.getRoot() );
         }
-
     }
 
     @Test
@@ -248,33 +276,34 @@ public class DefaultDependencyCollectorTest
         assertEquals( root2.getDependency(), dep( result.getRoot(), 1 ) );
     }
 
-    private Dependency dep( DependencyNode root, int... coords )
+    @Test
+    public void testArtifactDescriptorResolutionNotRestrictedToRepoHostingSelectedVersion()
+        throws Exception
     {
-        return path( root, coords ).getDependency();
-    }
+        RemoteRepository repo2 = new RemoteRepository( "test", "default", "file:///" );
 
-    private DependencyNode path( DependencyNode root, int... coords )
-    {
-        try
+        final List<RemoteRepository> repos = new ArrayList<RemoteRepository>();
+
+        collector.setArtifactDescriptorReader( new ArtifactDescriptorReader()
         {
-            DependencyNode node = root;
-            for ( int i = 0; i < coords.length; i++ )
+            public ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session,
+                                                                    ArtifactDescriptorRequest request )
+                throws ArtifactDescriptorException
             {
-                node = node.getChildren().get( coords[i] );
+                repos.addAll( request.getRepositories() );
+                return new ArtifactDescriptorResult( request );
             }
+        } );
 
-            return node;
+        DependencyNode root = parser.parseLiteral( "verrange:parent:jar:[1,):compile" );
+        List<Dependency> dependencies = Arrays.asList( root.getDependency() );
+        CollectRequest request = new CollectRequest( dependencies, null, Arrays.asList( repository, repo2 ) );
+        CollectResult result = collector.collectDependencies( session, request );
 
-        }
-        catch ( IndexOutOfBoundsException e )
-        {
-            throw new IllegalArgumentException( "Illegal coordinates for child", e );
-        }
-        catch ( NullPointerException e )
-        {
-            throw new IllegalArgumentException( "Illegal coordinates for child", e );
-        }
-
+        assertEquals( 0, result.getExceptions().size() );
+        assertEquals( 2, repos.size() );
+        assertEquals( "id", repos.get( 0 ).getId() );
+        assertEquals( "test", repos.get( 1 ).getId() );
     }
 
     @Test
@@ -309,17 +338,7 @@ public class DefaultDependencyCollectorTest
     public void testDependencyManagement()
         throws IOException, DependencyCollectionException
     {
-        collector.setArtifactDescriptorReader( new ArtifactDescriptorReader()
-        {
-            IniArtifactDescriptorReader reader = new IniArtifactDescriptorReader( "artifact-descriptions/managed/" );
-
-            public ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session,
-                                                                    ArtifactDescriptorRequest request )
-                throws ArtifactDescriptorException
-            {
-                return reader.readArtifactDescriptor( session, request );
-            }
-        } );
+        collector.setArtifactDescriptorReader( new IniArtifactDescriptorReader( "artifact-descriptions/managed/" ) );
 
         DependencyNode root = parser.parse( "expectedSubtreeComparisonResult.txt" );
         TestDependencyManager depMgmt = new TestDependencyManager();
@@ -360,11 +379,11 @@ public class DefaultDependencyCollectorTest
             paths.put( d, localPath );
         }
 
-        public DependencyManagement manageDependency( Dependency d)
+        public DependencyManagement manageDependency( Dependency d )
         {
             DependencyManagement mgmt = new DependencyManagement();
-            mgmt.setVersion( versions.get(d) );
-            mgmt.setScope( scopes.get(d) );
+            mgmt.setVersion( versions.get( d ) );
+            mgmt.setScope( scopes.get( d ) );
             String path = paths.get( d );
             if ( path != null )
             {

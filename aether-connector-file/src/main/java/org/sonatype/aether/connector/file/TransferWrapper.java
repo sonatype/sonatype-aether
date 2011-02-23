@@ -14,6 +14,7 @@ package org.sonatype.aether.connector.file;
 
 import java.io.File;
 
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
@@ -193,6 +194,22 @@ class TransferWrapper
         else if ( metadataTransfer != null )
         {
             return new DefaultLayout().getPath( getMetadata() );
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public RequestTrace getTrace()
+    {
+        if ( artifactTransfer != null )
+        {
+            return artifactTransfer.getTrace();
+        }
+        else if ( metadataTransfer != null )
+        {
+            return metadataTransfer.getTrace();
         }
         else
         {

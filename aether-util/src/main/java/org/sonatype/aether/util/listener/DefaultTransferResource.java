@@ -14,6 +14,7 @@ package org.sonatype.aether.util.listener;
 
 import java.io.File;
 
+import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.transfer.TransferResource;
 
 /**
@@ -33,6 +34,8 @@ public class DefaultTransferResource
 
     private final long startTime;
 
+    private final RequestTrace trace;
+
     private long contentLength = -1;
 
     /**
@@ -43,8 +46,25 @@ public class DefaultTransferResource
      * @param resourceName The relative path to the resource within the repository, may be {@code null}. A leading slash
      *            (if any) will be automatically removed.
      * @param file The source/target file involved in the transfer, may be {@code null}.
+     * @deprecated Use {@link #DefaultTransferResource(String, String, File, RequestTrace)} instead.
      */
+    @Deprecated
     public DefaultTransferResource( String repositoryUrl, String resourceName, File file )
+    {
+        this( repositoryUrl, resourceName, file, null );
+    }
+
+    /**
+     * Creates a new transfer resource with the specified properties.
+     * 
+     * @param repositoryUrl The base URL of the repository, may be {@code null} or empty if unknown. If not empty, a
+     *            trailing slash will automatically be added if missing.
+     * @param resourceName The relative path to the resource within the repository, may be {@code null}. A leading slash
+     *            (if any) will be automatically removed.
+     * @param file The source/target file involved in the transfer, may be {@code null}.
+     * @param trace The trace information, may be {@code null}.
+     */
+    public DefaultTransferResource( String repositoryUrl, String resourceName, File file, RequestTrace trace )
     {
         if ( repositoryUrl == null || repositoryUrl.length() <= 0 )
         {
@@ -73,6 +93,8 @@ public class DefaultTransferResource
         }
 
         this.file = file;
+
+        this.trace = trace;
 
         startTime = System.currentTimeMillis();
     }
@@ -112,6 +134,11 @@ public class DefaultTransferResource
     public long getTransferStartTime()
     {
         return startTime;
+    }
+
+    public RequestTrace getTrace()
+    {
+        return trace;
     }
 
     @Override

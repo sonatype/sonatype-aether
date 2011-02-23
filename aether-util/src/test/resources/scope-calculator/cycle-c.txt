@@ -6,5 +6,5 @@ gid:root:jar:1
 |  \- gid:a:jar:1:compile
 |     \- gid:b:jar:1:compile
 \- gid:y:jar:1:runtime
-   \- gid:b:jar:1:runtime
-      \- gid:a:jar:1:runtime
+   \- gid:b:jar:1:compile
+      \- gid:a:jar:1:compile

@@ -12,7 +12,6 @@ package org.sonatype.aether.connector.async;
  * You may elect to redistribute this code under either of these licenses.
  *******************************************************************************/
 
-import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.FluentCaseInsensitiveStringsMap;
@@ -429,7 +428,8 @@ class AsyncRepositoryConnector
         {
             download.setState( Transfer.State.ACTIVE );
             final String uri = validateUri( path );
-            final TransferResource transferResource = new DefaultTransferResource( repository.getUrl(), path, file );
+            final TransferResource transferResource =
+                new DefaultTransferResource( repository.getUrl(), path, file, download.getTrace() );
             final boolean ignoreChecksum = RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy );
             CompletionHandler completionHandler = null;
 
@@ -492,6 +492,8 @@ class AsyncRepositoryConnector
 
                     private final AtomicBoolean handleTmpFile = new AtomicBoolean( true );
 
+                    private final AtomicBoolean localException = new AtomicBoolean ( false );
+
                     /**
                      * {@inheritDoc}
                      */
@@ -515,13 +517,15 @@ class AsyncRepositoryConnector
                     {
                         try
                         {
+                            logger.debug("onThrowable", t);
                             /**
                              * If an IOException occurs, let's try to resume the request based on how much bytes has
                              * been so far downloaded. Fail after IOException.
                              */
-                            if ( maxRequestTry.get() < maxIOExceptionRetry &&
-                                IOException.class.isAssignableFrom( t.getClass() ) )
+                            if ( !disableResumeSupport && !localException.get() && maxRequestTry.get() < maxIOExceptionRetry
+                                    && IOException.class.isAssignableFrom( t.getClass() ) )
                             {
+                                logger.debug("Trying to recover from an IOException " + activeRequest);
                                 maxRequestTry.incrementAndGet();
                                 Request newRequest = new RequestBuilder( activeRequest ).setRangeOffset(
                                     resumableFile.length() ).build();
@@ -529,6 +533,7 @@ class AsyncRepositoryConnector
                                 deleteFile.set( false );
                                 return;
                             }
+                            localException.set(false);
 
                             if ( closeOnComplete.get() )
                             {
@@ -596,7 +601,10 @@ class AsyncRepositoryConnector
                             }
                             catch ( IOException ex )
                             {
-                                return AsyncHandler.STATE.ABORT;
+                                logger.debug("onBodyPartReceived", ex);
+                                exception = ex;
+                                localException.set(true);
+                                throw ex;
                             }
                         }
                         return super.onBodyPartReceived( content );
@@ -711,6 +719,7 @@ class AsyncRepositoryConnector
                         catch ( Exception ex )
                         {
                             exception = ex;
+                            localException.set(true);
                             throw ex;
                         }
                         finally
@@ -941,7 +950,7 @@ class AsyncRepositoryConnector
         {
             upload.setState( Transfer.State.ACTIVE );
             final DefaultTransferResource transferResource =
-                new DefaultTransferResource( repository.getUrl(), path, file );
+                new DefaultTransferResource( repository.getUrl(), path, file, upload.getTrace() );
 
             try
             {

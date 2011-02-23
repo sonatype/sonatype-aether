@@ -22,6 +22,7 @@ import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.resolution.ArtifactResult;
+import org.sonatype.aether.resolution.DependencyRequest;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.JavaScopes;
 import org.sonatype.aether.util.filter.DependencyFilterUtils;
@@ -54,7 +55,10 @@ public class ResolveTransitiveDependencies
         collectRequest.setRoot( new Dependency( artifact, JavaScopes.COMPILE ) );
         collectRequest.addRepository( repo );
 
-        List<ArtifactResult> artifactResults = system.resolveDependencies( session, collectRequest, classpathFlter );
+        DependencyRequest dependencyRequest = new DependencyRequest( collectRequest, classpathFlter );
+
+        List<ArtifactResult> artifactResults =
+            system.resolveDependencies( session, dependencyRequest ).getArtifactResults();
 
         for ( ArtifactResult artifactResult : artifactResults )
         {

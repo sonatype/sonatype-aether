@@ -14,6 +14,9 @@ package org.sonatype.aether.impl.internal;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.sonatype.aether.RepositorySystemSession;
@@ -56,6 +59,28 @@ public class DefaultRemoteRepositoryManagerTest
         session = null;
     }
 
+    private RemoteRepository newRepo( String id, String url, boolean enabled, String updates, String checksums )
+    {
+        RepositoryPolicy policy = new RepositoryPolicy( enabled, updates, checksums );
+        return new RemoteRepository( id, "test", url ).setPolicy( true, policy ).setPolicy( false, policy );
+    }
+
+    private void assertEqual( RemoteRepository expected, RemoteRepository actual )
+    {
+        assertEquals( "id", expected.getId(), actual.getId() );
+        assertEquals( "url", expected.getUrl(), actual.getUrl() );
+        assertEquals( "type", expected.getContentType(), actual.getContentType() );
+        assertEqual( expected.getPolicy( false ), actual.getPolicy( false ) );
+        assertEqual( expected.getPolicy( true ), actual.getPolicy( true ) );
+    }
+
+    private void assertEqual( RepositoryPolicy expected, RepositoryPolicy actual )
+    {
+        assertEquals( "enabled", expected.isEnabled(), actual.isEnabled() );
+        assertEquals( "checksums", expected.getChecksumPolicy(), actual.getChecksumPolicy() );
+        assertEquals( "updates", expected.getUpdatePolicy(), actual.getUpdatePolicy() );
+    }
+
     @Test
     public void testGetPolicy()
     {
@@ -72,6 +97,67 @@ public class DefaultRemoteRepositoryManagerTest
         assertEquals( true, effectivePolicy.isEnabled() );
         assertEquals( RepositoryPolicy.CHECKSUM_POLICY_IGNORE, effectivePolicy.getChecksumPolicy() );
         assertEquals( RepositoryPolicy.UPDATE_POLICY_ALWAYS, effectivePolicy.getUpdatePolicy() );
+    }
+
+    @Test
+    public void testAggregateSimpleRepos()
+    {
+        RemoteRepository dominant1 = newRepo( "a", "file://", false, "", "" );
+
+        RemoteRepository recessive1 = newRepo( "a", "http://", true, "", "" );
+        RemoteRepository recessive2 = newRepo( "b", "file://", true, "", "" );
+
+        List<RemoteRepository> result =
+            manager.aggregateRepositories( session, Arrays.asList( dominant1 ),
+                                           Arrays.asList( recessive1, recessive2 ), false );
+
+        assertEquals( 2, result.size() );
+        assertEqual( dominant1, result.get( 0 ) );
+        assertEqual( recessive2, result.get( 1 ) );
+    }
+
+    @Test
+    public void testAggregateMirrorRepos_DominantMirrorComplete()
+    {
+        RemoteRepository dominant1 = newRepo( "a", "http://", false, "", "" );
+        RemoteRepository dominantMirror1 = newRepo( "x", "file://", false, "", "" );
+        dominantMirror1.setMirroredRepositories( Arrays.asList( dominant1 ) );
+
+        RemoteRepository recessive1 = newRepo( "a", "https://", true, "", "" );
+        RemoteRepository recessiveMirror1 = newRepo( "x", "http://", true, "", "" );
+        recessiveMirror1.setMirroredRepositories( Arrays.asList( recessive1 ) );
+
+        List<RemoteRepository> result =
+            manager.aggregateRepositories( session, Arrays.asList( dominantMirror1 ),
+                                           Arrays.asList( recessiveMirror1 ), false );
+
+        assertEquals( 1, result.size() );
+        assertEqual( dominantMirror1, result.get( 0 ) );
+        assertEquals( 1, result.get( 0 ).getMirroredRepositories().size() );
+        assertEquals( dominant1, result.get( 0 ).getMirroredRepositories().get( 0 ) );
+    }
+
+    @Test
+    public void testAggregateMirrorRepos_DominantMirrorIncomplete()
+    {
+        RemoteRepository dominant1 = newRepo( "a", "http://", false, "", "" );
+        RemoteRepository dominantMirror1 = newRepo( "x", "file://", false, "", "" );
+        dominantMirror1.setMirroredRepositories( Arrays.asList( dominant1 ) );
+
+        RemoteRepository recessive1 = newRepo( "a", "https://", true, "", "" );
+        RemoteRepository recessive2 = newRepo( "b", "https://", true, "", "" );
+        RemoteRepository recessiveMirror1 = newRepo( "x", "http://", true, "", "" );
+        recessiveMirror1.setMirroredRepositories( Arrays.asList( recessive1, recessive2 ) );
+
+        List<RemoteRepository> result =
+            manager.aggregateRepositories( session, Arrays.asList( dominantMirror1 ),
+                                           Arrays.asList( recessiveMirror1 ), false );
+
+        assertEquals( 1, result.size() );
+        assertEqual( newRepo( "x", "file://", true, "", "" ), result.get( 0 ) );
+        assertEquals( 2, result.get( 0 ).getMirroredRepositories().size() );
+        assertEquals( dominant1, result.get( 0 ).getMirroredRepositories().get( 0 ) );
+        assertEquals( recessive2, result.get( 0 ).getMirroredRepositories().get( 1 ) );
     }
 
     private static class StubUpdateCheckManager
