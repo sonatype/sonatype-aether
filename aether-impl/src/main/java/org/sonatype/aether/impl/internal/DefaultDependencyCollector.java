@@ -397,27 +397,12 @@ public class DefaultDependencyCollector
                     Artifact originalArtifact = dependency.getArtifact().setVersion( version.toString() );
                     Dependency d = dependency.setArtifact( originalArtifact );
 
-                    List<RemoteRepository> repos;
-                    ArtifactRepository repo = rangeResult.getRepository( version );
-                    if ( repo instanceof RemoteRepository )
-                    {
-                        repos = Collections.singletonList( (RemoteRepository) repo );
-                    }
-                    else if ( repo == null )
-                    {
-                        repos = repositories;
-                    }
-                    else
-                    {
-                        repos = Collections.emptyList();
-                    }
-
                     ArtifactDescriptorResult descriptorResult;
                     try
                     {
                         ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
                         descriptorRequest.setArtifact( d.getArtifact() );
-                        descriptorRequest.setRepositories( repos );
+                        descriptorRequest.setRepositories( repositories );
                         descriptorRequest.setRequestContext( result.getRequest().getRequestContext() );
                         descriptorRequest.setTrace( trace );
 
@@ -490,6 +475,21 @@ public class DefaultDependencyCollector
                     else
                     {
                         key = pool.toKey( d.getArtifact(), repositories );
+                    }
+
+                    List<RemoteRepository> repos;
+                    ArtifactRepository repo = rangeResult.getRepository( version );
+                    if ( repo instanceof RemoteRepository )
+                    {
+                        repos = Collections.singletonList( (RemoteRepository) repo );
+                    }
+                    else if ( repo == null )
+                    {
+                        repos = repositories;
+                    }
+                    else
+                    {
+                        repos = Collections.emptyList();
                     }
 
                     boolean cacheNode = false;

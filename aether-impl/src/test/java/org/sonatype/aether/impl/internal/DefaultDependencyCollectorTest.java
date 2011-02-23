@@ -15,6 +15,7 @@ package org.sonatype.aether.impl.internal;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,6 +25,7 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.collection.CollectResult;
 import org.sonatype.aether.collection.DependencyCollectionContext;
@@ -32,8 +34,11 @@ import org.sonatype.aether.collection.DependencyManagement;
 import org.sonatype.aether.collection.DependencyManager;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.impl.ArtifactDescriptorReader;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.resolution.ArtifactDescriptorException;
+import org.sonatype.aether.resolution.ArtifactDescriptorRequest;
+import org.sonatype.aether.resolution.ArtifactDescriptorResult;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.DependencyGraphParser;
 import org.sonatype.aether.util.artifact.ArtifactProperties;
@@ -269,6 +274,36 @@ public class DefaultDependencyCollectorTest
 
         assertEquals( 0, path( result.getRoot(), 1 ).getChildren().size() );
         assertEquals( root2.getDependency(), dep( result.getRoot(), 1 ) );
+    }
+
+    @Test
+    public void testArtifactDescriptorResolutionNotRestrictedToRepoHostingSelectedVersion()
+        throws Exception
+    {
+        RemoteRepository repo2 = new RemoteRepository( "test", "default", "file:///" );
+
+        final List<RemoteRepository> repos = new ArrayList<RemoteRepository>();
+
+        collector.setArtifactDescriptorReader( new ArtifactDescriptorReader()
+        {
+            public ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session,
+                                                                    ArtifactDescriptorRequest request )
+                throws ArtifactDescriptorException
+            {
+                repos.addAll( request.getRepositories() );
+                return new ArtifactDescriptorResult( request );
+            }
+        } );
+
+        DependencyNode root = parser.parseLiteral( "verrange:parent:jar:[1,):compile" );
+        List<Dependency> dependencies = Arrays.asList( root.getDependency() );
+        CollectRequest request = new CollectRequest( dependencies, null, Arrays.asList( repository, repo2 ) );
+        CollectResult result = collector.collectDependencies( session, request );
+
+        assertEquals( 0, result.getExceptions().size() );
+        assertEquals( 2, repos.size() );
+        assertEquals( "id", repos.get( 0 ).getId() );
+        assertEquals( "test", repos.get( 1 ).getId() );
     }
 
     @Test
