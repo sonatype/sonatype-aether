@@ -110,7 +110,7 @@ public class LocalArtifactResult
     /**
      * Gets the (first) remote repository from which the artifact was cached (if any).
      * 
-     * @return The remote repository from which the artifact was originally retrieved or {@code null} if unkown or if
+     * @return The remote repository from which the artifact was originally retrieved or {@code null} if unknown or if
      *         the artifact has been locally installed.
      * @see LocalArtifactRequest#getRepositories()
      */
@@ -122,7 +122,7 @@ public class LocalArtifactResult
     /**
      * Sets the (first) remote repository from which the artifact was cached.
      * 
-     * @param repository The remote repository from which the artifact was originally retrieved, maybe {@code null} if
+     * @param repository The remote repository from which the artifact was originally retrieved, may be {@code null} if
      *            unknown or if the artifact has been locally installed.
      * @return This result for chaining, never {@code null}.
      */

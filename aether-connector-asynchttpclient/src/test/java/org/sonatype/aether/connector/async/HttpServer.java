@@ -481,7 +481,7 @@ public class HttpServer
     /**
      * Sets the latency of the server.
      *
-     * @param millis The latency in milliseconds, maybe negative for infinite delay.
+     * @param millis The latency in milliseconds, may be negative for infinite delay.
      * @return This server, never {@code null}.
      */
     public HttpServer setLatency( long millis )

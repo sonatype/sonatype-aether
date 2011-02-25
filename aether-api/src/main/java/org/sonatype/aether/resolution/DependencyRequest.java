@@ -52,7 +52,7 @@ public class DependencyRequest
      * Creates a request for the specified dependency graph and with the given resolution filter.
      * 
      * @param node The root node of the dependency graph whose artifacts should be resolved, may be {@code null}.
-     * @param filter The resolution filter to use, maybe {@code null}.
+     * @param filter The resolution filter to use, may be {@code null}.
      */
     public DependencyRequest( DependencyNode node, DependencyFilter filter )
     {
@@ -65,7 +65,7 @@ public class DependencyRequest
      * 
      * @param request The collect request used to calculate the dependency graph whose artifacts should be resolved, may
      *            be {@code null}.
-     * @param filter The resolution filter to use, maybe {@code null}.
+     * @param filter The resolution filter to use, may be {@code null}.
      */
     public DependencyRequest( CollectRequest request, DependencyFilter filter )
     {
