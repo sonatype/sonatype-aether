@@ -15,6 +15,7 @@ package org.sonatype.aether.util.artifact;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.util.Collections;
 
 import org.junit.Test;
 import org.sonatype.aether.artifact.Artifact;
@@ -38,6 +39,16 @@ public class SubArtifactTest
         assertNotNull( a.getFile() );
         a = new SubArtifact( a, "", "pom" );
         assertNull( a.getFile() );
+    }
+
+    @Test
+    public void testMainArtifactPropertiesNotRetained()
+    {
+        Artifact a = newMainArtifact( "gid:aid:ver" ).setProperties( Collections.singletonMap( "key", "value" ) );
+        assertEquals( 1, a.getProperties().size() );
+        a = new SubArtifact( a, "", "pom" );
+        assertEquals( 0, a.getProperties().size() );
+        assertSame( null, a.getProperty( "key", null ) );
     }
 
     @Test( expected = IllegalArgumentException.class )

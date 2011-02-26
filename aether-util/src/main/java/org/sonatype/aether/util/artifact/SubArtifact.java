@@ -13,6 +13,8 @@ package org.sonatype.aether.util.artifact;
  *******************************************************************************/
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.sonatype.aether.artifact.Artifact;
@@ -33,6 +35,8 @@ public final class SubArtifact
     private final String extension;
 
     private final File file;
+
+    private final Map<String, String> properties;
 
     /**
      * Creates a new sub artifact. The classifier and extension specified for this artifact may use the asterisk
@@ -62,6 +66,24 @@ public final class SubArtifact
      */
     public SubArtifact( Artifact mainArtifact, String classifier, String extension, File file )
     {
+        this( mainArtifact, classifier, extension, null, file );
+    }
+
+    /**
+     * Creates a new sub artifact. The classifier and extension specified for this artifact may use the asterisk
+     * character "*" to refer to the corresponding property of the main artifact. For instance, the classifier
+     * "*-sources" can be used to refer to the source attachment of an artifact. Likewise, the extension "*.asc" can be
+     * used to refer to the GPG signature of an artifact.
+     * 
+     * @param mainArtifact The artifact from which to derive the identity, must not be {@code null}.
+     * @param classifier The classifier for this artifact, may be {@code null} if none.
+     * @param extension The extension for this artifact, may be {@code null} if none.
+     * @param properties The properties of the artifact, may be {@code null}.
+     * @param file The file for this artifact, may be {@code null} if unresolved.
+     */
+    public SubArtifact( Artifact mainArtifact, String classifier, String extension, Map<String, String> properties,
+                        File file )
+    {
         if ( mainArtifact == null )
         {
             throw new IllegalArgumentException( "no artifact specified" );
@@ -70,6 +92,25 @@ public final class SubArtifact
         this.classifier = classifier;
         this.extension = extension;
         this.file = file;
+        if ( properties != null && !properties.isEmpty() )
+        {
+            this.properties = new HashMap<String, String>( properties );
+        }
+        else
+        {
+            this.properties = Collections.emptyMap();
+        }
+    }
+
+    private SubArtifact( Artifact mainArtifact, String classifier, String extension, File file,
+                         Map<String, String> properties )
+    {
+        // NOTE: This constructor assumes immutability of the provided properties, for internal use only
+        this.mainArtifact = mainArtifact;
+        this.classifier = classifier;
+        this.extension = extension;
+        this.file = file;
+        this.properties = properties;
     }
 
     public String getGroupId()
@@ -124,17 +165,27 @@ public final class SubArtifact
         {
             return this;
         }
-        return new SubArtifact( mainArtifact, classifier, extension, file );
+        return new SubArtifact( mainArtifact, classifier, extension, file, properties );
     }
 
     public String getProperty( String key, String defaultValue )
     {
-        return mainArtifact.getProperty( key, defaultValue );
+        String value = properties.get( key );
+        return ( value != null ) ? value : defaultValue;
     }
 
     public Map<String, String> getProperties()
     {
-        return mainArtifact.getProperties();
+        return Collections.unmodifiableMap( properties );
+    }
+
+    public Artifact setProperties( Map<String, String> properties )
+    {
+        if ( this.properties.equals( properties ) || ( properties == null && this.properties.isEmpty() ) )
+        {
+            return this;
+        }
+        return new SubArtifact( mainArtifact, classifier, extension, properties, file );
     }
 
     private static String expand( String pattern, String replacement )
