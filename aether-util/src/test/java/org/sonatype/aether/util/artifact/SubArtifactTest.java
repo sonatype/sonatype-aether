@@ -16,6 +16,8 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 import org.sonatype.aether.artifact.Artifact;
@@ -117,6 +119,33 @@ public class SubArtifactTest
         assertEquals( "ext.asc", sub.getExtension() );
         sub = new SubArtifact( main, "", "asc.*" );
         assertEquals( "asc.ext", sub.getExtension() );
+    }
+
+    @Test
+    public void testImmutability()
+    {
+        Artifact a = new SubArtifact( newMainArtifact( "gid:aid:ver" ), "", "pom" );
+        assertNotSame( a, a.setFile( new File( "file" ) ) );
+        assertNotSame( a, a.setVersion( "otherVersion" ) );
+        assertNotSame( a, a.setProperties( Collections.singletonMap( "key", "value" ) ) );
+    }
+
+    @Test
+    public void testPropertiesCopied()
+    {
+        Map<String, String> props = new HashMap<String, String>();
+        props.put( "key", "value1" );
+
+        Artifact a = new SubArtifact( newMainArtifact( "gid:aid:ver" ), "", "pom", props, null );
+        assertEquals( "value1", a.getProperty( "key", null ) );
+        props.clear();
+        assertEquals( "value1", a.getProperty( "key", null ) );
+
+        props.put( "key", "value2" );
+        a = a.setProperties( props );
+        assertEquals( "value2", a.getProperty( "key", null ) );
+        props.clear();
+        assertEquals( "value2", a.getProperty( "key", null ) );
     }
 
 }

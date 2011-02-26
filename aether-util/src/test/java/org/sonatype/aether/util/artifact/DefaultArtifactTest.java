@@ -15,6 +15,7 @@ package org.sonatype.aether.util.artifact;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,14 +85,10 @@ public class DefaultArtifactTest
     @Test
     public void testImmutability()
     {
-        String coords = "gid:aid:ext:cls:ver";
-        HashMap<String, String> map = new HashMap<String, String>();
-        map.put( "someProperty", "someValue" );
-
-        Artifact a = new DefaultArtifact( coords );
+        Artifact a = new DefaultArtifact( "gid:aid:ext:cls:ver" );
         assertNotSame( a, a.setFile( new File( "file" ) ) );
         assertNotSame( a, a.setVersion( "otherVersion" ) );
-        assertNotSame( a, a.setProperties( map ) );
+        assertNotSame( a, a.setProperties( Collections.singletonMap( "key", "value" ) ) );
     }
 
     @Test
@@ -138,6 +135,24 @@ public class DefaultArtifactTest
         assertEquals( "rubbish", a.getProperties().get( ArtifactProperties.INCLUDES_DEPENDENCIES ) );
         assertEquals( "rubbish", a.getProperties().get( ArtifactProperties.CONSTITUTES_BUILD_PATH ) );
         assertEquals( "someNonStandardProperty", a.getProperties().get( "someNonStandardProperty" ) );
+    }
+
+    @Test
+    public void testPropertiesCopied()
+    {
+        Map<String, String> props = new HashMap<String, String>();
+        props.put( "key", "value1" );
+
+        Artifact a = new DefaultArtifact( "gid:aid:1", props );
+        assertEquals( "value1", a.getProperty( "key", null ) );
+        props.clear();
+        assertEquals( "value1", a.getProperty( "key", null ) );
+
+        props.put( "key", "value2" );
+        a = a.setProperties( props );
+        assertEquals( "value2", a.getProperty( "key", null ) );
+        props.clear();
+        assertEquals( "value2", a.getProperty( "key", null ) );
     }
 
 }
