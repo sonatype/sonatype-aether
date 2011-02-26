@@ -116,8 +116,6 @@ public interface Artifact
      * <dd>A high-level characterization of the artifact, e.g. "maven-plugin" or "test-jar".</dd>
      * <dt>language</dt>
      * <dd>The programming language this artifact is relevant for, e.g. "java" or "none".</dd>
-     * <dt>lacksDescriptor</dt>
-     * <dd>A boolean flag indicating whether the artifact has knowingly no accompanying artifact descriptor.</dd>
      * <dt>includesDependencies</dt>
      * <dd>A boolean flag indicating whether the artifact presents some kind of bundle that physically includes its
      * dependencies, e.g. a fat WAR.</dd>
