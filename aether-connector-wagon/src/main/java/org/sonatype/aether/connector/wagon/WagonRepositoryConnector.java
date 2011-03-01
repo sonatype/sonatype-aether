@@ -144,6 +144,11 @@ class WagonRepositoryConnector
         wagonRepo.setPermissions( getPermissions( repository.getId(), session ) );
 
         wagonHint = wagonRepo.getProtocol().toLowerCase( Locale.ENGLISH );
+        if ( wagonHint == null || wagonHint.length() <= 0 )
+        {
+            throw new NoRepositoryConnectorException( repository );
+        }
+
         try
         {
             wagons.add( lookupWagon() );
