@@ -85,7 +85,9 @@ public interface RepositorySystemSession
      * repositories being used for resolution.
      * 
      * @return The global checksum policy or {@code null}/empty if not set and the per-repository policies apply.
-     * @see RepositoryPolicy
+     * @see RepositoryPolicy#CHECKSUM_POLICY_FAIL
+     * @see RepositoryPolicy#CHECKSUM_POLICY_IGNORE
+     * @see RepositoryPolicy#CHECKSUM_POLICY_WARN
      */
     String getChecksumPolicy();
 
@@ -94,7 +96,9 @@ public interface RepositorySystemSession
      * repositories being used for resolution.
      * 
      * @return The global update policy or {@code null}/empty if not set and the per-repository policies apply.
-     * @see RepositoryPolicy
+     * @see RepositoryPolicy#UPDATE_POLICY_ALWAYS
+     * @see RepositoryPolicy#UPDATE_POLICY_DAILY
+     * @see RepositoryPolicy#UPDATE_POLICY_NEVER
      */
     String getUpdatePolicy();
 
@@ -153,7 +157,7 @@ public interface RepositorySystemSession
     Map<String, String> getUserProperties();
 
     /**
-     * The configuration properties used to tweak internal aspects of the repository system (e.g. thread pooling,
+     * Gets the configuration properties used to tweak internal aspects of the repository system (e.g. thread pooling,
      * connector-specific behavior, etc.)
      * 
      * @return The (read-only) configuration properties, never {@code null}.

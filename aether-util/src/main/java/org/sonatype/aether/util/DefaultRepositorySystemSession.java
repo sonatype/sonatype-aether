@@ -35,6 +35,7 @@ import org.sonatype.aether.repository.MirrorSelector;
 import org.sonatype.aether.repository.Proxy;
 import org.sonatype.aether.repository.ProxySelector;
 import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.repository.WorkspaceReader;
 import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.util.graph.manager.NoopDependencyManager;
@@ -43,7 +44,9 @@ import org.sonatype.aether.util.graph.transformer.NoopDependencyGraphTransformer
 import org.sonatype.aether.util.graph.traverser.StaticDependencyTraverser;
 
 /**
- * A simple repository system session.
+ * A simple repository system session. <em>Note:</em> This class is not thread-safe. It is assumed that the mutators get
+ * only called during an initialize phase and the session itself is not changed when being used by the repository
+ * system.
  * 
  * @author Benjamin Bentmann
  */
@@ -153,6 +156,13 @@ public class DefaultRepositorySystemSession
         return offline;
     }
 
+    /**
+     * Controls whether the repository system operates in offline mode and avoids/refuses any access to remote
+     * repositories.
+     * 
+     * @param offline {@code true} if the repository system is in offline mode, {@code false} otherwise.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setOffline( boolean offline )
     {
         this.offline = offline;
@@ -164,6 +174,15 @@ public class DefaultRepositorySystemSession
         return transferErrorCachingEnabled;
     }
 
+    /**
+     * Controls whether transfer errors (e.g. unreachable host, bad authentication) from resolution attempts should be
+     * cached in the local repository. If caching is enabled, resolution will not be reattempted until the update policy
+     * for the affected resource has expired.
+     * 
+     * @param transferErrorCachingEnabled {@code true} to cache transfer errors, {@code false} to always reattempt
+     *            downloading.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setTransferErrorCachingEnabled( boolean transferErrorCachingEnabled )
     {
         this.transferErrorCachingEnabled = transferErrorCachingEnabled;
@@ -175,6 +194,15 @@ public class DefaultRepositorySystemSession
         return notFoundCachingEnabled;
     }
 
+    /**
+     * Controls whether missing artifacts/metadata from resolution attempts should be cached in the local repository. If
+     * caching is enabled, resolution will not be reattempted until the update policy for the affected resource has
+     * expired.
+     * 
+     * @param notFoundCachingEnabled {@code true} if to cache missing resources, {@code false} to always reattempt
+     *            downloading.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setNotFoundCachingEnabled( boolean notFoundCachingEnabled )
     {
         this.notFoundCachingEnabled = notFoundCachingEnabled;
@@ -186,6 +214,14 @@ public class DefaultRepositorySystemSession
         return ignoreMissingArtifactDescriptor;
     }
 
+    /**
+     * Controls whether missing artifact descriptors are silently ignored. If enabled and no artifact descriptor is
+     * available, an empty stub descriptor is used instead.
+     * 
+     * @param ignoreMissingArtifactDescriptor {@code true} if to ignore missing artifact descriptors, {@code false} to
+     *            fail the operation with an exception.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setIgnoreMissingArtifactDescriptor( boolean ignoreMissingArtifactDescriptor )
     {
         this.ignoreMissingArtifactDescriptor = ignoreMissingArtifactDescriptor;
@@ -197,6 +233,14 @@ public class DefaultRepositorySystemSession
         return ignoreInvalidArtifactDescriptor;
     }
 
+    /**
+     * Controls whether invalid artifact descriptors are silently ignored. If enabled and an artifact descriptor is
+     * invalid, an empty stub descriptor is used instead.
+     * 
+     * @param ignoreInvalidArtifactDescriptor {@code true} if to ignore invalid artifact descriptors, {@code false} to
+     *            fail the operation with an exception.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setIgnoreInvalidArtifactDescriptor( boolean ignoreInvalidArtifactDescriptor )
     {
         this.ignoreInvalidArtifactDescriptor = ignoreInvalidArtifactDescriptor;
@@ -208,6 +252,16 @@ public class DefaultRepositorySystemSession
         return checksumPolicy;
     }
 
+    /**
+     * Sets the global checksum policy. If set, the global checksum policy overrides the checksum policies of the remote
+     * repositories being used for resolution.
+     * 
+     * @param checksumPolicy The global checksum policy, may be {@code null}/empty to apply the per-repository policies.
+     * @return This session for chaining, never {@code null}.
+     * @see RepositoryPolicy#CHECKSUM_POLICY_FAIL
+     * @see RepositoryPolicy#CHECKSUM_POLICY_IGNORE
+     * @see RepositoryPolicy#CHECKSUM_POLICY_WARN
+     */
     public DefaultRepositorySystemSession setChecksumPolicy( String checksumPolicy )
     {
         this.checksumPolicy = checksumPolicy;
@@ -219,6 +273,16 @@ public class DefaultRepositorySystemSession
         return updatePolicy;
     }
 
+    /**
+     * Sets the global update policy. If set, the global update policy overrides the update policies of the remote
+     * repositories being used for resolution.
+     * 
+     * @param updatePolicy The global update policy, may be {@code null}/empty to apply the per-repository policies.
+     * @return This session for chaining, never {@code null}.
+     * @see RepositoryPolicy#UPDATE_POLICY_ALWAYS
+     * @see RepositoryPolicy#UPDATE_POLICY_DAILY
+     * @see RepositoryPolicy#UPDATE_POLICY_NEVER
+     */
     public DefaultRepositorySystemSession setUpdatePolicy( String updatePolicy )
     {
         this.updatePolicy = updatePolicy;
@@ -236,6 +300,13 @@ public class DefaultRepositorySystemSession
         return localRepositoryManager;
     }
 
+    /**
+     * Sets the local repository manager used during this session. Eventually, a valid session must have a local
+     * repository manager set.
+     * 
+     * @param localRepositoryManager The local repository manager used during this session, may be {@code null}.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setLocalRepositoryManager( LocalRepositoryManager localRepositoryManager )
     {
         this.localRepositoryManager = localRepositoryManager;
@@ -247,6 +318,13 @@ public class DefaultRepositorySystemSession
         return workspaceReader;
     }
 
+    /**
+     * Sets the workspace reader used during this session. If set, the workspace reader will usually be consulted first
+     * to resolve artifacts.
+     * 
+     * @param workspaceReader The workspace reader for this session, may be {@code null} if none.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setWorkspaceReader( WorkspaceReader workspaceReader )
     {
         this.workspaceReader = workspaceReader;
@@ -258,6 +336,12 @@ public class DefaultRepositorySystemSession
         return repositoryListener;
     }
 
+    /**
+     * Sets the listener being notified of actions in the repository system.
+     * 
+     * @param repositoryListener The repository listener, may be {@code null} if none.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setRepositoryListener( RepositoryListener repositoryListener )
     {
         this.repositoryListener = repositoryListener;
@@ -269,6 +353,12 @@ public class DefaultRepositorySystemSession
         return transferListener;
     }
 
+    /**
+     * Sets the listener being notified of uploads/downloads by the repository system.
+     * 
+     * @param transferListener The transfer listener, may be {@code null} if none.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setTransferListener( TransferListener transferListener )
     {
         this.transferListener = transferListener;
@@ -305,6 +395,13 @@ public class DefaultRepositorySystemSession
         return systemProperties;
     }
 
+    /**
+     * Sets the system properties to use, e.g. for processing of artifact descriptors. System properties are usually
+     * collected from the runtime environment like {@link System#getProperties()} and environment variables.
+     * 
+     * @param systemProperties The system properties, may be {@code null} or empty if none.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setSystemProperties( Map<String, String> systemProperties )
     {
         if ( systemProperties == null )
@@ -318,12 +415,26 @@ public class DefaultRepositorySystemSession
         return this;
     }
 
+    /**
+     * Sets the system properties to use, e.g. for processing of artifact descriptors. System properties are usually
+     * collected from the runtime environment like {@link System#getProperties()} and environment variables.
+     * 
+     * @param systemProperties The system properties, may be {@code null} or empty if none.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setSystemProps( Hashtable<?, ?> systemProperties )
     {
         this.systemProperties = toSafeMap( systemProperties, String.class );
         return this;
     }
 
+    /**
+     * Sets the specified system property.
+     * 
+     * @param key The property key, must not be {@code null}.
+     * @param value The property value, may be {@code null} to remove/unset the property.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setSystemProperty( String key, String value )
     {
         if ( value != null )
@@ -342,6 +453,14 @@ public class DefaultRepositorySystemSession
         return userProperties;
     }
 
+    /**
+     * Sets the user properties to use, e.g. for processing of artifact descriptors. User properties are similar to
+     * system properties but are set on the discretion of the user and hence are considered of higher priority than
+     * system properties.
+     * 
+     * @param userProperties The user properties, may be {@code null} or empty if none.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setUserProperties( Map<String, String> userProperties )
     {
         if ( userProperties == null )
@@ -355,12 +474,27 @@ public class DefaultRepositorySystemSession
         return this;
     }
 
+    /**
+     * Sets the user properties to use, e.g. for processing of artifact descriptors. User properties are similar to
+     * system properties but are set on the discretion of the user and hence are considered of higher priority than
+     * system properties.
+     * 
+     * @param userProperties The user properties, may be {@code null} or empty if none.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setUserProps( Map<?, ?> userProperties )
     {
         this.userProperties = toSafeMap( userProperties, String.class );
         return this;
     }
 
+    /**
+     * Sets the specified user property.
+     * 
+     * @param key The property key, must not be {@code null}.
+     * @param value The property value, may be {@code null} to remove/unset the property.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setUserProperty( String key, String value )
     {
         if ( value != null )
@@ -379,6 +513,13 @@ public class DefaultRepositorySystemSession
         return configProperties;
     }
 
+    /**
+     * Sets the configuration properties used to tweak internal aspects of the repository system (e.g. thread pooling,
+     * connector-specific behavior, etc.)
+     * 
+     * @param configProperties The configuration properties, may be {@code null} or empty if none.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setConfigProperties( Map<String, Object> configProperties )
     {
         if ( configProperties == null )
@@ -392,12 +533,26 @@ public class DefaultRepositorySystemSession
         return this;
     }
 
+    /**
+     * Sets the configuration properties used to tweak internal aspects of the repository system (e.g. thread pooling,
+     * connector-specific behavior, etc.)
+     * 
+     * @param configProperties The configuration properties, may be {@code null} or empty if none.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setConfigProps( Map<?, ?> configProperties )
     {
         this.configProperties = toSafeMap( configProperties, Object.class );
         return this;
     }
 
+    /**
+     * Sets the specified configuration property.
+     * 
+     * @param key The property key, must not be {@code null}.
+     * @param value The property value, may be {@code null} to remove/unset the property.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setConfigProperty( String key, Object value )
     {
         if ( value != null )
@@ -416,6 +571,14 @@ public class DefaultRepositorySystemSession
         return mirrorSelector;
     }
 
+    /**
+     * Sets the mirror selector to use for repositories discovered in artifact descriptors. Note that this selector is
+     * not used for remote repositories which are passed as request parameters to the repository system, those
+     * repositories are supposed to denote the effective repositories.
+     * 
+     * @param mirrorSelector The mirror selector to use, may be {@code null}.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setMirrorSelector( MirrorSelector mirrorSelector )
     {
         this.mirrorSelector = mirrorSelector;
@@ -431,6 +594,15 @@ public class DefaultRepositorySystemSession
         return proxySelector;
     }
 
+    /**
+     * Sets the proxy selector to use for repositories discovered in artifact descriptors. Note that this selector is
+     * not used for remote repositories which are passed as request parameters to the repository system, those
+     * repositories are supposed to have their proxy (if any) already set.
+     * 
+     * @param proxySelector The proxy selector to use, may be {@code null}.
+     * @return This session for chaining, never {@code null}.
+     * @see org.sonatype.aether.repository.RemoteRepository#getProxy()
+     */
     public DefaultRepositorySystemSession setProxySelector( ProxySelector proxySelector )
     {
         this.proxySelector = proxySelector;
@@ -446,6 +618,15 @@ public class DefaultRepositorySystemSession
         return authenticationSelector;
     }
 
+    /**
+     * Sets the authentication selector to use for repositories discovered in artifact descriptors. Note that this
+     * selector is not used for remote repositories which are passed as request parameters to the repository system,
+     * those repositories are supposed to have their authentication (if any) already set.
+     * 
+     * @param authenticationSelector The authentication selector to use, may be {@code null}.
+     * @return This session for chaining, never {@code null}.
+     * @see org.sonatype.aether.repository.RemoteRepository#getAuthentication()
+     */
     public DefaultRepositorySystemSession setAuthenticationSelector( AuthenticationSelector authenticationSelector )
     {
         this.authenticationSelector = authenticationSelector;
@@ -461,6 +642,12 @@ public class DefaultRepositorySystemSession
         return artifactTypeRegistry;
     }
 
+    /**
+     * Sets the registry of artifact types recognized by this session.
+     * 
+     * @param artifactTypeRegistry The artifact type registry, may be {@code null}.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setArtifactTypeRegistry( ArtifactTypeRegistry artifactTypeRegistry )
     {
         this.artifactTypeRegistry = artifactTypeRegistry;
@@ -476,6 +663,12 @@ public class DefaultRepositorySystemSession
         return dependencyTraverser;
     }
 
+    /**
+     * Sets the dependency traverser to use for building dependency graphs.
+     * 
+     * @param dependencyTraverser The dependency traverser to use for building dependency graphs, may be {@code null}.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setDependencyTraverser( DependencyTraverser dependencyTraverser )
     {
         this.dependencyTraverser = dependencyTraverser;
@@ -491,6 +684,12 @@ public class DefaultRepositorySystemSession
         return dependencyManager;
     }
 
+    /**
+     * Sets the dependency manager to use for building dependency graphs.
+     * 
+     * @param dependencyManager The dependency manager to use for building dependency graphs, may be {@code null}.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setDependencyManager( DependencyManager dependencyManager )
     {
         this.dependencyManager = dependencyManager;
@@ -506,6 +705,12 @@ public class DefaultRepositorySystemSession
         return dependencySelector;
     }
 
+    /**
+     * Sets the dependency selector to use for building dependency graphs.
+     * 
+     * @param dependencySelector The dependency selector to use for building dependency graphs, may be {@code null}.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setDependencySelector( DependencySelector dependencySelector )
     {
         this.dependencySelector = dependencySelector;
@@ -521,6 +726,13 @@ public class DefaultRepositorySystemSession
         return dependencyGraphTransformer;
     }
 
+    /**
+     * Sets the dependency graph transformer to use for building dependency graphs.
+     * 
+     * @param dependencyGraphTransformer The dependency graph transformer to use for building dependency graphs, may be
+     *            {@code null}.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setDependencyGraphTransformer( DependencyGraphTransformer dependencyGraphTransformer )
     {
         this.dependencyGraphTransformer = dependencyGraphTransformer;
@@ -531,22 +743,38 @@ public class DefaultRepositorySystemSession
         return this;
     }
 
-    public RepositoryCache getCache()
-    {
-        return cache;
-    }
-
-    public DefaultRepositorySystemSession setData( SessionData data )
-    {
-        this.data = data;
-        return this;
-    }
-
     public SessionData getData()
     {
         return data;
     }
 
+    /**
+     * Sets the custom data associated with this session.
+     * 
+     * @param data The session data, may be {@code null}.
+     * @return This session for chaining, never {@code null}.
+     */
+    public DefaultRepositorySystemSession setData( SessionData data )
+    {
+        this.data = data;
+        if ( this.data == null )
+        {
+            this.data = new DefaultSessionData();
+        }
+        return this;
+    }
+
+    public RepositoryCache getCache()
+    {
+        return cache;
+    }
+
+    /**
+     * Sets the cache the repository system may use to save data for future reuse during the session.
+     * 
+     * @param cache The repository cache, may be {@code null} if none.
+     * @return This session for chaining, never {@code null}.
+     */
     public DefaultRepositorySystemSession setCache( RepositoryCache cache )
     {
         this.cache = cache;
