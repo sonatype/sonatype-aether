@@ -23,8 +23,8 @@ import org.sonatype.aether.metadata.Metadata;
  * 
  * <pre>
  * SyncContext syncContext = repositorySystem.newSyncContext( ... );
- * syncContext.acquire( artifacts, metadatas );
  * try {
+ *     syncContext.acquire( artifacts, metadatas );
  *     // work with the artifacts and metadatas
  * } finally {
  *     syncContext.release();
