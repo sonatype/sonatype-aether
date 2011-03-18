@@ -158,7 +158,7 @@ class CompletionHandler
         // The connection has timed out
         if ( status == null )
         {
-            throw new IllegalStateException( "Connection timed out" );
+            throw new TransferException( "Invalid AHC State. Response will possibly gets corrupted." );
         }
         return onCompleted( httpClient.getProvider().prepareResponse( status, headers,
                                                                       Collections.<HttpResponseBodyPart> emptyList() ) );
