@@ -35,7 +35,7 @@ public interface RepositoryConnector
     /**
      * Performs the specified downloads. Any error encountered during a transfer can later be queried via
      * {@link ArtifactDownload#getException()} and {@link MetadataDownload#getException()}, respectively. The connector
-     * may performs the transfers concurrently and in any order.
+     * may perform the transfers concurrently and in any order.
      * 
      * @param artifactDownloads The artifact downloads to perform, may be {@code null} or empty.
      * @param metadataDownloads The metadata downloads to perform, may be {@code null} or empty.
@@ -46,7 +46,7 @@ public interface RepositoryConnector
     /**
      * Performs the specified uploads. Any error encountered during a transfer can later be queried via
      * {@link ArtifactDownload#getException()} and {@link MetadataDownload#getException()}, respectively. The connector
-     * may performs the transfers concurrently and in any order.
+     * may perform the transfers concurrently and in any order.
      * 
      * @param artifactUploads The artifact uploads to perform, may be {@code null} or empty.
      * @param metadataUploads The metadata uploads to perform, may be {@code null} or empty.
