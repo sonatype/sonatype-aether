@@ -62,7 +62,7 @@ public class LocalArtifactResult
      * returns {@code true}. An artifact file can be found but considered unavailable if the artifact was cached from a
      * remote repository that is not part of the list of remote repositories used for the query.
      * 
-     * @return The file to the requested artifact or {@code null}.
+     * @return The file to the requested artifact or {@code null} if the artifact does not exist locally.
      */
     public File getFile()
     {
