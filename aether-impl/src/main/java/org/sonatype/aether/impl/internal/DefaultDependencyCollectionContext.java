@@ -54,4 +54,10 @@ class DefaultDependencyCollectionContext
         return managedDependencies;
     }
 
+    @Override
+    public String toString()
+    {
+        return String.valueOf( getDependency() );
+    }
+
 }

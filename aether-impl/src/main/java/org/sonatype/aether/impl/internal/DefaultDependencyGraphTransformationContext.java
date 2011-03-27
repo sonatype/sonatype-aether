@@ -50,4 +50,10 @@ class DefaultDependencyGraphTransformationContext
         return map.put( key, value );
     }
 
+    @Override
+    public String toString()
+    {
+        return String.valueOf( map );
+    }
+
 }
