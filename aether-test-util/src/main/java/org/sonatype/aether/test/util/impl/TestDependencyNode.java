@@ -36,6 +36,8 @@ public class TestDependencyNode
     implements DependencyNode
 {
 
+    private DependencyNode parent;
+
     private List<DependencyNode> children = new ArrayList<DependencyNode>( 0 );
 
     private Dependency dependency;
@@ -83,6 +85,7 @@ public class TestDependencyNode
      */
     public TestDependencyNode( DependencyNode node )
     {
+        setParent(node.getParent());
         setDependency( node.getDependency() );
         setAliases( node.getAliases() );
         setRequestContext( node.getRequestContext() );
@@ -92,6 +95,16 @@ public class TestDependencyNode
         setRepositories( node.getRepositories() );
         setVersion( node.getVersion() );
         setVersionConstraint( node.getVersionConstraint() );
+    }
+
+    public DependencyNode getParent()
+    {
+        return parent;
+    }
+
+    public void setParent(DependencyNode parent)
+    {
+        this.parent = parent;
     }
 
     public List<DependencyNode> getChildren()

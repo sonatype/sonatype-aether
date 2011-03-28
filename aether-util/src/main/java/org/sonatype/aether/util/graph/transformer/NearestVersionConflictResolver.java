@@ -12,7 +12,9 @@ package org.sonatype.aether.util.graph.transformer;
  * You may elect to redistribute this code under either of these licenses.
  *******************************************************************************/
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.sonatype.aether.RepositoryException;
+import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.DependencyGraphTransformationContext;
 import org.sonatype.aether.collection.DependencyGraphTransformer;
 import org.sonatype.aether.collection.UnsolvableVersionConflictException;
@@ -191,7 +194,58 @@ public class NearestVersionConflictResolver
         {
             versions.add( constraint.toString() );
         }
-        return new UnsolvableVersionConflictException( group.key, versions );
+        if (group.positions == null || group.positions.isEmpty())
+        {
+            return new UnsolvableVersionConflictException(group.key, versions);
+        }
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for ( Position position : group.positions )
+        {
+            if (position == null)
+                continue;
+            List<String> depList = new ArrayList<String>();
+            DependencyNode node = position.parent;
+            while (node != null)
+            {
+                if(node.getDependency() == null)
+                    break;
+                Artifact artifact = node.getDependency().getArtifact();
+                if (artifact == null)
+                    break;
+                String groupId = emptyIfNull (artifact.getGroupId());
+                String artifactId = emptyIfNull (artifact.getArtifactId());
+                String version = emptyIfNull (artifact.getVersion());
+                String artifactString = groupId + "." + artifactId + ":" + version;
+                depList.add(artifactString);
+                node = node.getParent();
+            }
+            Collections.reverse (depList);
+            if (depList.size() > 0)
+            {
+                StringBuilder depString = new StringBuilder ();
+                depString.append(depList.remove(0));
+                for (String artifactString : depList)
+                    depString.append ("-->").append (artifactString);
+                if (first)
+                {
+                    sb.append(depString.toString());
+                    first = false;
+                } else
+                {
+                    sb.append(" ; ").append(depString.toString());
+                }
+            }
+        }
+        return new UnsolvableVersionConflictException( group.key, versions, sb.toString() );
+    }
+
+    private String emptyIfNull (String s)
+    {
+        if (s == null)
+            return "";
+        else
+            return s;
     }
 
     private boolean isNearer( Position pos1, Version ver1, Position pos2, Version ver2 )

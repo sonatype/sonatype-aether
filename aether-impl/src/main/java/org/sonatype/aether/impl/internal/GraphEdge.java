@@ -69,6 +69,15 @@ class GraphEdge
         return target;
     }
 
+    public DependencyNode getParent()
+    {
+        GraphNode s = getSource();
+        if (s != null)
+            return s.getIngoingEdge();
+        else
+            return null;
+    }
+
     public List<DependencyNode> getChildren()
     {
         return getTarget().getOutgoingEdges();

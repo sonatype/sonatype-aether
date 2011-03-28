@@ -27,12 +27,24 @@ import org.sonatype.aether.repository.RemoteRepository;
 class GraphNode
 {
 
+    private DependencyNode ingoingEdge;
+
     private List<DependencyNode> outgoingEdges = new ArrayList<DependencyNode>( 0 );
 
     private Collection<Artifact> aliases = Collections.emptyList();
 
     private List<RemoteRepository> repositories = Collections.emptyList();
 
+    public DependencyNode getIngoingEdge()
+    {
+        return ingoingEdge;
+    }
+
+    public void setIngoingEdge(DependencyNode ingoingEdge)
+    {
+        this.ingoingEdge = ingoingEdge;
+    }
+    
     public List<DependencyNode> getOutgoingEdges()
     {
         return outgoingEdges;
