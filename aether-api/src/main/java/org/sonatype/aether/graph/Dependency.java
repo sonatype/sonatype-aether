@@ -234,5 +234,4 @@ public final class Dependency
         hash = hash * 31 + exclusions.length;
         return hash;
     }
-
 }

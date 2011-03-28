@@ -29,6 +29,12 @@ import org.sonatype.aether.version.VersionConstraint;
  */
 public interface DependencyNode
 {
+    /**
+     * Gets the parent node of this node.
+     * 
+     * @return The parent node of this node or {@code null} if root node.
+     */
+    DependencyNode getParent();
 
     /**
      * Gets the child nodes of this node.
