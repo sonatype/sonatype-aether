@@ -210,10 +210,13 @@ public class DefaultDependencyCollector
             edge.setRelocations( descriptorResult.getRelocations() );
             edge.setVersionConstraint( rangeResult.getVersionConstraint() );
             edge.setVersion( version );
+            node.setIngoingEdge(edge);
         }
         else
         {
-            edge = new GraphEdge( null, new GraphNode() );
+            GraphNode graphNode = new GraphNode();
+            edge = new GraphEdge( null, graphNode );
+            graphNode.setIngoingEdge(edge);
         }
 
         result.setRoot( edge );
@@ -507,6 +510,7 @@ public class DefaultDependencyCollector
                     edge.setRequestContext( result.getRequest().getRequestContext() );
 
                     node.getOutgoingEdges().add( edge );
+                    child.setIngoingEdge(edge);
 
                     if ( recurse )
                     {

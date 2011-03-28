@@ -32,6 +32,8 @@ public class DefaultDependencyNode
     implements DependencyNode
 {
 
+    private DependencyNode parent;
+
     private List<DependencyNode> children = new ArrayList<DependencyNode>( 0 );
 
     private Dependency dependency;
@@ -79,6 +81,7 @@ public class DefaultDependencyNode
      */
     public DefaultDependencyNode( DependencyNode node )
     {
+        setParent(node.getParent());
         setDependency( node.getDependency() );
         setAliases( node.getAliases() );
         setRequestContext( node.getRequestContext() );
@@ -89,6 +92,16 @@ public class DefaultDependencyNode
         setVersion( node.getVersion() );
         setVersionConstraint( node.getVersionConstraint() );
         setData( node.getData() );
+    }
+
+    public DependencyNode getParent()
+    {
+        return parent;
+    }
+
+    public void setParent(DependencyNode parent)
+    {
+        this.parent = parent;
     }
 
     public List<DependencyNode> getChildren()

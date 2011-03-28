@@ -32,6 +32,14 @@ public class UnsolvableVersionConflictException
         this.versions = ( versions != null ) ? versions : Collections.<String> emptyList();
     }
 
+    public UnsolvableVersionConflictException( Object dependencyConflictId, Collection<String> versions, String customMessage )
+    {
+        super( "Could not resolve version conflict for " + dependencyConflictId + " with requested versions "
+            + toList( versions ) + ", details: " + customMessage);
+        this.dependencyConflictId = ( dependencyConflictId != null ) ? dependencyConflictId : "";
+        this.versions = ( versions != null ) ? versions : Collections.<String> emptyList();
+    }
+
     private static String toList( Collection<String> versions )
     {
         StringBuilder buffer = new StringBuilder( 256 );
