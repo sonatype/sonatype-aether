@@ -70,7 +70,7 @@ public class SimpleLocalRepositoryManager
         return repository;
     }
 
-    public String getPathForLocalArtifact( Artifact artifact )
+    private String getPathForArtifact( Artifact artifact, boolean local )
     {
         StringBuilder path = new StringBuilder( 128 );
 
@@ -80,7 +80,15 @@ public class SimpleLocalRepositoryManager
 
         path.append( artifact.getBaseVersion() ).append( '/' );
 
-        path.append( artifact.getArtifactId() ).append( '-' ).append( artifact.getVersion() );
+        path.append( artifact.getArtifactId() ).append( '-' );
+        if ( local )
+        {
+            path.append( artifact.getBaseVersion() );
+        }
+        else
+        {
+            path.append( artifact.getVersion() );
+        }
 
         if ( artifact.getClassifier().length() > 0 )
         {
@@ -92,9 +100,14 @@ public class SimpleLocalRepositoryManager
         return path.toString();
     }
 
+    public String getPathForLocalArtifact( Artifact artifact )
+    {
+        return getPathForArtifact( artifact, true );
+    }
+
     public String getPathForRemoteArtifact( Artifact artifact, RemoteRepository repository, String context )
     {
-        return getPathForLocalArtifact( artifact );
+        return getPathForArtifact( artifact, false );
     }
 
     public String getPathForLocalMetadata( Metadata metadata )
