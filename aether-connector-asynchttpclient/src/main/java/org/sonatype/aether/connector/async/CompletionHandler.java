@@ -107,6 +107,10 @@ class CompletionHandler
         {
             fireTransferProgressed( content.getBodyPartBytes() );
         }
+        catch ( TransferCancelledException e )
+        {
+            return STATE.ABORT;
+        }
         catch ( Exception ex )
         {
             if ( logger.isDebugEnabled() )
@@ -130,7 +134,14 @@ class CompletionHandler
         {
             if ( status.getStatusCode() >= 200 && status.getStatusCode() < 300 )
             {
-                fireTransferStarted();
+                try
+                {
+                    fireTransferStarted();
+                }
+                catch ( TransferCancelledException e )
+                {
+                    return STATE.ABORT;
+                }
             }
         }
 
