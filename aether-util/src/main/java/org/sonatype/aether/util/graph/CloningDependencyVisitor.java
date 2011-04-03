@@ -57,7 +57,7 @@ public class CloningDependencyVisitor
     }
 
     /**
-     * Creates a clone of the specified node for usage as a child of the given parent node.
+     * Creates a clone of the specified node.
      * 
      * @param node The node to clone, must not be {@code null}.
      * @return The cloned node, never {@code null}.
