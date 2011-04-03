@@ -24,7 +24,9 @@ import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.collection.DependencyGraphTransformationContext;
 import org.sonatype.aether.collection.DependencyGraphTransformer;
 import org.sonatype.aether.collection.UnsolvableVersionConflictException;
+import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.util.graph.PathRecordingDependencyVisitor;
 import org.sonatype.aether.version.Version;
 import org.sonatype.aether.version.VersionConstraint;
 
@@ -64,7 +66,7 @@ public class NearestVersionConflictResolver
         {
             ConflictGroup group = new ConflictGroup( key );
             depths.clear();
-            selectVersion( node, null, 0, depths, group, conflictIds );
+            selectVersion( node, null, 0, depths, group, conflictIds, node );
             pruneNonSelectedVersions( group, conflictIds );
         }
 
@@ -72,7 +74,8 @@ public class NearestVersionConflictResolver
     }
 
     private void selectVersion( DependencyNode node, DependencyNode parent, int depth,
-                                Map<DependencyNode, Integer> depths, ConflictGroup group, Map<?, ?> conflictIds )
+                                Map<DependencyNode, Integer> depths, ConflictGroup group, Map<?, ?> conflictIds,
+                                DependencyNode root )
         throws RepositoryException
     {
         Integer smallestDepth = depths.get( node );
@@ -117,7 +120,7 @@ public class NearestVersionConflictResolver
 
                 if ( backtrack )
                 {
-                    backtrack( group );
+                    backtrack( group, conflictIds, root );
                 }
                 else if ( group.version == null || isNearer( pos, node.getVersion(), group.position, group.version ) )
                 {
@@ -129,7 +132,7 @@ public class NearestVersionConflictResolver
             {
                 if ( backtrack )
                 {
-                    backtrack( group );
+                    backtrack( group, conflictIds, root );
                 }
                 return;
             }
@@ -139,7 +142,7 @@ public class NearestVersionConflictResolver
 
         for ( DependencyNode child : node.getChildren() )
         {
-            selectVersion( child, node, depth, depths, group, conflictIds );
+            selectVersion( child, node, depth, depths, group, conflictIds, root );
         }
     }
 
@@ -155,7 +158,7 @@ public class NearestVersionConflictResolver
         return true;
     }
 
-    private void backtrack( ConflictGroup group )
+    private void backtrack( ConflictGroup group, Map<?, ?> conflictIds, DependencyNode root )
         throws UnsolvableVersionConflictException
     {
         group.version = null;
@@ -180,18 +183,23 @@ public class NearestVersionConflictResolver
 
         if ( group.version == null )
         {
-            throw newFailure( group );
+            throw newFailure( group, conflictIds, root );
         }
     }
 
-    private UnsolvableVersionConflictException newFailure( ConflictGroup group )
+    private UnsolvableVersionConflictException newFailure( final ConflictGroup group, final Map<?, ?> conflictIds,
+                                                           DependencyNode root )
     {
-        Collection<String> versions = new LinkedHashSet<String>();
-        for ( VersionConstraint constraint : group.constraints )
+        DependencyFilter filter = new DependencyFilter()
         {
-            versions.add( constraint.toString() );
-        }
-        return new UnsolvableVersionConflictException( group.key, versions );
+            public boolean accept( DependencyNode node, List<DependencyNode> parents )
+            {
+                return group.key.equals( conflictIds.get( node ) );
+            }
+        };
+        PathRecordingDependencyVisitor visitor = new PathRecordingDependencyVisitor( filter );
+        root.accept( visitor );
+        return new UnsolvableVersionConflictException( visitor.getPaths(), group.key );
     }
 
     private boolean isNearer( Position pos1, Version ver1, Position pos2, Version ver2 )
