@@ -57,7 +57,10 @@ class WagonTransferListenerAdapter
         }
         catch ( TransferCancelledException e )
         {
-            // wagon transfers are not freely abortable
+            /*
+             * NOTE: Wagon transfers are not freely abortable. In particular, aborting from
+             * AbstractWagon.fire(Get|Put)Started() would result in unclosed streams so we avoid this case.
+             */
         }
     }
 
@@ -71,7 +74,7 @@ class WagonTransferListenerAdapter
         }
         catch ( TransferCancelledException e )
         {
-            // wagon transfers are not freely abortable
+            throw new WagonCancelledException( e );
         }
     }
 

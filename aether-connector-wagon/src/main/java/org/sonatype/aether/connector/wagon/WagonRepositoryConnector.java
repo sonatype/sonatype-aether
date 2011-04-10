@@ -676,6 +676,11 @@ class WagonRepositoryConnector
             }
             catch ( Exception e )
             {
+                if ( e instanceof WagonCancelledException )
+                {
+                    e = (Exception) e.getCause();
+                }
+
                 exception = e;
 
                 if ( listener != null )
@@ -851,6 +856,11 @@ class WagonRepositoryConnector
             }
             catch ( Exception e )
             {
+                if ( e instanceof WagonCancelledException )
+                {
+                    e = (Exception) e.getCause();
+                }
+
                 exception = e;
 
                 if ( listener != null )
