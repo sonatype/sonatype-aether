@@ -37,6 +37,12 @@ public final class DefaultMetadata
 
     private final File file;
 
+    /**
+     * Creates a new metadata for the repository root with the specific type and nature.
+     * 
+     * @param type The type of the metadata, e.g. "maven-metadata.xml", may be {@code null}.
+     * @param nature The nature of the metadata, must not be {@code null}.
+     */
     public DefaultMetadata( String type, Nature nature )
     {
         groupId = artifactId = version = "";
@@ -49,6 +55,13 @@ public final class DefaultMetadata
         this.file = null;
     }
 
+    /**
+     * Creates a new metadata for the groupId level with the specific type and nature.
+     * 
+     * @param groupId The group identifier to which this metadata applies, may be {@code null}.
+     * @param type The type of the metadata, e.g. "maven-metadata.xml", may be {@code null}.
+     * @param nature The nature of the metadata, must not be {@code null}.
+     */
     public DefaultMetadata( String groupId, String type, Nature nature )
     {
         this.groupId = ( groupId != null ) ? groupId : "";
@@ -62,6 +75,14 @@ public final class DefaultMetadata
         this.file = null;
     }
 
+    /**
+     * Creates a new metadata for the groupId:artifactId level with the specific type and nature.
+     * 
+     * @param groupId The group identifier to which this metadata applies, may be {@code null}.
+     * @param artifactId The artifact identifier to which this metadata applies, may be {@code null}.
+     * @param type The type of the metadata, e.g. "maven-metadata.xml", may be {@code null}.
+     * @param nature The nature of the metadata, must not be {@code null}.
+     */
     public DefaultMetadata( String groupId, String artifactId, String type, Nature nature )
     {
         this.groupId = ( groupId != null ) ? groupId : "";
@@ -76,6 +97,15 @@ public final class DefaultMetadata
         this.file = null;
     }
 
+    /**
+     * Creates a new metadata for the groupId:artifactId:version level with the specific type and nature.
+     * 
+     * @param groupId The group identifier to which this metadata applies, may be {@code null}.
+     * @param artifactId The artifact identifier to which this metadata applies, may be {@code null}.
+     * @param version The version to which this metadata applies, may be {@code null}.
+     * @param type The type of the metadata, e.g. "maven-metadata.xml", may be {@code null}.
+     * @param nature The nature of the metadata, must not be {@code null}.
+     */
     public DefaultMetadata( String groupId, String artifactId, String version, String type, Nature nature )
     {
         this.groupId = ( groupId != null ) ? groupId : "";
@@ -90,6 +120,16 @@ public final class DefaultMetadata
         this.file = null;
     }
 
+    /**
+     * Creates a new metadata for the groupId:artifactId:version level with the specific type and nature.
+     * 
+     * @param groupId The group identifier to which this metadata applies, may be {@code null}.
+     * @param artifactId The artifact identifier to which this metadata applies, may be {@code null}.
+     * @param version The version to which this metadata applies, may be {@code null}.
+     * @param type The type of the metadata, e.g. "maven-metadata.xml", may be {@code null}.
+     * @param nature The nature of the metadata, must not be {@code null}.
+     * @param file The resolved file of the metadata, may be {@code null}.
+     */
     public DefaultMetadata( String groupId, String artifactId, String version, String type, Nature nature, File file )
     {
         this.groupId = ( groupId != null ) ? groupId : "";
