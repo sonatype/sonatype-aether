@@ -167,6 +167,12 @@
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-container-default</artifactId>
         <version>1.5.5</version>
+        <exclusions>
+          <exclusion>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
     </dependencies>
   </dependencyManagement>
