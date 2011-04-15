@@ -73,7 +73,7 @@
 
   <ciManagement>
     <system>Hudson</system>
-    <url>https://grid.sonatype.org/ci/job/Aether/</url>
+    <url>https://builds.sonatype.org/job/aether/</url>
   </ciManagement>
 
   <licenses>
