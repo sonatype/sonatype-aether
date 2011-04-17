@@ -14,14 +14,12 @@ package org.sonatype.aether.util.graph.transformer;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.collection.DependencyGraphTransformationContext;
 import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.test.util.DependencyGraphParser;
@@ -74,7 +72,7 @@ public class ConflictIdSorterTest
     }
 
     public DependencyNode transform( DependencyNode node )
-        throws RepositoryException
+        throws Exception
     {
         node = new SimpleConflictMarker().transformGraph( node, ctx );
         node = sorter.transformGraph( node, ctx );
@@ -83,10 +81,10 @@ public class ConflictIdSorterTest
 
     @Test
     public void testSimple()
-        throws IOException, RepositoryException
+        throws Exception
     {
         DependencyNode node = parser.parse( "simple.txt" );
-        node = transform( node );
+        transform( node );
 
         expectOrder( "gid2:aid::ext", "gid:aid::ext", "gid:aid2::ext" );
         expectCycle( false );
@@ -94,21 +92,32 @@ public class ConflictIdSorterTest
 
     @Test
     public void testCycle()
-        throws RepositoryException, IOException
+        throws Exception
     {
         DependencyNode node = parser.parse( "cycle.txt" );
-        node = transform( node );
+        transform( node );
 
         expectOrder( "gid:aid::ext", "gid2:aid::ext" );
         expectCycle( true );
     }
 
     @Test
+    public void testCycles()
+        throws Exception
+    {
+        DependencyNode node = parser.parse( "cycles.txt" );
+        transform( node );
+
+        expectOrder( "gid1:aid::ext", "gid2:aid::ext", "gid3:aid::ext", "gid:aid::ext" );
+        expectCycle( true );
+    }
+
+    @Test
     public void testNoConflicts()
-        throws RepositoryException, IOException
+        throws Exception
     {
         DependencyNode node = parser.parse( "no-conflicts.txt" );
-        node = transform( node );
+        transform( node );
 
         expectOrder( "gid:aid::ext", "gid3:aid::ext", "gid2:aid::ext", "gid4:aid::ext" );
         expectCycle( false );

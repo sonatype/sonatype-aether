@@ -64,13 +64,13 @@ public class ConflictIdSorter
             Object key = conflictIds.get( node );
             if ( key != null )
             {
-                id = new ConflictId( key );
+                id = new ConflictId( key, 0 );
                 ids.put( key, id );
             }
 
             Map<DependencyNode, Object> visited = new IdentityHashMap<DependencyNode, Object>( conflictIds.size() );
 
-            buildConflitIdDAG( ids, node, id, visited, conflictIds );
+            buildConflitIdDAG( ids, node, id, 0, visited, conflictIds );
         }
 
         topsortConflictIds( ids.values(), context );
@@ -78,7 +78,7 @@ public class ConflictIdSorter
         return node;
     }
 
-    private void buildConflitIdDAG( Map<Object, ConflictId> ids, DependencyNode node, ConflictId id,
+    private void buildConflitIdDAG( Map<Object, ConflictId> ids, DependencyNode node, ConflictId id, int depth,
                                     Map<DependencyNode, Object> visited, Map<?, ?> conflictIds )
     {
         if ( visited.put( node, Boolean.TRUE ) != null )
@@ -86,7 +86,7 @@ public class ConflictIdSorter
             return;
         }
 
-        ConflictId parentId = id;
+        depth++;
 
         for ( DependencyNode child : node.getChildren() )
         {
@@ -94,16 +94,20 @@ public class ConflictIdSorter
             ConflictId childId = ids.get( key );
             if ( childId == null )
             {
-                childId = new ConflictId( key );
+                childId = new ConflictId( key, depth );
                 ids.put( key, childId );
             }
-
-            if ( parentId != null )
+            else
             {
-                parentId.add( childId );
+                childId.pullup( depth );
             }
 
-            buildConflitIdDAG( ids, child, childId, visited, conflictIds );
+            if ( id != null )
+            {
+                id.add( childId );
+            }
+
+            buildConflitIdDAG( ids, child, childId, depth, visited, conflictIds );
         }
     }
 
@@ -150,7 +154,8 @@ public class ConflictIdSorter
                 {
                     continue;
                 }
-                if ( nearest == null || id.inDegree < nearest.inDegree )
+                if ( nearest == null || id.minDepth < nearest.minDepth
+                    || ( id.minDepth == nearest.minDepth && id.inDegree < nearest.inDegree ) )
                 {
                     nearest = id;
                 }
@@ -189,9 +194,12 @@ public class ConflictIdSorter
 
         int inDegree;
 
-        public ConflictId( Object key )
+        int minDepth;
+
+        public ConflictId( Object key, int depth )
         {
             this.key = key;
+            this.minDepth = depth;
         }
 
         public void add( ConflictId child )
@@ -203,6 +211,19 @@ public class ConflictIdSorter
             if ( children.add( child ) )
             {
                 child.inDegree++;
+            }
+        }
+
+        public void pullup( int depth )
+        {
+            if ( depth < minDepth )
+            {
+                minDepth = depth;
+                depth++;
+                for ( ConflictId child : children )
+                {
+                    child.pullup( depth );
+                }
             }
         }
 
@@ -230,7 +251,7 @@ public class ConflictIdSorter
         @Override
         public String toString()
         {
-            return key + " <" + inDegree;
+            return key + " @ " + minDepth + " <" + inDegree;
         }
 
     }
