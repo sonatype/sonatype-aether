@@ -43,6 +43,7 @@ import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.transfer.MetadataNotFoundException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.ConfigUtils;
 import org.sonatype.aether.util.DefaultRequestTrace;
 import org.sonatype.aether.util.concurrency.RunnableErrorForwarder;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
@@ -338,7 +339,7 @@ public class DefaultMetadataResolver
 
         if ( !tasks.isEmpty() )
         {
-            int threads = ConfigurationProperties.get( session, "aether.metadataResolver.threads", 4 );
+            int threads = ConfigUtils.get( session, "aether.metadataResolver.threads", 4 );
             Executor executor = getExecutor( Math.min( tasks.size(), threads ) );
             try
             {

@@ -65,6 +65,7 @@ import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.util.ChecksumUtils;
+import org.sonatype.aether.util.ConfigUtils;
 import org.sonatype.aether.util.StringUtils;
 import org.sonatype.aether.util.concurrency.RunnableErrorForwarder;
 import org.sonatype.aether.util.layout.MavenDefaultLayout;
@@ -162,10 +163,10 @@ class WagonRepositoryConnector
         wagonAuth = getAuthenticationInfo( repository );
         wagonProxy = getProxy( repository );
 
-        int threads = ConfigurationProperties.get( session, PROP_THREADS, Integer.MIN_VALUE );
+        int threads = ConfigUtils.get( session, PROP_THREADS, Integer.MIN_VALUE );
         if ( threads == Integer.MIN_VALUE )
         {
-            threads = ConfigurationProperties.get( session, "maven.artifact.threads", 5 );
+            threads = ConfigUtils.get( session, "maven.artifact.threads", 5 );
         }
         executor = getExecutor( threads );
 
@@ -200,21 +201,21 @@ class WagonRepositoryConnector
 
         String suffix = '.' + repoId;
 
-        String fileMode = ConfigurationProperties.get( session, PROP_FILE_MODE + suffix, null );
+        String fileMode = ConfigUtils.get( session, PROP_FILE_MODE + suffix, (String) null );
         if ( fileMode != null )
         {
             perms.setFileMode( fileMode );
             result = perms;
         }
 
-        String dirMode = ConfigurationProperties.get( session, PROP_DIR_MODE + suffix, null );
+        String dirMode = ConfigUtils.get( session, PROP_DIR_MODE + suffix, (String) null );
         if ( dirMode != null )
         {
             perms.setDirectoryMode( dirMode );
             result = perms;
         }
 
-        String group = ConfigurationProperties.get( session, PROP_GROUP + suffix, null );
+        String group = ConfigUtils.get( session, PROP_GROUP + suffix, (String) null );
         if ( group != null )
         {
             perms.setGroup( group );
@@ -284,7 +285,7 @@ class WagonRepositoryConnector
         throws Exception
     {
         String userAgent =
-            ConfigurationProperties.get( session, ConfigurationProperties.USER_AGENT,
+            ConfigUtils.get( session, ConfigurationProperties.USER_AGENT,
                                          ConfigurationProperties.DEFAULT_USER_AGENT );
         if ( !StringUtils.isEmpty( userAgent ) )
         {
@@ -306,16 +307,16 @@ class WagonRepositoryConnector
         }
 
         int connectTimeout =
-            ConfigurationProperties.get( session, ConfigurationProperties.CONNECT_TIMEOUT,
-                                         ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
+            ConfigUtils.get( session, ConfigurationProperties.CONNECT_TIMEOUT,
+                             ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
         int requestTimeout =
-            ConfigurationProperties.get( session, ConfigurationProperties.REQUEST_TIMEOUT,
-                                         ConfigurationProperties.DEFAULT_REQUEST_TIMEOUT );
+            ConfigUtils.get( session, ConfigurationProperties.REQUEST_TIMEOUT,
+                             ConfigurationProperties.DEFAULT_REQUEST_TIMEOUT );
 
         wagon.setTimeout( Math.max( Math.max( connectTimeout, requestTimeout ), 0 ) );
 
-        wagon.setInteractive( ConfigurationProperties.get( session, ConfigurationProperties.INTERACTIVE,
-                                                           ConfigurationProperties.DEFAULT_INTERACTIVE ) );
+        wagon.setInteractive( ConfigUtils.get( session, ConfigurationProperties.INTERACTIVE,
+                                               ConfigurationProperties.DEFAULT_INTERACTIVE ) );
 
         Object configuration = session.getConfigProperties().get( PROP_CONFIG + "." + repository.getId() );
         if ( configuration != null && wagonConfigurator != null )

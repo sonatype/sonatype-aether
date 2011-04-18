@@ -52,6 +52,7 @@ import org.sonatype.aether.transfer.TransferEvent.RequestType;
 import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.transfer.TransferResource;
 import org.sonatype.aether.util.ChecksumUtils;
+import org.sonatype.aether.util.ConfigUtils;
 import org.sonatype.aether.util.StringUtils;
 import org.sonatype.aether.util.layout.MavenDefaultLayout;
 import org.sonatype.aether.util.layout.RepositoryLayout;
@@ -153,8 +154,8 @@ class AsyncRepositoryConnector
         checksumAlgos.put( "SHA-1", ".sha1" );
         checksumAlgos.put( "MD5", ".md5" );
 
-        disableResumeSupport = ConfigurationProperties.get( session, "aether.connector.ahc.disableResumable", false );
-        maxIOExceptionRetry = ConfigurationProperties.get( session, "aether.connector.ahc.resumeRetry", 3 );
+        disableResumeSupport = ConfigUtils.get( session, "aether.connector.ahc.disableResumable", false );
+        maxIOExceptionRetry = ConfigUtils.get( session, "aether.connector.ahc.resumeRetry", 3 );
     }
 
     private Realm getRealm( RemoteRepository repository )
@@ -207,21 +208,21 @@ class AsyncRepositoryConnector
     {
         AsyncHttpClientConfig.Builder configBuilder = new AsyncHttpClientConfig.Builder();
 
-        String userAgent = ConfigurationProperties.get( session, ConfigurationProperties.USER_AGENT,
-                                                        ConfigurationProperties.DEFAULT_USER_AGENT );
+        String userAgent =
+            ConfigUtils.get( session, ConfigurationProperties.USER_AGENT, ConfigurationProperties.DEFAULT_USER_AGENT );
         if ( !StringUtils.isEmpty( userAgent ) )
         {
             configBuilder.setUserAgent( userAgent );
         }
-        int connectTimeout = ConfigurationProperties.get( session, ConfigurationProperties.CONNECT_TIMEOUT,
-                                                          ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
+        int connectTimeout =
+            ConfigUtils.get( session, ConfigurationProperties.CONNECT_TIMEOUT,
+                             ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
 
         configBuilder.setConnectionTimeoutInMs( connectTimeout );
         configBuilder.setCompressionEnabled( useCompression );
         configBuilder.setFollowRedirects( true );
-        configBuilder.setRequestTimeoutInMs(
-            ConfigurationProperties.get( session, ConfigurationProperties.REQUEST_TIMEOUT,
-                                         ConfigurationProperties.DEFAULT_REQUEST_TIMEOUT ) );
+        configBuilder.setRequestTimeoutInMs( ConfigUtils.get( session, ConfigurationProperties.REQUEST_TIMEOUT,
+                                                              ConfigurationProperties.DEFAULT_REQUEST_TIMEOUT ) );
 
         configBuilder.setProxyServer( getProxy( repository ) );
         configBuilder.setRealm( getRealm( repository ) );

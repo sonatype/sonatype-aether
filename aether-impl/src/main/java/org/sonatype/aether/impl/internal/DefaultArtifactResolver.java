@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositoryEvent.EventType;
-import org.sonatype.aether.ConfigurationProperties;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.RequestTrace;
 import org.sonatype.aether.SyncContext;
@@ -61,6 +60,7 @@ import org.sonatype.aether.spi.log.NullLogger;
 import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.ConfigUtils;
 import org.sonatype.aether.util.DefaultRequestTrace;
 import org.sonatype.aether.util.artifact.ArtifactProperties;
 import org.sonatype.aether.util.listener.DefaultRepositoryEvent;
@@ -548,7 +548,7 @@ public class DefaultArtifactResolver
         throws ArtifactTransferException
     {
         if ( artifact.isSnapshot() && !artifact.getVersion().equals( artifact.getBaseVersion() )
-            && ConfigurationProperties.get( session, "aether.artifactResolver.snapshotNormalization", true ) )
+            && ConfigUtils.get( session, "aether.artifactResolver.snapshotNormalization", true ) )
         {
             String name = file.getName().replace( artifact.getVersion(), artifact.getBaseVersion() );
             File dst = new File( file.getParent(), name );
