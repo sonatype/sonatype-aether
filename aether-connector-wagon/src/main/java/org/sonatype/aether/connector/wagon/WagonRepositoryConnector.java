@@ -66,7 +66,6 @@ import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.util.ChecksumUtils;
 import org.sonatype.aether.util.ConfigUtils;
-import org.sonatype.aether.util.StringUtils;
 import org.sonatype.aether.util.concurrency.RunnableErrorForwarder;
 import org.sonatype.aether.util.layout.MavenDefaultLayout;
 import org.sonatype.aether.util.layout.RepositoryLayout;
@@ -123,6 +122,8 @@ class WagonRepositoryConnector
 
     private final Map<String, String> checksumAlgos;
 
+    private final Properties headers;
+
     public WagonRepositoryConnector( WagonProvider wagonProvider, WagonConfigurator wagonConfigurator,
                                      RemoteRepository repository, RepositorySystemSession session,
                                      FileProcessor fileProcessor, Logger logger )
@@ -173,6 +174,21 @@ class WagonRepositoryConnector
         checksumAlgos = new LinkedHashMap<String, String>();
         checksumAlgos.put( "SHA-1", ".sha1" );
         checksumAlgos.put( "MD5", ".md5" );
+
+        headers = new Properties();
+        headers.put( "User-Agent", ConfigUtils.get( session, ConfigurationProperties.USER_AGENT,
+                                                    ConfigurationProperties.DEFAULT_USER_AGENT ) );
+        Map<String, String> headers =
+            ConfigUtils.get( session, ConfigurationProperties.HTTP_HEADERS + "." + repository.getId(),
+                             (Map<String, String>) null );
+        if ( headers == null )
+        {
+            headers = ConfigUtils.get( session, ConfigurationProperties.HTTP_HEADERS, (Map<String, String>) null );
+        }
+        if ( headers != null )
+        {
+            this.headers.putAll( headers );
+        }
     }
 
     private Executor getExecutor( int threads )
@@ -284,16 +300,11 @@ class WagonRepositoryConnector
     private void connectWagon( Wagon wagon )
         throws Exception
     {
-        String userAgent =
-            ConfigUtils.get( session, ConfigurationProperties.USER_AGENT,
-                                         ConfigurationProperties.DEFAULT_USER_AGENT );
-        if ( !StringUtils.isEmpty( userAgent ) )
+        if ( !headers.isEmpty() )
         {
             try
             {
                 Method setHttpHeaders = wagon.getClass().getMethod( "setHttpHeaders", Properties.class );
-                Properties headers = new Properties();
-                headers.setProperty( "User-Agent", userAgent );
                 setHttpHeaders.invoke( wagon, headers );
             }
             catch ( NoSuchMethodException e )

@@ -77,6 +77,15 @@ public final class ConfigurationProperties
      */
     public static final int DEFAULT_REQUEST_TIMEOUT = 60 * 1000;
 
+    /**
+     * The request headers to use for HTTP-based repository connectors. The headers are specified using a
+     * {@code Map<String, String>}, mapping a header name to its value. Besides this general key, clients may also
+     * specify headers for a specific remote repository by appending the suffix {@code .<repoId>} to this key when
+     * storing the headers map. The repository-specific headers map is supposed to be complete, i.e. is not merged with
+     * the general headers map.
+     */
+    public static final String HTTP_HEADERS = PREFIX_CONNECTOR + "http.headers";
+
     private ConfigurationProperties()
     {
         // hide constructor

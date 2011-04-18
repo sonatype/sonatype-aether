@@ -117,6 +117,8 @@ class AsyncRepositoryConnector
 
     private final int maxIOExceptionRetry;
 
+    private final FluentCaseInsensitiveStringsMap headers;
+
     /**
      * Create an {@link org.sonatype.aether.connector.async.AsyncRepositoryConnector} instance which connect to the
      * {@link RemoteRepository}
@@ -156,6 +158,22 @@ class AsyncRepositoryConnector
 
         disableResumeSupport = ConfigUtils.get( session, "aether.connector.ahc.disableResumable", false );
         maxIOExceptionRetry = ConfigUtils.get( session, "aether.connector.ahc.resumeRetry", 3 );
+
+        this.headers = new FluentCaseInsensitiveStringsMap();
+        Map<String, String> headers =
+            ConfigUtils.get( session, ConfigurationProperties.HTTP_HEADERS + "." + repository.getId(),
+                             (Map<String, String>) null );
+        if ( headers == null )
+        {
+            headers = ConfigUtils.get( session, ConfigurationProperties.HTTP_HEADERS, (Map<String, String>) null );
+        }
+        if ( headers != null )
+        {
+            for ( Map.Entry<String, String> entry : headers.entrySet() )
+            {
+                this.headers.add( entry.getKey(), entry.getValue() );
+            }
+        }
     }
 
     private Realm getRealm( RemoteRepository repository )
@@ -461,6 +479,7 @@ class AsyncRepositoryConnector
                     headers.add( "Pragma", "no-cache" );
                 }
                 headers.add( "Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2" );
+                headers.replaceAll( AsyncRepositoryConnector.this.headers );
 
                 Request request = null;
                 final AtomicInteger maxRequestTry = new AtomicInteger();
@@ -833,7 +852,7 @@ class AsyncRepositoryConnector
             {
                 try
                 {
-                    Response response = httpClient.prepareGet( path + ext ).execute().get();
+                    Response response = httpClient.prepareGet( path + ext ).setHeaders( headers ).execute().get();
 
                     if ( response.getStatusCode() == HttpURLConnection.HTTP_NOT_FOUND )
                     {
@@ -1041,7 +1060,7 @@ class AsyncRepositoryConnector
                 }
                 transferResource.setContentLength( file.length() );
 
-                httpClient.preparePut( uri ).setBody(
+                httpClient.preparePut( uri ).setHeaders( headers ).setBody(
                     new ProgressingFileBodyGenerator( file, completionHandler ) ).execute( completionHandler );
             }
             catch ( Exception e )
@@ -1103,7 +1122,7 @@ class AsyncRepositoryConnector
 
                 // Here we go blocking as this is a simple request.
                 Response response =
-                    httpClient.preparePut( path + ext ).setBody( String.valueOf( checksum ) ).execute().get();
+                    httpClient.preparePut( path + ext ).setHeaders( headers ).setBody( String.valueOf( checksum ) ).execute().get();
 
                 if ( response == null || response.getStatusCode() >= HttpURLConnection.HTTP_BAD_REQUEST )
                 {
@@ -1162,7 +1181,7 @@ class AsyncRepositoryConnector
     private boolean resourceExist( String url )
         throws IOException, ExecutionException, InterruptedException, TransferException, AuthorizationException
     {
-        int statusCode = httpClient.prepareHead( url ).execute().get().getStatusCode();
+        int statusCode = httpClient.prepareHead( url ).setHeaders( headers ).execute().get().getStatusCode();
 
         switch ( statusCode )
         {
