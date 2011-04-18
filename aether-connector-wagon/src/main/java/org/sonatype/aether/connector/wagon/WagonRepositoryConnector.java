@@ -12,6 +12,7 @@ package org.sonatype.aether.connector.wagon;
  * You may elect to redistribute this code under either of these licenses.
  *******************************************************************************/
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -32,6 +33,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.maven.wagon.ResourceDoesNotExistException;
+import org.apache.maven.wagon.StreamingWagon;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.WagonException;
 import org.apache.maven.wagon.authentication.AuthenticationInfo;
@@ -910,16 +912,25 @@ class WagonRepositoryConnector
                 }
 
                 String ext = checksumAlgos.get( algo );
+                String dst = path + ext;
+                String sum = String.valueOf( checksum );
 
-                File tmpFile = File.createTempFile( "wagon" + UUID.randomUUID().toString().replace( "-", "" ), ext );
-                try
+                if ( wagon instanceof StreamingWagon )
                 {
-                    fileProcessor.write( tmpFile, String.valueOf( checksum ) );
-                    wagon.put( tmpFile, path + ext );
+                    ( (StreamingWagon) wagon ).putFromStream( new ByteArrayInputStream( sum.getBytes( "UTF-8" ) ), dst );
                 }
-                finally
+                else
                 {
-                    tmpFile.delete();
+                    File tmpFile = File.createTempFile( "wagon" + UUID.randomUUID().toString().replace( "-", "" ), ext );
+                    try
+                    {
+                        fileProcessor.write( tmpFile, sum );
+                        wagon.put( tmpFile, dst );
+                    }
+                    finally
+                    {
+                        tmpFile.delete();
+                    }
                 }
             }
             catch ( Exception e )
