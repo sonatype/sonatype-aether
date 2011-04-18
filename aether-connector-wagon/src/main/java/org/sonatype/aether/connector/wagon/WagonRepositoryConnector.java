@@ -164,11 +164,7 @@ class WagonRepositoryConnector
         wagonAuth = getAuthenticationInfo( repository );
         wagonProxy = getProxy( repository );
 
-        int threads = ConfigUtils.get( session, PROP_THREADS, Integer.MIN_VALUE );
-        if ( threads == Integer.MIN_VALUE )
-        {
-            threads = ConfigUtils.get( session, "maven.artifact.threads", 5 );
-        }
+        int threads = ConfigUtils.get( session, 5, PROP_THREADS, "maven.artifact.threads" );
         executor = getExecutor( threads );
 
         checksumAlgos = new LinkedHashMap<String, String>();
@@ -176,15 +172,11 @@ class WagonRepositoryConnector
         checksumAlgos.put( "MD5", ".md5" );
 
         headers = new Properties();
-        headers.put( "User-Agent", ConfigUtils.get( session, ConfigurationProperties.USER_AGENT,
-                                                    ConfigurationProperties.DEFAULT_USER_AGENT ) );
+        headers.put( "User-Agent", ConfigUtils.get( session, ConfigurationProperties.DEFAULT_USER_AGENT,
+                                                    ConfigurationProperties.USER_AGENT ) );
         Map<String, String> headers =
-            ConfigUtils.get( session, ConfigurationProperties.HTTP_HEADERS + "." + repository.getId(),
-                             (Map<String, String>) null );
-        if ( headers == null )
-        {
-            headers = ConfigUtils.get( session, ConfigurationProperties.HTTP_HEADERS, (Map<String, String>) null );
-        }
+            ConfigUtils.get( session, (Map<String, String>) null, ConfigurationProperties.HTTP_HEADERS + "."
+                + repository.getId(), ConfigurationProperties.HTTP_HEADERS );
         if ( headers != null )
         {
             this.headers.putAll( headers );
@@ -217,21 +209,21 @@ class WagonRepositoryConnector
 
         String suffix = '.' + repoId;
 
-        String fileMode = ConfigUtils.get( session, PROP_FILE_MODE + suffix, (String) null );
+        String fileMode = ConfigUtils.get( session, (String) null, PROP_FILE_MODE + suffix );
         if ( fileMode != null )
         {
             perms.setFileMode( fileMode );
             result = perms;
         }
 
-        String dirMode = ConfigUtils.get( session, PROP_DIR_MODE + suffix, (String) null );
+        String dirMode = ConfigUtils.get( session, (String) null, PROP_DIR_MODE + suffix );
         if ( dirMode != null )
         {
             perms.setDirectoryMode( dirMode );
             result = perms;
         }
 
-        String group = ConfigUtils.get( session, PROP_GROUP + suffix, (String) null );
+        String group = ConfigUtils.get( session, (String) null, PROP_GROUP + suffix );
         if ( group != null )
         {
             perms.setGroup( group );
@@ -318,16 +310,16 @@ class WagonRepositoryConnector
         }
 
         int connectTimeout =
-            ConfigUtils.get( session, ConfigurationProperties.CONNECT_TIMEOUT,
-                             ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
+            ConfigUtils.get( session, ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT,
+                             ConfigurationProperties.CONNECT_TIMEOUT );
         int requestTimeout =
-            ConfigUtils.get( session, ConfigurationProperties.REQUEST_TIMEOUT,
-                             ConfigurationProperties.DEFAULT_REQUEST_TIMEOUT );
+            ConfigUtils.get( session, ConfigurationProperties.DEFAULT_REQUEST_TIMEOUT,
+                             ConfigurationProperties.REQUEST_TIMEOUT );
 
         wagon.setTimeout( Math.max( Math.max( connectTimeout, requestTimeout ), 0 ) );
 
-        wagon.setInteractive( ConfigUtils.get( session, ConfigurationProperties.INTERACTIVE,
-                                               ConfigurationProperties.DEFAULT_INTERACTIVE ) );
+        wagon.setInteractive( ConfigUtils.get( session, ConfigurationProperties.DEFAULT_INTERACTIVE,
+                                               ConfigurationProperties.INTERACTIVE ) );
 
         Object configuration = session.getConfigProperties().get( PROP_CONFIG + "." + repository.getId() );
         if ( configuration != null && wagonConfigurator != null )

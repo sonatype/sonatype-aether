@@ -548,7 +548,7 @@ public class DefaultArtifactResolver
         throws ArtifactTransferException
     {
         if ( artifact.isSnapshot() && !artifact.getVersion().equals( artifact.getBaseVersion() )
-            && ConfigUtils.get( session, "aether.artifactResolver.snapshotNormalization", true ) )
+            && ConfigUtils.get( session, true, "aether.artifactResolver.snapshotNormalization" ) )
         {
             String name = file.getName().replace( artifact.getVersion(), artifact.getBaseVersion() );
             File dst = new File( file.getParent(), name );

@@ -26,17 +26,21 @@ public class ConfigUtils
      * Gets the specified configuration property.
      * 
      * @param properties The configuration properties to read, must not be {@code null}.
-     * @param key The property to read, must not be {@code null}.
      * @param defaultValue The default value to return in case the property isn't set, may be {@code null}.
+     * @param keys The properties to read, must not be {@code null}. The specified keys are read one after one until a
+     *            valid value is found.
      * @return The property value or {@code null} if none.
      */
-    public static String get( Map<?, ?> properties, String key, String defaultValue )
+    public static String get( Map<?, ?> properties, String defaultValue, String... keys )
     {
-        Object value = properties.get( key );
-
-        if ( value instanceof String )
+        for ( String key : keys )
         {
-            return (String) value;
+            Object value = properties.get( key );
+
+            if ( value instanceof String )
+            {
+                return (String) value;
+            }
         }
 
         return defaultValue;
@@ -47,75 +51,44 @@ public class ConfigUtils
      * 
      * @param session The repository system session from which to read the configuration property, must not be
      *            {@code null}.
-     * @param key The property to read, must not be {@code null}.
      * @param defaultValue The default value to return in case the property isn't set, may be {@code null}.
+     * @param keys The properties to read, must not be {@code null}. The specified keys are read one after one until a
+     *            valid value is found.
      * @return The property value or {@code null} if none.
      */
-    public static String get( RepositorySystemSession session, String key, String defaultValue )
+    public static String get( RepositorySystemSession session, String defaultValue, String... keys )
     {
-        return get( session.getConfigProperties(), key, defaultValue );
+        return get( session.getConfigProperties(), defaultValue, keys );
     }
 
     /**
      * Gets the specified configuration property.
      * 
      * @param properties The configuration properties to read, must not be {@code null}.
-     * @param key The property to read, must not be {@code null}.
      * @param defaultValue The default value to return in case the property isn't set.
+     * @param keys The properties to read, must not be {@code null}. The specified keys are read one after one until a
+     *            valid value is found.
      * @return The property value.
      */
-    public static int get( Map<?, ?> properties, String key, int defaultValue )
+    public static int get( Map<?, ?> properties, int defaultValue, String... keys )
     {
-        Object value = properties.get( key );
-
-        if ( value instanceof Number )
+        for ( String key : keys )
         {
-            return ( (Number) value ).intValue();
-        }
+            Object value = properties.get( key );
 
-        try
-        {
-            return Integer.valueOf( (String) value );
-        }
-        catch ( Exception e )
-        {
-            return defaultValue;
-        }
-    }
+            if ( value instanceof Number )
+            {
+                return ( (Number) value ).intValue();
+            }
 
-    /**
-     * Gets the specified configuration property.
-     * 
-     * @param session The repository system session from which to read the configuration property, must not be
-     *            {@code null}.
-     * @param key The property to read, must not be {@code null}.
-     * @param defaultValue The default value to return in case the property isn't set.
-     * @return The property value.
-     */
-    public static int get( RepositorySystemSession session, String key, int defaultValue )
-    {
-        return get( session.getConfigProperties(), key, defaultValue );
-    }
-
-    /**
-     * Gets the specified configuration property.
-     * 
-     * @param properties The configuration properties to read, must not be {@code null}.
-     * @param key The property to read, must not be {@code null}.
-     * @param defaultValue The default value to return in case the property isn't set.
-     * @return The property value.
-     */
-    public static boolean get( Map<?, ?> properties, String key, boolean defaultValue )
-    {
-        Object value = properties.get( key );
-
-        if ( value instanceof Boolean )
-        {
-            return ( (Boolean) value ).booleanValue();
-        }
-        else if ( value instanceof String )
-        {
-            return Boolean.parseBoolean( (String) value );
+            try
+            {
+                return Integer.valueOf( (String) value );
+            }
+            catch ( Exception e )
+            {
+                // try next key
+            }
         }
 
         return defaultValue;
@@ -126,35 +99,83 @@ public class ConfigUtils
      * 
      * @param session The repository system session from which to read the configuration property, must not be
      *            {@code null}.
-     * @param key The property to read, must not be {@code null}.
      * @param defaultValue The default value to return in case the property isn't set.
+     * @param keys The properties to read, must not be {@code null}. The specified keys are read one after one until a
+     *            valid value is found.
      * @return The property value.
      */
-    public static boolean get( RepositorySystemSession session, String key, boolean defaultValue )
+    public static int get( RepositorySystemSession session, int defaultValue, String... keys )
     {
-        return get( session.getConfigProperties(), key, defaultValue );
+        return get( session.getConfigProperties(), defaultValue, keys );
     }
 
     /**
      * Gets the specified configuration property.
      * 
      * @param properties The configuration properties to read, must not be {@code null}.
-     * @param key The property to read, must not be {@code null}.
+     * @param defaultValue The default value to return in case the property isn't set.
+     * @param keys The properties to read, must not be {@code null}. The specified keys are read one after one until a
+     *            valid value is found.
+     * @return The property value.
+     */
+    public static boolean get( Map<?, ?> properties, boolean defaultValue, String... keys )
+    {
+        for ( String key : keys )
+        {
+            Object value = properties.get( key );
+
+            if ( value instanceof Boolean )
+            {
+                return ( (Boolean) value ).booleanValue();
+            }
+            else if ( value instanceof String )
+            {
+                return Boolean.parseBoolean( (String) value );
+            }
+        }
+
+        return defaultValue;
+    }
+
+    /**
+     * Gets the specified configuration property.
+     * 
+     * @param session The repository system session from which to read the configuration property, must not be
+     *            {@code null}.
+     * @param defaultValue The default value to return in case the property isn't set.
+     * @param keys The properties to read, must not be {@code null}. The specified keys are read one after one until a
+     *            valid value is found.
+     * @return The property value.
+     */
+    public static boolean get( RepositorySystemSession session, boolean defaultValue, String... keys )
+    {
+        return get( session.getConfigProperties(), defaultValue, keys );
+    }
+
+    /**
+     * Gets the specified configuration property.
+     * 
+     * @param properties The configuration properties to read, must not be {@code null}.
      * @param defaultValue The default value to return in case the property isn't set, may be {@code null}.
+     * @param keys The properties to read, must not be {@code null}. The specified keys are read one after one until a
+     *            valid value is found.
      * @return The property value or {@code null} if none.
      */
     @SuppressWarnings( "unchecked" )
-    public static <E> List<E> get( Map<?, ?> properties, String key, List<E> defaultValue )
+    public static <E> List<E> get( Map<?, ?> properties, List<E> defaultValue, String... keys )
     {
-        Object value = properties.get( key );
+        for ( String key : keys )
+        {
+            Object value = properties.get( key );
 
-        if ( value instanceof List )
-        {
-            return (List<E>) value;
-        }
-        else if ( value instanceof Collection )
-        {
-            return Collections.unmodifiableList( new ArrayList<E>( (Collection<E>) value ) );
+            if ( value instanceof List )
+            {
+                return (List<E>) value;
+            }
+            else if ( value instanceof Collection )
+            {
+                return Collections.unmodifiableList( new ArrayList<E>( (Collection<E>) value ) );
+            }
         }
 
         return defaultValue;
@@ -165,31 +186,36 @@ public class ConfigUtils
      * 
      * @param session The repository system session from which to read the configuration property, must not be
      *            {@code null}.
-     * @param key The property to read, must not be {@code null}.
      * @param defaultValue The default value to return in case the property isn't set, may be {@code null}.
+     * @param keys The properties to read, must not be {@code null}. The specified keys are read one after one until a
+     *            valid value is found.
      * @return The property value or {@code null} if none.
      */
-    public static <E> List<E> get( RepositorySystemSession session, String key, List<E> defaultValue )
+    public static <E> List<E> get( RepositorySystemSession session, List<E> defaultValue, String... keys )
     {
-        return get( session.getConfigProperties(), key, defaultValue );
+        return get( session.getConfigProperties(), defaultValue, keys );
     }
 
     /**
      * Gets the specified configuration property.
      * 
      * @param properties The configuration properties to read, must not be {@code null}.
-     * @param key The property to read, must not be {@code null}.
      * @param defaultValue The default value to return in case the property isn't set, may be {@code null}.
+     * @param keys The properties to read, must not be {@code null}. The specified keys are read one after one until a
+     *            valid value is found.
      * @return The property value or {@code null} if none.
      */
     @SuppressWarnings( "unchecked" )
-    public static <K, V> Map<K, V> get( Map<?, ?> properties, String key, Map<K, V> defaultValue )
+    public static <K, V> Map<K, V> get( Map<?, ?> properties, Map<K, V> defaultValue, String... keys )
     {
-        Object value = properties.get( key );
-
-        if ( value instanceof Map )
+        for ( String key : keys )
         {
-            return (Map<K, V>) value;
+            Object value = properties.get( key );
+
+            if ( value instanceof Map )
+            {
+                return (Map<K, V>) value;
+            }
         }
 
         return defaultValue;
@@ -200,13 +226,14 @@ public class ConfigUtils
      * 
      * @param session The repository system session from which to read the configuration property, must not be
      *            {@code null}.
-     * @param key The property to read, must not be {@code null}.
      * @param defaultValue The default value to return in case the property isn't set, may be {@code null}.
+     * @param keys The properties to read, must not be {@code null}. The specified keys are read one after one until a
+     *            valid value is found.
      * @return The property value or {@code null} if none.
      */
-    public static <K, V> Map<K, V> get( RepositorySystemSession session, String key, Map<K, V> defaultValue )
+    public static <K, V> Map<K, V> get( RepositorySystemSession session, Map<K, V> defaultValue, String... keys )
     {
-        return get( session.getConfigProperties(), key, defaultValue );
+        return get( session.getConfigProperties(), defaultValue, keys );
     }
 
 }

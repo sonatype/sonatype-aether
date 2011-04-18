@@ -156,17 +156,13 @@ class AsyncRepositoryConnector
         checksumAlgos.put( "SHA-1", ".sha1" );
         checksumAlgos.put( "MD5", ".md5" );
 
-        disableResumeSupport = ConfigUtils.get( session, "aether.connector.ahc.disableResumable", false );
-        maxIOExceptionRetry = ConfigUtils.get( session, "aether.connector.ahc.resumeRetry", 3 );
+        disableResumeSupport = ConfigUtils.get( session, false, "aether.connector.ahc.disableResumable" );
+        maxIOExceptionRetry = ConfigUtils.get( session, 3, "aether.connector.ahc.resumeRetry" );
 
         this.headers = new FluentCaseInsensitiveStringsMap();
         Map<String, String> headers =
-            ConfigUtils.get( session, ConfigurationProperties.HTTP_HEADERS + "." + repository.getId(),
-                             (Map<String, String>) null );
-        if ( headers == null )
-        {
-            headers = ConfigUtils.get( session, ConfigurationProperties.HTTP_HEADERS, (Map<String, String>) null );
-        }
+            ConfigUtils.get( session, (Map<String, String>) null, ConfigurationProperties.HTTP_HEADERS + "."
+                + repository.getId(), ConfigurationProperties.HTTP_HEADERS );
         if ( headers != null )
         {
             for ( Map.Entry<String, String> entry : headers.entrySet() )
@@ -227,20 +223,20 @@ class AsyncRepositoryConnector
         AsyncHttpClientConfig.Builder configBuilder = new AsyncHttpClientConfig.Builder();
 
         String userAgent =
-            ConfigUtils.get( session, ConfigurationProperties.USER_AGENT, ConfigurationProperties.DEFAULT_USER_AGENT );
+            ConfigUtils.get( session, ConfigurationProperties.DEFAULT_USER_AGENT, ConfigurationProperties.USER_AGENT );
         if ( !StringUtils.isEmpty( userAgent ) )
         {
             configBuilder.setUserAgent( userAgent );
         }
         int connectTimeout =
-            ConfigUtils.get( session, ConfigurationProperties.CONNECT_TIMEOUT,
-                             ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT );
+            ConfigUtils.get( session, ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT,
+                             ConfigurationProperties.CONNECT_TIMEOUT );
 
         configBuilder.setConnectionTimeoutInMs( connectTimeout );
         configBuilder.setCompressionEnabled( useCompression );
         configBuilder.setFollowRedirects( true );
-        configBuilder.setRequestTimeoutInMs( ConfigUtils.get( session, ConfigurationProperties.REQUEST_TIMEOUT,
-                                                              ConfigurationProperties.DEFAULT_REQUEST_TIMEOUT ) );
+        configBuilder.setRequestTimeoutInMs( ConfigUtils.get( session, ConfigurationProperties.DEFAULT_REQUEST_TIMEOUT,
+                                                              ConfigurationProperties.REQUEST_TIMEOUT ) );
 
         configBuilder.setProxyServer( getProxy( repository ) );
         configBuilder.setRealm( getRealm( repository ) );
