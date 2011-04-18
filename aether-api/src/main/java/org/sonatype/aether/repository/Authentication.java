@@ -12,6 +12,8 @@ package org.sonatype.aether.repository;
  * You may elect to redistribute this code under either of these licenses.
  *******************************************************************************/
 
+import java.util.Arrays;
+
 /**
  * The authentication to use for accessing a protected resource. <em>Note:</em> Instances of this class are immutable
  * and the exposed mutators return new objects rather than changing the current instance.
@@ -23,11 +25,37 @@ public final class Authentication
 
     private final String username;
 
-    private final String password;
+    private final char[] password;
 
     private final String privateKeyFile;
 
-    private final String passphrase;
+    private final char[] passphrase;
+
+    private static char[] toChars( String str )
+    {
+        return ( str != null ) ? str.toCharArray() : null;
+    }
+
+    private static String toStr( char[] chars )
+    {
+        return ( chars != null ) ? new String( chars ) : null;
+    }
+
+    /**
+     * Creates a new authentication with the specified properties
+     * 
+     * @param username The username, may be {@code null}.
+     * @param password The password, may be {@code null}.
+     * @param privateKeyFile The path to the private key file, may be {@code null}.
+     * @param passphrase The passphrase for the private key file, may be {@code null}.
+     */
+    public Authentication( String username, char[] password, String privateKeyFile, char[] passphrase )
+    {
+        this.username = username;
+        this.password = password;
+        this.privateKeyFile = privateKeyFile;
+        this.passphrase = passphrase;
+    }
 
     /**
      * Creates a new authentication with the specified properties
@@ -39,10 +67,7 @@ public final class Authentication
      */
     public Authentication( String username, String password, String privateKeyFile, String passphrase )
     {
-        this.username = username;
-        this.password = password;
-        this.privateKeyFile = privateKeyFile;
-        this.passphrase = passphrase;
+        this( username, toChars( password ), privateKeyFile, toChars( passphrase ) );
     }
 
     /**
@@ -52,6 +77,17 @@ public final class Authentication
      * @param password The password, may be {@code null}.
      */
     public Authentication( String username, String password )
+    {
+        this( username, password, null, null );
+    }
+
+    /**
+     * Creates a basic username+password authentication.
+     * 
+     * @param username The username, may be {@code null}.
+     * @param password The password, may be {@code null}.
+     */
+    public Authentication( String username, char[] password )
     {
         this( username, password, null, null );
     }
@@ -88,7 +124,7 @@ public final class Authentication
      */
     public String getPassword()
     {
-        return password;
+        return toStr( password );
     }
 
     /**
@@ -99,7 +135,18 @@ public final class Authentication
      */
     public Authentication setPassword( String password )
     {
-        if ( eq( this.password, password ) )
+        return setPassword( toChars( password ) );
+    }
+
+    /**
+     * Sets the password to use for authentication.
+     * 
+     * @param password The password, may be {@code null}.
+     * @return The new authentication, never {@code null}.
+     */
+    public Authentication setPassword( char[] password )
+    {
+        if ( Arrays.equals( this.password, password ) )
         {
             return this;
         }
@@ -138,7 +185,7 @@ public final class Authentication
      */
     public String getPassphrase()
     {
-        return passphrase;
+        return toStr( passphrase );
     }
 
     /**
@@ -149,7 +196,18 @@ public final class Authentication
      */
     public Authentication setPassphrase( String passphrase )
     {
-        if ( eq( this.passphrase, passphrase ) )
+        return setPassphrase( toChars( passphrase ) );
+    }
+
+    /**
+     * Sets the passphrase for the private key file.
+     * 
+     * @param passphrase The passphrase for the private key file, may be {@code null}.
+     * @return The new authentication, never {@code null}.
+     */
+    public Authentication setPassphrase( char[] passphrase )
+    {
+        if ( Arrays.equals( this.passphrase, passphrase ) )
         {
             return this;
         }
@@ -176,8 +234,8 @@ public final class Authentication
 
         Authentication that = (Authentication) obj;
 
-        return eq( username, that.username ) && eq( password, that.password )
-            && eq( privateKeyFile, that.privateKeyFile ) && eq( passphrase, passphrase );
+        return eq( username, that.username ) && Arrays.equals( password, that.password )
+            && eq( privateKeyFile, that.privateKeyFile ) && Arrays.equals( passphrase, passphrase );
     }
 
     private static <T> boolean eq( T s1, T s2 )
@@ -190,7 +248,7 @@ public final class Authentication
     {
         int hash = 17;
         hash = hash * 31 + hash( username );
-        hash = hash * 31 + hash( password );
+        hash = hash * 31 + Arrays.hashCode( password );
         hash = hash * 31 + hash( privateKeyFile );
         return hash;
     }
