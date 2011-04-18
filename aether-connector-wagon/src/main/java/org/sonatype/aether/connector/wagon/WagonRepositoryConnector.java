@@ -911,7 +911,7 @@ class WagonRepositoryConnector
 
                 String ext = checksumAlgos.get( algo );
 
-                File tmpFile = File.createTempFile( "checksum", ext );
+                File tmpFile = File.createTempFile( "wagon" + UUID.randomUUID().toString().replace( "-", "" ), ext );
                 try
                 {
                     fileProcessor.write( tmpFile, String.valueOf( checksum ) );
