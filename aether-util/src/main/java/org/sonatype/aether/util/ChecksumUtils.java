@@ -52,18 +52,32 @@ public class ChecksumUtils
         try
         {
             BufferedReader br = new BufferedReader( new InputStreamReader( fis, "UTF-8" ) );
-            while ( true )
+            try
             {
-                String line = br.readLine();
-                if ( line == null )
+                while ( true )
                 {
-                    break;
+                    String line = br.readLine();
+                    if ( line == null )
+                    {
+                        break;
+                    }
+                    line = line.trim();
+                    if ( line.length() > 0 )
+                    {
+                        checksum = line;
+                        break;
+                    }
                 }
-                line = line.trim();
-                if ( line.length() > 0 )
+            }
+            finally
+            {
+                try
                 {
-                    checksum = line;
-                    break;
+                    br.close();
+                }
+                catch ( IOException e )
+                {
+                    // ignored
                 }
             }
         }
@@ -143,7 +157,14 @@ public class ChecksumUtils
         }
         finally
         {
-            fis.close();
+            try
+            {
+                fis.close();
+            }
+            catch ( IOException e )
+            {
+                // ignored
+            }
         }
 
         for ( Map.Entry<String, MessageDigest> entry : digests.entrySet() )
