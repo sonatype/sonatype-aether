@@ -41,16 +41,14 @@ public final class Authentication
         return ( chars != null ) ? new String( chars ) : null;
     }
 
-    /**
-     * Creates a new authentication with the specified properties
-     * 
-     * @param username The username, may be {@code null}.
-     * @param password The password, may be {@code null}.
-     * @param privateKeyFile The path to the private key file, may be {@code null}.
-     * @param passphrase The passphrase for the private key file, may be {@code null}.
-     */
-    public Authentication( String username, char[] password, String privateKeyFile, char[] passphrase )
+    private static char[] clone( char[] chars )
     {
+        return ( chars != null ) ? chars.clone() : null;
+    }
+
+    private Authentication( String username, String privateKeyFile, char[] password, char[] passphrase )
+    {
+        // NOTE: This constructor assumes ownership/immutability of the provided arrays
         this.username = username;
         this.password = password;
         this.privateKeyFile = privateKeyFile;
@@ -65,9 +63,22 @@ public final class Authentication
      * @param privateKeyFile The path to the private key file, may be {@code null}.
      * @param passphrase The passphrase for the private key file, may be {@code null}.
      */
+    public Authentication( String username, char[] password, String privateKeyFile, char[] passphrase )
+    {
+        this( username, privateKeyFile, clone( password ), clone( passphrase ) );
+    }
+
+    /**
+     * Creates a new authentication with the specified properties
+     * 
+     * @param username The username, may be {@code null}.
+     * @param password The password, may be {@code null}.
+     * @param privateKeyFile The path to the private key file, may be {@code null}.
+     * @param passphrase The passphrase for the private key file, may be {@code null}.
+     */
     public Authentication( String username, String password, String privateKeyFile, String passphrase )
     {
-        this( username, toChars( password ), privateKeyFile, toChars( passphrase ) );
+        this( username, privateKeyFile, toChars( password ), toChars( passphrase ) );
     }
 
     /**
@@ -78,7 +89,7 @@ public final class Authentication
      */
     public Authentication( String username, String password )
     {
-        this( username, password, null, null );
+        this( username, (String) null, toChars( password ), null );
     }
 
     /**
@@ -114,7 +125,7 @@ public final class Authentication
         {
             return this;
         }
-        return new Authentication( username, password, privateKeyFile, passphrase );
+        return new Authentication( username, privateKeyFile, password, passphrase );
     }
 
     /**
@@ -135,7 +146,7 @@ public final class Authentication
      */
     public Authentication setPassword( String password )
     {
-        return setPassword( toChars( password ) );
+        return setPasswordInternal( toChars( password ) );
     }
 
     /**
@@ -146,11 +157,16 @@ public final class Authentication
      */
     public Authentication setPassword( char[] password )
     {
+        return setPasswordInternal( clone( password ) );
+    }
+
+    private Authentication setPasswordInternal( char[] password )
+    {
         if ( Arrays.equals( this.password, password ) )
         {
             return this;
         }
-        return new Authentication( username, password, privateKeyFile, passphrase );
+        return new Authentication( username, privateKeyFile, password, passphrase );
     }
 
     /**
@@ -175,7 +191,7 @@ public final class Authentication
         {
             return this;
         }
-        return new Authentication( username, password, privateKeyFile, passphrase );
+        return new Authentication( username, privateKeyFile, password, passphrase );
     }
 
     /**
@@ -196,7 +212,7 @@ public final class Authentication
      */
     public Authentication setPassphrase( String passphrase )
     {
-        return setPassphrase( toChars( passphrase ) );
+        return setPassphraseInternal( toChars( passphrase ) );
     }
 
     /**
@@ -207,11 +223,16 @@ public final class Authentication
      */
     public Authentication setPassphrase( char[] passphrase )
     {
+        return setPassphraseInternal( clone( passphrase ) );
+    }
+
+    private Authentication setPassphraseInternal( char[] passphrase )
+    {
         if ( Arrays.equals( this.passphrase, passphrase ) )
         {
             return this;
         }
-        return new Authentication( username, password, privateKeyFile, passphrase );
+        return new Authentication( username, privateKeyFile, password, passphrase );
     }
 
     @Override
