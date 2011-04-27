@@ -27,6 +27,7 @@ import org.sonatype.aether.impl.ArtifactResolver;
 import org.sonatype.aether.impl.DependencyCollector;
 import org.sonatype.aether.impl.Deployer;
 import org.sonatype.aether.impl.Installer;
+import org.sonatype.aether.impl.LocalRepositoryProvider;
 import org.sonatype.aether.impl.MetadataResolver;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.RepositoryEventDispatcher;
@@ -71,6 +72,7 @@ public class DefaultServiceLocator
         addService( FileProcessor.class, DefaultFileProcessor.class );
         addService( SyncContextFactory.class, DefaultSyncContextFactory.class );
         addService( RepositoryEventDispatcher.class, DefaultRepositoryEventDispatcher.class );
+        addService( LocalRepositoryProvider.class, DefaultLocalRepositoryProvider.class );
         addService( LocalRepositoryManagerFactory.class, SimpleLocalRepositoryManagerFactory.class );
         addService( LocalRepositoryManagerFactory.class, EnhancedLocalRepositoryManagerFactory.class );
     }
