@@ -44,7 +44,7 @@ public class EnhancedLocalRepositoryManagerTest
 
     private Artifact artifact;
 
-    private File baseDir;
+    private File basedir;
 
     private EnhancedLocalRepositoryManager manager;
 
@@ -81,10 +81,10 @@ public class EnhancedLocalRepositoryManagerTest
             new DefaultMetadata( "gid", "aid", null, "maven-metadata.xml", Nature.RELEASE,
                                  TestFileUtils.createTempFile( "metadata" ) );
 
-        baseDir = TestFileUtils.createTempDir( "enhanced-repo" );
-        manager = new EnhancedLocalRepositoryManager( baseDir );
+        basedir = TestFileUtils.createTempDir( "enhanced-repo" );
+        manager = new EnhancedLocalRepositoryManager( basedir );
 
-        artifactFile = new File( baseDir, manager.getPathForLocalArtifact( artifact ) );
+        artifactFile = new File( basedir, manager.getPathForLocalArtifact( artifact ) );
 
         session = new TestRepositorySystemSession();
     }
@@ -93,7 +93,7 @@ public class EnhancedLocalRepositoryManagerTest
     public void tearDown()
         throws Exception
     {
-        TestFileUtils.delete( baseDir );
+        TestFileUtils.delete( basedir );
         TestFileUtils.delete( new File( new URI( repository.getUrl() ) ) );
 
         session = null;
@@ -127,7 +127,7 @@ public class EnhancedLocalRepositoryManagerTest
         {
             return -1;
         }
-        return TestFileUtils.copy( metadata.getFile(), new File( baseDir, path ) );
+        return TestFileUtils.copy( metadata.getFile(), new File( basedir, path ) );
     }
 
     private long copy( Artifact artifact, String path )
@@ -137,7 +137,7 @@ public class EnhancedLocalRepositoryManagerTest
         {
             return -1;
         }
-        File artifactFile = new File( baseDir, path );
+        File artifactFile = new File( basedir, path );
         return TestFileUtils.copy( artifact.getFile(), artifactFile );
     }
 
