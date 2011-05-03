@@ -48,7 +48,8 @@ public final class DefaultArtifact
     private String baseVersion;
 
     /**
-     * Creates a new artifact with the specified coordinates.
+     * Creates a new artifact with the specified coordinates. If not specified in the artifact coordinates, the
+     * artifact's extension defaults to {@code jar} and classifier to an empty string.
      * 
      * @param coords The artifact coordinates in the format
      *            {@code <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>}, must not be {@code null}.
@@ -59,7 +60,8 @@ public final class DefaultArtifact
     }
 
     /**
-     * Creates a new artifact with the specified coordinates and properties.
+     * Creates a new artifact with the specified coordinates and properties. If not specified in the artifact
+     * coordinates, the artifact's extension defaults to {@code jar} and classifier to an empty string.
      * 
      * @param coords The artifact coordinates in the format
      *            {@code <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>}, must not be {@code null}.
@@ -96,7 +98,8 @@ public final class DefaultArtifact
     }
 
     /**
-     * Creates a new artifact with the specified coordinates.
+     * Creates a new artifact with the specified coordinates and no classifier. Passing {@code null} for any of the
+     * coordinates is equivalent to specifying an empty string.
      * 
      * @param groupId The group identifier of the artifact, may be {@code null}.
      * @param artifactId The artifact identifier of the artifact, may be {@code null}.
@@ -109,7 +112,8 @@ public final class DefaultArtifact
     }
 
     /**
-     * Creates a new artifact with the specified coordinates.
+     * Creates a new artifact with the specified coordinates. Passing {@code null} for any of the coordinates is
+     * equivalent to specifying an empty string.
      * 
      * @param groupId The group identifier of the artifact, may be {@code null}.
      * @param artifactId The artifact identifier of the artifact, may be {@code null}.
@@ -123,9 +127,10 @@ public final class DefaultArtifact
     }
 
     /**
-     * Creates a new artifact with the specified coordinates. The optional artifact type provided to this constructor
-     * will be used to determine the artifact's classifier and file extension if the corresponding arguments for this
-     * constructor are {@code null}.
+     * Creates a new artifact with the specified coordinates. Passing {@code null} for any of the coordinates is
+     * equivalent to specifying an empty string. The optional artifact type provided to this constructor will be used to
+     * determine the artifact's classifier and file extension if the corresponding arguments for this constructor are
+     * {@code null}.
      * 
      * @param groupId The group identifier of the artifact, may be {@code null}.
      * @param artifactId The artifact identifier of the artifact, may be {@code null}.
@@ -141,9 +146,10 @@ public final class DefaultArtifact
     }
 
     /**
-     * Creates a new artifact with the specified coordinates and properties. The optional artifact type provided to this
-     * constructor will be used to determine the artifact's classifier and file extension if the corresponding arguments
-     * for this constructor are {@code null}. If the artifact type specifies properties, those will get merged with the
+     * Creates a new artifact with the specified coordinates and properties. Passing {@code null} for any of the
+     * coordinates is equivalent to specifying an empty string. The optional artifact type provided to this constructor
+     * will be used to determine the artifact's classifier and file extension if the corresponding arguments for this
+     * constructor are {@code null}. If the artifact type specifies properties, those will get merged with the
      * properties passed directly into the constructor, with the latter properties taking precedence.
      * 
      * @param groupId The group identifier of the artifact, may be {@code null}.
@@ -151,7 +157,7 @@ public final class DefaultArtifact
      * @param classifier The classifier of the artifact, may be {@code null}.
      * @param extension The file extension of the artifact, may be {@code null}.
      * @param version The version of the artifact, may be {@code null}.
-     * @param properties The properties of the artifact, may be {@code null}.
+     * @param properties The properties of the artifact, may be {@code null} if none.
      * @param type The artifact type from which to query classifier, file extension and properties, may be {@code null}.
      */
     public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version,
@@ -205,14 +211,15 @@ public final class DefaultArtifact
     }
 
     /**
-     * Creates a new artifact with the specified coordinates, properties and file.
+     * Creates a new artifact with the specified coordinates, properties and file. Passing {@code null} for any of the
+     * coordinates is equivalent to specifying an empty string.
      * 
      * @param groupId The group identifier of the artifact, may be {@code null}.
      * @param artifactId The artifact identifier of the artifact, may be {@code null}.
      * @param classifier The classifier of the artifact, may be {@code null}.
      * @param extension The file extension of the artifact, may be {@code null}.
      * @param version The version of the artifact, may be {@code null}.
-     * @param properties The properties of the artifact, may be {@code null}.
+     * @param properties The properties of the artifact, may be {@code null} if none.
      * @param file The resolved file of the artifact, may be {@code null}.
      */
     public DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version,

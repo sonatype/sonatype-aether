@@ -51,7 +51,7 @@ public interface Artifact
     /**
      * Sets the version of this artifact.
      * 
-     * @param version The version of this artifact, may be {@code null}.
+     * @param version The version of this artifact, may be {@code null} or empty.
      * @return The new artifact, never {@code null}.
      */
     Artifact setVersion( String version );
