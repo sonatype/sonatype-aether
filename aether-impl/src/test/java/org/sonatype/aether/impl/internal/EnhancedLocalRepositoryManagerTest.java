@@ -294,4 +294,21 @@ public class EnhancedLocalRepositoryManagerTest
         assertNull( result.getFile() );
     }
 
+    @Test
+    public void testFindArtifactUsesTimestampedVersion()
+        throws Exception
+    {
+        Artifact artifact = new DefaultArtifact( "g.i.d:a.i.d:1.0-SNAPSHOT" );
+        File file = new File( basedir, manager.getPathForLocalArtifact( artifact ) );
+        TestFileUtils.write( "test", file );
+        addLocalArtifact( artifact );
+
+        artifact = artifact.setVersion( "1.0-20110329.221805-4" );
+        LocalArtifactRequest request = new LocalArtifactRequest();
+        request.setArtifact( artifact );
+        LocalArtifactResult result = manager.find( session, request );
+        assertNull( result.toString(), result.getFile() );
+        assertFalse( result.toString(), result.isAvailable() );
+    }
+
 }

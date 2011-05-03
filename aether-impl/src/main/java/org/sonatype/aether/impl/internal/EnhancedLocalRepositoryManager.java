@@ -61,7 +61,7 @@ public class EnhancedLocalRepositoryManager
     @Override
     public LocalArtifactResult find( RepositorySystemSession session, LocalArtifactRequest request )
     {
-        String path = getPathForLocalArtifact( request.getArtifact() );
+        String path = getPathForArtifact( request.getArtifact(), false );
         File file = new File( getRepository().getBasedir(), path );
 
         LocalArtifactResult result = new LocalArtifactResult( request );

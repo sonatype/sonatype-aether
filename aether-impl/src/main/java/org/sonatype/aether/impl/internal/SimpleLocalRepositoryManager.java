@@ -70,7 +70,7 @@ public class SimpleLocalRepositoryManager
         return repository;
     }
 
-    private String getPathForArtifact( Artifact artifact, boolean local )
+    String getPathForArtifact( Artifact artifact, boolean local )
     {
         StringBuilder path = new StringBuilder( 128 );
 
@@ -201,7 +201,7 @@ public class SimpleLocalRepositoryManager
 
     public LocalArtifactResult find( RepositorySystemSession session, LocalArtifactRequest request )
     {
-        String path = getPathForLocalArtifact( request.getArtifact() );
+        String path = getPathForArtifact( request.getArtifact(), false );
         File file = new File( getRepository().getBasedir(), path );
 
         LocalArtifactResult result = new LocalArtifactResult( request );

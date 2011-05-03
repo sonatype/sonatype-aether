@@ -20,8 +20,12 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.repository.LocalArtifactRequest;
+import org.sonatype.aether.repository.LocalArtifactResult;
 import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 
@@ -35,24 +39,29 @@ public class SimpleLocalRepositoryManagerTest
 
     private SimpleLocalRepositoryManager manager;
 
+    private RepositorySystemSession session;
+
     @Before
     public void setup()
         throws IOException
     {
         basedir = TestFileUtils.createTempDir( "simple-repo" );
         manager = new SimpleLocalRepositoryManager( basedir );
+        session = new TestRepositorySystemSession();
     }
 
     @After
     public void tearDown()
         throws Exception
     {
-        manager = null;
         TestFileUtils.delete( basedir );
+        manager = null;
+        session = null;
     }
 
     @Test
     public void testGetPathForLocalArtifact()
+        throws Exception
     {
         Artifact artifact = new DefaultArtifact( "g.i.d:a.i.d:1.0-SNAPSHOT" );
         assertEquals( "1.0-SNAPSHOT", artifact.getBaseVersion() );
@@ -65,6 +74,7 @@ public class SimpleLocalRepositoryManagerTest
 
     @Test
     public void testGetPathForRemoteArtifact()
+        throws Exception
     {
         RemoteRepository remoteRepo = new RemoteRepository( "repo", "default", "ram:/void" );
 
@@ -77,6 +87,22 @@ public class SimpleLocalRepositoryManagerTest
         assertEquals( "1.0-SNAPSHOT", artifact.getBaseVersion() );
         assertEquals( "g/i/d/a.i.d/1.0-SNAPSHOT/a.i.d-1.0-20110329.221805-4.jar",
                       manager.getPathForRemoteArtifact( artifact, remoteRepo, "" ) );
+    }
+
+    @Test
+    public void testFindArtifactUsesTimestampedVersion()
+        throws Exception
+    {
+        Artifact artifact = new DefaultArtifact( "g.i.d:a.i.d:1.0-SNAPSHOT" );
+        File file = new File( basedir, manager.getPathForLocalArtifact( artifact ) );
+        TestFileUtils.write( "test", file );
+
+        artifact = artifact.setVersion( "1.0-20110329.221805-4" );
+        LocalArtifactRequest request = new LocalArtifactRequest();
+        request.setArtifact( artifact );
+        LocalArtifactResult result = manager.find( session, request );
+        assertNull( result.toString(), result.getFile() );
+        assertFalse( result.toString(), result.isAvailable() );
     }
 
 }
