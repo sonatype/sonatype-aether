@@ -46,7 +46,7 @@ public class LocalArtifactRequest
      * 
      * @param artifact The artifact to query for, may be {@code null}.
      * @param repositories The remote repositories that should be considered as potential sources for the artifact, may
-     *            be {@code null}.
+     *            be {@code null} or empty to only consider locally installed artifacts.
      * @param context The resolution context for the artifact, may be {@code null}.
      */
     public LocalArtifactRequest( Artifact artifact, List<RemoteRepository> repositories, String context )
@@ -113,7 +113,8 @@ public class LocalArtifactRequest
     /**
      * Sets the remote repositories to consider as sources of the artifact.
      * 
-     * @param repositories The remote repositories, may be {@code null}.
+     * @param repositories The remote repositories, may be {@code null} or empty to only consider locally installed
+     *            artifacts.
      * @return This query for chaining, never {@code null}.
      */
     public LocalArtifactRequest setRepositories( List<RemoteRepository> repositories )
