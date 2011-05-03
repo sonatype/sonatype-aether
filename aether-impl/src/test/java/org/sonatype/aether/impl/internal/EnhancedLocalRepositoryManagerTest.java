@@ -62,7 +62,7 @@ public class EnhancedLocalRepositoryManagerTest
 
     @Before
     public void setup()
-        throws IOException
+        throws Exception
     {
         repository =
             new RemoteRepository( "enhanced-remote-repo", "default",
@@ -171,7 +171,7 @@ public class EnhancedLocalRepositoryManagerTest
 
     @Test
     public void testFindLocalArtifact()
-        throws IOException
+        throws Exception
     {
         addLocalArtifact( artifact );
 
@@ -182,7 +182,7 @@ public class EnhancedLocalRepositoryManagerTest
 
     @Test
     public void testFindRemoteArtifact()
-        throws IOException
+        throws Exception
     {
         addRemoteArtifact( artifact );
 
@@ -193,7 +193,7 @@ public class EnhancedLocalRepositoryManagerTest
 
     @Test
     public void testDoNotFindDifferentContext()
-        throws IOException
+        throws Exception
     {
         addRemoteArtifact( artifact );
 
@@ -204,7 +204,7 @@ public class EnhancedLocalRepositoryManagerTest
 
     @Test
     public void testDoNotFindNullFile()
-        throws IOException
+        throws Exception
     {
         artifact = artifact.setFile( null );
         addLocalArtifact( artifact );
@@ -216,7 +216,7 @@ public class EnhancedLocalRepositoryManagerTest
 
     @Test
     public void testDoNotFindDeletedFile()
-        throws IOException
+        throws Exception
     {
         addLocalArtifact( artifact );
         assertTrue( "could not delete artifact file", artifactFile.delete() );
@@ -227,8 +227,8 @@ public class EnhancedLocalRepositoryManagerTest
     }
 
     @Test
-    public void findUntrackedFile()
-        throws IOException
+    public void testFindUntrackedFile()
+        throws Exception
     {
         copy( artifact, manager.getPathForLocalArtifact( artifact ) );
 
@@ -255,8 +255,8 @@ public class EnhancedLocalRepositoryManagerTest
     }
 
     @Test
-    public void findLocalMetadata()
-        throws IOException
+    public void testFindLocalMetadata()
+        throws Exception
     {
         addMetadata( metadata, null );
 
@@ -267,8 +267,8 @@ public class EnhancedLocalRepositoryManagerTest
     }
 
     @Test
-    public void findLocalMetadataNoVersion()
-        throws IOException
+    public void testFindLocalMetadataNoVersion()
+        throws Exception
     {
         addMetadata( noVerMetadata, null );
 
@@ -279,8 +279,8 @@ public class EnhancedLocalRepositoryManagerTest
     }
 
     @Test
-    public void doNotFindRemoteMetadataDifferentContext()
-        throws IOException
+    public void testDoNotFindRemoteMetadataDifferentContext()
+        throws Exception
     {
         addMetadata( noVerMetadata, repository );
         addMetadata( metadata, repository );
@@ -293,4 +293,5 @@ public class EnhancedLocalRepositoryManagerTest
         result = manager.find( session, request );
         assertNull( result.getFile() );
     }
+
 }
