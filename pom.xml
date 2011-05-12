@@ -22,7 +22,7 @@
   </parent>
 
   <groupId>org.sonatype.aether</groupId>
-  <artifactId>aether-parent</artifactId>
+  <artifactId>aether</artifactId>
   <version>1.12-SNAPSHOT</version>
   <packaging>pom</packaging>
 
