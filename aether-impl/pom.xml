@@ -47,8 +47,8 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-container-default</artifactId>
+      <groupId>org.sonatype.sisu</groupId>
+      <artifactId>sisu-inject-plexus</artifactId>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -56,12 +56,12 @@
           <artifactId>plexus-classworlds</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>org.apache.xbean</groupId>
-          <artifactId>xbean-reflect</artifactId>
+          <groupId>org.codehaus.plexus</groupId>
+          <artifactId>plexus-utils</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>com.google.collections</groupId>
-          <artifactId>google-collections</artifactId>
+          <groupId>org.sonatype.sisu</groupId>
+          <artifactId>sisu-inject-bean</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
