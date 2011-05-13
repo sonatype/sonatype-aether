@@ -101,28 +101,6 @@
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>1.3.3</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <artifactSet>
-                <excludes>
-                  <exclude>*:plexus-container-default</exclude>
-                  <exclude>*:plexus-classworlds</exclude>
-                  <exclude>*:xbean-reflect</exclude>
-                  <exclude>*:google-collections</exclude>
-                </excludes>
-              </artifactSet>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-deploy-plugin</artifactId>
         <configuration>
           <!-- this module is just a source code demo and not to be shared as an artifact -->
