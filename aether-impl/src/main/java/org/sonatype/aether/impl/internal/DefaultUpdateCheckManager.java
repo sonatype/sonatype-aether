@@ -187,10 +187,7 @@ public class DefaultUpdateCheckManager
                 if ( session.isNotFoundCachingEnabled() )
                 {
                     check.setRequired( false );
-                    check.setException( new ArtifactNotFoundException( artifact, repository, "Failure to find "
-                        + artifact + " in " + repository.getUrl() + " was cached in the local repository, "
-                        + "resolution will not be reattempted until the update interval of " + repository.getId()
-                        + " has elapsed or updates are forced" ) );
+                    check.setException( newException( error, artifact, repository ) );
                 }
                 else
                 {
@@ -202,16 +199,31 @@ public class DefaultUpdateCheckManager
                 if ( session.isTransferErrorCachingEnabled() )
                 {
                     check.setRequired( false );
-                    check.setException( new ArtifactTransferException( artifact, repository, "Failure to transfer "
-                        + artifact + " from " + repository.getUrl() + " was cached in the local repository, "
-                        + "resolution will not be reattempted until the update interval of " + repository.getId()
-                        + " has elapsed or updates are forced. Original error: " + error ) );
+                    check.setException( newException( error, artifact, repository ) );
                 }
                 else
                 {
                     check.setRequired( true );
                 }
             }
+        }
+    }
+
+    private ArtifactTransferException newException( String error, Artifact artifact, RemoteRepository repository )
+    {
+        if ( error == null || error.length() <= 0 )
+        {
+            return new ArtifactNotFoundException( artifact, repository, "Failure to find " + artifact + " in "
+                + repository.getUrl() + " was cached in the local repository, "
+                + "resolution will not be reattempted until the update interval of " + repository.getId()
+                + " has elapsed or updates are forced" );
+        }
+        else
+        {
+            return new ArtifactTransferException( artifact, repository, "Failure to transfer " + artifact + " from "
+                + repository.getUrl() + " was cached in the local repository, "
+                + "resolution will not be reattempted until the update interval of " + repository.getId()
+                + " has elapsed or updates are forced. Original error: " + error );
         }
     }
 
@@ -298,26 +310,38 @@ public class DefaultUpdateCheckManager
             if ( error == null || error.length() <= 0 )
             {
                 check.setRequired( false );
-                check.setException( new MetadataNotFoundException( metadata, repository, "Failure to find " + metadata
-                    + " in " + repository.getUrl() + " was cached in the local repository, "
-                    + "resolution will not be reattempted until the update interval of " + repository.getId()
-                    + " has elapsed or updates are forced" ) );
+                check.setException( newException( error, metadata, repository ) );
             }
             else
             {
                 if ( session.isTransferErrorCachingEnabled() )
                 {
                     check.setRequired( false );
-                    check.setException( new MetadataTransferException( metadata, repository, "Failure to transfer "
-                        + metadata + " from " + repository.getUrl() + " was cached in the local repository, "
-                        + "resolution will not be reattempted until the update interval of " + repository.getId()
-                        + " has elapsed or updates are forced. Original error: " + error ) );
+                    check.setException( newException( error, metadata, repository ) );
                 }
                 else
                 {
                     check.setRequired( true );
                 }
             }
+        }
+    }
+
+    private MetadataTransferException newException( String error, Metadata metadata, RemoteRepository repository )
+    {
+        if ( error == null || error.length() <= 0 )
+        {
+            return new MetadataNotFoundException( metadata, repository, "Failure to find " + metadata + " in "
+                + repository.getUrl() + " was cached in the local repository, "
+                + "resolution will not be reattempted until the update interval of " + repository.getId()
+                + " has elapsed or updates are forced" );
+        }
+        else
+        {
+            return new MetadataTransferException( metadata, repository, "Failure to transfer " + metadata + " from "
+                + repository.getUrl() + " was cached in the local repository, "
+                + "resolution will not be reattempted until the update interval of " + repository.getId()
+                + " has elapsed or updates are forced. Original error: " + error );
         }
     }
 
