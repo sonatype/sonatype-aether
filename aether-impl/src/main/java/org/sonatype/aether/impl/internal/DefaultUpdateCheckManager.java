@@ -114,7 +114,7 @@ public class DefaultUpdateCheckManager
             if ( logger.isDebugEnabled() )
             {
                 logger.debug( "Skipped remote update check for " + check.getItem()
-                    + ", locally built artifact up-to-date." );
+                    + ", locally installed artifact up-to-date." );
             }
 
             check.setRequired( false );
@@ -223,7 +223,7 @@ public class DefaultUpdateCheckManager
             if ( logger.isDebugEnabled() )
             {
                 logger.debug( "Skipped remote update check for " + check.getItem()
-                    + ", locally built metadata up-to-date." );
+                    + ", locally installed metadata up-to-date." );
             }
 
             check.setRequired( false );

@@ -41,7 +41,7 @@ public class LocalMetadataRegistration
     }
 
     /**
-     * Creates a registration request for the specified metadata accompanying a locally built artifact.
+     * Creates a registration request for the specified metadata accompanying a locally installed artifact.
      * 
      * @param metadata The metadata to register, may be {@code null}.
      */
@@ -55,7 +55,7 @@ public class LocalMetadataRegistration
      * 
      * @param metadata The metadata to register, may be {@code null}.
      * @param repository The remote repository from which the metadata was resolved or {@code null} if the metadata
-     *            accompanies a locally built artifact.
+     *            accompanies a locally installed artifact.
      * @param contexts The resolution contexts, may be {@code null}.
      */
     public LocalMetadataRegistration( Metadata metadata, RemoteRepository repository, Collection<String> contexts )
@@ -90,7 +90,7 @@ public class LocalMetadataRegistration
     /**
      * Gets the remote repository from which the metadata was resolved.
      * 
-     * @return The remote repositories or {@code null} if the metadata was locally built.
+     * @return The remote repository or {@code null} if the metadata was locally installed.
      */
     public RemoteRepository getRepository()
     {
@@ -100,7 +100,7 @@ public class LocalMetadataRegistration
     /**
      * Sets the remote repository from which the metadata was resolved.
      * 
-     * @param repository The remote repository or {@code null} if the metadata accompanies a locally built artifact.
+     * @param repository The remote repository or {@code null} if the metadata accompanies a locally installed artifact.
      * @return This request for chaining, never {@code null}.
      */
     public LocalMetadataRegistration setRepository( RemoteRepository repository )

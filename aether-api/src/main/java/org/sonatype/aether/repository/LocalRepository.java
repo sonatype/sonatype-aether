@@ -15,7 +15,7 @@ package org.sonatype.aether.repository;
 import java.io.File;
 
 /**
- * A repository on the local file system used to cache contents of remote repositories and to store locally built
+ * A repository on the local file system used to cache contents of remote repositories and to store locally installed
  * artifacts.
  * 
  * @author Benjamin Bentmann

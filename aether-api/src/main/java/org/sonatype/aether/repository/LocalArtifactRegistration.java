@@ -43,7 +43,7 @@ public class LocalArtifactRegistration
     }
 
     /**
-     * Creates a registration request for the specified (locally built) artifact.
+     * Creates a registration request for the specified (locally installed) artifact.
      * 
      * @param artifact The artifact to register, may be {@code null}.
      */
@@ -53,11 +53,11 @@ public class LocalArtifactRegistration
     }
 
     /**
-     * Creates a registration request for the specified (remotely resolved) artifact.
+     * Creates a registration request for the specified artifact.
      * 
      * @param artifact The artifact to register, may be {@code null}.
      * @param repository The remote repository from which the artifact was resolved or {@code null} if the artifact was
-     *            locally built.
+     *            locally installed.
      * @param contexts The resolution contexts, may be {@code null}.
      */
     public LocalArtifactRegistration( Artifact artifact, RemoteRepository repository, Collection<String> contexts )
@@ -92,7 +92,7 @@ public class LocalArtifactRegistration
     /**
      * Gets the remote repository from which the artifact was resolved.
      * 
-     * @return The remote repositories or {@code null} if the artifact was locally built.
+     * @return The remote repository or {@code null} if the artifact was locally installed.
      */
     public RemoteRepository getRepository()
     {
@@ -102,7 +102,7 @@ public class LocalArtifactRegistration
     /**
      * Sets the remote repository from which the artifact was resolved.
      * 
-     * @param repository The remote repository or {@code null} if the artifact was locally built.
+     * @param repository The remote repository or {@code null} if the artifact was locally installed.
      * @return This request for chaining, never {@code null}.
      */
     public LocalArtifactRegistration setRepository( RemoteRepository repository )

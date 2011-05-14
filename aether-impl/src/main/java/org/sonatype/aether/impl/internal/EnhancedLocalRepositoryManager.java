@@ -92,7 +92,7 @@ public class EnhancedLocalRepositoryManager
                 {
                     /*
                      * NOTE: The artifact is present but not tracked at all, for inter-op with Maven 2.x, assume the
-                     * artifact was locally built.
+                     * artifact was locally installed.
                      */
                     result.setAvailable( true );
                 }
