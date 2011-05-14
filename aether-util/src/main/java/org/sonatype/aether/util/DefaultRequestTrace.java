@@ -30,7 +30,7 @@ public class DefaultRequestTrace
     /**
      * Creates a child of the specified request trace. This method is basically a convenience that will invoke
      * {@link RequestTrace#newChild(Object)} when the specified parent trace is not {@code null} or otherwise
-     * instantiante of new root trace.
+     * instantiante a new root trace.
      * 
      * @param parent The parent request trace, may be {@code null}.
      * @param data The data to associate with the child trace, may be {@code null}.
