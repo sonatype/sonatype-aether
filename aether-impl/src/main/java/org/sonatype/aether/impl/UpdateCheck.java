@@ -18,7 +18,7 @@ import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.repository.RemoteRepository;
 
 /**
- * A request to check if an update from a remote repository is needed.
+ * A request to check if an update of an artifact/metadata from a remote repository is needed.
  * 
  * @see UpdateCheckManager
  * @author Benjamin Bentmann
@@ -43,11 +43,12 @@ public class UpdateCheck<T, E extends RepositoryException>
     private E exception;
 
     /**
-     * Gets the last-modified timestamp of the corresponding item produced by a local build. If non-zero, a remote
-     * update will be surpressed if the local item is up-to-date, even if the remote item has not been cached locally.
+     * Gets the last-modified timestamp of the corresponding item produced by a local installation. If non-zero, a
+     * remote update will be surpressed if the local item is up-to-date, even if the remote item has not been cached
+     * locally.
      * 
-     * @return The last-modified timestamp of the corresponding item produced by a local build or {@code 0} to ignore
-     *         any local item.
+     * @return The last-modified timestamp of the corresponding item produced by a local installation or {@code 0} to
+     *         ignore any local item.
      */
     public long getLocalLastUpdated()
     {
@@ -55,10 +56,11 @@ public class UpdateCheck<T, E extends RepositoryException>
     }
 
     /**
-     * Sets the last-modified timestamp of the corresponding item produced by a local build. If non-zero, a remote
-     * update will be surpressed if the local item is up-to-date, even if the remote item has not been cached locally.
+     * Sets the last-modified timestamp of the corresponding item produced by a local installation. If non-zero, a
+     * remote update will be surpressed if the local item is up-to-date, even if the remote item has not been cached
+     * locally.
      * 
-     * @param localLastUpdated The last-modified timestamp of the corresponding item produced by a local build or
+     * @param localLastUpdated The last-modified timestamp of the corresponding item produced by a local installation or
      *            {@code 0} to ignore any local item.
      * @return This object for chaining.
      */

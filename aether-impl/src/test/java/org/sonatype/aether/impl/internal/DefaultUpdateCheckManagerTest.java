@@ -179,7 +179,6 @@ public class DefaultUpdateCheckManagerTest
         // never checked before
         manager.checkMetadata( session, check );
         assertEquals( true, check.isRequired() );
-        assertEquals( check.getLocalLastUpdated(), 0 );
 
         // just checked
         check = newMetadataCheck();
@@ -337,7 +336,6 @@ public class DefaultUpdateCheckManagerTest
 
         manager.checkArtifact( session, check );
         assertNotNull( check.getException() );
-        assertEquals( 0, check.getLocalLastUpdated() );
     }
 
     @Test
