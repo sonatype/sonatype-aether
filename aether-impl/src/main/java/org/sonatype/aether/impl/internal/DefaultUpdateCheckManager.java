@@ -456,8 +456,19 @@ public class DefaultUpdateCheckManager
         }
         else if ( policy.startsWith( RepositoryPolicy.UPDATE_POLICY_INTERVAL ) )
         {
-            String s = policy.substring( RepositoryPolicy.UPDATE_POLICY_INTERVAL.length() + 1 );
-            int minutes = Integer.valueOf( s );
+            int minutes;
+            try
+            {
+                String s = policy.substring( RepositoryPolicy.UPDATE_POLICY_INTERVAL.length() + 1 );
+                minutes = Integer.valueOf( s );
+            }
+            catch ( RuntimeException e )
+            {
+                minutes = 24 * 60;
+
+                logger.warn( "Non-parseable repository update policy '" + policy + "', assuming '"
+                    + RepositoryPolicy.UPDATE_POLICY_INTERVAL + ":1440'" );
+            }
 
             Calendar cal = Calendar.getInstance();
             cal.add( Calendar.MINUTE, -minutes );
@@ -471,7 +482,8 @@ public class DefaultUpdateCheckManager
 
             if ( !RepositoryPolicy.UPDATE_POLICY_NEVER.equals( policy ) )
             {
-                logger.warn( "Unknown repository update policy '" + policy + "', assuming 'never'" );
+                logger.warn( "Unknown repository update policy '" + policy + "', assuming '"
+                    + RepositoryPolicy.UPDATE_POLICY_NEVER + "'" );
             }
         }
 
