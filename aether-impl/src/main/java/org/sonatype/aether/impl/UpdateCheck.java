@@ -230,4 +230,10 @@ public class UpdateCheck<T, E extends RepositoryException>
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        return getPolicy() + ": " + getFile() + " < " + getRepository();
+    }
+
 }
