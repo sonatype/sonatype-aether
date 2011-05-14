@@ -207,9 +207,9 @@ public class UpdateCheck<T, E extends RepositoryException>
     }
 
     /**
-     * Gets the exception if an exception occured during the check, {@code null} otherwise.
+     * Gets the exception that occurred during the update check.
      * 
-     * @return The occured exception, may be {@code null}.
+     * @return The occurred exception or {@code null} if the update check was successful.
      */
     public E getException()
     {
@@ -219,7 +219,7 @@ public class UpdateCheck<T, E extends RepositoryException>
     /**
      * Sets the exception for this update check.
      * 
-     * @param exception The exception for this update check, may be {@code null}.
+     * @param exception The exception for this update check, may be {@code null} if the check was successful.
      * @return This object for chaining.
      */
     public UpdateCheck<T, E> setException( E exception )

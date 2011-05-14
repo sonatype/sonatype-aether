@@ -117,7 +117,7 @@ public class ChecksumUtils
      * @param dataFile The file for which to calculate checksums, must not be {@code null}.
      * @param algos The names of checksum algorithms (cf. {@link MessageDigest#getInstance(String)} to use, must not be
      *            {@code null}.
-     * @return The calculated checksums, indexed by algorithm name, or the exception that occured while trying to
+     * @return The calculated checksums, indexed by algorithm name, or the exception that occurred while trying to
      *         calculate it, never {@code null}.
      * @throws IOException If the data file could not be read.
      */
