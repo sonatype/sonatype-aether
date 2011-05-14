@@ -468,6 +468,11 @@ public class DefaultUpdateCheckManager
         {
             // assume "never"
             checkForUpdates = false;
+
+            if ( !RepositoryPolicy.UPDATE_POLICY_NEVER.equals( policy ) )
+            {
+                logger.warn( "Unknown repository update policy '" + policy + "', assuming 'never'" );
+            }
         }
 
         return checkForUpdates;
