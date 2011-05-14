@@ -20,10 +20,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.SessionData;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
@@ -57,6 +59,8 @@ public class DefaultUpdateCheckManager
     private static final String ERROR_KEY_SUFFIX = ".error";
 
     private static final String NOT_FOUND = "";
+
+    private static final String SESSION_CHECKS = "updateCheckManager.checks";
 
     public DefaultUpdateCheckManager()
     {
@@ -122,6 +126,7 @@ public class DefaultUpdateCheckManager
         }
 
         Artifact artifact = check.getItem();
+        RemoteRepository repository = check.getRepository();
 
         File artifactFile = check.getFile();
         if ( artifactFile == null )
@@ -134,7 +139,8 @@ public class DefaultUpdateCheckManager
         File touchFile = getTouchFile( artifact, artifactFile );
         Properties props = read( touchFile );
 
-        String dataKey = getDataKey( artifact, artifactFile, check.getRepository() );
+        String updateKey = getUpdateKey( artifactFile, repository );
+        String dataKey = getDataKey( artifact, artifactFile, repository );
 
         String error = getError( props, dataKey );
 
@@ -156,11 +162,25 @@ public class DefaultUpdateCheckManager
         else
         {
             // artifact could not be transferred
-            String transferKey = getTransferKey( artifact, artifactFile, check.getRepository() );
+            String transferKey = getTransferKey( artifact, artifactFile, repository );
             lastUpdated = getLastUpdated( props, transferKey );
         }
 
-        if ( lastUpdated == 0 )
+        if ( isAlreadyUpdated( session.getData(), updateKey ) )
+        {
+            if ( logger.isDebugEnabled() )
+            {
+                logger.debug( "Skipped remote update check for " + check.getItem()
+                    + ", already updated during this session." );
+            }
+
+            check.setRequired( false );
+            if ( error != null )
+            {
+                check.setException( newException( error, artifact, repository ) );
+            }
+        }
+        else if ( lastUpdated == 0 )
         {
             check.setRequired( true );
         }
@@ -180,8 +200,6 @@ public class DefaultUpdateCheckManager
         }
         else
         {
-            RemoteRepository repository = check.getRepository();
-
             if ( error == null || error.length() <= 0 )
             {
                 if ( session.isNotFoundCachingEnabled() )
@@ -243,6 +261,7 @@ public class DefaultUpdateCheckManager
         }
 
         Metadata metadata = check.getItem();
+        RemoteRepository repository = check.getRepository();
 
         File metadataFile = check.getFile();
         if ( metadataFile == null )
@@ -255,6 +274,7 @@ public class DefaultUpdateCheckManager
         File touchFile = getTouchFile( metadata, metadataFile );
         Properties props = read( touchFile );
 
+        String updateKey = getUpdateKey( metadataFile, repository );
         String dataKey = getDataKey( metadata, metadataFile, check.getAuthoritativeRepository() );
 
         String error = getError( props, dataKey );
@@ -281,11 +301,25 @@ public class DefaultUpdateCheckManager
         else
         {
             // metadata could not be transferred
-            String transferKey = getTransferKey( metadata, metadataFile, check.getRepository() );
+            String transferKey = getTransferKey( metadata, metadataFile, repository );
             lastUpdated = getLastUpdated( props, transferKey );
         }
 
-        if ( lastUpdated == 0 )
+        if ( isAlreadyUpdated( session.getData(), updateKey ) )
+        {
+            if ( logger.isDebugEnabled() )
+            {
+                logger.debug( "Skipped remote update check for " + check.getItem()
+                    + ", already updated during this session." );
+            }
+
+            check.setRequired( false );
+            if ( error != null )
+            {
+                check.setException( newException( error, metadata, repository ) );
+            }
+        }
+        else if ( lastUpdated == 0 )
         {
             check.setRequired( true );
         }
@@ -297,16 +331,13 @@ public class DefaultUpdateCheckManager
         {
             if ( logger.isDebugEnabled() )
             {
-                logger.debug( "Skipped remote update check for " + check.getItem()
-                    + ", locally cached metadata up-to-date." );
+                logger.debug( "Skipped remote update check for " + check.getItem() + ", locally cached metadata up-to-date." );
             }
 
             check.setRequired( false );
         }
         else
         {
-            RemoteRepository repository = check.getRepository();
-
             if ( error == null || error.length() <= 0 )
             {
                 check.setRequired( false );
@@ -350,12 +381,12 @@ public class DefaultUpdateCheckManager
         String value = props.getProperty( key + UPDATED_KEY_SUFFIX, "" );
         try
         {
-            return ( value.length() > 0 ) ? Long.parseLong( value ) : 0;
+            return ( value.length() > 0 ) ? Long.parseLong( value ) : 1;
         }
         catch ( NumberFormatException e )
         {
             logger.debug( "Cannot parse lastUpdated date: \'" + value + "\'. Ignoring.", e );
-            return 0;
+            return 1;
         }
     }
 
@@ -455,6 +486,38 @@ public class DefaultUpdateCheckManager
         }
     }
 
+    private String getUpdateKey( File file, RemoteRepository repository )
+    {
+        return file.getAbsolutePath() + '|' + getRepoKey( repository );
+    }
+
+    private boolean isAlreadyUpdated( SessionData data, Object updateKey )
+    {
+        Object checkedFiles = data.get( SESSION_CHECKS );
+        if ( !( checkedFiles instanceof Map ) )
+        {
+            return false;
+        }
+        return ( (Map<?, ?>) checkedFiles ).containsKey( updateKey );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    private void setUpdated( SessionData data, Object updateKey )
+    {
+        Object checkedFiles = data.get( SESSION_CHECKS );
+        while ( !( checkedFiles instanceof Map ) )
+        {
+            Object old = checkedFiles;
+            checkedFiles = new ConcurrentHashMap<Object, Object>( 256 );
+            if ( data.set( SESSION_CHECKS, old, checkedFiles ) )
+            {
+                break;
+            }
+            checkedFiles = data.get( SESSION_CHECKS );
+        }
+        ( (Map<Object, Boolean>) checkedFiles ).put( updateKey, Boolean.TRUE );
+    }
+
     public boolean isUpdatedRequired( RepositorySystemSession session, long lastModified, String policy )
     {
         boolean checkForUpdates;
@@ -526,9 +589,11 @@ public class DefaultUpdateCheckManager
         File artifactFile = check.getFile();
         File touchFile = getTouchFile( artifact, artifactFile );
 
+        String updateKey = getUpdateKey( artifactFile, check.getRepository() );
         String dataKey = getDataKey( artifact, artifactFile, check.getAuthoritativeRepository() );
         String transferKey = getTransferKey( artifact, artifactFile, check.getRepository() );
 
+        setUpdated( session.getData(), updateKey );
         Properties props = write( touchFile, dataKey, transferKey, check.getException() );
 
         if ( artifactFile.exists() && !hasErrors( props ) )
@@ -555,9 +620,11 @@ public class DefaultUpdateCheckManager
         File metadataFile = check.getFile();
         File touchFile = getTouchFile( metadata, metadataFile );
 
+        String updateKey = getUpdateKey( metadataFile, check.getRepository() );
         String dataKey = getDataKey( metadata, metadataFile, check.getAuthoritativeRepository() );
         String transferKey = getTransferKey( metadata, metadataFile, check.getRepository() );
 
+        setUpdated( session.getData(), updateKey );
         write( touchFile, dataKey, transferKey, check.getException() );
     }
 
