@@ -12,8 +12,8 @@ package org.sonatype.aether.util;
  * You may elect to redistribute this code under either of these licenses.
  *******************************************************************************/
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.sonatype.aether.SessionData;
 
@@ -26,7 +26,7 @@ public class DefaultSessionData
     implements SessionData
 {
 
-    private final Map<Object, Object> data;
+    private final ConcurrentMap<Object, Object> data;
 
     public DefaultSessionData()
     {
@@ -47,6 +47,27 @@ public class DefaultSessionData
         else
         {
             data.remove( key );
+        }
+    }
+
+    public boolean set( Object key, Object oldValue, Object newValue )
+    {
+        if ( key == null )
+        {
+            throw new IllegalArgumentException( "key must not be null" );
+        }
+
+        if ( newValue != null )
+        {
+            if ( oldValue == null )
+            {
+                return data.putIfAbsent( key, newValue ) == null;
+            }
+            return data.replace( key, oldValue, newValue );
+        }
+        else
+        {
+            return data.remove( key, oldValue );
         }
     }
 
