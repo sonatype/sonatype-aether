@@ -29,13 +29,16 @@ public class PreorderNodeListGenerator
         {
             return false;
         }
+        else
+        {
+            setAlreadyVisited( node );
+        }
 
         if ( node.getDependency() != null )
         {
             nodes.add( node );
         }
 
-        setAlreadyVisited( node );
         return true;
     }
 

@@ -32,8 +32,8 @@ import java.util.Map;
  * implementations for {@link #visitEnter(org.sonatype.aether.graph.DependencyNode)} and
  * {@link #visitLeave(org.sonatype.aether.graph.DependencyNode)}
  *
- * @author Ansgar Konermann
  * @author Benjamin Bentmann
+ * @author Ansgar Konermann
  */
 public abstract class AbstractDepthFirstDependencyTreeTraverser
     implements DependencyVisitor
