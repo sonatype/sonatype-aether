@@ -20,18 +20,14 @@ import org.sonatype.aether.graph.DependencyNode;
  * @author Benjamin Bentmann
  */
 public class PreorderNodeListGenerator
-    extends AbstractDepthFirstDependencyTreeTraverser
+    extends AbstractDepthFirstNodeListGenerator
 {
     @Override
     public boolean visitEnter( DependencyNode node )
     {
-        if ( isAlreadyVisited( node ) )
+        if ( ensureVisitedFlagIsSet( node ) == VisitStatus.WAS_VISITED_BEFORE )
         {
             return false;
-        }
-        else
-        {
-            setAlreadyVisited( node );
         }
 
         if ( node.getDependency() != null )

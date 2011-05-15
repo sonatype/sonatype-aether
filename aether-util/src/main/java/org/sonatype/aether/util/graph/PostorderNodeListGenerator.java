@@ -20,7 +20,7 @@ import org.sonatype.aether.graph.DependencyNode;
  * @author Ansgar Konermann
  */
 public class PostorderNodeListGenerator
-    extends AbstractDepthFirstDependencyTreeTraverser
+    extends AbstractDepthFirstNodeListGenerator
 {
     /**
      * {@inheritDoc}
@@ -37,13 +37,9 @@ public class PostorderNodeListGenerator
     @Override
     public boolean visitLeave( DependencyNode node )
     {
-        if ( isAlreadyVisited( node ) )
+        if ( ensureVisitedFlagIsSet( node ) == VisitStatus.WAS_VISITED_BEFORE )
         {
             return true;
-        }
-        else
-        {
-            setAlreadyVisited( node );
         }
 
         if ( node.getDependency() != null )

@@ -35,7 +35,7 @@ import java.util.Map;
  * @author Benjamin Bentmann
  * @author Ansgar Konermann
  */
-public abstract class AbstractDepthFirstDependencyTreeTraverser
+public abstract class AbstractDepthFirstNodeListGenerator
     implements DependencyVisitor
 {
 
@@ -43,7 +43,7 @@ public abstract class AbstractDepthFirstDependencyTreeTraverser
 
     protected final List<DependencyNode> nodes;
 
-    public AbstractDepthFirstDependencyTreeTraverser()
+    public AbstractDepthFirstNodeListGenerator()
     {
         nodes = new ArrayList<DependencyNode>( 128 );
         visitedNodes = new IdentityHashMap<DependencyNode, Object>( 512 );
@@ -52,7 +52,7 @@ public abstract class AbstractDepthFirstDependencyTreeTraverser
     /**
      * Gets the list of dependency nodes that was generated during the graph traversal.
      *
-     * @return The list of dependency nodes in preorder, never {@code null}.
+     * @return The list of dependency nodes in the order defined by concrete subclasses, never {@code null}.
      */
     public List<DependencyNode> getNodes()
     {
@@ -63,7 +63,7 @@ public abstract class AbstractDepthFirstDependencyTreeTraverser
      * Gets the dependencies seen during the graph traversal.
      *
      * @param includeUnresolved Whether unresolved dependencies shall be included in the result or not.
-     * @return The list of dependencies in preorder, never {@code null}.
+     * @return The list of dependencies in the order defined by concrete subclasses, never {@code null}.
      */
     public List<Dependency> getDependencies( boolean includeUnresolved )
     {
@@ -88,7 +88,7 @@ public abstract class AbstractDepthFirstDependencyTreeTraverser
      * Gets the artifacts associated with the list of dependency nodes generated during the graph traversal.
      *
      * @param includeUnresolved Whether unresolved artifacts shall be included in the result or not.
-     * @return The list of artifacts in preorder, never {@code null}.
+     * @return The list of artifacts in the order defined by concrete subclasses, never {@code null}.
      */
     public List<Artifact> getArtifacts( boolean includeUnresolved )
     {
@@ -112,7 +112,7 @@ public abstract class AbstractDepthFirstDependencyTreeTraverser
     /**
      * Gets the files of resolved artifacts seen during the graph traversal.
      *
-     * @return The list of artifact files in preorder, never {@code null}.
+     * @return The list of artifact files in the order defined by concrete subclasses, never {@code null}.
      */
     public List<File> getFiles()
     {
@@ -163,14 +163,17 @@ public abstract class AbstractDepthFirstDependencyTreeTraverser
         return buffer.toString();
     }
 
-    protected void setAlreadyVisited( DependencyNode node )
+    protected VisitStatus ensureVisitedFlagIsSet( DependencyNode node )
     {
-        visitedNodes.put( node, Boolean.TRUE );
+        return visitedNodes.put( node, Boolean.TRUE ) == null
+            ? VisitStatus.FIRST_VISIT
+            : VisitStatus.WAS_VISITED_BEFORE;
     }
 
-    protected boolean isAlreadyVisited( DependencyNode node )
+    protected static enum VisitStatus
     {
-        return visitedNodes.containsKey( node );
+        FIRST_VISIT,
+        WAS_VISITED_BEFORE
     }
 
     public abstract boolean visitEnter( DependencyNode node );
