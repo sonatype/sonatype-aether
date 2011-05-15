@@ -15,8 +15,7 @@ package org.sonatype.aether.util.graph;
 import org.sonatype.aether.graph.DependencyNode;
 
 /**
- * Generates a sequence of dependency nodes from a dependeny graph by traversing the graph in <em>preorder</em>
- * sequence.
+ * Generates a sequence of dependency nodes from a dependeny graph by traversing the graph in preorder.
  *
  * @author Ansgar Konermann
  */
@@ -42,13 +41,16 @@ public class PostorderNodeListGenerator
         {
             return true;
         }
+        else
+        {
+            setAlreadyVisited( node );
+        }
 
         if ( node.getDependency() != null )
         {
             nodes.add( node );
         }
 
-        setAlreadyVisited( node );
         return true;
     }
 
