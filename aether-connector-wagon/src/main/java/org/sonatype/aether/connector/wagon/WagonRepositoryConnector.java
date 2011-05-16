@@ -176,9 +176,10 @@ class WagonRepositoryConnector
         headers = new Properties();
         headers.put( "User-Agent", ConfigUtils.get( session, ConfigurationProperties.DEFAULT_USER_AGENT,
                                                     ConfigurationProperties.USER_AGENT ) );
-        Map<String, String> headers =
-            ConfigUtils.get( session, (Map<String, String>) null, ConfigurationProperties.HTTP_HEADERS + "."
-                + repository.getId(), ConfigurationProperties.HTTP_HEADERS );
+        Map<?, ?> headers =
+            ConfigUtils.get( session, (Map<?, ?>) null,
+                             ConfigurationProperties.HTTP_HEADERS + "." + repository.getId(),
+                             ConfigurationProperties.HTTP_HEADERS );
         if ( headers != null )
         {
             this.headers.putAll( headers );

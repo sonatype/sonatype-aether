@@ -160,14 +160,17 @@ class AsyncRepositoryConnector
         maxIOExceptionRetry = ConfigUtils.get( session, 3, "aether.connector.ahc.resumeRetry" );
 
         this.headers = new FluentCaseInsensitiveStringsMap();
-        Map<String, String> headers =
-            ConfigUtils.get( session, (Map<String, String>) null, ConfigurationProperties.HTTP_HEADERS + "."
+        Map<?, ?> headers =
+            ConfigUtils.get( session, (Map<?, ?>) null, ConfigurationProperties.HTTP_HEADERS + "."
                 + repository.getId(), ConfigurationProperties.HTTP_HEADERS );
         if ( headers != null )
         {
-            for ( Map.Entry<String, String> entry : headers.entrySet() )
+            for ( Map.Entry<?, ?> entry : headers.entrySet() )
             {
-                this.headers.add( entry.getKey(), entry.getValue() );
+                if ( entry.getKey() instanceof String && entry.getValue() instanceof String )
+                {
+                    this.headers.add( entry.getKey().toString(), entry.getValue().toString() );
+                }
             }
         }
     }

@@ -173,8 +173,7 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value or {@code null} if none.
      */
-    @SuppressWarnings( "unchecked" )
-    public static <E> List<E> get( Map<?, ?> properties, List<E> defaultValue, String... keys )
+    public static List<?> get( Map<?, ?> properties, List<?> defaultValue, String... keys )
     {
         for ( String key : keys )
         {
@@ -182,11 +181,11 @@ public class ConfigUtils
 
             if ( value instanceof List )
             {
-                return (List<E>) value;
+                return (List<?>) value;
             }
             else if ( value instanceof Collection )
             {
-                return Collections.unmodifiableList( new ArrayList<E>( (Collection<E>) value ) );
+                return Collections.unmodifiableList( new ArrayList<Object>( (Collection<?>) value ) );
             }
         }
 
@@ -203,7 +202,7 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value or {@code null} if none.
      */
-    public static <E> List<E> get( RepositorySystemSession session, List<E> defaultValue, String... keys )
+    public static List<?> get( RepositorySystemSession session, List<?> defaultValue, String... keys )
     {
         return get( session.getConfigProperties(), defaultValue, keys );
     }
@@ -217,8 +216,7 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value or {@code null} if none.
      */
-    @SuppressWarnings( "unchecked" )
-    public static <K, V> Map<K, V> get( Map<?, ?> properties, Map<K, V> defaultValue, String... keys )
+    public static Map<?, ?> get( Map<?, ?> properties, Map<?, ?> defaultValue, String... keys )
     {
         for ( String key : keys )
         {
@@ -226,7 +224,7 @@ public class ConfigUtils
 
             if ( value instanceof Map )
             {
-                return (Map<K, V>) value;
+                return (Map<?, ?>) value;
             }
         }
 
@@ -243,7 +241,7 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value or {@code null} if none.
      */
-    public static <K, V> Map<K, V> get( RepositorySystemSession session, Map<K, V> defaultValue, String... keys )
+    public static Map<?, ?> get( RepositorySystemSession session, Map<?, ?> defaultValue, String... keys )
     {
         return get( session.getConfigProperties(), defaultValue, keys );
     }
