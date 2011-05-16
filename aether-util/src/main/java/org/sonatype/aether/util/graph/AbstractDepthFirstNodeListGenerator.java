@@ -1,3 +1,5 @@
+package org.sonatype.aether.util.graph;
+
 /*******************************************************************************
  * Copyright (c) 2010-2011 Sonatype, Inc.
  * All rights reserved. This program and the accompanying materials
@@ -9,8 +11,6 @@
  *   http://www.apache.org/licenses/LICENSE-2.0.html
  * You may elect to redistribute this code under either of these licenses.
  ******************************************************************************/
-
-package org.sonatype.aether.util.graph;
 
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.graph.Dependency;
@@ -52,7 +52,7 @@ public abstract class AbstractDepthFirstNodeListGenerator
     /**
      * Gets the list of dependency nodes that was generated during the graph traversal.
      *
-     * @return The list of dependency nodes in the order defined by concrete subclasses, never {@code null}.
+     * @return The list of dependency nodes, never {@code null}.
      */
     public List<DependencyNode> getNodes()
     {
@@ -63,7 +63,7 @@ public abstract class AbstractDepthFirstNodeListGenerator
      * Gets the dependencies seen during the graph traversal.
      *
      * @param includeUnresolved Whether unresolved dependencies shall be included in the result or not.
-     * @return The list of dependencies in the order defined by concrete subclasses, never {@code null}.
+     * @return The list of dependencies, never {@code null}.
      */
     public List<Dependency> getDependencies( boolean includeUnresolved )
     {
@@ -88,7 +88,7 @@ public abstract class AbstractDepthFirstNodeListGenerator
      * Gets the artifacts associated with the list of dependency nodes generated during the graph traversal.
      *
      * @param includeUnresolved Whether unresolved artifacts shall be included in the result or not.
-     * @return The list of artifacts in the order defined by concrete subclasses, never {@code null}.
+     * @return The list of artifacts, never {@code null}.
      */
     public List<Artifact> getArtifacts( boolean includeUnresolved )
     {
@@ -112,7 +112,7 @@ public abstract class AbstractDepthFirstNodeListGenerator
     /**
      * Gets the files of resolved artifacts seen during the graph traversal.
      *
-     * @return The list of artifact files in the order defined by concrete subclasses, never {@code null}.
+     * @return The list of artifact files, never {@code null}.
      */
     public List<File> getFiles()
     {
