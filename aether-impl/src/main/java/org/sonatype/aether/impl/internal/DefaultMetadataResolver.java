@@ -338,7 +338,7 @@ public class DefaultMetadataResolver
 
         if ( !tasks.isEmpty() )
         {
-            int threads = ConfigUtils.get( session, 4, "aether.metadataResolver.threads" );
+            int threads = ConfigUtils.getInteger( session, 4, "aether.metadataResolver.threads" );
             Executor executor = getExecutor( Math.min( tasks.size(), threads ) );
             try
             {

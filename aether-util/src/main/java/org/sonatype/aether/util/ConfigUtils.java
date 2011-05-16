@@ -43,7 +43,7 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value or {@code null} if none.
      */
-    public static String get( Map<?, ?> properties, String defaultValue, String... keys )
+    public static String getString( Map<?, ?> properties, String defaultValue, String... keys )
     {
         for ( String key : keys )
         {
@@ -68,9 +68,9 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value or {@code null} if none.
      */
-    public static String get( RepositorySystemSession session, String defaultValue, String... keys )
+    public static String getString( RepositorySystemSession session, String defaultValue, String... keys )
     {
-        return get( session.getConfigProperties(), defaultValue, keys );
+        return getString( session.getConfigProperties(), defaultValue, keys );
     }
 
     /**
@@ -82,7 +82,7 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value.
      */
-    public static int get( Map<?, ?> properties, int defaultValue, String... keys )
+    public static int getInteger( Map<?, ?> properties, int defaultValue, String... keys )
     {
         for ( String key : keys )
         {
@@ -116,9 +116,9 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value.
      */
-    public static int get( RepositorySystemSession session, int defaultValue, String... keys )
+    public static int getInteger( RepositorySystemSession session, int defaultValue, String... keys )
     {
-        return get( session.getConfigProperties(), defaultValue, keys );
+        return getInteger( session.getConfigProperties(), defaultValue, keys );
     }
 
     /**
@@ -130,7 +130,7 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value.
      */
-    public static boolean get( Map<?, ?> properties, boolean defaultValue, String... keys )
+    public static boolean getBoolean( Map<?, ?> properties, boolean defaultValue, String... keys )
     {
         for ( String key : keys )
         {
@@ -159,9 +159,9 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value.
      */
-    public static boolean get( RepositorySystemSession session, boolean defaultValue, String... keys )
+    public static boolean getBoolean( RepositorySystemSession session, boolean defaultValue, String... keys )
     {
-        return get( session.getConfigProperties(), defaultValue, keys );
+        return getBoolean( session.getConfigProperties(), defaultValue, keys );
     }
 
     /**
@@ -173,7 +173,7 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value or {@code null} if none.
      */
-    public static List<?> get( Map<?, ?> properties, List<?> defaultValue, String... keys )
+    public static List<?> getList( Map<?, ?> properties, List<?> defaultValue, String... keys )
     {
         for ( String key : keys )
         {
@@ -202,9 +202,9 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value or {@code null} if none.
      */
-    public static List<?> get( RepositorySystemSession session, List<?> defaultValue, String... keys )
+    public static List<?> getList( RepositorySystemSession session, List<?> defaultValue, String... keys )
     {
-        return get( session.getConfigProperties(), defaultValue, keys );
+        return getList( session.getConfigProperties(), defaultValue, keys );
     }
 
     /**
@@ -216,7 +216,7 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value or {@code null} if none.
      */
-    public static Map<?, ?> get( Map<?, ?> properties, Map<?, ?> defaultValue, String... keys )
+    public static Map<?, ?> getMap( Map<?, ?> properties, Map<?, ?> defaultValue, String... keys )
     {
         for ( String key : keys )
         {
@@ -241,9 +241,9 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value or {@code null} if none.
      */
-    public static Map<?, ?> get( RepositorySystemSession session, Map<?, ?> defaultValue, String... keys )
+    public static Map<?, ?> getMap( RepositorySystemSession session, Map<?, ?> defaultValue, String... keys )
     {
-        return get( session.getConfigProperties(), defaultValue, keys );
+        return getMap( session.getConfigProperties(), defaultValue, keys );
     }
 
 }
