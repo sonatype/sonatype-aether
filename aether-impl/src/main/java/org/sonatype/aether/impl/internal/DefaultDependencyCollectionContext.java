@@ -20,6 +20,7 @@ import org.sonatype.aether.graph.Dependency;
 
 /**
  * @author Benjamin Bentmann
+ * @see DefaultDependencyCollector
  */
 class DefaultDependencyCollectionContext
     implements DependencyCollectionContext
@@ -52,6 +53,12 @@ class DefaultDependencyCollectionContext
     public List<Dependency> getManagedDependencies()
     {
         return managedDependencies;
+    }
+
+    public void set( Dependency dependency, List<Dependency> managedDependencies )
+    {
+        this.dependency = dependency;
+        this.managedDependencies = managedDependencies;
     }
 
     @Override

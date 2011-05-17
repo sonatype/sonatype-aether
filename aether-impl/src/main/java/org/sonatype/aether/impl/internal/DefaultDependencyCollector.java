@@ -239,7 +239,7 @@ public class DefaultDependencyCollector
             DefaultDependencyCollectionContext context =
                 new DefaultDependencyCollectionContext( session, root, managedDependencies );
 
-            Args args = new Args( result, session, trace, pool, edges );
+            Args args = new Args( result, session, trace, pool, edges, context );
 
             process( args, dependencies, repositories, depSelector.deriveChildSelector( context ),
                      depManager.deriveChildManager( context ), depTraverser.deriveChildTraverser( context ) );
@@ -465,9 +465,8 @@ public class DefaultDependencyCollector
                     boolean recurse = traverse && !descriptorResult.getDependencies().isEmpty();
                     if ( recurse )
                     {
-                        DefaultDependencyCollectionContext context =
-                            new DefaultDependencyCollectionContext( args.session, d,
-                                                                    descriptorResult.getManagedDependencies() );
+                        DefaultDependencyCollectionContext context = args.collectionContext;
+                        context.set( d, descriptorResult.getManagedDependencies() );
 
                         childSelector = depSelector.deriveChildSelector( context );
                         childManager = depManager.deriveChildManager( context );
@@ -587,14 +586,17 @@ public class DefaultDependencyCollector
 
         final EdgeStack edges;
 
+        final DefaultDependencyCollectionContext collectionContext;
+
         public Args( CollectResult result, RepositorySystemSession session, RequestTrace trace, DataPool pool,
-                     EdgeStack edges )
+                     EdgeStack edges, DefaultDependencyCollectionContext collectionContext )
         {
             this.result = result;
             this.session = session;
             this.trace = trace;
             this.pool = pool;
             this.edges = edges;
+            this.collectionContext = collectionContext;
         }
 
     }
