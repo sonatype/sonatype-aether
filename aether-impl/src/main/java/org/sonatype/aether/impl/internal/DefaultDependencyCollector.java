@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
@@ -234,8 +233,8 @@ public class DefaultDependencyCollector
         {
             DataPool pool = new DataPool( session );
 
-            LinkedList<GraphEdge> edges = new LinkedList<GraphEdge>();
-            edges.addFirst( edge );
+            EdgeStack edges = new EdgeStack();
+            edges.push( edge );
 
             DefaultDependencyCollectionContext context =
                 new DefaultDependencyCollectionContext( session, root, managedDependencies );
@@ -437,7 +436,7 @@ public class DefaultDependencyCollector
 
                     d = d.setArtifact( descriptorResult.getArtifact() );
 
-                    if ( findDuplicate( args.edges, d.getArtifact() ) != null )
+                    if ( args.edges.find( d.getArtifact() ) != null )
                     {
                         cycle = true;
                         continue;
@@ -521,7 +520,7 @@ public class DefaultDependencyCollector
                         }
                     }
 
-                    GraphNode node = args.edges.getFirst().getTarget();
+                    GraphNode node = args.edges.top().getTarget();
 
                     GraphEdge edge = new GraphEdge( node, child );
                     edge.setDependency( d );
@@ -537,7 +536,7 @@ public class DefaultDependencyCollector
 
                     if ( recurse )
                     {
-                        args.edges.addFirst( edge );
+                        args.edges.push( edge );
 
                         if ( process( args, descriptorResult.getDependencies(), childRepos, childSelector,
                                       childManager, childTraverser ) )
@@ -546,7 +545,7 @@ public class DefaultDependencyCollector
                             cacheNode = false;
                         }
 
-                        args.edges.removeFirst();
+                        args.edges.pop();
                     }
 
                     if ( cacheNode )
@@ -560,44 +559,6 @@ public class DefaultDependencyCollector
         }
 
         return cycle;
-    }
-
-    private GraphEdge findDuplicate( List<GraphEdge> edges, Artifact artifact )
-    {
-        for ( GraphEdge edge : edges )
-        {
-            Dependency dependency = edge.getDependency();
-            if ( dependency == null )
-            {
-                break;
-            }
-
-            Artifact a = dependency.getArtifact();
-            if ( !a.getArtifactId().equals( artifact.getArtifactId() ) )
-            {
-                continue;
-            }
-            if ( !a.getGroupId().equals( artifact.getGroupId() ) )
-            {
-                continue;
-            }
-            if ( !a.getBaseVersion().equals( artifact.getBaseVersion() ) )
-            {
-                continue;
-            }
-            if ( !a.getExtension().equals( artifact.getExtension() ) )
-            {
-                continue;
-            }
-            if ( !a.getClassifier().equals( artifact.getClassifier() ) )
-            {
-                continue;
-            }
-
-            return edge;
-        }
-
-        return null;
     }
 
     private boolean isLackingDescriptor( Artifact artifact )
@@ -624,10 +585,10 @@ public class DefaultDependencyCollector
 
         final DataPool pool;
 
-        final LinkedList<GraphEdge> edges;
+        final EdgeStack edges;
 
         public Args( CollectResult result, RepositorySystemSession session, RequestTrace trace, DataPool pool,
-                     LinkedList<GraphEdge> edges )
+                     EdgeStack edges )
         {
             this.result = result;
             this.session = session;

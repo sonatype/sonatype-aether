@@ -62,7 +62,7 @@ final class DataPool
 
     private Map<Object, Constraint> constraints = new WeakHashMap<Object, Constraint>();
 
-    private Map<Object, GraphNode> nodes = new HashMap<Object, GraphNode>();
+    private Map<Object, GraphNode> nodes = new HashMap<Object, GraphNode>( 256 );
 
     @SuppressWarnings( "unchecked" )
     public DataPool( RepositorySystemSession session )
