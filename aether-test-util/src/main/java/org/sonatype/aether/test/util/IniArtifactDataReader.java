@@ -116,7 +116,7 @@ public class IniArtifactDataReader
 
         if ( res == null )
         {
-            throw new IllegalArgumentException( "cannot find resource: " + resource );
+            throw new IOException( "cannot find resource: " + resource );
         }
         return parse( res );
     }
@@ -148,7 +148,6 @@ public class IniArtifactDataReader
     private ArtifactDescription parse( Reader reader )
         throws IOException
     {
-
         String line = null;
 
         BufferedReader in = new BufferedReader( reader );
@@ -175,12 +174,17 @@ public class IniArtifactDataReader
                 }
                 catch ( IllegalArgumentException e )
                 {
-                    throw new IllegalArgumentException( "unknown section: " + line, e );
+                    throw new IOException( "unknown section: " + line );
                 }
             }
             else
             {
-                sections.get( state ).add( line.trim() );
+                List<String> lines = sections.get( state );
+                if ( lines == null )
+                {
+                    throw new IOException( "missing section: " + line );
+                }
+                lines.add( line.trim() );
             }
         }
 

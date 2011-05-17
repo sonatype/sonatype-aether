@@ -63,10 +63,10 @@ public class IniArtifactDescriptorReader
             result.setRelocations( data.getRelocations() );
             return result;
         }
-        catch ( Throwable e )
+        catch ( Exception e )
         {
             throw new ArtifactDescriptorException( result, e.getMessage() );
         }
-
     }
+
 }
