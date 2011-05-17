@@ -150,42 +150,48 @@ public class IniArtifactDataReader
     {
         String line = null;
 
-        BufferedReader in = new BufferedReader( reader );
-
         State state = State.NONE;
 
         Map<State, List<String>> sections = new HashMap<State, List<String>>();
 
-        while ( ( line = in.readLine() ) != null )
+        BufferedReader in = new BufferedReader( reader );
+        try
         {
+            while ( ( line = in.readLine() ) != null )
+            {
 
-            line = cutComment( line );
-            if ( isEmpty( line ) )
-            {
-                continue;
-            }
+                line = cutComment( line );
+                if ( isEmpty( line ) )
+                {
+                    continue;
+                }
 
-            if ( line.startsWith( "[" ) )
-            {
-                try
+                if ( line.startsWith( "[" ) )
                 {
-                    state = State.valueOf( line.substring( 1, line.length() - 1 ).toUpperCase( Locale.ENGLISH ) );
-                    sections.put( state, new ArrayList<String>() );
+                    try
+                    {
+                        state = State.valueOf( line.substring( 1, line.length() - 1 ).toUpperCase( Locale.ENGLISH ) );
+                        sections.put( state, new ArrayList<String>() );
+                    }
+                    catch ( IllegalArgumentException e )
+                    {
+                        throw new IOException( "unknown section: " + line );
+                    }
                 }
-                catch ( IllegalArgumentException e )
+                else
                 {
-                    throw new IOException( "unknown section: " + line );
+                    List<String> lines = sections.get( state );
+                    if ( lines == null )
+                    {
+                        throw new IOException( "missing section: " + line );
+                    }
+                    lines.add( line.trim() );
                 }
             }
-            else
-            {
-                List<String> lines = sections.get( state );
-                if ( lines == null )
-                {
-                    throw new IOException( "missing section: " + line );
-                }
-                lines.add( line.trim() );
-            }
+        }
+        finally
+        {
+            in.close();
         }
 
         List<Artifact> relocations = relocations( sections.get( State.RELOCATIONS ) );
