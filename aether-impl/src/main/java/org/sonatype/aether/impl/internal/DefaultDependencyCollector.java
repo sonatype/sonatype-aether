@@ -387,7 +387,7 @@ public class DefaultDependencyCollector
                 }
                 catch ( VersionRangeResolutionException e )
                 {
-                    result.addException( e );
+                    addException( result, e );
                     continue nextDependency;
                 }
 
@@ -398,7 +398,6 @@ public class DefaultDependencyCollector
                     Dependency d = dependency.setArtifact( originalArtifact );
 
                     ArtifactDescriptorResult descriptorResult;
-                    try
                     {
                         ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
                         descriptorRequest.setArtifact( d.getArtifact() );
@@ -416,15 +415,24 @@ public class DefaultDependencyCollector
                             descriptorResult = pool.getDescriptor( key, descriptorRequest );
                             if ( descriptorResult == null )
                             {
-                                descriptorResult = descriptorReader.readArtifactDescriptor( session, descriptorRequest );
-                                pool.putDescriptor( key, descriptorResult );
+                                try
+                                {
+                                    descriptorResult =
+                                        descriptorReader.readArtifactDescriptor( session, descriptorRequest );
+                                    pool.putDescriptor( key, descriptorResult );
+                                }
+                                catch ( ArtifactDescriptorException e )
+                                {
+                                    addException( result, e );
+                                    pool.putDescriptor( key, e );
+                                    continue;
+                                }
+                            }
+                            else if ( descriptorResult == DataPool.NO_DESCRIPTOR )
+                            {
+                                continue;
                             }
                         }
-                    }
-                    catch ( ArtifactDescriptorException e )
-                    {
-                        result.addException( e );
-                        continue;
                     }
 
                     d = d.setArtifact( descriptorResult.getArtifact() );
@@ -594,6 +602,14 @@ public class DefaultDependencyCollector
     private boolean isLackingDescriptor( Artifact artifact )
     {
         return artifact.getProperty( ArtifactProperties.LOCAL_PATH, null ) != null;
+    }
+
+    private void addException( CollectResult result, Exception e )
+    {
+        if ( result.getExceptions().size() < 100 )
+        {
+            result.addException( e );
+        }
     }
 
 }

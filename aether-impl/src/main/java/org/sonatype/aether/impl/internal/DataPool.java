@@ -31,6 +31,7 @@ import org.sonatype.aether.collection.DependencyTraverser;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.repository.ArtifactRepository;
 import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.resolution.ArtifactDescriptorException;
 import org.sonatype.aether.resolution.ArtifactDescriptorRequest;
 import org.sonatype.aether.resolution.ArtifactDescriptorResult;
 import org.sonatype.aether.resolution.VersionRangeRequest;
@@ -49,6 +50,9 @@ final class DataPool
     private static final String DEPENDENCY_POOL = DataPool.class.getName() + "$Dependency";
 
     private static final String DESCRIPTORS = DataPool.class.getName() + "$Descriptors";
+
+    public static final ArtifactDescriptorResult NO_DESCRIPTOR =
+        new ArtifactDescriptorResult( new ArtifactDescriptorRequest() );
 
     private ObjectPool<Artifact> artifacts;
 
@@ -127,7 +131,12 @@ final class DataPool
 
     public void putDescriptor( Object key, ArtifactDescriptorResult result )
     {
-        descriptors.put( key, new Descriptor( result ) );
+        descriptors.put( key, new GoodDescriptor( result ) );
+    }
+
+    public void putDescriptor( Object key, ArtifactDescriptorException e )
+    {
+        descriptors.put( key, BadDescriptor.INSTANCE );
     }
 
     public Object toKey( VersionRangeRequest request )
@@ -171,7 +180,15 @@ final class DataPool
         nodes.put( key, node );
     }
 
-    static class Descriptor
+    static abstract class Descriptor
+    {
+
+        public abstract ArtifactDescriptorResult toResult( ArtifactDescriptorRequest request );
+
+    }
+
+    static class GoodDescriptor
+        extends Descriptor
     {
 
         final Artifact artifact;
@@ -186,7 +203,7 @@ final class DataPool
 
         final List<Dependency> managedDependencies;
 
-        public Descriptor( ArtifactDescriptorResult result )
+        public GoodDescriptor( ArtifactDescriptorResult result )
         {
             artifact = result.getArtifact();
             properties = result.getProperties();
@@ -218,6 +235,19 @@ final class DataPool
                 clones.add( clone );
             }
             return clones;
+        }
+
+    }
+
+    static class BadDescriptor
+        extends Descriptor
+    {
+
+        static final BadDescriptor INSTANCE = new BadDescriptor();
+
+        public ArtifactDescriptorResult toResult( ArtifactDescriptorRequest request )
+        {
+            return NO_DESCRIPTOR;
         }
 
     }
