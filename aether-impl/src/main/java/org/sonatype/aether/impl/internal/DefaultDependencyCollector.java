@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -61,9 +62,9 @@ import org.sonatype.aether.version.Version;
 public class DefaultDependencyCollector
     implements DependencyCollector, Service
 {
-
-    @SuppressWarnings( "unused" )
-    @Requirement
+	
+    @SuppressWarnings("unused")
+	@Requirement
     private Logger logger = NullLogger.INSTANCE;
 
     @Requirement
@@ -75,15 +76,19 @@ public class DefaultDependencyCollector
     @Requirement
     private VersionRangeResolver versionRangeResolver;
 
+    private Set<String> visiteds;
+    
     public DefaultDependencyCollector()
     {
         // enables default constructor
+    	this.visiteds = new HashSet<String>();
     }
 
     public DefaultDependencyCollector( Logger logger, RemoteRepositoryManager remoteRepositoryManager,
                                        ArtifactDescriptorReader artifactDescriptorReader,
                                        VersionRangeResolver versionRangeResolver )
     {
+    	this();
         setLogger( logger );
         setRemoteRepositoryManager( remoteRepositoryManager );
         setArtifactDescriptorReader( artifactDescriptorReader );
@@ -239,6 +244,11 @@ public class DefaultDependencyCollector
             DefaultDependencyCollectionContext context =
                 new DefaultDependencyCollectionContext( session, root, managedDependencies );
 
+            if (root != null && root.getArtifact() != null) 
+            {
+                visiteds.add(root.getArtifact().toString());
+            }
+
             Args args = new Args( result, session, trace, pool, edges, context );
 
             process( args, dependencies, repositories, depSelector.deriveChildSelector( context ),
@@ -261,7 +271,7 @@ public class DefaultDependencyCollector
         {
             throw new DependencyCollectionException( result );
         }
-
+        
         return result;
     }
 
@@ -436,12 +446,6 @@ public class DefaultDependencyCollector
 
                     d = d.setArtifact( descriptorResult.getArtifact() );
 
-                    if ( args.edges.find( d.getArtifact() ) != null )
-                    {
-                        cycle = true;
-                        continue;
-                    }
-
                     if ( !descriptorResult.getRelocations().isEmpty() )
                     {
                         relocations = descriptorResult.getRelocations();
@@ -463,6 +467,7 @@ public class DefaultDependencyCollector
                     Object key = null;
 
                     boolean recurse = traverse && !descriptorResult.getDependencies().isEmpty();
+
                     if ( recurse )
                     {
                         DefaultDependencyCollectionContext context = args.collectionContext;
@@ -531,7 +536,15 @@ public class DefaultDependencyCollector
                     edge.setVersion( version );
                     edge.setRequestContext( args.result.getRequest().getRequestContext() );
 
-                    node.getOutgoingEdges().add( edge );
+                	node.getOutgoingEdges().add( edge );
+                	
+                    if (visiteds.contains(d.getArtifact().toString())) 
+                    {
+                        cycle = true;
+                        continue;
+                    }
+
+                    visiteds.add(d.getArtifact().toString());
 
                     if ( recurse )
                     {
@@ -546,6 +559,7 @@ public class DefaultDependencyCollector
 
                         args.edges.pop();
                     }
+                    	
 
                     if ( cacheNode )
                     {
@@ -556,10 +570,10 @@ public class DefaultDependencyCollector
                 break;
             }
         }
-
+        
         return cycle;
     }
-
+	
     private boolean isLackingDescriptor( Artifact artifact )
     {
         return artifact.getProperty( ArtifactProperties.LOCAL_PATH, null ) != null;
@@ -600,5 +614,5 @@ public class DefaultDependencyCollector
         }
 
     }
-
+   
 }
