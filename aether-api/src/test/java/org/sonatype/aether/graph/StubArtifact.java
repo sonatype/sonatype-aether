@@ -169,7 +169,6 @@ class StubArtifact
         hash = hash * 31 + getExtension().hashCode();
         hash = hash * 31 + getClassifier().hashCode();
         hash = hash * 31 + getVersion().hashCode();
-        hash = hash * 31 + getProperties().hashCode();
         hash = hash * 31 + hash( getFile() );
         return hash;
     }
