@@ -55,9 +55,18 @@ public class DefaultDependencyCollectorTest
     private TestRepositorySystemSession session;
 
     private DependencyGraphParser parser;
-
+    
     private RemoteRepository repository;
 
+    	
+    	
+    
+
+    	
+    	
+
+
+    
     @Before
     public void setup()
         throws IOException
@@ -68,7 +77,6 @@ public class DefaultDependencyCollectorTest
         collector.setArtifactDescriptorReader( new IniArtifactDescriptorReader( "artifact-descriptions/" ) );
         collector.setVersionRangeResolver( new StubVersionRangeResolver() );
         collector.setRemoteRepositoryManager( new StubRemoteRepositoryManager() );
-
         parser = new DependencyGraphParser( "artifact-descriptions/" );
 
         repository = new RemoteRepository( "id", "default", "file:///" );
@@ -220,12 +228,24 @@ public class DefaultDependencyCollectorTest
     public void testCyclicDependencies()
         throws Exception
     {
+
         DependencyNode root = parser.parse( "cycle.txt" );
         CollectRequest request = new CollectRequest( root.getDependency(), Arrays.asList( repository ) );
         CollectResult result = collector.collectDependencies( session, request );
         assertEqualSubtree( root, result.getRoot() );
+        
     }
 
+    @Test
+    public void testBigCyclicDependencies()
+        throws Exception
+    {
+        DependencyNode root = parser.parse( "cycle - BIG.txt" );
+        CollectRequest request = new CollectRequest( root.getDependency(), Arrays.asList( repository ) );
+        CollectResult result = collector.collectDependencies( session, request );
+        assertEqualSubtree( root, result.getRoot() );
+    }
+    
     @Test
     public void testPartialResultOnError()
         throws IOException
