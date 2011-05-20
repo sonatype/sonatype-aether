@@ -19,9 +19,15 @@ Mailing Lists
   <aether-user@sonatype.org> to post mails  
   <aether-user-subscribe@sonatype.org> to subscribe to the list
 
-Development
-===========
-Source code uses the Maven code style: <http://maven.apache.org/developers/maven-eclipse-codestyle.xml>
+Contribution
+============
+When submitting patches, please follow the existing code style. The corresponding formatter settings for some IDEs can
+be taken from the [Maven Code Style]<http://maven.apache.org/developers/committer-environment.html#Maven_Code_Style>
+page.
+
+Any patches submitted will need to be accompanied by a signed Contributor License Agreement (CLA). If you have not
+aleady signed this CLA, please download the [Sonatype Contributor License Agreement](http://www.sonatype.org/SonatypeCLA.pdf)
+and follow its instructions.
 
 License
 =======
