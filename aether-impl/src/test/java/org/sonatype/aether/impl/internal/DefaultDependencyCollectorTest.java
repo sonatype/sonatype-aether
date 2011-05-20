@@ -26,6 +26,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.collection.CollectResult;
 import org.sonatype.aether.collection.DependencyCollectionContext;
@@ -84,6 +85,18 @@ public class DefaultDependencyCollectorTest
     {
         assertEquals( "path: " + parents, expected.getDependency(), actual.getDependency() );
 
+        if ( actual.getDependency() != null )
+        {
+            Artifact artifact = actual.getDependency().getArtifact();
+            for ( DependencyNode parent : parents )
+            {
+                if ( parent.getDependency() != null && artifact.equals( parent.getDependency().getArtifact() ) )
+                {
+                    return;
+                }
+            }
+        }
+
         parents.addLast( expected );
 
         assertEquals( "path: " + parents + ", expected: " + expected.getChildren() + ", actual: "
@@ -96,6 +109,7 @@ public class DefaultDependencyCollectorTest
         {
             assertEqualSubtree( iterator1.next(), iterator2.next(), parents );
         }
+
         parents.removeLast();
     }
 
