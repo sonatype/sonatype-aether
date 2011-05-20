@@ -22,7 +22,7 @@ Mailing Lists
 Contribution
 ============
 When submitting patches, please follow the existing code style. The corresponding formatter settings for some IDEs can
-be taken from the [Maven Code Style]<http://maven.apache.org/developers/committer-environment.html#Maven_Code_Style>
+be taken from the [Maven Code Style](http://maven.apache.org/developers/committer-environment.html#Maven_Code_Style)
 page.
 
 Any patches submitted will need to be accompanied by a signed Contributor License Agreement (CLA). If you have not
