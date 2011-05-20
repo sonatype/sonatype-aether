@@ -33,8 +33,6 @@ class GraphEdge
     implements DependencyNode
 {
 
-    private GraphNode source;
-
     private GraphNode target;
 
     private Dependency dependency;
@@ -53,15 +51,9 @@ class GraphEdge
 
     private Map<Object, Object> data = Collections.emptyMap();
 
-    public GraphEdge( GraphNode source, GraphNode target )
+    public GraphEdge( GraphNode target )
     {
-        this.source = source;
         this.target = target;
-    }
-
-    public GraphNode getSource()
-    {
-        return source;
     }
 
     public GraphNode getTarget()

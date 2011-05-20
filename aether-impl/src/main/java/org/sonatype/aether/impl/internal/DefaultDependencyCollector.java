@@ -213,7 +213,7 @@ public class DefaultDependencyCollector
             node.setAliases( descriptorResult.getAliases() );
             node.setRepositories( request.getRepositories() );
 
-            edge = new GraphEdge( null, node );
+            edge = new GraphEdge( node );
             edge.setDependency( root );
             edge.setRequestContext( request.getRequestContext() );
             edge.setRelocations( descriptorResult.getRelocations() );
@@ -222,7 +222,7 @@ public class DefaultDependencyCollector
         }
         else
         {
-            edge = new GraphEdge( null, new GraphNode() );
+            edge = new GraphEdge( new GraphNode() );
         }
 
         result.setRoot( edge );
@@ -521,7 +521,7 @@ public class DefaultDependencyCollector
 
                     GraphNode node = args.edges.top().getTarget();
 
-                    GraphEdge edge = new GraphEdge( node, child );
+                    GraphEdge edge = new GraphEdge( child );
                     edge.setDependency( d );
                     edge.setScope( d.getScope() );
                     edge.setPremanagedScope( premanagedScope );
