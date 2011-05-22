@@ -34,6 +34,22 @@ class SimpleConflictMarker
     public DependencyNode transformGraph( DependencyNode node, DependencyGraphTransformationContext context )
         throws RepositoryException
     {
+        @SuppressWarnings( "unchecked" )
+        Map<DependencyNode, Object> conflictIds =
+            (Map<DependencyNode, Object>) context.get( TransformationContextKeys.CONFLICT_IDS );
+        if ( conflictIds == null )
+        {
+            conflictIds = new IdentityHashMap<DependencyNode, Object>();
+            context.put( TransformationContextKeys.CONFLICT_IDS, conflictIds );
+        }
+
+        mark( node, conflictIds );
+
+        return node;
+    }
+
+    private void mark( DependencyNode node, Map<DependencyNode, Object> conflictIds )
+    {
         Dependency dependency = node.getDependency();
         if ( dependency != null )
         {
@@ -43,24 +59,16 @@ class SimpleConflictMarker
                 String.format( "%s:%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(),
                                artifact.getClassifier(), artifact.getExtension() );
 
-            @SuppressWarnings( "unchecked" )
-            Map<DependencyNode, Object> nodes =
-                (Map<DependencyNode, Object>) context.get( TransformationContextKeys.CONFLICT_IDS );
-            if ( nodes == null )
+            if ( conflictIds.put( node, key ) != null )
             {
-                nodes = new IdentityHashMap<DependencyNode, Object>();
-                context.put( TransformationContextKeys.CONFLICT_IDS, nodes );
+                return;
             }
-
-            nodes.put( node, key );
         }
 
         for ( DependencyNode child : node.getChildren() )
         {
-            transformGraph( child, context );
+            mark( child, conflictIds );
         }
-
-        return node;
     }
 
 }
