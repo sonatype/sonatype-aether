@@ -50,10 +50,11 @@ class EdgeStack
 
     public void pop()
     {
-        if ( --size < 0 )
+        if ( size <= 0 )
         {
             throw new IllegalStateException( "stack empty" );
         }
+        size--;
     }
 
     public GraphEdge find( Artifact artifact )
