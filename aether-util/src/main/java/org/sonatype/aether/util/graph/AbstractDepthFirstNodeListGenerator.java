@@ -25,13 +25,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Abstract base class for depth first dependency tree traversers. Subclasses of this visitor will visit each
- * node exactly once regardless how many paths within the dependency graph lead to the node such that the
- * resulting node sequence is free of duplicates.<br/>
+ * Abstract base class for depth first dependency tree traversers. Subclasses of this visitor will visit each node
+ * exactly once regardless how many paths within the dependency graph lead to the node such that the resulting node
+ * sequence is free of duplicates.<br/>
  * Actual vertex ordering (preorder, inorder, postorder) needs to be defined by subclasses through appropriate
  * implementations for {@link #visitEnter(org.sonatype.aether.graph.DependencyNode)} and
  * {@link #visitLeave(org.sonatype.aether.graph.DependencyNode)}
- *
+ * 
  * @author Benjamin Bentmann
  * @author Ansgar Konermann
  */
@@ -39,7 +39,7 @@ public abstract class AbstractDepthFirstNodeListGenerator
     implements DependencyVisitor
 {
 
-    protected final Map<DependencyNode, Object> visitedNodes;
+    private final Map<DependencyNode, Object> visitedNodes;
 
     protected final List<DependencyNode> nodes;
 
@@ -51,7 +51,7 @@ public abstract class AbstractDepthFirstNodeListGenerator
 
     /**
      * Gets the list of dependency nodes that was generated during the graph traversal.
-     *
+     * 
      * @return The list of dependency nodes, never {@code null}.
      */
     public List<DependencyNode> getNodes()
@@ -61,7 +61,7 @@ public abstract class AbstractDepthFirstNodeListGenerator
 
     /**
      * Gets the dependencies seen during the graph traversal.
-     *
+     * 
      * @param includeUnresolved Whether unresolved dependencies shall be included in the result or not.
      * @return The list of dependencies, never {@code null}.
      */
@@ -86,7 +86,7 @@ public abstract class AbstractDepthFirstNodeListGenerator
 
     /**
      * Gets the artifacts associated with the list of dependency nodes generated during the graph traversal.
-     *
+     * 
      * @param includeUnresolved Whether unresolved artifacts shall be included in the result or not.
      * @return The list of artifacts, never {@code null}.
      */
@@ -111,7 +111,7 @@ public abstract class AbstractDepthFirstNodeListGenerator
 
     /**
      * Gets the files of resolved artifacts seen during the graph traversal.
-     *
+     * 
      * @return The list of artifact files, never {@code null}.
      */
     public List<File> getFiles()
@@ -136,7 +136,7 @@ public abstract class AbstractDepthFirstNodeListGenerator
     /**
      * Gets a class path by concatenating the artifact files of the visited dependency nodes. Nodes with unresolved
      * artifacts are automatically skipped.
-     *
+     * 
      * @return The class path, using the platform-specific path separator, never {@code null}.
      */
     public String getClassPath()
@@ -163,20 +163,19 @@ public abstract class AbstractDepthFirstNodeListGenerator
         return buffer.toString();
     }
 
-    protected VisitStatus ensureVisitedFlagIsSet( DependencyNode node )
+    /**
+     * Marks the specified node as being visited and determines whether the node has been visited before.
+     * 
+     * @param node The node being visited, must not be {@code null}.
+     * @return {@code true} if the node has not been visited before, {@code false} if the node was already visited.
+     */
+    protected boolean setVisited( DependencyNode node )
     {
-        return visitedNodes.put( node, Boolean.TRUE ) == null
-            ? VisitStatus.FIRST_VISIT
-            : VisitStatus.WAS_VISITED_BEFORE;
-    }
-
-    protected static enum VisitStatus
-    {
-        FIRST_VISIT,
-        WAS_VISITED_BEFORE
+        return visitedNodes.put( node, Boolean.TRUE ) == null;
     }
 
     public abstract boolean visitEnter( DependencyNode node );
 
     public abstract boolean visitLeave( DependencyNode node );
+
 }

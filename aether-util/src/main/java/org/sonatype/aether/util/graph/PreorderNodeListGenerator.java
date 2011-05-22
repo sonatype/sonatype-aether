@@ -28,7 +28,7 @@ public class PreorderNodeListGenerator
     @Override
     public boolean visitEnter( DependencyNode node )
     {
-        if ( ensureVisitedFlagIsSet( node ) == VisitStatus.WAS_VISITED_BEFORE )
+        if ( !setVisited( node ) )
         {
             return false;
         }

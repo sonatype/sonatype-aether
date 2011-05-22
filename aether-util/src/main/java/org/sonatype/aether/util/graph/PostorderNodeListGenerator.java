@@ -34,7 +34,7 @@ public class PostorderNodeListGenerator
     @Override
     public boolean visitLeave( DependencyNode node )
     {
-        if ( ensureVisitedFlagIsSet( node ) == VisitStatus.WAS_VISITED_BEFORE )
+        if ( !setVisited( node ) )
         {
             return true;
         }
