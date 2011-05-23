@@ -17,6 +17,7 @@ import java.util.Map;
 import org.junit.Test;
 import org.sonatype.aether.collection.UnsolvableVersionConflictException;
 import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.test.util.DependencyGraphParser;
 
 /**
  * @author Benjamin Bentmann
@@ -413,6 +414,21 @@ public class NearestVersionConflictResolverTest
         assertSame( b, root.getChildren().get( 1 ) );
         assertTrue( a.getChildren().isEmpty() );
         assertEquals( 1, b.getChildren().size() );
+    }
+
+    @Test
+    public void testCyclicGraph()
+        throws Exception
+    {
+        DependencyNode root = new DependencyGraphParser( "version-resolver/" ).parse( "cycle.txt" );
+
+        root = new SimpleConflictMarker().transformGraph( root, context );
+        root = new NearestVersionConflictResolver().transformGraph( root, context );
+
+        assertEquals( 2, root.getChildren().size() );
+        assertEquals( 1, root.getChildren().get( 0 ).getChildren().size() );
+        assertEquals( 0, root.getChildren().get( 0 ).getChildren().get( 0 ).getChildren().size() );
+        assertEquals( 0, root.getChildren().get( 1 ).getChildren().size() );
     }
 
 }

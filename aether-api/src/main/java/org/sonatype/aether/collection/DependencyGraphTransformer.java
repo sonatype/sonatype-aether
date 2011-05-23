@@ -12,7 +12,8 @@ import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.graph.DependencyNode;
 
 /**
- * Transforms a given dependency graph.
+ * Transforms a given dependency graph. <em>Note:</em> Dependency graphs may contain cycles, as such a graph transformer
+ * needs to gracefully handle cyclic graphs, e.g. guard against infinite recursion.
  * 
  * @author Benjamin Bentmann
  */
@@ -23,7 +24,7 @@ public interface DependencyGraphTransformer
      * Transforms the dependency graph denoted by the specified root node. The transformer may directly change the
      * provided input graph or create a new graph.
      * 
-     * @param node The root node of the graph to transform, must not be {@code null}.
+     * @param node The root node of the (possibly cyclic!) graph to transform, must not be {@code null}.
      * @param context The graph transformation context, must not be {@code null}.
      * @return The result graph of the transformation, never {@code null}.
      * @throws RepositoryException If the transformation failed.

@@ -237,6 +237,18 @@ public class DefaultDependencyCollectorTest
     }
 
     @Test
+    public void testCyclicDependenciesBig()
+        throws Exception
+    {
+        DependencyNode root = parser.parse( "cycle-big.txt" );
+        CollectRequest request = new CollectRequest( root.getDependency(), Arrays.asList( repository ) );
+        collector.setArtifactDescriptorReader( new IniArtifactDescriptorReader( "artifact-descriptions/cycle-big/" ) );
+        CollectResult result = collector.collectDependencies( session, request );
+        assertNotNull( result.getRoot() );
+        // we only care about the performance here, this test must not hang or run out of mem
+    }
+
+    @Test
     public void testPartialResultOnError()
         throws IOException
     {

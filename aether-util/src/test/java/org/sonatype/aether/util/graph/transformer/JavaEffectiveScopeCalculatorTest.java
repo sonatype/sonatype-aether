@@ -78,7 +78,6 @@ public class JavaEffectiveScopeCalculatorTest
         {
             throw new IllegalArgumentException( "Illegal coordinates for child", e );
         }
-
     }
 
     private DependencyNode path( DependencyNode node, int... coords )
@@ -170,6 +169,18 @@ public class JavaEffectiveScopeCalculatorTest
         expectScope( "runtime", root, 1 );
         expectScope( "runtime", root, 1, 0 );
         expectScope( "runtime", root, 1, 0, 0 );
+    }
+
+    @Test
+    public void testCycleD()
+        throws Exception
+    {
+        DependencyNode root = parser.parse( "cycle-d.txt" );
+        root = transform( root );
+
+        expectScope( "compile", root, 0 );
+        expectScope( "compile", root, 0, 0 );
+        expectScope( "compile", root, 0, 0, 0 );
     }
 
     @Test

@@ -304,13 +304,10 @@ public class DefaultDependencyCollector
         return a.getGroupId() + ':' + a.getArtifactId() + ':' + a.getClassifier() + ':' + a.getExtension();
     }
 
-    private boolean process( final Args args, List<Dependency> dependencies, List<RemoteRepository> repositories,
-                             DependencySelector depSelector, DependencyManager depManager,
-                             DependencyTraverser depTraverser )
+    private void process( final Args args, List<Dependency> dependencies, List<RemoteRepository> repositories,
+                          DependencySelector depSelector, DependencyManager depManager, DependencyTraverser depTraverser )
         throws DependencyCollectionException
     {
-        boolean cycle = false;
-
         nextDependency: for ( Dependency dependency : dependencies )
         {
             boolean disableVersionManagement = false;
@@ -432,9 +429,23 @@ public class DefaultDependencyCollector
 
                     d = d.setArtifact( descriptorResult.getArtifact() );
 
-                    if ( args.edges.find( d.getArtifact() ) != null )
+                    GraphNode node = args.edges.top().getTarget();
+
+                    GraphEdge cycleEdge = args.edges.find( d.getArtifact() );
+                    if ( cycleEdge != null )
                     {
-                        cycle = true;
+                        GraphEdge edge = new GraphEdge( cycleEdge.getTarget() );
+                        edge.setDependency( d );
+                        edge.setScope( d.getScope() );
+                        edge.setPremanagedScope( premanagedScope );
+                        edge.setPremanagedVersion( premanagedVersion );
+                        edge.setRelocations( relocations );
+                        edge.setVersionConstraint( rangeResult.getVersionConstraint() );
+                        edge.setVersion( version );
+                        edge.setRequestContext( args.result.getRequest().getRequestContext() );
+
+                        node.getOutgoingEdges().add( edge );
+
                         continue;
                     }
 
@@ -495,15 +506,14 @@ public class DefaultDependencyCollector
                         repos = Collections.emptyList();
                     }
 
-                    boolean cacheNode = false;
-
                     GraphNode child = args.pool.getNode( key );
                     if ( child == null )
                     {
                         child = new GraphNode();
                         child.setAliases( descriptorResult.getAliases() );
                         child.setRepositories( repos );
-                        cacheNode = true;
+
+                        args.pool.putNode( key, child );
                     }
                     else
                     {
@@ -514,8 +524,6 @@ public class DefaultDependencyCollector
                             child.setRepositories( repos );
                         }
                     }
-
-                    GraphNode node = args.edges.top().getTarget();
 
                     GraphEdge edge = new GraphEdge( child );
                     edge.setDependency( d );
@@ -533,27 +541,16 @@ public class DefaultDependencyCollector
                     {
                         args.edges.push( edge );
 
-                        if ( process( args, descriptorResult.getDependencies(), childRepos, childSelector,
-                                      childManager, childTraverser ) )
-                        {
-                            cycle = true;
-                            cacheNode = false;
-                        }
+                        process( args, descriptorResult.getDependencies(), childRepos, childSelector, childManager,
+                                 childTraverser );
 
                         args.edges.pop();
-                    }
-
-                    if ( cacheNode )
-                    {
-                        args.pool.putNode( key, child );
                     }
                 }
 
                 break;
             }
         }
-
-        return cycle;
     }
 
     private boolean isLackingDescriptor( Artifact artifact )
