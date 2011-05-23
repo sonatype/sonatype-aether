@@ -11,9 +11,13 @@ package org.sonatype.aether.collection;
 import org.sonatype.aether.graph.Dependency;
 
 /**
- * Decides whether the dependencies of a dependency node should be traversed as well.
+ * Decides whether the dependencies of a dependency node should be traversed as well. <em>Note:</em> For the sake of
+ * good performance during dependency collection, implementations should provide a semantic
+ * {@link Object#equals(Object) equals()} method.
  * 
  * @author Benjamin Bentmann
+ * @see org.sonatype.aether.RepositorySystem#collectDependencies(org.sonatype.aether.RepositorySystemSession,
+ *      CollectRequest)
  */
 public interface DependencyTraverser
 {

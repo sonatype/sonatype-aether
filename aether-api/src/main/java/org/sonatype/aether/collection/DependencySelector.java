@@ -11,9 +11,12 @@ package org.sonatype.aether.collection;
 import org.sonatype.aether.graph.Dependency;
 
 /**
- * Decides what dependencies to include in the dependency graph.
+ * Decides what dependencies to include in the dependency graph. <em>Note:</em> For the sake of good performance during
+ * dependency collection, implementations should provide a semantic {@link Object#equals(Object) equals()} method.
  * 
  * @author Benjamin Bentmann
+ * @see org.sonatype.aether.RepositorySystem#collectDependencies(org.sonatype.aether.RepositorySystemSession,
+ *      CollectRequest)
  */
 public interface DependencySelector
 {
