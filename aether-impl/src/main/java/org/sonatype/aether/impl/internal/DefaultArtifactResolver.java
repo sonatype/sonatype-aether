@@ -306,8 +306,7 @@ public class DefaultArtifactResolver
 
             LocalArtifactResult local =
                 lrm.find( session, new LocalArtifactRequest( artifact, repos, request.getRequestContext() ) );
-            if ( local.isAvailable()
-                || ( local.getFile() != null && versionResult.getRepository() instanceof LocalRepository ) )
+            if ( isLocallyInstalled( local, versionResult ) )
             {
                 if ( local.getRepository() != null )
                 {
@@ -330,9 +329,10 @@ public class DefaultArtifactResolver
                 if ( !local.isAvailable() )
                 {
                     /*
-                     * NOTE: Interop with Maven 2.x: An artifact installed by Maven 2.x will not show up in the
-                     * repository tracking file of the local repository. If however the maven-metadata-local.xml tells
-                     * us the artifact was installed, we sync the repository tracking file.
+                     * NOTE: Interop with simple local repository: An artifact installed by a simple local repo manager
+                     * will not show up in the repository tracking file of the enhanced local repository. If however the
+                     * maven-metadata-local.xml tells us the artifact was installed locally, we sync the repository
+                     * tracking file.
                      */
                     lrm.add( session, new LocalArtifactRegistration( artifact ) );
                 }
@@ -538,6 +538,28 @@ public class DefaultArtifactResolver
         }
 
         return results;
+    }
+
+    private boolean isLocallyInstalled( LocalArtifactResult lar, VersionResult vr )
+    {
+        if ( lar.isAvailable() )
+        {
+            return true;
+        }
+        if ( lar.getFile() != null )
+        {
+            if ( vr.getRepository() instanceof LocalRepository )
+            {
+                // resolution of (snapshot) version found locally installed artifact
+                return true;
+            }
+            else if ( vr.getRepository() == null && lar.getRequest().getRepositories().isEmpty() )
+            {
+                // resolution of version range found locally installed artifact
+                return true;
+            }
+        }
+        return false;
     }
 
     private File getFile( RepositorySystemSession session, Artifact artifact, File file )

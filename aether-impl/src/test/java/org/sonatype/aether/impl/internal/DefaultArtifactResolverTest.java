@@ -638,7 +638,7 @@ public class DefaultArtifactResolverTest
     }
 
     @Test
-    public void testFindInLocalRepository()
+    public void testFindInLocalRepositoryWhenVersionWasFoundInLocalRepository()
         throws ArtifactResolutionException
     {
         session.setLocalRepositoryManager( new LocalRepositoryManager()
@@ -721,4 +721,90 @@ public class DefaultArtifactResolverTest
         resolved = resolved.setFile( null );
         assertEquals( artifact, resolved );
     }
+
+    @Test
+    public void testFindInLocalRepositoryWhenVersionRangeWasResolvedFromLocalRepository()
+        throws ArtifactResolutionException
+    {
+        session.setLocalRepositoryManager( new LocalRepositoryManager()
+        {
+
+            public LocalRepository getRepository()
+            {
+                return null;
+            }
+
+            public String getPathForRemoteMetadata( Metadata metadata, RemoteRepository repository, String context )
+            {
+                return null;
+            }
+
+            public String getPathForRemoteArtifact( Artifact artifact, RemoteRepository repository, String context )
+            {
+                return null;
+            }
+
+            public String getPathForLocalMetadata( Metadata metadata )
+            {
+                return null;
+            }
+
+            public String getPathForLocalArtifact( Artifact artifact )
+            {
+                return null;
+            }
+
+            public LocalArtifactResult find( RepositorySystemSession session, LocalArtifactRequest request )
+            {
+
+                LocalArtifactResult result = new LocalArtifactResult( request );
+                result.setAvailable( false );
+                try
+                {
+                    result.setFile( TestFileUtils.createTempFile( "" ) );
+                }
+                catch ( IOException e )
+                {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+
+            public void add( RepositorySystemSession session, LocalArtifactRegistration request )
+            {
+            }
+
+            public LocalMetadataResult find( RepositorySystemSession session, LocalMetadataRequest request )
+            {
+                LocalMetadataResult result = new LocalMetadataResult( request );
+                return result;
+            }
+
+            public void add( RepositorySystemSession session, LocalMetadataRegistration request )
+            {
+            }
+
+        } );
+        ArtifactRequest request = new ArtifactRequest( artifact, null, "" );
+
+        resolver.setVersionResolver( new VersionResolver()
+        {
+
+            public VersionResult resolveVersion( RepositorySystemSession session, VersionRequest request )
+                throws VersionResolutionException
+            {
+                return new VersionResult( request ).setVersion( request.getArtifact().getVersion() );
+            }
+        } );
+        ArtifactResult result = resolver.resolveArtifact( session, request );
+
+        assertTrue( result.getExceptions().isEmpty() );
+
+        Artifact resolved = result.getArtifact();
+        assertNotNull( resolved.getFile() );
+
+        resolved = resolved.setFile( null );
+        assertEquals( artifact, resolved );
+    }
+
 }
