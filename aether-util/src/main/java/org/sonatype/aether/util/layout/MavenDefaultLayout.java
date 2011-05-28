@@ -52,7 +52,10 @@ public class MavenDefaultLayout
             path.append( '-' ).append( artifact.getClassifier() );
         }
 
-        path.append( '.' ).append( artifact.getExtension() );
+        if ( artifact.getExtension().length() > 0 )
+        {
+            path.append( '.' ).append( artifact.getExtension() );
+        }
 
         return toUri( path.toString() );
     }

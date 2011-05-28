@@ -66,6 +66,9 @@ public class SimpleLocalRepositoryManagerTest
         artifact = new DefaultArtifact( "g.i.d:a.i.d:1.0-20110329.221805-4" );
         assertEquals( "1.0-SNAPSHOT", artifact.getBaseVersion() );
         assertEquals( "g/i/d/a.i.d/1.0-SNAPSHOT/a.i.d-1.0-SNAPSHOT.jar", manager.getPathForLocalArtifact( artifact ) );
+
+        artifact = new DefaultArtifact( "g.i.d", "a.i.d", "", "", "1.0-SNAPSHOT" );
+        assertEquals( "g/i/d/a.i.d/1.0-SNAPSHOT/a.i.d-1.0-SNAPSHOT", manager.getPathForLocalArtifact( artifact ) );
     }
 
     @Test
