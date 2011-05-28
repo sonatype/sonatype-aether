@@ -45,6 +45,8 @@ import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferEvent.RequestType;
 import org.sonatype.aether.transfer.TransferResource;
 import org.sonatype.aether.util.ChecksumUtils;
+import org.sonatype.aether.util.layout.MavenDefaultLayout;
+import org.sonatype.aether.util.layout.RepositoryLayout;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
@@ -79,6 +81,8 @@ class FileRepositoryWorker
     }
 
     private static LinkedHashMap<String, String> checksumAlgos;
+
+    private final RepositoryLayout layout = new MavenDefaultLayout();
 
     private TransferWrapper transfer;
 
@@ -446,11 +450,11 @@ class FileRepositoryWorker
         {
             case ARTIFACT:
                 Artifact artifact = transfer.getArtifact();
-                resourceName = new DefaultLayout().getPath( artifact );
+                resourceName = layout.getPath( artifact ).getPath();
                 break;
             case METADATA:
                 Metadata metadata = transfer.getMetadata();
-                resourceName = new DefaultLayout().getPath( metadata );
+                resourceName = layout.getPath( metadata ).getPath();
                 break;
         }
         return new DefaultTransferResource( PathUtils.decode( repository.getUrl() ), resourceName, transfer.getFile(),

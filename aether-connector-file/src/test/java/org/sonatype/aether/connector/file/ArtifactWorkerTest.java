@@ -31,16 +31,18 @@ import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
+import org.sonatype.aether.util.layout.MavenDefaultLayout;
+import org.sonatype.aether.util.layout.RepositoryLayout;
 import org.sonatype.aether.util.metadata.DefaultMetadata;
 
 public class ArtifactWorkerTest
 {
 
-    private static RemoteRepository repository;
+    private RemoteRepository repository;
 
-    private static TestRepositorySystemSession session;
+    private TestRepositorySystemSession session;
 
-    private static DefaultLayout layout;
+    private RepositoryLayout layout;
 
     @Before
     public void setup()
@@ -50,7 +52,7 @@ public class ArtifactWorkerTest
             new RemoteRepository( "test", "default",
                                   TestFileUtils.createTempDir( "test-remote-repository" ).toURL().toString() );
         session = new TestRepositorySystemSession();
-        layout = new DefaultLayout();
+        layout = new MavenDefaultLayout();
     }
 
     @After
@@ -168,7 +170,7 @@ public class ArtifactWorkerTest
 
         File repo = new File( dir, "repo" );
         assertTrue( "Repository from encoded URL does not exist.", repo.exists() );
-        assertTrue( "Artifact was not uploaded correctly.", new File( repo, layout.getPath( artifact ) ).exists() );
+        assertTrue( "Artifact was not uploaded correctly.", new File( repo, layout.getPath( artifact ).getRawPath() ).exists() );
         TestFileUtils.delete( dir );
     }
 

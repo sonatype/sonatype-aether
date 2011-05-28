@@ -21,6 +21,7 @@ import org.sonatype.aether.spi.connector.Transfer;
 import org.sonatype.aether.spi.connector.Transfer.State;
 import org.sonatype.aether.transfer.ArtifactTransferException;
 import org.sonatype.aether.transfer.MetadataTransferException;
+import org.sonatype.aether.util.layout.MavenDefaultLayout;
 
 /**
  * Wrapper object for {@link ArtifactTransfer} and {@link MetadataTransfer} objects.
@@ -185,11 +186,11 @@ class TransferWrapper
     {
         if ( artifactTransfer != null )
         {
-            return new DefaultLayout().getPath( getArtifact() );
+            return new MavenDefaultLayout().getPath( getArtifact() ).getRawPath();
         }
         else if ( metadataTransfer != null )
         {
-            return new DefaultLayout().getPath( getMetadata() );
+            return new MavenDefaultLayout().getPath( getMetadata() ).getRawPath();
         }
         else
         {
