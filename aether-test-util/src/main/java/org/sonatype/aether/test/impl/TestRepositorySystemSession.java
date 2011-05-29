@@ -70,7 +70,6 @@ public class TestRepositorySystemSession
     public TestRepositorySystemSession()
         throws IOException
     {
-        super();
         localRepositoryManager = new TestLocalRepositoryManager();
     }
 

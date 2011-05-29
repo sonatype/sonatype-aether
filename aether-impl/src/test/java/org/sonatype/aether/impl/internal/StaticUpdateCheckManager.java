@@ -23,7 +23,6 @@ class StaticUpdateCheckManager
 
     public StaticUpdateCheckManager( boolean checkRequired )
     {
-        super();
         this.checkRequired = checkRequired;
     }
 

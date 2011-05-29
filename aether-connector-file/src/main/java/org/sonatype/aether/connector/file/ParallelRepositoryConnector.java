@@ -56,7 +56,6 @@ abstract class ParallelRepositoryConnector
 
     public ParallelRepositoryConnector( Map<String, Object> config )
     {
-        super();
         this.config = config;
         initExecutor();
     }
@@ -99,10 +98,10 @@ abstract class ParallelRepositoryConnector
 
     protected void checkClosed()
     {
-        if ( closed ) {
+        if ( closed )
+        {
             throw new IllegalStateException( "Connector is closed" );
         }
-        
     }
 
     protected static class RepositoryConnectorThreadFactory
@@ -117,8 +116,6 @@ abstract class ParallelRepositoryConnector
 
         public RepositoryConnectorThreadFactory( String tgName, String tName )
         {
-            super();
-
             myTG = new ThreadGroup( Thread.currentThread().getThreadGroup().getParent(), tgName );
             this.tName = tName;
         }

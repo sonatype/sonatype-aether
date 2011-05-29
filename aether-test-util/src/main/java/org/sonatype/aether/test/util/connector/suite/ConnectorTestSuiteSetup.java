@@ -39,7 +39,6 @@ public abstract class ConnectorTestSuiteSetup
      */
     public ConnectorTestSuiteSetup( ConnectorTestSetup setup )
     {
-        super();
         connectorSetup = setup;
         factory = setup.factory();
         try

@@ -54,7 +54,6 @@ class RecordingRepositoryConnector
     public RecordingRepositoryConnector( Artifact[] expectGet, Artifact[] expectPut, Metadata[] expectGetMD,
                                          Metadata[] expectPutMD )
     {
-        super();
         this.expectGet = expectGet;
         this.expectPut = expectPut;
         this.expectGetMD = expectGetMD;

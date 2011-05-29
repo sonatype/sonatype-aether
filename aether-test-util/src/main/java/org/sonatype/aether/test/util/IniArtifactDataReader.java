@@ -328,8 +328,6 @@ public class IniArtifactDataReader
 
         public Definition( String def )
         {
-            super();
-
             this.definition = def.trim();
 
             if ( definition.startsWith( "(" ) )

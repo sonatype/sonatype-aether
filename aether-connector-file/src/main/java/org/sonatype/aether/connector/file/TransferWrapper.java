@@ -55,7 +55,6 @@ class TransferWrapper
 
     public TransferWrapper( ArtifactTransfer transfer )
     {
-        super();
         this.artifactTransfer = transfer;
         this.transfer = transfer;
         this.type = Type.ARTIFACT;

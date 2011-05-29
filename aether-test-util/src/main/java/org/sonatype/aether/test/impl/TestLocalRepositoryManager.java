@@ -40,7 +40,6 @@ public class TestLocalRepositoryManager
     public TestLocalRepositoryManager()
         throws IOException
     {
-        super();
         localRepository = new LocalRepository( TestFileUtils.createTempDir( "test-local-repository" ) );
     }
 

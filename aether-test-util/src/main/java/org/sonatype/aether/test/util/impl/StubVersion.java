@@ -23,7 +23,6 @@ public final class StubVersion
 
     public StubVersion( String version )
     {
-        super();
         this.version = version == null ? "" : version;
     }
 

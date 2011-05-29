@@ -251,7 +251,6 @@ public class RecordingRepositoryListener
 
         public EventWrapper( Type type, RepositoryEvent event )
         {
-            super();
             this.type = type;
             this.event = event;
         }

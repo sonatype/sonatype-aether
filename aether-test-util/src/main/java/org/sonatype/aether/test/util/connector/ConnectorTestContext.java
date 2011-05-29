@@ -21,14 +21,12 @@ public class ConnectorTestContext
 
     public ConnectorTestContext( RemoteRepository repository, RepositorySystemSession session )
     {
-        super();
         this.repository = repository;
         this.session = session;
     }
 
     public ConnectorTestContext()
     {
-        super();
     }
 
     public RemoteRepository getRepository()

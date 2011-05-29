@@ -30,8 +30,6 @@ class ArtifactDefinition
 
     public ArtifactDefinition( String def )
     {
-        super();
-
         this.definition = def.trim();
 
         if ( definition.startsWith( "(" ) )

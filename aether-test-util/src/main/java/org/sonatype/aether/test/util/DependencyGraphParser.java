@@ -121,7 +121,6 @@ public class DependencyGraphParser
     public DependencyNode parseLiteral( String dependencyGraph )
         throws IOException
     {
-
         BufferedReader reader = new BufferedReader( new StringReader( dependencyGraph ) );
         DependencyNode node = parse( reader );
         reader.close();
@@ -135,7 +134,7 @@ public class DependencyGraphParser
      */
     public DependencyGraphParser( String prefix, Collection<String> substitutions )
     {
-        this( prefix );
+        this.prefix = prefix;
         this.substitutions = substitutions;
     }
 
@@ -146,8 +145,7 @@ public class DependencyGraphParser
      */
     public DependencyGraphParser( String prefix )
     {
-        this();
-        this.prefix = prefix;
+        this( prefix, null );
     }
 
     /**
@@ -155,7 +153,7 @@ public class DependencyGraphParser
      */
     public DependencyGraphParser()
     {
-        super();
+        this( "" );
     }
 
     /**

@@ -23,13 +23,11 @@ class StubRemoteRepositoryManager
 
     public StubRemoteRepositoryManager( RepositoryConnector connector )
     {
-        super();
         setConnector( connector );
     }
 
     public StubRemoteRepositoryManager()
     {
-        super();
     }
 
     private RepositoryConnector connector;
