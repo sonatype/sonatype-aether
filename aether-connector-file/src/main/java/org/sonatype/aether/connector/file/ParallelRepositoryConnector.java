@@ -11,7 +11,6 @@ package org.sonatype.aether.connector.file;
 import static org.sonatype.aether.connector.file.FileRepositoryConnectorFactory.*;
 
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -29,16 +28,11 @@ import org.sonatype.aether.util.ConfigUtils;
  */
 abstract class ParallelRepositoryConnector
 {
+
     /*
      * Default Configuration
      */
-    private static final String THREAD_NAME = "FileRepositoryConnector";
-
     private static final int MAX_POOL_SIZE = 5;
-
-    private static final int INITIAL_POOL_SIZE = 2;
-
-    private static final long KEEPALIVE = 60L;
 
     private boolean closed = false;
 
@@ -53,12 +47,9 @@ abstract class ParallelRepositoryConnector
     {
         if ( executor == null )
         {
-            String threadName = ConfigUtils.getString( config, THREAD_NAME, CFG_PREFIX + ".threads.name" );
-            int maximumPoolSize = ConfigUtils.getInteger( config, MAX_POOL_SIZE, CFG_PREFIX + ".threads.max" );
-            int initialPoolSize = ConfigUtils.getInteger( config, INITIAL_POOL_SIZE, CFG_PREFIX + ".threads.initial" );
-            long keepAlive = ConfigUtils.getLong( config, KEEPALIVE, CFG_PREFIX + ".threads.keepalive" );
+            int threads = ConfigUtils.getInteger( config, MAX_POOL_SIZE, CFG_PREFIX + ".threads" );
 
-            if ( maximumPoolSize <= 1 )
+            if ( threads <= 1 )
             {
                 executor = new Executor()
                 {
@@ -70,13 +61,10 @@ abstract class ParallelRepositoryConnector
             }
             else
             {
-
-                ThreadFactory threadFactory = new RepositoryConnectorThreadFactory( threadName.toString() );
-                BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>();
-                TimeUnit timeUnit = TimeUnit.SECONDS;
+                ThreadFactory threadFactory = new RepositoryConnectorThreadFactory( getClass().getSimpleName() );
 
                 executor =
-                    new ThreadPoolExecutor( initialPoolSize, maximumPoolSize, keepAlive, timeUnit, workQueue,
+                    new ThreadPoolExecutor( threads, threads, 3, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
                                             threadFactory );
             }
         }
@@ -106,7 +94,7 @@ abstract class ParallelRepositoryConnector
 
         private final AtomicInteger counter = new AtomicInteger( 1 );
 
-        private String threadName;
+        private final String threadName;
 
         public RepositoryConnectorThreadFactory( String threadName )
         {
