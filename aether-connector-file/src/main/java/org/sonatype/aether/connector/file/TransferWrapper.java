@@ -68,7 +68,6 @@ class TransferWrapper
 
     public TransferWrapper( MetadataTransfer transfer )
     {
-        super();
         this.metadataTransfer = transfer;
         this.transfer = transfer;
         this.type = Type.METADATA;
