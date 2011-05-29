@@ -46,8 +46,6 @@ public class FileRepositoryConnector
                                     FileProcessor fileProcessor, Logger logger )
         throws NoRepositoryConnectorException
     {
-        super( session.getConfigProperties() );
-
         if ( !"default".equals( repository.getContentType() ) )
         {
             throw new NoRepositoryConnectorException( repository );
@@ -57,6 +55,8 @@ public class FileRepositoryConnector
         this.repository = repository;
         this.fileProcessor = fileProcessor;
         this.logger = logger;
+
+        initExecutor( session.getConfigProperties() );
     }
 
     public void get( Collection<? extends ArtifactDownload> artifactDownloads,
