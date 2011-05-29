@@ -12,6 +12,7 @@ import static org.sonatype.aether.connector.file.FileRepositoryConnectorFactory.
 
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -46,7 +47,7 @@ abstract class ParallelRepositoryConnector
      * 
      * @see #initExecutor()
      */
-    protected ThreadPoolExecutor executor;
+    protected Executor executor;
 
     protected void initExecutor( Map<String, Object> config )
     {
@@ -57,12 +58,27 @@ abstract class ParallelRepositoryConnector
             int initialPoolSize = ConfigUtils.getInteger( config, INITIAL_POOL_SIZE, CFG_PREFIX + ".threads.initial" );
             long keepAlive = ConfigUtils.getLong( config, KEEPALIVE, CFG_PREFIX + ".threads.keepalive" );
 
-            ThreadFactory threadFactory = new RepositoryConnectorThreadFactory( threadName.toString() );
-            BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>();
-            TimeUnit timeUnit = TimeUnit.SECONDS;
+            if ( maximumPoolSize <= 1 )
+            {
+                executor = new Executor()
+                {
+                    public void execute( Runnable command )
+                    {
+                        command.run();
+                    }
+                };
+            }
+            else
+            {
 
-            executor =
-                new ThreadPoolExecutor( initialPoolSize, maximumPoolSize, keepAlive, timeUnit, workQueue, threadFactory );
+                ThreadFactory threadFactory = new RepositoryConnectorThreadFactory( threadName.toString() );
+                BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>();
+                TimeUnit timeUnit = TimeUnit.SECONDS;
+
+                executor =
+                    new ThreadPoolExecutor( initialPoolSize, maximumPoolSize, keepAlive, timeUnit, workQueue,
+                                            threadFactory );
+            }
         }
     }
 
