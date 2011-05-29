@@ -12,6 +12,7 @@ import static org.sonatype.aether.connector.file.FileRepositoryConnectorFactory.
 
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -45,7 +46,7 @@ abstract class ParallelRepositoryConnector
      * 
      * @see #initExecutor()
      */
-    protected static ThreadPoolExecutor executor;
+    protected ThreadPoolExecutor executor;
 
     protected void initExecutor( Map<String, Object> config )
     {
@@ -68,6 +69,11 @@ abstract class ParallelRepositoryConnector
     public void close()
     {
         this.closed = true;
+
+        if ( executor instanceof ExecutorService )
+        {
+            ( (ExecutorService) executor ).shutdown();
+        }
     }
 
     protected void checkClosed()
