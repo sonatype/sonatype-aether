@@ -116,7 +116,7 @@ abstract class ParallelRepositoryConnector
 
         public RepositoryConnectorThreadFactory( String tgName, String tName )
         {
-            myTG = new ThreadGroup( Thread.currentThread().getThreadGroup().getParent(), tgName );
+            myTG = new ThreadGroup( tgName );
             this.tName = tName;
         }
 
