@@ -39,6 +39,45 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value or {@code null} if none.
      */
+    public static Object getObject( Map<?, ?> properties, Object defaultValue, String... keys )
+    {
+        for ( String key : keys )
+        {
+            Object value = properties.get( key );
+
+            if ( value != null )
+            {
+                return value;
+            }
+        }
+
+        return defaultValue;
+    }
+
+    /**
+     * Gets the specified configuration property.
+     * 
+     * @param session The repository system session from which to read the configuration property, must not be
+     *            {@code null}.
+     * @param defaultValue The default value to return in case the property isn't set, may be {@code null}.
+     * @param keys The properties to read, must not be {@code null}. The specified keys are read one after one until a
+     *            valid value is found.
+     * @return The property value or {@code null} if none.
+     */
+    public static Object getObject( RepositorySystemSession session, Object defaultValue, String... keys )
+    {
+        return getObject( session.getConfigProperties(), defaultValue, keys );
+    }
+
+    /**
+     * Gets the specified configuration property.
+     * 
+     * @param properties The configuration properties to read, must not be {@code null}.
+     * @param defaultValue The default value to return in case the property isn't set, may be {@code null}.
+     * @param keys The properties to read, must not be {@code null}. The specified keys are read one after one until a
+     *            valid value is found.
+     * @return The property value or {@code null} if none.
+     */
     public static String getString( Map<?, ?> properties, String defaultValue, String... keys )
     {
         for ( String key : keys )

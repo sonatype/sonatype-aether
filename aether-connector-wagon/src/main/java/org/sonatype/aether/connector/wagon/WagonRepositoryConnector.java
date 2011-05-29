@@ -171,7 +171,7 @@ class WagonRepositoryConnector
 
         headers = new Properties();
         headers.put( "User-Agent", ConfigUtils.getString( session, ConfigurationProperties.DEFAULT_USER_AGENT,
-                                                    ConfigurationProperties.USER_AGENT ) );
+                                                          ConfigurationProperties.USER_AGENT ) );
         Map<?, ?> headers =
             ConfigUtils.getMap( session, null, ConfigurationProperties.HTTP_HEADERS + "." + repository.getId(),
                                 ConfigurationProperties.HTTP_HEADERS );
@@ -309,17 +309,17 @@ class WagonRepositoryConnector
 
         int connectTimeout =
             ConfigUtils.getInteger( session, ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT,
-                             ConfigurationProperties.CONNECT_TIMEOUT );
+                                    ConfigurationProperties.CONNECT_TIMEOUT );
         int requestTimeout =
             ConfigUtils.getInteger( session, ConfigurationProperties.DEFAULT_REQUEST_TIMEOUT,
-                             ConfigurationProperties.REQUEST_TIMEOUT );
+                                    ConfigurationProperties.REQUEST_TIMEOUT );
 
         wagon.setTimeout( Math.max( Math.max( connectTimeout, requestTimeout ), 0 ) );
 
         wagon.setInteractive( ConfigUtils.getBoolean( session, ConfigurationProperties.DEFAULT_INTERACTIVE,
-                                               ConfigurationProperties.INTERACTIVE ) );
+                                                      ConfigurationProperties.INTERACTIVE ) );
 
-        Object configuration = session.getConfigProperties().get( PROP_CONFIG + "." + repository.getId() );
+        Object configuration = ConfigUtils.getObject( session, null, PROP_CONFIG + "." + repository.getId() );
         if ( configuration != null && wagonConfigurator != null )
         {
             try
