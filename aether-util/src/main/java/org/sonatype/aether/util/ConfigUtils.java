@@ -165,6 +165,54 @@ public class ConfigUtils
      *            valid value is found.
      * @return The property value.
      */
+    public static long getLong( Map<?, ?> properties, long defaultValue, String... keys )
+    {
+        for ( String key : keys )
+        {
+            Object value = properties.get( key );
+
+            if ( value instanceof Number )
+            {
+                return ( (Number) value ).longValue();
+            }
+
+            try
+            {
+                return Long.valueOf( (String) value );
+            }
+            catch ( Exception e )
+            {
+                // try next key
+            }
+        }
+
+        return defaultValue;
+    }
+
+    /**
+     * Gets the specified configuration property.
+     * 
+     * @param session The repository system session from which to read the configuration property, must not be
+     *            {@code null}.
+     * @param defaultValue The default value to return in case the property isn't set.
+     * @param keys The properties to read, must not be {@code null}. The specified keys are read one after one until a
+     *            valid value is found.
+     * @return The property value.
+     */
+    public static long getLong( RepositorySystemSession session, long defaultValue, String... keys )
+    {
+        return getLong( session.getConfigProperties(), defaultValue, keys );
+    }
+
+    /**
+     * Gets the specified configuration property.
+     * 
+     * @param properties The configuration properties to read, must not be {@code null}.
+     * @param defaultValue The default value to return in case the property isn't set.
+     * @param keys The properties to read, must not be {@code null}. The specified keys are read one after one until a
+     *            valid value is found.
+     * @return The property value.
+     */
     public static boolean getBoolean( Map<?, ?> properties, boolean defaultValue, String... keys )
     {
         for ( String key : keys )
