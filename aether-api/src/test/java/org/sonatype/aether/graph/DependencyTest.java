@@ -48,8 +48,13 @@ public class DependencyTest
         assertNotSame( d2, d1 );
         assertEquals( 0, d2.getExclusions().size() );
 
+        assertSame( d2, d2.setExclusions( null ) );
+        assertSame( d2, d2.setExclusions( Collections.<Exclusion> emptyList() ) );
+        assertSame( d2, d2.setExclusions( Collections.<Exclusion> emptySet() ) );
+        assertSame( d1, d1.setExclusions( Arrays.asList( new Exclusion( "g", "a", "c", "e" ) ) ) );
+
         Dependency d3 =
-            d1.setExclusions( Arrays.asList( new Exclusion( "g", "a", "c", "e" ), new Exclusion( "g", "a", "c", "e" ) ) );
+            d1.setExclusions( Arrays.asList( new Exclusion( "g", "a", "c", "e" ), new Exclusion( "g", "a", "c", "f" ) ) );
         assertNotSame( d3, d1 );
         assertEquals( 2, d3.getExclusions().size() );
     }
