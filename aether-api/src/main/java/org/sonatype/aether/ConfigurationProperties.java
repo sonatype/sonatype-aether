@@ -36,7 +36,7 @@ public final class ConfigurationProperties
     public static final boolean DEFAULT_INTERACTIVE = false;
 
     /**
-     * The user agent that repository connectors should reports to servers.
+     * The user agent that repository connectors should report to servers.
      * 
      * @see #DEFAULT_USER_AGENT
      */
