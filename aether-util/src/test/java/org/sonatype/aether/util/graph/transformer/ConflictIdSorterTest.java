@@ -40,16 +40,19 @@ public class ConflictIdSorterTest
         parser = new DependencyGraphParser( "conflict-id-sorter/" );
     }
 
-    private void expectOrder( List<String> sorted, String... id )
+    private void expectOrder( List<String> sorted, String... ids )
     {
         Queue<String> queue = new LinkedList<String>( sorted );
 
-        for ( int i = 0; i < id.length; i++ )
+        for ( int i = 0; i < ids.length; i++ )
         {
             String item = queue.poll();
-            assertNotNull( String.format( "not enough conflict groups (no match for '%s'", id[i] ), item );
+            assertNotNull( String.format( "not enough conflict groups (no match for '%s'", ids[i] ), item );
 
-            assertEquals( id[i], item );
+            if ( !"*".equals( ids[i] ) )
+            {
+                assertEquals( ids[i], item );
+            }
         }
 
         assertTrue( String.format( "leftover conflict groups (remaining: '%s')", queue ), queue.isEmpty() );
@@ -104,7 +107,7 @@ public class ConflictIdSorterTest
         DependencyNode node = parser.parse( "cycles.txt" );
         transform( node );
 
-        expectOrder( "gid1:aid::ext", "gid2:aid::ext", "gid3:aid::ext", "gid:aid::ext" );
+        expectOrder( "*", "*", "*", "gid:aid::ext" );
         expectCycle( true );
     }
 

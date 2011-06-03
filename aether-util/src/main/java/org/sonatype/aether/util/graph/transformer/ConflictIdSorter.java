@@ -14,10 +14,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.collection.DependencyGraphTransformationContext;
@@ -111,7 +109,7 @@ public class ConflictIdSorter
     {
         List<Object> sorted = new ArrayList<Object>( conflictIds.size() );
 
-        Queue<ConflictId> roots = new LinkedList<ConflictId>();
+        RootQueue roots = new RootQueue( conflictIds.size() / 2 );
         for ( ConflictId id : conflictIds )
         {
             if ( id.inDegree <= 0 )
@@ -141,7 +139,6 @@ public class ConflictIdSorter
         while ( sorted.size() < conflictIds.size() )
         {
             // cycle -> deal gracefully with nodes still having positive in-degree
-            roots.clear();
 
             ConflictId nearest = null;
             for ( ConflictId id : conflictIds )
@@ -248,6 +245,56 @@ public class ConflictIdSorter
         public String toString()
         {
             return key + " @ " + minDepth + " <" + inDegree;
+        }
+
+    }
+
+    static final class RootQueue
+    {
+
+        private int nextOut;
+
+        private int nextIn;
+
+        private ConflictId[] ids;
+
+        RootQueue( int capacity )
+        {
+            ids = new ConflictId[capacity + 16];
+        }
+
+        boolean isEmpty()
+        {
+            return nextOut >= nextIn;
+        }
+
+        void add( ConflictId id )
+        {
+            if ( nextOut >= nextIn && nextOut > 0 )
+            {
+                nextIn -= nextOut;
+                nextOut = 0;
+            }
+            if ( nextIn >= ids.length )
+            {
+                ConflictId[] tmp = new ConflictId[ids.length + ids.length / 2 + 16];
+                System.arraycopy( ids, nextOut, tmp, 0, nextIn - nextOut );
+                ids = tmp;
+                nextIn -= nextOut;
+                nextOut = 0;
+            }
+            int i;
+            for ( i = nextIn - 1; i >= 0 && id.minDepth < ids[i].minDepth; i-- )
+            {
+                ids[i + 1] = ids[i];
+            }
+            ids[i + 1] = id;
+            nextIn++;
+        }
+
+        ConflictId remove()
+        {
+            return ids[nextOut++];
         }
 
     }
