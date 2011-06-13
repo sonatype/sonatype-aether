@@ -106,7 +106,7 @@ public final class Dependency
         {
             return this;
         }
-        return new Dependency( artifact, scope, optional, exclusions );
+        return new Dependency( artifact, scope, exclusions, optional );
     }
 
     /**
@@ -131,7 +131,7 @@ public final class Dependency
         {
             return this;
         }
-        return new Dependency( artifact, scope, optional, exclusions );
+        return new Dependency( artifact, scope, exclusions, optional );
     }
 
     /**
@@ -157,7 +157,7 @@ public final class Dependency
         {
             return this;
         }
-        return new Dependency( artifact, scope, optional, exclusions );
+        return new Dependency( artifact, scope, exclusions, optional );
     }
 
     /**

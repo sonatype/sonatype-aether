@@ -45,8 +45,8 @@ public class GenericVersionScheme
 
         while ( process.startsWith( "[" ) || process.startsWith( "(" ) )
         {
-            int index1 = process.indexOf( ")" );
-            int index2 = process.indexOf( "]" );
+            int index1 = process.indexOf( ')' );
+            int index2 = process.indexOf( ']' );
 
             int index = index2;
             if ( index2 < 0 || ( index1 >= 0 && index1 < index2 ) )
