@@ -19,7 +19,9 @@ import org.sonatype.aether.repository.LocalRepository;
  * 
  * @author Benjamin Bentmann
  * @see LocalRepositoryMaintainer
+ * @deprecated As of version 1.9, use a global {@link org.sonatype.aether.RepositoryListener} instead.
  */
+@Deprecated
 public interface LocalRepositoryEvent
 {
 

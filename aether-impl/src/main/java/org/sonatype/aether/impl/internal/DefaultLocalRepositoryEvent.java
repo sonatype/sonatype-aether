@@ -18,6 +18,7 @@ import org.sonatype.aether.repository.LocalRepository;
 /**
  * @author Benjamin Bentmann
  */
+@SuppressWarnings( "deprecation" )
 public class DefaultLocalRepositoryEvent
     implements LocalRepositoryEvent
 {
