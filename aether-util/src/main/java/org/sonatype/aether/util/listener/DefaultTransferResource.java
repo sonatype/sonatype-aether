@@ -42,7 +42,7 @@ public class DefaultTransferResource
      * @param resourceName The relative path to the resource within the repository, may be {@code null}. A leading slash
      *            (if any) will be automatically removed.
      * @param file The source/target file involved in the transfer, may be {@code null}.
-     * @deprecated Use {@link #DefaultTransferResource(String, String, File, RequestTrace)} instead.
+     * @deprecated As of version 1.11, use {@link #DefaultTransferResource(String, String, File, RequestTrace)} instead.
      */
     @Deprecated
     public DefaultTransferResource( String repositoryUrl, String resourceName, File file )

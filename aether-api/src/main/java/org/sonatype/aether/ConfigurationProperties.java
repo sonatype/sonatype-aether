@@ -94,7 +94,7 @@ public final class ConfigurationProperties
      * @param key The property to read, must not be {@code null}.
      * @param defaultValue The default value to return in case the property isn't set, may be {@code null}.
      * @return The property value or {@code null} if none.
-     * @deprecated Use {@code org.sonatype.aether.util.ConfigUtils} instead.
+     * @deprecated As of version 1.12, use {@code org.sonatype.aether.util.ConfigUtils} instead.
      */
     @Deprecated
     public static String get( Map<?, ?> properties, String key, String defaultValue )
@@ -117,7 +117,7 @@ public final class ConfigurationProperties
      * @param key The property to read, must not be {@code null}.
      * @param defaultValue The default value to return in case the property isn't set, may be {@code null}.
      * @return The property value or {@code null} if none.
-     * @deprecated Use {@code org.sonatype.aether.util.ConfigUtils} instead.
+     * @deprecated As of version 1.12, use {@code org.sonatype.aether.util.ConfigUtils} instead.
      */
     @Deprecated
     public static String get( RepositorySystemSession session, String key, String defaultValue )
@@ -132,7 +132,7 @@ public final class ConfigurationProperties
      * @param key The property to read, must not be {@code null}.
      * @param defaultValue The default value to return in case the property isn't set.
      * @return The property value.
-     * @deprecated Use {@code org.sonatype.aether.util.ConfigUtils} instead.
+     * @deprecated As of version 1.12, use {@code org.sonatype.aether.util.ConfigUtils} instead.
      */
     @Deprecated
     public static int get( Map<?, ?> properties, String key, int defaultValue )
@@ -162,7 +162,7 @@ public final class ConfigurationProperties
      * @param key The property to read, must not be {@code null}.
      * @param defaultValue The default value to return in case the property isn't set.
      * @return The property value.
-     * @deprecated Use {@code org.sonatype.aether.util.ConfigUtils} instead.
+     * @deprecated As of version 1.12, use {@code org.sonatype.aether.util.ConfigUtils} instead.
      */
     @Deprecated
     public static int get( RepositorySystemSession session, String key, int defaultValue )
@@ -177,7 +177,7 @@ public final class ConfigurationProperties
      * @param key The property to read, must not be {@code null}.
      * @param defaultValue The default value to return in case the property isn't set.
      * @return The property value.
-     * @deprecated Use {@code org.sonatype.aether.util.ConfigUtils} instead.
+     * @deprecated As of version 1.12, use {@code org.sonatype.aether.util.ConfigUtils} instead.
      */
     @Deprecated
     public static boolean get( Map<?, ?> properties, String key, boolean defaultValue )
@@ -204,7 +204,7 @@ public final class ConfigurationProperties
      * @param key The property to read, must not be {@code null}.
      * @param defaultValue The default value to return in case the property isn't set.
      * @return The property value.
-     * @deprecated Use {@code org.sonatype.aether.util.ConfigUtils} instead.
+     * @deprecated As of version 1.12, use {@code org.sonatype.aether.util.ConfigUtils} instead.
      */
     @Deprecated
     public static boolean get( RepositorySystemSession session, String key, boolean defaultValue )

@@ -12,7 +12,7 @@ package org.sonatype.aether.util.listener;
  * A skeleton implementation for custom repository listeners. The callback methods in this class do nothing.
  * 
  * @author Benjamin Bentmann
- * @deprecated Use {@link org.sonatype.aether.AbstractRepositoryListener} instead.
+ * @deprecated As of version 1.8, use {@link org.sonatype.aether.AbstractRepositoryListener} instead.
  */
 @Deprecated
 public abstract class AbstractRepositoryListener

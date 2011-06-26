@@ -133,7 +133,8 @@ public interface RepositorySystem
      * @return The resolution results, never {@code null}.
      * @throws ArtifactResolutionException If any artifact could not be resolved.
      * @see Artifact#getFile()
-     * @deprecated Use {@link #resolveDependencies(RepositorySystemSession, DependencyRequest)} instead.
+     * @deprecated As of version 1.11, use {@link #resolveDependencies(RepositorySystemSession, DependencyRequest)}
+     *             instead.
      */
     @Deprecated
     List<ArtifactResult> resolveDependencies( RepositorySystemSession session, DependencyNode node,
@@ -153,7 +154,8 @@ public interface RepositorySystem
      * @return The resolution results, never {@code null}.
      * @throws DependencyCollectionException If the dependency tree could not be built.
      * @throws ArtifactResolutionException If any artifact could not be resolved.
-     * @deprecated Use {@link #resolveDependencies(RepositorySystemSession, DependencyRequest)} instead.
+     * @deprecated As of version 1.11, use {@link #resolveDependencies(RepositorySystemSession, DependencyRequest)}
+     *             instead.
      */
     @Deprecated
     List<ArtifactResult> resolveDependencies( RepositorySystemSession session, CollectRequest request,

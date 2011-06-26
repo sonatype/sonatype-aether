@@ -12,6 +12,7 @@ package org.sonatype.aether.impl;
  * A skeleton implementation for custom local repository maintainers. The callback methods in this class do nothing.
  * 
  * @author Benjamin Bentmann
+ * @deprecated As of version 1.9, use a global {@link org.sonatype.aether.RepositoryListener} instead.
  */
 @Deprecated
 public abstract class AbstractLocalRepositoryMaintainer

@@ -49,6 +49,9 @@ public class DefaultRepositoryEvent
      * 
      * @param type The type of the event, must not be {@code null}.
      * @param session The repository system session, must not be {@code null}.
+     * @deprecated As of version 1.11, use
+     *             {@link #DefaultRepositoryEvent(org.sonatype.aether.RepositoryEvent.EventType, RepositorySystemSession, RequestTrace)}
+     *             instead.
      */
     @Deprecated
     public DefaultRepositoryEvent( EventType type, RepositorySystemSession session )
