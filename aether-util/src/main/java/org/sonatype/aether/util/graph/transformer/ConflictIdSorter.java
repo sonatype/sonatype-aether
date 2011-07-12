@@ -284,7 +284,7 @@ public class ConflictIdSorter
                 nextOut = 0;
             }
             int i;
-            for ( i = nextIn - 1; i >= 0 && id.minDepth < ids[i].minDepth; i-- )
+            for ( i = nextIn - 1; i >= nextOut && id.minDepth < ids[i].minDepth; i-- )
             {
                 ids[i + 1] = ids[i];
             }
