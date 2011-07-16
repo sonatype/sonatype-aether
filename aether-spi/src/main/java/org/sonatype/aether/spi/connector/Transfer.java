@@ -18,6 +18,9 @@ import org.sonatype.aether.RequestTrace;
 public abstract class Transfer
 {
 
+    /**
+     * The state of a transfer.
+     */
     public enum State
     {
         /**

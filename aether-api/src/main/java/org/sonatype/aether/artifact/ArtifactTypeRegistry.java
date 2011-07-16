@@ -9,7 +9,7 @@ package org.sonatype.aether.artifact;
  *******************************************************************************/
 
 /**
- * A registry of known artifact stereotypes.
+ * A registry of known artifact types.
  * 
  * @author Benjamin Bentmann
  */

@@ -11,6 +11,8 @@ package org.sonatype.aether.resolution;
 import org.sonatype.aether.RepositoryException;
 
 /**
+ * Thrown in case of an unresolvable metaversion.
+ * 
  * @author Benjamin Bentmann
  */
 public class VersionResolutionException

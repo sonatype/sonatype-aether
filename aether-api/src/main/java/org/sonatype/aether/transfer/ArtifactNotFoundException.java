@@ -12,6 +12,8 @@ import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.repository.RemoteRepository;
 
 /**
+ * Thrown when an artifact was not found in a particular repository.
+ * 
  * @author Benjamin Bentmann
  */
 public class ArtifactNotFoundException

@@ -13,6 +13,8 @@ import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.repository.RemoteRepository;
 
 /**
+ * Thrown when an artifact could not be uploaded/downloaded to/from a particular remote repository.
+ * 
  * @author Benjamin Bentmann
  */
 public class ArtifactTransferException

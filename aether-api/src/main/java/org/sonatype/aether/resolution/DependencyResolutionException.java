@@ -11,6 +11,8 @@ package org.sonatype.aether.resolution;
 import org.sonatype.aether.RepositoryException;
 
 /**
+ * Thrown in case of a unresolvable dependencies.
+ * 
  * @author Benjamin Bentmann
  */
 public class DependencyResolutionException

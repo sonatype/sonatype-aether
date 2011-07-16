@@ -12,6 +12,8 @@ import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.repository.RemoteRepository;
 
 /**
+ * Thrown in case of an unsupported remote repository type.
+ * 
  * @author Benjamin Bentmann
  */
 public class NoRepositoryConnectorException

@@ -27,7 +27,7 @@ public interface RepositoryEvent
 {
 
     /**
-     * The type of the event.
+     * The type of the repository event.
      */
     enum EventType
     {

@@ -16,6 +16,7 @@ import org.sonatype.aether.graph.Dependency;
  * {@link Object#equals(Object) equals()} method.
  * 
  * @author Benjamin Bentmann
+ * @see org.sonatype.aether.RepositorySystemSession#getDependencyTraverser()
  * @see org.sonatype.aether.RepositorySystem#collectDependencies(org.sonatype.aether.RepositorySystemSession,
  *      CollectRequest)
  */

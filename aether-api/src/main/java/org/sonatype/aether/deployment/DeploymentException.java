@@ -11,6 +11,8 @@ package org.sonatype.aether.deployment;
 import org.sonatype.aether.RepositoryException;
 
 /**
+ * Thrown in case of a deployment error like authentication failure.
+ * 
  * @author Benjamin Bentmann
  */
 public class DeploymentException

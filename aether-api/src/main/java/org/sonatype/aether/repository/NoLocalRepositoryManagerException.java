@@ -10,6 +10,9 @@ package org.sonatype.aether.repository;
 
 import org.sonatype.aether.RepositoryException;
 
+/**
+ * Thrown in case of an unsupported local repository type.
+ */
 public class NoLocalRepositoryManagerException
     extends RepositoryException
 {

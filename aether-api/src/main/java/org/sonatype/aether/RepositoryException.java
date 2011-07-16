@@ -9,6 +9,8 @@ package org.sonatype.aether;
  *******************************************************************************/
 
 /**
+ * The base class for exceptions thrown by the repository system.
+ * 
  * @author Benjamin Bentmann
  */
 public class RepositoryException

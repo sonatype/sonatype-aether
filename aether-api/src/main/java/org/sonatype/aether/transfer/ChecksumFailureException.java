@@ -11,6 +11,8 @@ package org.sonatype.aether.transfer;
 import org.sonatype.aether.RepositoryException;
 
 /**
+ * Thrown in case of a checksum failure during an artifact/metadata download.
+ * 
  * @author Benjamin Bentmann
  */
 public class ChecksumFailureException

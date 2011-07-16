@@ -11,6 +11,8 @@ package org.sonatype.aether.installation;
 import org.sonatype.aether.RepositoryException;
 
 /**
+ * Thrown in case of an installation error like an IO error.
+ * 
  * @author Benjamin Bentmann
  */
 public class InstallationException

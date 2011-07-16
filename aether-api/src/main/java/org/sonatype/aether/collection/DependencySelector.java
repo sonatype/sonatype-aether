@@ -15,6 +15,7 @@ import org.sonatype.aether.graph.Dependency;
  * dependency collection, implementations should provide a semantic {@link Object#equals(Object) equals()} method.
  * 
  * @author Benjamin Bentmann
+ * @see org.sonatype.aether.RepositorySystemSession#getDependencySelector()
  * @see org.sonatype.aether.RepositorySystem#collectDependencies(org.sonatype.aether.RepositorySystemSession,
  *      CollectRequest)
  */

@@ -15,6 +15,8 @@ import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.transfer.ArtifactNotFoundException;
 
 /**
+ * Thrown in case of a unresolvable artifacts.
+ * 
  * @author Benjamin Bentmann
  */
 public class ArtifactResolutionException

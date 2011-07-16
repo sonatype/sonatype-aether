@@ -34,6 +34,13 @@ public class DefaultTransferEvent
 
     private Exception exception;
 
+    /**
+     * Creates a new and uninitialized transfer event. Use the various setters to populate the event.
+     */
+    public DefaultTransferEvent()
+    {
+    }
+
     public EventType getType()
     {
         return type;

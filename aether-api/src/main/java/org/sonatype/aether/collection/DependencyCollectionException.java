@@ -11,6 +11,9 @@ package org.sonatype.aether.collection;
 import org.sonatype.aether.RepositoryException;
 
 /**
+ * Thrown in case of bad artifact descriptors, version ranges or other issues encountered during calculation of the
+ * dependency graph.
+ * 
  * @author Benjamin Bentmann
  */
 public class DependencyCollectionException

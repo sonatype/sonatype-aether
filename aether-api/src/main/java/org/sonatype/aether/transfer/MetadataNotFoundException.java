@@ -13,6 +13,8 @@ import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.RemoteRepository;
 
 /**
+ * Thrown when metadata was not found in a particular repository.
+ * 
  * @author Benjamin Bentmann
  */
 public class MetadataNotFoundException

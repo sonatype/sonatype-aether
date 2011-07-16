@@ -15,7 +15,8 @@ import org.sonatype.aether.version.VersionRange;
 import org.sonatype.aether.version.VersionScheme;
 
 /**
- * A version scheme using a generic version syntax.
+ * A version scheme using a generic version syntax. This scheme accepts versions of any form, interpreting a version as
+ * a sequence of numeric and alphabetic components, separated by hyphens, periods or the empty string.
  * 
  * @author Benjamin Bentmann
  * @author Alin Dreghiciu
@@ -23,6 +24,13 @@ import org.sonatype.aether.version.VersionScheme;
 public class GenericVersionScheme
     implements VersionScheme
 {
+
+    /**
+     * Creates a new instance of the version scheme for parsing versions.
+     */
+    public GenericVersionScheme()
+    {
+    }
 
     public Version parseVersion( final String version )
         throws InvalidVersionSpecificationException

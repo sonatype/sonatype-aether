@@ -11,6 +11,8 @@ package org.sonatype.aether.transfer;
 import org.sonatype.aether.RepositoryException;
 
 /**
+ * Thrown in case an upload/download was cancelled (e.g. due to user request).
+ * 
  * @author Benjamin Bentmann
  */
 public class TransferCancelledException

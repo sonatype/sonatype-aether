@@ -16,6 +16,7 @@ import org.sonatype.aether.graph.DependencyNode;
  * needs to gracefully handle cyclic graphs, e.g. guard against infinite recursion.
  * 
  * @author Benjamin Bentmann
+ * @see org.sonatype.aether.RepositorySystemSession#getDependencyGraphTransformer()
  */
 public interface DependencyGraphTransformer
 {

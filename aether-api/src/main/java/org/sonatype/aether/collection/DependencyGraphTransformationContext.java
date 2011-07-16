@@ -11,7 +11,7 @@ package org.sonatype.aether.collection;
 import org.sonatype.aether.RepositorySystemSession;
 
 /**
- * A context used to exchange information within a chain of dependency graph transformers.
+ * A context used during dependency collection to exchange information within a chain of dependency graph transformers.
  * 
  * @author Benjamin Bentmann
  * @see DependencyGraphTransformer
