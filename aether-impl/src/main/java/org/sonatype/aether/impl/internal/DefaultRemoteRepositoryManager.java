@@ -145,8 +145,19 @@ public class DefaultRemoteRepositoryManager
             if ( recessiveIsRaw )
             {
                 RemoteRepository mirrorRepository = mirrorSelector.getMirror( recessiveRepository );
-
-                repository = ( mirrorRepository != null ) ? mirrorRepository : recessiveRepository;
+                
+                if ( mirrorRepository == null )
+                {
+                    repository = recessiveRepository;
+                } else {
+                    logger.debug(  "Using mirror " + mirrorRepository.getId()  
+                                   + " (" + mirrorRepository.getUrl()
+                                   + ") for " + recessiveRepository.getId() 
+                                   + " (" 
+                                   + recessiveRepository.getUrl()
+                                   + ")." );
+                    repository = mirrorRepository;
+                }
             }
 
             String key = getKey( repository );
