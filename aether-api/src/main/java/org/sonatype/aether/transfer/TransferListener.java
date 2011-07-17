@@ -10,8 +10,14 @@ package org.sonatype.aether.transfer;
 
 /**
  * A listener being notified of artifact/metadata transfers from/to remote repositories. The listener may be called from
- * an arbitrary thread. <em>Note:</em> Implementors are strongly advised to inherit from
- * {@link AbstractTransferListener} instead of directly implementing this interface.
+ * an arbitrary thread. Reusing common regular expression syntax, the sequence of events is roughly as follows:
+ * 
+ * <pre>
+ * INITIATED ( STARTED PROGRESSED* CORRUPTED? )* ( SUCCEEDED | FAILED )
+ * </pre>
+ * 
+ * <em>Note:</em> Implementors are strongly advised to inherit from {@link AbstractTransferListener} instead of directly
+ * implementing this interface.
  * 
  * @author Benjamin Bentmann
  */
