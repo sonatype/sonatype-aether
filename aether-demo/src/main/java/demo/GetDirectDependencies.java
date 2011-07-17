@@ -37,7 +37,7 @@ public class GetDirectDependencies
 
         Artifact artifact = new DefaultArtifact( "org.sonatype.aether:aether-impl:1.9" );
 
-        RemoteRepository repo = new RemoteRepository( "central", "default", "http://repo1.maven.org/maven2/" );
+        RemoteRepository repo = Booter.newCentralRepository();
 
         ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
         descriptorRequest.setArtifact( artifact );

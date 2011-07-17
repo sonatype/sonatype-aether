@@ -12,6 +12,7 @@ import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.LocalRepository;
+import org.sonatype.aether.repository.RemoteRepository;
 
 import demo.manual.ManualRepositorySystemFactory;
 
@@ -40,6 +41,11 @@ public class Booter
         // session.setDependencyGraphTransformer( null );
 
         return session;
+    }
+
+    public static RemoteRepository newCentralRepository()
+    {
+        return new RemoteRepository( "central", "default", "http://repo1.maven.org/maven2/" );
     }
 
 }

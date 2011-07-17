@@ -39,7 +39,7 @@ public class FindAvailableVersions
 
         Artifact artifact = new DefaultArtifact( "org.sonatype.aether:aether-util:[0,)" );
 
-        RemoteRepository repo = new RemoteRepository( "central", "default", "http://repo1.maven.org/maven2/" );
+        RemoteRepository repo = Booter.newCentralRepository();
 
         VersionRangeRequest rangeRequest = new VersionRangeRequest();
         rangeRequest.setArtifact( artifact );

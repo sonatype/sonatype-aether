@@ -38,7 +38,7 @@ public class GetDependencyTree
 
         Artifact artifact = new DefaultArtifact( "org.apache.maven:maven-aether-provider:3.0.2" );
 
-        RemoteRepository repo = new RemoteRepository( "central", "default", "http://repo1.maven.org/maven2/" );
+        RemoteRepository repo = Booter.newCentralRepository();
 
         CollectRequest collectRequest = new CollectRequest();
         collectRequest.setRoot( new Dependency( artifact, "" ) );
