@@ -446,11 +446,6 @@ class WagonRepositoryConnector
         }
 
         errorForwarder.await();
-
-        for ( GetTask<?> task : tasks )
-        {
-            task.flush();
-        }
     }
 
     public void put( Collection<? extends ArtifactUpload> artifactUploads,
@@ -470,7 +465,6 @@ class WagonRepositoryConnector
 
             PutTask<?> task = new PutTask<ArtifactTransfer>( path, upload.getFile(), upload, ARTIFACT );
             task.run();
-            task.flush();
         }
 
         for ( MetadataUpload upload : metadataUploads )
@@ -479,7 +473,6 @@ class WagonRepositoryConnector
 
             PutTask<?> task = new PutTask<MetadataTransfer>( path, upload.getFile(), upload, METADATA );
             task.run();
-            task.flush();
         }
     }
 
@@ -536,8 +529,6 @@ class WagonRepositoryConnector
 
         private final String checksumPolicy;
 
-        private volatile Exception exception;
-
         private final ExceptionWrapper<T> wrapper;
 
         public GetTask( String path, File file, String checksumPolicy, T download, ExceptionWrapper<T> wrapper )
@@ -552,11 +543,6 @@ class WagonRepositoryConnector
         public T getDownload()
         {
             return download;
-        }
-
-        public Exception getException()
-        {
-            return exception;
         }
 
         public void run()
@@ -659,6 +645,8 @@ class WagonRepositoryConnector
                         rename( tmp, file );
                     }
 
+                    wrapper.wrap( download, null, repository );
+
                     if ( listener != null )
                     {
                         DefaultTransferEvent event = wagonListener.newEvent();
@@ -678,12 +666,7 @@ class WagonRepositoryConnector
             }
             catch ( Exception e )
             {
-                if ( e instanceof WagonCancelledException )
-                {
-                    e = (Exception) e.getCause();
-                }
-
-                exception = e;
+                e = wrapper.wrap( download, e, repository );
 
                 if ( listener != null )
                 {
@@ -694,18 +677,10 @@ class WagonRepositoryConnector
                     listener.transferFailed( event );
                 }
             }
-        }
-
-        public void flush()
-        {
-            flush( null );
-        }
-
-        public void flush( Exception exception )
-        {
-            Exception e = this.exception;
-            wrapper.wrap( download, ( e != null ) ? e : exception, repository );
-            download.setState( Transfer.State.DONE );
+            finally
+            {
+                download.setState( Transfer.State.DONE );
+            }
         }
 
         private boolean verifyChecksum( Wagon wagon, String actual, String ext )
@@ -747,7 +722,8 @@ class WagonRepositoryConnector
                     }
                     catch ( IOException e )
                     {
-                        // ignored, non-critical
+                        logger.debug( "Failed to write checksum file " + file.getPath() + ext + ": " + e.getMessage(),
+                                      e );
                     }
                 }
                 else
@@ -795,8 +771,6 @@ class WagonRepositoryConnector
 
         private final File file;
 
-        private volatile Exception exception;
-
         public PutTask( String path, File file, T upload, ExceptionWrapper<T> wrapper )
         {
             this.path = path;
@@ -843,6 +817,8 @@ class WagonRepositoryConnector
 
                     uploadChecksums( wagon, file, path );
 
+                    wrapper.wrap( upload, null, repository );
+
                     if ( listener != null )
                     {
                         DefaultTransferEvent event = wagonListener.newEvent();
@@ -858,12 +834,7 @@ class WagonRepositoryConnector
             }
             catch ( Exception e )
             {
-                if ( e instanceof WagonCancelledException )
-                {
-                    e = (Exception) e.getCause();
-                }
-
-                exception = e;
+                e = wrapper.wrap( upload, e, repository );
 
                 if ( listener != null )
                 {
@@ -874,12 +845,10 @@ class WagonRepositoryConnector
                     listener.transferFailed( event );
                 }
             }
-        }
-
-        public void flush()
-        {
-            wrapper.wrap( upload, exception, repository );
-            upload.setState( Transfer.State.DONE );
+            finally
+            {
+                upload.setState( Transfer.State.DONE );
+            }
         }
 
         private void uploadChecksums( Wagon wagon, File file, String path )
@@ -940,15 +909,17 @@ class WagonRepositoryConnector
     static interface ExceptionWrapper<T>
     {
 
-        void wrap( T transfer, Exception e, RemoteRepository repository );
+        Exception wrap( T transfer, Exception e, RemoteRepository repository );
 
     }
 
     private static final ExceptionWrapper<MetadataTransfer> METADATA = new ExceptionWrapper<MetadataTransfer>()
     {
-        public void wrap( MetadataTransfer transfer, Exception e, RemoteRepository repository )
+
+        public Exception wrap( MetadataTransfer transfer, Exception e, RemoteRepository repository )
         {
             MetadataTransferException ex = null;
+            e = WagonCancelledException.unwrap( e );
             if ( e instanceof ResourceDoesNotExistException )
             {
                 ex = new MetadataNotFoundException( transfer.getMetadata(), repository );
@@ -958,14 +929,18 @@ class WagonRepositoryConnector
                 ex = new MetadataTransferException( transfer.getMetadata(), repository, e );
             }
             transfer.setException( ex );
+            return ex;
         }
+
     };
 
     private static final ExceptionWrapper<ArtifactTransfer> ARTIFACT = new ExceptionWrapper<ArtifactTransfer>()
     {
-        public void wrap( ArtifactTransfer transfer, Exception e, RemoteRepository repository )
+
+        public Exception wrap( ArtifactTransfer transfer, Exception e, RemoteRepository repository )
         {
             ArtifactTransferException ex = null;
+            e = WagonCancelledException.unwrap( e );
             if ( e instanceof ResourceDoesNotExistException )
             {
                 ex = new ArtifactNotFoundException( transfer.getArtifact(), repository );
@@ -975,7 +950,9 @@ class WagonRepositoryConnector
                 ex = new ArtifactTransferException( transfer.getArtifact(), repository, e );
             }
             transfer.setException( ex );
+            return ex;
         }
+
     };
 
 }

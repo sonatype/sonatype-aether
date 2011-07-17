@@ -22,4 +22,13 @@ class WagonCancelledException
         super( cause );
     }
 
+    public static Exception unwrap( Exception e )
+    {
+        if ( e instanceof WagonCancelledException )
+        {
+            e = (Exception) e.getCause();
+        }
+        return e;
+    }
+
 }
