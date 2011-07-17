@@ -212,7 +212,12 @@ class GraphEdge
     @Override
     public String toString()
     {
-        return String.valueOf( getDependency() );
+        Dependency dep = getDependency();
+        if ( dep == null )
+        {
+            return String.valueOf( getChildren() );
+        }
+        return dep.toString();
     }
 
 }
