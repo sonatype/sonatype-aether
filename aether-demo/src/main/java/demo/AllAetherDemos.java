@@ -21,6 +21,7 @@ public class AllAetherDemos
         FindNewestVersion.main( args );
         GetDirectDependencies.main( args );
         GetDependencyTree.main( args );
+        GetDependencyTreeWithMirror.main( args );
         ResolveArtifact.main( args );
         ResolveTransitiveDependencies.main( args );
         InstallArtifacts.main( args );
