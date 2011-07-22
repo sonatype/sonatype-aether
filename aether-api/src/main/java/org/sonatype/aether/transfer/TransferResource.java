@@ -45,7 +45,8 @@ public interface TransferResource
 
     /**
      * The size of the resource in bytes. Note that the size of a resource during downloads might be unknown to the
-     * client which is usually the case when transfers employ compression like gzip.
+     * client which is usually the case when transfers employ compression like gzip. In general, the content length is
+     * not known until the transfer has {@link TransferListener#transferStarted(TransferEvent) started}.
      * 
      * @return The size of the resource in bytes or a negative value if unknown.
      */
