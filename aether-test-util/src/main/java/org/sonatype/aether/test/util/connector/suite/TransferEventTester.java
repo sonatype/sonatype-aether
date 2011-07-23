@@ -98,6 +98,7 @@ public class TransferEventTester
         msg = "start event is missing";
         assertNotNull( msg, currentEvent );
         assertEquals( msg, TransferEvent.EventType.STARTED, currentEvent.getType() );
+        assertEquals( "bad content length", expectedBytes, currentEvent.getResource().getContentLength() );
         checkProperties( currentEvent );
         assertResourceEquals( expectedResource, currentEvent.getResource() );
 
@@ -126,6 +127,7 @@ public class TransferEventTester
                 assertTrue( "wrong order of progressed events, transferredSize got smaller, last = " + transferredBytes
                                 + ", current = " + currentEvent.getTransferredBytes(),
                             currentEvent.getTransferredBytes() >= transferredBytes );
+                assertEquals( "bad content length", expectedBytes, currentEvent.getResource().getContentLength() );
                 transferredBytes = currentEvent.getTransferredBytes();
                 dataLength += currentEvent.getDataBuffer().remaining();
                 checkProperties( currentEvent );

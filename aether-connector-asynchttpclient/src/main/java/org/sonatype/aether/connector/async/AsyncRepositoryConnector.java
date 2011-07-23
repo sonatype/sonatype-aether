@@ -442,7 +442,7 @@ class AsyncRepositoryConnector
         {
             download.setState( Transfer.State.ACTIVE );
             final String uri = validateUri( path );
-            final TransferResource transferResource =
+            final DefaultTransferResource transferResource =
                 new DefaultTransferResource( repository.getUrl(), path, file, download.getTrace() );
             final boolean ignoreChecksum = RepositoryPolicy.CHECKSUM_POLICY_IGNORE.equals( checksumPolicy );
             CompletionHandler completionHandler = null;

@@ -43,7 +43,6 @@ import org.sonatype.aether.transfer.MetadataTransferException;
 import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferEvent.RequestType;
-import org.sonatype.aether.transfer.TransferResource;
 import org.sonatype.aether.util.ChecksumUtils;
 import org.sonatype.aether.util.layout.MavenDefaultLayout;
 import org.sonatype.aether.util.layout.RepositoryLayout;
@@ -92,7 +91,7 @@ class FileRepositoryWorker
 
     private final Direction direction;
 
-    private TransferResource resource;
+    private DefaultTransferResource resource;
 
     static
     {
@@ -408,6 +407,7 @@ class FileRepositoryWorker
             throw new IllegalArgumentException( "target file not specified" );
         }
 
+        resource.setContentLength( src.length() );
         DefaultTransferEvent event = newEvent( transfer );
         catapult.fireStarted( event );
 

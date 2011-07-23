@@ -20,6 +20,7 @@ import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.transfer.TransferResource;
+import org.sonatype.aether.util.listener.DefaultTransferResource;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -52,11 +53,11 @@ class CompletionHandler
 
     private final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
 
-    private final TransferResource transferResource;
+    private final DefaultTransferResource transferResource;
 
     private final TransferEvent.RequestType requestType;
 
-    public CompletionHandler( TransferResource transferResource, AsyncHttpClient httpClient, Logger logger,
+    public CompletionHandler( DefaultTransferResource transferResource, AsyncHttpClient httpClient, Logger logger,
                               TransferEvent.RequestType requestType )
     {
         this.httpClient = httpClient;
@@ -126,21 +127,6 @@ class CompletionHandler
     {
         this.status = status;
 
-        if ( !TransferEvent.RequestType.PUT.equals( requestType ) )
-        {
-            if ( status.getStatusCode() >= 200 && status.getStatusCode() < 300 )
-            {
-                try
-                {
-                    fireTransferStarted();
-                }
-                catch ( TransferCancelledException e )
-                {
-                    return STATE.ABORT;
-                }
-            }
-        }
-
         return ( status.getStatusCode() == HttpURLConnection.HTTP_NOT_FOUND ? STATE.ABORT : STATE.CONTINUE );
     }
 
@@ -152,6 +138,30 @@ class CompletionHandler
         throws Exception
     {
         this.headers = headers;
+
+        if ( !TransferEvent.RequestType.PUT.equals( requestType ) )
+        {
+            if ( status.getStatusCode() >= 200 && status.getStatusCode() < 300 )
+            {
+                try
+                {
+                    transferResource.setContentLength( Long.valueOf( headers.getHeaders().getFirstValue( "Content-Length" ) ) );
+                }
+                catch ( RuntimeException e )
+                {
+                    // oh well, no parsable content length
+                }
+                try
+                {
+                    fireTransferStarted();
+                }
+                catch ( TransferCancelledException e )
+                {
+                    return STATE.ABORT;
+                }
+            }
+        }
+
         return STATE.CONTINUE;
     }
 

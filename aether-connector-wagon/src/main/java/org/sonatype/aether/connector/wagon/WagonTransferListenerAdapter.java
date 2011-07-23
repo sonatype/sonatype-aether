@@ -17,7 +17,6 @@ import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.transfer.TransferEvent.EventType;
 import org.sonatype.aether.transfer.TransferEvent.RequestType;
 import org.sonatype.aether.transfer.TransferListener;
-import org.sonatype.aether.transfer.TransferResource;
 import org.sonatype.aether.util.listener.DefaultTransferEvent;
 import org.sonatype.aether.util.listener.DefaultTransferResource;
 
@@ -30,7 +29,7 @@ class WagonTransferListenerAdapter
     extends AbstractTransferListener
 {
 
-    private final TransferResource resource;
+    private final DefaultTransferResource resource;
 
     private final TransferListener delegate;
 
@@ -47,6 +46,7 @@ class WagonTransferListenerAdapter
     public void transferStarted( TransferEvent event )
     {
         transferredBytes = 0;
+        resource.setContentLength( event.getResource().getContentLength() );
         try
         {
             delegate.transferStarted( wrap( event, EventType.STARTED ) );
