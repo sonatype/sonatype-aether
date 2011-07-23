@@ -145,7 +145,7 @@ class CompletionHandler
             {
                 try
                 {
-                    transferResource.setContentLength( Long.valueOf( headers.getHeaders().getFirstValue( "Content-Length" ) ) );
+                    transferResource.setContentLength( Long.parseLong( headers.getHeaders().getFirstValue( "Content-Length" ) ) );
                 }
                 catch ( RuntimeException e )
                 {
