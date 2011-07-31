@@ -20,29 +20,31 @@ import java.util.Stack;
 import org.sonatype.aether.version.Version;
 
 /**
- * Generic implementation of version comparison. Features:
+ * Generic implementation of version comparison.
+ * 
+ * <p>Features:
  * <ul>
  * <li>mixing of '<code>-</code>' (dash) and '<code>.</code>' (dot) separators,</li>
  * <li>transition between characters and digits also constitutes a separator:
- * <code>1.0alpha1 =&gt; [1, 0, alpha, 1]</code></li>
+ *     <code>1.0alpha1 =&gt; [1, 0, alpha, 1]</code></li>
  * <li>unlimited number of version components,</li>
- * <li>version components in the text can be digits or strings</li>
- * <li>strings are checked for well-known qualifiers and the qualifier ordering is used for version ordering. Well-known
- * qualifiers (case insensitive):
- * <ul>
- * <li><code>alpha</code> or <code>a</code></li>
- * <li><code>beta</code> or <code>b</code></li>
- * <li><code>milestone</code> or <code>m</code></li>
- * <li><code>rc</code> or <code>cr</code></li>
- * <li><code>snapshot</code></li>
- * <li><code>(the empty string)</code> or <code>ga</code> or <code>final</code></li>
- * <li><code>sp</code></li>
- * </ul>
- * </li>
+ * <li>version components in the text can be digits or strings,</li>
+ * <li>strings are checked for well-known qualifiers and the qualifier ordering is used for version ordering.
+ *     Well-known qualifiers (case insensitive) are:<ul>
+ *     <li><code>snapshot</code></li>
+ *     <li><code>alpha</code> or <code>a</code></li>
+ *     <li><code>beta</code> or <code>b</code></li>
+ *     <li><code>milestone</code> or <code>m</code></li>
+ *     <li><code>rc</code> or <code>cr</code></li>
+ *     <li><code>(the empty string)</code> or <code>ga</code> or <code>final</code></li>
+ *     <li><code>sp</code></li>
+ *     </ul>
+ *     Unknown qualifiers are considered after known qualifiers, with lexical order (always case insensitive),
+ *   </li>
  * <li>a dash usually precedes a qualifier, and is always less important than something preceded with a dot.</li>
- * </ul>
- * 
- * @see <a href="http://docs.codehaus.org/display/MAVEN/Versioning">"Versioning" on Maven Wiki</a>
+ * </ul></p>
+ *
+ * @see <a href="https://cwiki.apache.org/confluence/display/MAVENOLD/Versioning">"Versioning" on Maven Wiki</a>
  * @author <a href="mailto:kenney@apache.org">Kenney Westerhof</a>
  * @author <a href="mailto:hboutemy@apache.org">Hervé Boutemy</a>
  */
