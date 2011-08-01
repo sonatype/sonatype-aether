@@ -16,7 +16,8 @@ import org.sonatype.aether.graph.DependencyVisitor;
 
 /**
  * A dependency visitor that delegates to another visitor if a node hasn't been visited before. In other words, this
- * visitor provides a tree-view of a dependency graph which generally can have multiple paths to the same node.
+ * visitor provides a tree-view of a dependency graph which generally can have multiple paths to the same node or even
+ * cycles.
  * 
  * @author Benjamin Bentmann
  */
