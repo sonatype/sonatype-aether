@@ -32,14 +32,32 @@ public class PathRecordingDependencyVisitor
 
     private final LinkedList<DependencyNode> parents;
 
+    private final boolean excludeChildrenOfMatches;
+
     /**
-     * Creates a new visitor that uses the specified filter to identify terminal nodes of interesting paths.
+     * Creates a new visitor that uses the specified filter to identify terminal nodes of interesting paths. The visitor
+     * will not search for paths going beyond an already matched node.
      * 
      * @param filter The filter used to select terminal nodes of paths to record, may be {@code null} to match any node.
      */
     public PathRecordingDependencyVisitor( DependencyFilter filter )
     {
+        this( filter, true );
+    }
+
+    /**
+     * Creates a new visitor that uses the specified filter to identify terminal nodes of interesting paths.
+     * 
+     * @param filter The filter used to select terminal nodes of paths to record, may be {@code null} to match any node.
+     * @param excludeChildrenOfMatches Flag controlling whether children of matched nodes should be excluded from the
+     *            traversal, thereby ignoring any potential paths to other matching nodes beneath a matching ancestor
+     *            node. If {@code true}, all recorded paths will have only one matching node (namely the terminal node),
+     *            if {@code false} a recorded path can consist of multiple matching nodes.
+     */
+    public PathRecordingDependencyVisitor( DependencyFilter filter, boolean excludeChildrenOfMatches )
+    {
         this.filter = filter;
+        this.excludeChildrenOfMatches = excludeChildrenOfMatches;
         paths = new ArrayList<List<DependencyNode>>();
         parents = new LinkedList<DependencyNode>();
     }
@@ -84,7 +102,7 @@ public class PathRecordingDependencyVisitor
             paths.add( Arrays.asList( path ) );
         }
 
-        return !accept;
+        return !( excludeChildrenOfMatches && accept );
     }
 
     public boolean visitLeave( DependencyNode node )
