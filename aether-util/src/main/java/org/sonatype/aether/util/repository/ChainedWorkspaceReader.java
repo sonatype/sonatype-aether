@@ -33,7 +33,7 @@ public class ChainedWorkspaceReader
     private WorkspaceRepository repository;
 
     /**
-     * Creates a new workspace reading by chaining the specified readers.
+     * Creates a new workspace reader by chaining the specified readers.
      * 
      * @param readers The readers to chain, may be {@code null}.
      * @see #newInstance(WorkspaceReader, WorkspaceReader)
@@ -59,8 +59,8 @@ public class ChainedWorkspaceReader
     }
 
     /**
-     * Creates a new workspace by chaining the specified readers. In contrast to the constructor, this factory method
-     * will avoid creating an actual chained reader if one of the specified readers is actually {@code null}.
+     * Creates a new workspace reader by chaining the specified readers. In contrast to the constructor, this factory
+     * method will avoid creating an actual chained reader if one of the specified readers is actually {@code null}.
      * 
      * @param reader1 The first workspace reader, may be {@code null}.
      * @param reader2 The second workspace reader, may be {@code null}.
