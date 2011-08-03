@@ -31,6 +31,28 @@ public class ChainedTransferListener
     private final List<TransferListener> listeners = new CopyOnWriteArrayList<TransferListener>();
 
     /**
+     * Creates a new multicast listener that delegates to the specified listeners. In contrast to the constructor, this
+     * factory method will avoid creating an actual chained listener if one of the specified readers is actually
+     * {@code null}.
+     * 
+     * @param listener1 The first listener, may be {@code null}.
+     * @param listener2 The second listener, may be {@code null}.
+     * @return The chained listener or {@code null} if no listener was supplied.
+     */
+    public static TransferListener newInstance( TransferListener listener1, TransferListener listener2 )
+    {
+        if ( listener1 == null )
+        {
+            return listener2;
+        }
+        else if ( listener2 == null )
+        {
+            return listener1;
+        }
+        return new ChainedTransferListener( listener1, listener2 );
+    }
+
+    /**
      * Creates a new multicast listener that delegates to the specified listeners.
      * 
      * @param listeners The listeners to delegate to, may be {@code null} or empty.
