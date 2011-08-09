@@ -11,7 +11,9 @@ package org.sonatype.aether;
 import org.sonatype.aether.transfer.TransferListener;
 
 /**
- * A listener being notified of events from the repository system. The listener may be called from an arbitrary thread.
+ * A listener being notified of events from the repository system. In general, the system sends events upon termination
+ * of an operation like {@link #artifactResolved(RepositoryEvent)} regardless whether it succeeded or failed so
+ * listeners need to inspect the event details carefully. Also, the listener may be called from an arbitrary thread.
  * <em>Note:</em> Implementors are strongly advised to inherit from {@link AbstractRepositoryListener} instead of
  * directly implementing this interface.
  * 
