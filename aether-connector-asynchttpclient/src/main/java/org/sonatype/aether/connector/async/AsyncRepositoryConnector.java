@@ -179,8 +179,6 @@ class AsyncRepositoryConnector
     {
         String className = ConfigUtils.getString( session, "", "aether.connector.ahc.provider" );
 
-        RepositoryCache cache = session.getCache();
-
         if ( className != null && className.length() > 0 )
         {
             if ( "netty".equals( className ) )
@@ -195,6 +193,8 @@ class AsyncRepositoryConnector
             {
                 className = "com.ning.http.client.providers.apache.ApacheAsyncHttpProvider";
             }
+
+            RepositoryCache cache = session.getCache();
 
             try
             {
