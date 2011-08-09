@@ -10,6 +10,7 @@ package org.sonatype.aether.connector.async;
 
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
+import com.ning.http.client.AsyncHttpProvider;
 import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
@@ -21,6 +22,7 @@ import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.Response;
 import com.ning.http.client.providers.netty.NettyAsyncHttpProvider;
 import org.sonatype.aether.ConfigurationProperties;
+import org.sonatype.aether.RepositoryCache;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.repository.Proxy;
@@ -63,6 +65,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
@@ -146,7 +149,8 @@ class AsyncRepositoryConnector
         }
 
         AsyncHttpClientConfig config = createConfig( session, repository, true );
-        httpClient = new AsyncHttpClient( new NettyAsyncHttpProvider( config ) );
+
+        httpClient = new AsyncHttpClient( getProvider( session, config ), config );
 
         checksumAlgos = new LinkedHashMap<String, String>();
         checksumAlgos.put( "SHA-1", ".sha1" );
@@ -168,6 +172,93 @@ class AsyncRepositoryConnector
                     this.headers.add( entry.getKey().toString(), entry.getValue().toString() );
                 }
             }
+        }
+    }
+
+    private AsyncHttpProvider getProvider( RepositorySystemSession session, AsyncHttpClientConfig config )
+    {
+        String className = ConfigUtils.getString( session, "", "aether.connector.ahc.provider" );
+
+        RepositoryCache cache = session.getCache();
+
+        if ( className != null && className.length() > 0 )
+        {
+            if ( "netty".equals( className ) )
+            {
+                className = "com.ning.http.client.providers.netty.NettyAsyncHttpProvider";
+            }
+            else if ( "jdk".equals( className ) )
+            {
+                className = "com.ning.http.client.providers.jdk.JDKAsyncHttpProvider";
+            }
+            else if ( "apache".equals( className ) )
+            {
+                className = "com.ning.http.client.providers.apache.ApacheAsyncHttpProvider";
+            }
+
+            try
+            {
+                if ( cache == null || cache.get( session, className ) == null )
+                {
+                    logger.debug( "Using AHC provider " + className );
+
+                    Class<?> providerClass = getClass().getClassLoader().loadClass( className );
+
+                    Object inst = providerClass.getConstructor( AsyncHttpClientConfig.class ).newInstance( config );
+
+                    return (AsyncHttpProvider) inst;
+                }
+            }
+            catch ( LinkageError e )
+            {
+                warn( "Could not load AHC provider " + className + ", falling back to default", e );
+            }
+            catch ( ClassNotFoundException e )
+            {
+                logger.warn( "Could not load AHC provider " + className + ", falling back to default" );
+            }
+            catch ( ClassCastException e )
+            {
+                logger.warn( "Could not load type-compatible AHC provider " + className + ", falling back to default" );
+            }
+            catch ( Exception e )
+            {
+                Throwable cause = e;
+                if ( e instanceof InvocationTargetException && e.getCause() != null )
+                {
+                    cause = e.getCause();
+                }
+                warn( "Could not instantiate AHC provider " + className + ", falling back to default", cause );
+            }
+
+            if ( cache != null )
+            {
+                cache.put( session, className, Boolean.TRUE );
+            }
+        }
+
+        return getDefaultProvider( config );
+    }
+
+    private AsyncHttpProvider getDefaultProvider( AsyncHttpClientConfig config )
+    {
+        return new NettyAsyncHttpProvider( config );
+    }
+
+    private void warn( String message, Throwable cause )
+    {
+        String msg = message;
+        if ( cause != null )
+        {
+            msg += ": " + cause;
+        }
+        if ( logger.isDebugEnabled() )
+        {
+            logger.warn( msg, cause );
+        }
+        else
+        {
+            logger.warn( msg );
         }
     }
 
