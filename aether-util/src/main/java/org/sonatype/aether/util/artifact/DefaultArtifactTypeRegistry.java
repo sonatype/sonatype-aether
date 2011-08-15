@@ -53,4 +53,10 @@ public class DefaultArtifactTypeRegistry
         return type;
     }
 
+    @Override
+    public String toString()
+    {
+        return types.toString();
+    }
+
 }
