@@ -23,25 +23,34 @@ public class DefaultArtifactTypeRegistry
     implements ArtifactTypeRegistry
 {
 
-    private final Map<String, ArtifactType> stereotypes = new HashMap<String, ArtifactType>();
+    private final Map<String, ArtifactType> types;
+
+    /**
+     * Creates a new artifact type registry with initally no registered artifact types. Use {@link #add(ArtifactType)}
+     * to populate the registry.
+     */
+    public DefaultArtifactTypeRegistry()
+    {
+        types = new HashMap<String, ArtifactType>();
+    }
 
     /**
      * Adds the specified artifact type to the registry.
      * 
-     * @param stereotype The artifact type to add, must not be {@code null}.
+     * @param type The artifact type to add, must not be {@code null}.
      * @return This registry for chaining, never {@code null}.
      */
-    public DefaultArtifactTypeRegistry add( ArtifactType stereotype )
+    public DefaultArtifactTypeRegistry add( ArtifactType type )
     {
-        stereotypes.put( stereotype.getId(), stereotype );
+        types.put( type.getId(), type );
         return this;
     }
 
-    public ArtifactType get( String stereotypeId )
+    public ArtifactType get( String typeId )
     {
-        ArtifactType stereotype = stereotypes.get( stereotypeId );
+        ArtifactType type = types.get( typeId );
 
-        return stereotype;
+        return type;
     }
 
 }
