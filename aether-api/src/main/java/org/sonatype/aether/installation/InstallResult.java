@@ -56,9 +56,9 @@ public class InstallResult
     }
 
     /**
-     * Gets the artifact that got installed.
+     * Gets the artifacts that got installed.
      * 
-     * @return The artifacts to install, never {@code null}.
+     * @return The installed artifacts, never {@code null}.
      */
     public Collection<Artifact> getArtifacts()
     {

@@ -56,9 +56,9 @@ public class DeployResult
     }
 
     /**
-     * Gets the artifact that got deployed.
+     * Gets the artifacts that got deployed.
      * 
-     * @return The artifacts to deploy, never {@code null}.
+     * @return The deployed artifacts, never {@code null}.
      */
     public Collection<Artifact> getArtifacts()
     {
