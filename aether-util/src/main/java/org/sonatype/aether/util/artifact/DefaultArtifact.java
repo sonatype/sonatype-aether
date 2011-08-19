@@ -78,19 +78,24 @@ public final class DefaultArtifact
         classifier = get( m.group( 6 ), "" );
         version = m.group( 7 );
         file = null;
-        if ( properties != null && !properties.isEmpty() )
-        {
-            this.properties = new HashMap<String, String>( properties );
-        }
-        else
-        {
-            this.properties = Collections.emptyMap();
-        }
+        this.properties = copy( properties );
     }
 
     private static String get( String value, String defaultValue )
     {
         return ( value == null || value.length() <= 0 ) ? defaultValue : value;
+    }
+
+    private static Map<String, String> copy( Map<String, String> properties )
+    {
+        if ( properties != null && !properties.isEmpty() )
+        {
+            return new HashMap<String, String>( properties );
+        }
+        else
+        {
+            return Collections.emptyMap();
+        }
     }
 
     /**
@@ -227,14 +232,7 @@ public final class DefaultArtifact
         this.extension = emptify( extension );
         this.version = emptify( version );
         this.file = file;
-        if ( properties != null && !properties.isEmpty() )
-        {
-            this.properties = new HashMap<String, String>( properties );
-        }
-        else
-        {
-            this.properties = Collections.emptyMap();
-        }
+        this.properties = copy( properties );
     }
 
     DefaultArtifact( String groupId, String artifactId, String classifier, String extension, String version, File file,
@@ -334,7 +332,7 @@ public final class DefaultArtifact
         {
             return this;
         }
-        return new DefaultArtifact( groupId, artifactId, classifier, extension, version, properties, file );
+        return new DefaultArtifact( groupId, artifactId, classifier, extension, version, file, copy( properties ) );
     }
 
 }
