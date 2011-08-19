@@ -79,7 +79,7 @@ public abstract class AbstractArtifact
      * @param classifier The classifier of the artifact, may be {@code null}.
      * @param extension The file extension of the artifact, may be {@code null}.
      * @param version The version of the artifact, may be {@code null}.
-     * @param properties The properties of the artifact, may be {@code null} if none. The method can assume immutability
+     * @param properties The properties of the artifact, may be {@code null} if none. The method may assume immutability
      *            of the supplied map.
      * @param file The resolved file of the artifact, may be {@code null}.
      */
