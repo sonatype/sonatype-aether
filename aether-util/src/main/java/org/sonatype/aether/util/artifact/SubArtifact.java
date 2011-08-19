@@ -10,7 +10,6 @@ package org.sonatype.aether.util.artifact;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.sonatype.aether.artifact.Artifact;
@@ -104,14 +103,7 @@ public final class SubArtifact
         this.classifier = classifier;
         this.extension = extension;
         this.file = file;
-        if ( properties != null && !properties.isEmpty() )
-        {
-            this.properties = new HashMap<String, String>( properties );
-        }
-        else
-        {
-            this.properties = Collections.emptyMap();
-        }
+        this.properties = copy( properties );
     }
 
     private SubArtifact( Artifact mainArtifact, String classifier, String extension, File file,

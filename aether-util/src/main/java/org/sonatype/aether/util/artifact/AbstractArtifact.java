@@ -9,6 +9,8 @@ package org.sonatype.aether.util.artifact;
  *******************************************************************************/
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,14 +71,32 @@ public abstract class AbstractArtifact
         return baseVersion;
     }
 
+    /**
+     * Creates a new artifact with the specified coordinates, properties and file.
+     * 
+     * @param groupId The group identifier of the artifact, may be {@code null}.
+     * @param artifactId The artifact identifier of the artifact, may be {@code null}.
+     * @param classifier The classifier of the artifact, may be {@code null}.
+     * @param extension The file extension of the artifact, may be {@code null}.
+     * @param version The version of the artifact, may be {@code null}.
+     * @param properties The properties of the artifact, may be {@code null} if none. The method can assume immutability
+     *            of the supplied map.
+     * @param file The resolved file of the artifact, may be {@code null}.
+     */
+    protected Artifact newInstance( String groupId, String artifactId, String classifier, String extension,
+                                    String version, Map<String, String> properties, File file )
+    {
+        return new DefaultArtifact( groupId, artifactId, classifier, extension, version, file, properties );
+    }
+
     public Artifact setVersion( String version )
     {
         if ( getVersion().equals( version ) )
         {
             return this;
         }
-        return new DefaultArtifact( getGroupId(), getArtifactId(), getClassifier(), getExtension(), version, getFile(),
-                                    getProperties() );
+        return newInstance( getGroupId(), getArtifactId(), getClassifier(), getExtension(), version, getProperties(),
+                            getFile() );
     }
 
     public Artifact setFile( File file )
@@ -85,8 +105,8 @@ public abstract class AbstractArtifact
         {
             return this;
         }
-        return new DefaultArtifact( getGroupId(), getArtifactId(), getClassifier(), getExtension(), getVersion(), file,
-                                    getProperties() );
+        return newInstance( getGroupId(), getArtifactId(), getClassifier(), getExtension(), getVersion(),
+                            getProperties(), file );
     }
 
     public Artifact setProperties( Map<String, String> properties )
@@ -95,8 +115,20 @@ public abstract class AbstractArtifact
         {
             return this;
         }
-        return new DefaultArtifact( getGroupId(), getArtifactId(), getClassifier(), getExtension(), getVersion(),
-                                    properties, getFile() );
+        return newInstance( getGroupId(), getArtifactId(), getClassifier(), getExtension(), getVersion(),
+                            copy( properties ), getFile() );
+    }
+
+    static Map<String, String> copy( Map<String, String> properties )
+    {
+        if ( properties != null && !properties.isEmpty() )
+        {
+            return new HashMap<String, String>( properties );
+        }
+        else
+        {
+            return Collections.emptyMap();
+        }
     }
 
     @Override

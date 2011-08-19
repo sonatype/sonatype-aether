@@ -86,18 +86,6 @@ public final class DefaultArtifact
         return ( value == null || value.length() <= 0 ) ? defaultValue : value;
     }
 
-    private static Map<String, String> copy( Map<String, String> properties )
-    {
-        if ( properties != null && !properties.isEmpty() )
-        {
-            return new HashMap<String, String>( properties );
-        }
-        else
-        {
-            return Collections.emptyMap();
-        }
-    }
-
     /**
      * Creates a new artifact with the specified coordinates and no classifier. Passing {@code null} for any of the
      * coordinates is equivalent to specifying an empty string.
