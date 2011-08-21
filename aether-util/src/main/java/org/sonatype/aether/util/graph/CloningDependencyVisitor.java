@@ -9,7 +9,6 @@ package org.sonatype.aether.util.graph;
  *******************************************************************************/
 
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.Map;
 
 import org.sonatype.aether.graph.DependencyNode;
@@ -29,7 +28,7 @@ public class CloningDependencyVisitor
 
     private final Map<DependencyNode, DependencyNode> clones;
 
-    private final LinkedList<DependencyNode> parents;
+    private final Stack<DependencyNode> parents;
 
     private DependencyNode root;
 
@@ -38,7 +37,7 @@ public class CloningDependencyVisitor
      */
     public CloningDependencyVisitor()
     {
-        parents = new LinkedList<DependencyNode>();
+        parents = new Stack<DependencyNode>();
         clones = new IdentityHashMap<DependencyNode, DependencyNode>( 256 );
     }
 
@@ -90,14 +89,14 @@ public class CloningDependencyVisitor
             parent.getChildren().add( clone );
         }
 
-        parents.addFirst( clone );
+        parents.push( clone );
 
         return recurse;
     }
 
     public boolean visitLeave( DependencyNode node )
     {
-        parents.remove();
+        parents.pop();
 
         return true;
     }

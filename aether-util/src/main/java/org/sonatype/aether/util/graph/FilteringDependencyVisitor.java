@@ -8,8 +8,6 @@ package org.sonatype.aether.util.graph;
  *   http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
-import java.util.LinkedList;
-
 import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.graph.DependencyVisitor;
@@ -28,9 +26,9 @@ public class FilteringDependencyVisitor
 
     private final DependencyVisitor visitor;
 
-    private final LinkedList<Boolean> accepts;
+    private final Stack<Boolean> accepts;
 
-    private final LinkedList<DependencyNode> parents;
+    private final Stack<DependencyNode> parents;
 
     /**
      * Creates a new visitor that delegates traversal of nodes matching the given filter to the specified visitor.
@@ -46,8 +44,8 @@ public class FilteringDependencyVisitor
         }
         this.visitor = visitor;
         this.filter = filter;
-        this.accepts = new LinkedList<Boolean>();
-        this.parents = new LinkedList<DependencyNode>();
+        this.accepts = new Stack<Boolean>();
+        this.parents = new Stack<DependencyNode>();
     }
 
     /**
@@ -74,9 +72,9 @@ public class FilteringDependencyVisitor
     {
         boolean accept = filter == null || filter.accept( node, parents );
 
-        accepts.addFirst( Boolean.valueOf( accept ) );
+        accepts.push( Boolean.valueOf( accept ) );
 
-        parents.addFirst( node );
+        parents.push( node );
 
         if ( accept )
         {
@@ -90,9 +88,9 @@ public class FilteringDependencyVisitor
 
     public boolean visitLeave( DependencyNode node )
     {
-        parents.removeFirst();
+        parents.pop();
 
-        Boolean accept = accepts.removeFirst();
+        Boolean accept = accepts.pop();
 
         if ( accept.booleanValue() )
         {

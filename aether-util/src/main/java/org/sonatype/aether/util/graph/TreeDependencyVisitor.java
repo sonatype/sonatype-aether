@@ -9,7 +9,6 @@ package org.sonatype.aether.util.graph;
  *******************************************************************************/
 
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.Map;
 
 import org.sonatype.aether.graph.DependencyNode;
@@ -30,7 +29,7 @@ public class TreeDependencyVisitor
 
     private final DependencyVisitor visitor;
 
-    private final LinkedList<Boolean> visits;
+    private final Stack<Boolean> visits;
 
     /**
      * Creates a new visitor that delegates to the specified visitor.
@@ -45,14 +44,14 @@ public class TreeDependencyVisitor
         }
         this.visitor = visitor;
         visitedNodes = new IdentityHashMap<DependencyNode, Object>( 512 );
-        visits = new LinkedList<Boolean>();
+        visits = new Stack<Boolean>();
     }
 
     public boolean visitEnter( DependencyNode node )
     {
         boolean visited = visitedNodes.put( node, Boolean.TRUE ) != null;
 
-        visits.addFirst( Boolean.valueOf( visited ) );
+        visits.push( Boolean.valueOf( visited ) );
 
         if ( visited )
         {
@@ -64,7 +63,7 @@ public class TreeDependencyVisitor
 
     public boolean visitLeave( DependencyNode node )
     {
-        Boolean visited = visits.removeFirst();
+        Boolean visited = visits.pop();
 
         if ( visited.booleanValue() )
         {

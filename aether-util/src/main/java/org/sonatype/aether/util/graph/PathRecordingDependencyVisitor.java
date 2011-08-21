@@ -10,7 +10,6 @@ package org.sonatype.aether.util.graph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.sonatype.aether.graph.DependencyFilter;
@@ -30,7 +29,7 @@ public class PathRecordingDependencyVisitor
 
     private final List<List<DependencyNode>> paths;
 
-    private final LinkedList<DependencyNode> parents;
+    private final Stack<DependencyNode> parents;
 
     private final boolean excludeChildrenOfMatches;
 
@@ -59,7 +58,7 @@ public class PathRecordingDependencyVisitor
         this.filter = filter;
         this.excludeChildrenOfMatches = excludeChildrenOfMatches;
         paths = new ArrayList<List<DependencyNode>>();
-        parents = new LinkedList<DependencyNode>();
+        parents = new Stack<DependencyNode>();
     }
 
     /**
@@ -88,7 +87,7 @@ public class PathRecordingDependencyVisitor
     {
         boolean accept = filter == null || filter.accept( node, parents );
 
-        parents.addFirst( node );
+        parents.push( node );
 
         if ( accept )
         {
@@ -107,7 +106,7 @@ public class PathRecordingDependencyVisitor
 
     public boolean visitLeave( DependencyNode node )
     {
-        parents.removeFirst();
+        parents.pop();
 
         return true;
     }
