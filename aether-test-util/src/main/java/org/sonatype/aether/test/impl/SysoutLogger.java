@@ -13,6 +13,7 @@ import org.sonatype.aether.spi.log.Logger;
 public final class SysoutLogger
     implements Logger
 {
+
     public void warn( String msg, Throwable error )
     {
         warn( msg );
@@ -50,4 +51,5 @@ public final class SysoutLogger
     {
         System.out.println( msg );
     }
+
 }

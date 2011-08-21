@@ -12,17 +12,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.internal.DefaultServiceLocator;
-import org.sonatype.aether.resolution.ArtifactDescriptorException;
-import org.sonatype.aether.resolution.ArtifactDescriptorRequest;
-import org.sonatype.aether.resolution.ArtifactDescriptorResult;
-import org.sonatype.aether.resolution.VersionRangeRequest;
-import org.sonatype.aether.resolution.VersionRangeResolutionException;
-import org.sonatype.aether.resolution.VersionRangeResult;
-import org.sonatype.aether.resolution.VersionRequest;
-import org.sonatype.aether.resolution.VersionResolutionException;
-import org.sonatype.aether.resolution.VersionResult;
 
 /**
  * @author Benjamin Bentmann
@@ -40,43 +30,6 @@ public class DefaultServiceLocatorTest
 
         RepositorySystem repoSys = locator.getService( RepositorySystem.class );
         assertNotNull( repoSys );
-    }
-
-    public static class StubArtifactDescriptorReader
-        implements ArtifactDescriptorReader
-    {
-
-        public ArtifactDescriptorResult readArtifactDescriptor( RepositorySystemSession session,
-                                                                ArtifactDescriptorRequest request )
-            throws ArtifactDescriptorException
-        {
-            return null;
-        }
-
-    }
-
-    public static class StubVersionResolver
-        implements VersionResolver
-    {
-
-        public VersionResult resolveVersion( RepositorySystemSession session, VersionRequest request )
-            throws VersionResolutionException
-        {
-            return null;
-        }
-
-    }
-
-    public static class StubVersionRangeResolver
-        implements VersionRangeResolver
-    {
-
-        public VersionRangeResult resolveVersionRange( RepositorySystemSession session, VersionRangeRequest request )
-            throws VersionRangeResolutionException
-        {
-            return null;
-        }
-
     }
 
 }
