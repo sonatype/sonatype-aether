@@ -21,6 +21,13 @@ public class PreorderNodeListGenerator
     extends AbstractDepthFirstNodeListGenerator
 {
 
+    /**
+     * Creates a new preorder list generator.
+     */
+    public PreorderNodeListGenerator()
+    {
+    }
+
     @Override
     public boolean visitEnter( DependencyNode node )
     {
