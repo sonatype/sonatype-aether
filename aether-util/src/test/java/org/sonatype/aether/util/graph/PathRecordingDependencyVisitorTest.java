@@ -81,6 +81,32 @@ public class PathRecordingDependencyVisitorTest
         assertPath( paths.get( 2 ), "x", "y" );
     }
 
+    @Test
+    public void testFilterCalledWithProperParentStack()
+        throws Exception
+    {
+        DependencyNode root = parse( "parents.txt" );
+
+        final StringBuilder buffer = new StringBuilder( 256 );
+        DependencyFilter filter = new DependencyFilter()
+        {
+            public boolean accept( DependencyNode node, List<DependencyNode> parents )
+            {
+                for ( DependencyNode parent : parents )
+                {
+                    buffer.append( parent.getDependency().getArtifact().getArtifactId() );
+                }
+                buffer.append( "," );
+                return false;
+            }
+        };
+
+        PathRecordingDependencyVisitor visitor = new PathRecordingDependencyVisitor( filter );
+        root.accept( visitor );
+
+        assertEquals( ",a,ba,cba,a,ea,", buffer.toString() );
+    }
+
     private static class ArtifactMatcher
         implements DependencyFilter
     {
