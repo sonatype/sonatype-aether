@@ -8,6 +8,8 @@ package org.sonatype.aether.util.graph;
  *   http://www.eclipse.org/legal/epl-v10.html
  ******************************************************************************/
 
+import java.util.LinkedList;
+
 import org.sonatype.aether.graph.DependencyNode;
 
 /**
@@ -21,16 +23,37 @@ public class PostorderNodeListGenerator
     extends AbstractDepthFirstNodeListGenerator
 {
 
+    private final LinkedList<Boolean> visits;
+
+    /**
+     * Creates a new postorder list generator.
+     */
+    public PostorderNodeListGenerator()
+    {
+        visits = new LinkedList<Boolean>();
+    }
+
     @Override
     public boolean visitEnter( DependencyNode node )
     {
+        boolean visited = !setVisited( node );
+
+        visits.addFirst( Boolean.valueOf( visited ) );
+
+        if ( visited )
+        {
+            return false;
+        }
+
         return true;
     }
 
     @Override
     public boolean visitLeave( DependencyNode node )
     {
-        if ( !setVisited( node ) )
+        Boolean visited = visits.removeFirst();
+
+        if ( visited.booleanValue() )
         {
             return true;
         }
