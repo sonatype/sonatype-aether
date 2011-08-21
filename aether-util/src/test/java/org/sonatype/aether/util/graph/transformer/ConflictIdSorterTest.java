@@ -37,7 +37,7 @@ public class ConflictIdSorterTest
     {
         sorter = new ConflictIdSorter();
         ctx = new SimpleDependencyGraphTransformationContext();
-        parser = new DependencyGraphParser( "conflict-id-sorter/" );
+        parser = new DependencyGraphParser( "transformer/conflict-id-sorter/" );
     }
 
     private void expectOrder( List<String> sorted, String... ids )

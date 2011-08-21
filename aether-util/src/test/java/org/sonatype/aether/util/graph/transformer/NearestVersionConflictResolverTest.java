@@ -420,7 +420,7 @@ public class NearestVersionConflictResolverTest
     public void testCyclicGraph()
         throws Exception
     {
-        DependencyNode root = new DependencyGraphParser( "version-resolver/" ).parse( "cycle.txt" );
+        DependencyNode root = new DependencyGraphParser( "transformer/version-resolver/" ).parse( "cycle.txt" );
 
         root = new SimpleConflictMarker().transformGraph( root, context );
         root = new NearestVersionConflictResolver().transformGraph( root, context );

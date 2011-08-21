@@ -41,7 +41,7 @@ public class JavaEffectiveScopeCalculatorTest
     @Before
     public void setup()
     {
-        parser = new DependencyGraphParser( "scope-calculator/" );
+        parser = new DependencyGraphParser( "transformer/scope-calculator/" );
         ctx = new SimpleDependencyGraphTransformationContext();
     }
 

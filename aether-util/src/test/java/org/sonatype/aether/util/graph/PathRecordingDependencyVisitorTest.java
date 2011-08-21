@@ -23,7 +23,7 @@ public class PathRecordingDependencyVisitorTest
     private DependencyNode parse( String resource )
         throws Exception
     {
-        return new DependencyGraphParser( "path-recorder/" ).parse( resource );
+        return new DependencyGraphParser( "visitor/path-recorder/" ).parse( resource );
     }
 
     private void assertPath( List<DependencyNode> actual, String... expected )
