@@ -13,13 +13,16 @@ import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.transfer.ArtifactNotFoundException;
 import org.sonatype.aether.transfer.ArtifactTransferException;
+import org.sonatype.aether.transfer.MetadataNotFoundException;
 import org.sonatype.aether.transfer.MetadataTransferException;
 
 class StaticUpdateCheckManager
     implements UpdateCheckManager
 {
-    boolean checkRequired;
+
+    private boolean checkRequired;
 
     public StaticUpdateCheckManager( boolean checkRequired )
     {
@@ -42,11 +45,21 @@ class StaticUpdateCheckManager
     public void checkMetadata( RepositorySystemSession session, UpdateCheck<Metadata, MetadataTransferException> check )
     {
         check.setRequired( checkRequired );
+
+        if ( !check.isRequired() && !check.getFile().isFile() )
+        {
+            check.setException( new MetadataNotFoundException( check.getItem(), check.getRepository() ) );
+        }
     }
 
     public void checkArtifact( RepositorySystemSession session, UpdateCheck<Artifact, ArtifactTransferException> check )
     {
         check.setRequired( checkRequired );
+
+        if ( !check.isRequired() && !check.getFile().isFile() )
+        {
+            check.setException( new ArtifactNotFoundException( check.getItem(), check.getRepository() ) );
+        }
     }
 
     public boolean isUpdatedRequired( RepositorySystemSession session, long lastModified, String policy )
