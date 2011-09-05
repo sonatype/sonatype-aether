@@ -195,7 +195,9 @@ public class UpdateCheck<T, E extends RepositoryException>
     /**
      * Sets the result of an update check.
      * 
-     * @param required the result of an update check.
+     * @param required The result of an update check. In case of {@code false} and the local file given by
+     *            {@link #getFile()} does actually not exist, {@link #setException(RepositoryException)} should be used
+     *            to provide the previous/cached failure that explains the absence of the file.
      * @return This object for chaining.
      */
     public UpdateCheck<T, E> setRequired( boolean required )
