@@ -87,8 +87,8 @@ public class TestLocalRepositoryManager
         LocalArtifactResult result = new LocalArtifactResult( request );
         File file = new File( localRepository.getBasedir(), getPathForLocalArtifact( artifact ) );
         result.setFile( file.isFile() ? file : null );
+        result.setAvailable( file.isFile() );
 
-        result.setAvailable( artifactRegistration.contains( artifact ) );
         return result;
     }
 
@@ -104,7 +104,6 @@ public class TestLocalRepositoryManager
         LocalMetadataResult result = new LocalMetadataResult( request );
         File file = new File( localRepository.getBasedir(), getPathForLocalMetadata( metadata ) );
         result.setFile( file.isFile() ? file : null );
-        result.setStale( !this.metadataRegistration.contains( metadata ) );
 
         return result;
     }
