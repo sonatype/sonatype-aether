@@ -785,7 +785,7 @@ public class DefaultRepositorySystemSession
 
         public Proxy getProxy( RemoteRepository repository )
         {
-            return null;
+            return repository.getProxy();
         }
 
     }
@@ -811,7 +811,7 @@ public class DefaultRepositorySystemSession
 
         public Authentication getAuthentication( RemoteRepository repository )
         {
-            return null;
+            return repository.getAuthentication();
         }
 
     }
