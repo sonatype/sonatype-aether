@@ -67,6 +67,8 @@ public class TestRepositorySystemSession
 
     private String checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_FAIL;
 
+    private MirrorSelector mirrorSelector;
+
     public TestRepositorySystemSession()
         throws IOException
     {
@@ -173,12 +175,22 @@ public class TestRepositorySystemSession
 
     public MirrorSelector getMirrorSelector()
     {
-        return null;
+        return mirrorSelector;
+    }
+
+    public void setMirrorSelector( MirrorSelector mirrorSelector )
+    {
+        this.mirrorSelector = mirrorSelector;
     }
 
     public ProxySelector getProxySelector()
     {
         return proxySelector;
+    }
+
+    public void setProxySelector( ProxySelector proxySelector )
+    {
+        this.proxySelector = proxySelector;
     }
 
     public AuthenticationSelector getAuthenticationSelector()

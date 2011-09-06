@@ -8,9 +8,10 @@ package org.sonatype.aether.impl.internal;
  *   http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -21,6 +22,10 @@ import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.impl.UpdateCheck;
 import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.metadata.Metadata;
+import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.repository.MirrorSelector;
+import org.sonatype.aether.repository.Proxy;
+import org.sonatype.aether.repository.ProxySelector;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.test.impl.SysoutLogger;
@@ -154,6 +159,83 @@ public class DefaultRemoteRepositoryManagerTest
         assertEquals( 2, result.get( 0 ).getMirroredRepositories().size() );
         assertEquals( dominant1, result.get( 0 ).getMirroredRepositories().get( 0 ) );
         assertEquals( recessive2, result.get( 0 ).getMirroredRepositories().get( 1 ) );
+    }
+
+    @Test
+    public void testMirrorAuthentication()
+    {
+        final RemoteRepository repo = newRepo( "a", "http://", false, "", "" );
+        final RemoteRepository mirror = newRepo( "a", "http://", false, "", "" );
+        mirror.setAuthentication( new Authentication( "username", "password" ) );
+        session.setMirrorSelector( new MirrorSelector()
+        {
+            public RemoteRepository getMirror( RemoteRepository repository )
+            {
+                return mirror;
+            }
+        } );
+
+        List<RemoteRepository> result =
+            manager.aggregateRepositories( session, Collections.<RemoteRepository> emptyList(), Arrays.asList( repo ),
+                                           true );
+
+        assertEquals( 1, result.size() );
+        assertEquals( "username", result.get( 0 ).getAuthentication().getUsername() );
+        assertEquals( "password", result.get( 0 ).getAuthentication().getPassword() );
+    }
+
+    @Test
+    public void testMirrorProxy()
+    {
+        final RemoteRepository repo = newRepo( "a", "http://", false, "", "" );
+        final RemoteRepository mirror = newRepo( "a", "http://", false, "", "" );
+        mirror.setProxy( new Proxy( "http", "host", 2011, null ) );
+        session.setMirrorSelector( new MirrorSelector()
+        {
+            public RemoteRepository getMirror( RemoteRepository repository )
+            {
+                return mirror;
+            }
+        } );
+
+        List<RemoteRepository> result =
+            manager.aggregateRepositories( session, Collections.<RemoteRepository> emptyList(), Arrays.asList( repo ),
+                                           true );
+
+        assertEquals( 1, result.size() );
+        assertEquals( "http", result.get( 0 ).getProxy().getType() );
+        assertEquals( "host", result.get( 0 ).getProxy().getHost() );
+        assertEquals( 2011, result.get( 0 ).getProxy().getPort() );
+    }
+
+    @Test
+    public void testProxySelector()
+    {
+        final RemoteRepository repo = newRepo( "a", "http://", false, "", "" );
+        final Proxy proxy = new Proxy( "http", "host", 2011, null );
+        session.setProxySelector( new ProxySelector()
+        {
+            public Proxy getProxy( RemoteRepository repository )
+            {
+                return proxy;
+            }
+        } );
+        session.setMirrorSelector( new MirrorSelector()
+        {
+            public RemoteRepository getMirror( RemoteRepository repository )
+            {
+                return null;
+            }
+        } );
+
+        List<RemoteRepository> result =
+            manager.aggregateRepositories( session, Collections.<RemoteRepository> emptyList(), Arrays.asList( repo ),
+                                           true );
+
+        assertEquals( 1, result.size() );
+        assertEquals( "http", result.get( 0 ).getProxy().getType() );
+        assertEquals( "host", result.get( 0 ).getProxy().getHost() );
+        assertEquals( 2011, result.get( 0 ).getProxy().getPort() );
     }
 
     private static class StubUpdateCheckManager

@@ -182,8 +182,16 @@ public class DefaultRemoteRepositoryManager
 
             if ( recessiveIsRaw )
             {
-                repository.setAuthentication( authSelector.getAuthentication( repository ) );
-                repository.setProxy( proxySelector.getProxy( repository ) );
+                Authentication auth = authSelector.getAuthentication( repository );
+                if ( auth != null )
+                {
+                    repository.setAuthentication( auth );
+                }
+                Proxy proxy = proxySelector.getProxy( repository );
+                if ( proxy != null )
+                {
+                    repository.setProxy( proxy );
+                }
             }
 
             result.add( repository );
