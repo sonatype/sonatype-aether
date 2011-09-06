@@ -60,9 +60,9 @@ public class DefaultUpdateCheckManagerTest
         File dir = TestFileUtils.createTempFile( "" );
         TestFileUtils.delete( dir );
 
-        File metadataFile = new File( dir, "metadata" );
+        File metadataFile = new File( dir, "metadata.txt" );
         TestFileUtils.write( "metadata", metadataFile );
-        File artifactFile = new File( dir, "metadata" );
+        File artifactFile = new File( dir, "artifact.txt" );
         TestFileUtils.write( "artifact", artifactFile );
 
         session = new TestRepositorySystemSession();
@@ -85,7 +85,7 @@ public class DefaultUpdateCheckManagerTest
         TestFileUtils.delete( new File( new URI( repository.getUrl() ) ) );
     }
 
-    private void resetSessionData( RepositorySystemSession session )
+    static void resetSessionData( RepositorySystemSession session )
     {
         session.getData().set( "updateCheckManager.checks", null );
     }
@@ -111,6 +111,65 @@ public class DefaultUpdateCheckManagerTest
         return check;
     }
 
+    @Test
+    public void testIsUpdateRequired_PolicyNever()
+        throws Exception
+    {
+        String policy = RepositoryPolicy.UPDATE_POLICY_NEVER;
+        assertEquals( false, manager.isUpdatedRequired( session, Long.MIN_VALUE, policy ) );
+        assertEquals( false, manager.isUpdatedRequired( session, Long.MAX_VALUE, policy ) );
+        assertEquals( false, manager.isUpdatedRequired( session, 0, policy ) );
+        assertEquals( false, manager.isUpdatedRequired( session, 1, policy ) );
+        assertEquals( false, manager.isUpdatedRequired( session, System.currentTimeMillis() - 604800000, policy ) );
+    }
+
+    @Test
+    public void testIsUpdateRequired_PolicyAlways()
+        throws Exception
+    {
+        String policy = RepositoryPolicy.UPDATE_POLICY_ALWAYS;
+        assertEquals( true, manager.isUpdatedRequired( session, Long.MIN_VALUE, policy ) );
+        assertEquals( true, manager.isUpdatedRequired( session, Long.MAX_VALUE, policy ) );
+        assertEquals( true, manager.isUpdatedRequired( session, 0, policy ) );
+        assertEquals( true, manager.isUpdatedRequired( session, 1, policy ) );
+        assertEquals( true, manager.isUpdatedRequired( session, System.currentTimeMillis() - 1000, policy ) );
+    }
+
+    @Test
+    public void testIsUpdateRequired_PolicyDaily()
+        throws Exception
+    {
+        Calendar cal = Calendar.getInstance();
+        cal.set( Calendar.HOUR_OF_DAY, 0 );
+        cal.set( Calendar.MINUTE, 0 );
+        cal.set( Calendar.SECOND, 0 );
+        cal.set( Calendar.MILLISECOND, 0 );
+        long localMidnight = cal.getTimeInMillis();
+
+        String policy = RepositoryPolicy.UPDATE_POLICY_DAILY;
+        assertEquals( true, manager.isUpdatedRequired( session, Long.MIN_VALUE, policy ) );
+        assertEquals( false, manager.isUpdatedRequired( session, Long.MAX_VALUE, policy ) );
+        assertEquals( false, manager.isUpdatedRequired( session, localMidnight + 0, policy ) );
+        assertEquals( false, manager.isUpdatedRequired( session, localMidnight + 1, policy ) );
+        assertEquals( true, manager.isUpdatedRequired( session, localMidnight - 1, policy ) );
+    }
+
+    @Test
+    public void testIsUpdateRequired_PolicyInterval()
+        throws Exception
+    {
+        String policy = RepositoryPolicy.UPDATE_POLICY_INTERVAL + ":5";
+        assertEquals( true, manager.isUpdatedRequired( session, Long.MIN_VALUE, policy ) );
+        assertEquals( false, manager.isUpdatedRequired( session, Long.MAX_VALUE, policy ) );
+        assertEquals( false, manager.isUpdatedRequired( session, System.currentTimeMillis(), policy ) );
+        assertEquals( false, manager.isUpdatedRequired( session, System.currentTimeMillis() - 5 - 1, policy ) );
+        assertEquals( false, manager.isUpdatedRequired( session, System.currentTimeMillis() - 1000 * 5 - 1, policy ) );
+        assertEquals( true, manager.isUpdatedRequired( session, System.currentTimeMillis() - 1000 * 60 * 5 - 1, policy ) );
+
+        policy = RepositoryPolicy.UPDATE_POLICY_INTERVAL + ":invalid";
+        assertEquals( false, manager.isUpdatedRequired( session, System.currentTimeMillis(), policy ) );
+    }
+
     @Test( expected = Exception.class )
     public void testCheckMetadataFailOnNoFile()
         throws Exception
@@ -122,34 +181,11 @@ public class DefaultUpdateCheckManagerTest
         manager.checkMetadata( session, check );
     }
 
-    /**
-     * [AETHER-27] updatePolicy:daily should be based on local midnight
-     */
-    @Test
-    public void testUseLocalTimezone()
-        throws Exception
-    {
-        long localMidnight;
-
-        Calendar cal = Calendar.getInstance();
-        cal.set( Calendar.HOUR_OF_DAY, 0 );
-        cal.set( Calendar.MINUTE, 0 );
-        cal.set( Calendar.SECOND, 0 );
-        cal.set( Calendar.MILLISECOND, 0 );
-        localMidnight = cal.getTimeInMillis();
-
-        String policy = RepositoryPolicy.UPDATE_POLICY_DAILY;
-        assertEquals( false, manager.isUpdatedRequired( session, localMidnight + 1000, policy ) );
-        assertEquals( true, manager.isUpdatedRequired( session, localMidnight - 1000, policy ) );
-    }
-
     @Test
     public void testCheckMetadataUpdatePolicyRequired()
         throws Exception
     {
         UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
-        check.setItem( metadata );
-        check.setFile( metadata.getFile() );
 
         Calendar cal = Calendar.getInstance();
         cal.add( Calendar.DATE, -1 );
@@ -175,11 +211,7 @@ public class DefaultUpdateCheckManagerTest
     public void testCheckMetadataUpdatePolicyNotRequired()
         throws Exception
     {
-        UpdateCheck<Metadata, MetadataTransferException> check = new UpdateCheck<Metadata, MetadataTransferException>();
-        check.setItem( metadata );
-        check.setFile( metadata.getFile() );
-        check.setRepository( repository );
-        check.setAuthoritativeRepository( repository );
+        UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
 
         check.setLocalLastUpdated( System.currentTimeMillis() );
 
@@ -212,8 +244,8 @@ public class DefaultUpdateCheckManagerTest
         assertEquals( true, check.isRequired() );
 
         // just checked
-        check = newMetadataCheck();
         manager.touchMetadata( session, check );
+        resetSessionData( session );
 
         check = newMetadataCheck();
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_INTERVAL + ":60" );
@@ -223,7 +255,6 @@ public class DefaultUpdateCheckManagerTest
 
         // no local file
         check.getFile().delete();
-        resetSessionData( session );
         manager.checkMetadata( session, check );
         assertEquals( true, check.isRequired() );
         // (! file.exists && ! repoKey) -> no timestamp
@@ -257,6 +288,7 @@ public class DefaultUpdateCheckManagerTest
 
         check.setException( new MetadataNotFoundException( metadata, repository, "" ) );
         manager.touchMetadata( session, check );
+        resetSessionData( session );
 
         // ! file.exists && ! updateRequired -> artifact not found in remote repo
         check = newMetadataCheck().setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
@@ -276,6 +308,7 @@ public class DefaultUpdateCheckManagerTest
 
         check.setException( new MetadataNotFoundException( metadata, repository, "" ) );
         manager.touchMetadata( session, check );
+        resetSessionData( session );
 
         // ! file.exists && ! updateRequired -> artifact not found in remote repo
         // ignore NotFoundCaching-setting, don't check if update policy does not say so for metadata
@@ -296,6 +329,7 @@ public class DefaultUpdateCheckManagerTest
 
         check.setException( new MetadataTransferException( metadata, repository, "some error" ) );
         manager.touchMetadata( session, check );
+        resetSessionData( session );
 
         // ! file.exists && ! updateRequired && previousError -> depends on transfer error caching
         check = newMetadataCheck();
@@ -341,6 +375,67 @@ public class DefaultUpdateCheckManagerTest
         manager.touchMetadata( session, check );
 
         // second check in same session
+        manager.checkMetadata( session, check );
+        assertEquals( false, check.isRequired() );
+    }
+
+    @Test
+    public void testCheckMetadataWhenLocallyMissingEvenIfUpdatePolicyIsNever()
+        throws Exception
+    {
+        UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
+        check.setPolicy( RepositoryPolicy.UPDATE_POLICY_NEVER );
+        session.setNotFoundCachingEnabled( true );
+
+        check.getFile().delete();
+        assertEquals( check.getFile().getAbsolutePath(), false, check.getFile().exists() );
+
+        manager.checkMetadata( session, check );
+        assertEquals( true, check.isRequired() );
+    }
+
+    @Test
+    public void testCheckMetadataWhenLocallyPresentButInvalidEvenIfUpdatePolicyIsNever()
+        throws Exception
+    {
+        UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
+        check.setPolicy( RepositoryPolicy.UPDATE_POLICY_NEVER );
+        session.setNotFoundCachingEnabled( true );
+
+        manager.touchMetadata( session, check );
+        resetSessionData( session );
+
+        check.setFileValid( false );
+
+        manager.checkMetadata( session, check );
+        assertEquals( true, check.isRequired() );
+    }
+
+    @Test
+    public void testCheckMetadataWhenLocallyDeletedEvenIfTimestampUpToDate()
+        throws Exception
+    {
+        UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
+        session.setNotFoundCachingEnabled( true );
+
+        manager.touchMetadata( session, check );
+        resetSessionData( session );
+
+        check.getFile().delete();
+        assertEquals( check.getFile().getAbsolutePath(), false, check.getFile().exists() );
+
+        manager.checkMetadata( session, check );
+        assertEquals( true, check.isRequired() );
+    }
+
+    @Test
+    public void testCheckMetadataNotWhenUpdatePolicyIsNeverAndTimestampIsUnavailable()
+        throws Exception
+    {
+        UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
+        check.setPolicy( RepositoryPolicy.UPDATE_POLICY_NEVER );
+        session.setNotFoundCachingEnabled( true );
+
         manager.checkMetadata( session, check );
         assertEquals( false, check.isRequired() );
     }
@@ -471,6 +566,7 @@ public class DefaultUpdateCheckManagerTest
         UpdateCheck<Artifact, ArtifactTransferException> check = newArtifactCheck();
         check.setException( new ArtifactNotFoundException( artifact, repository ) );
         manager.touchArtifact( session, check );
+        resetSessionData( session );
 
         // ! file.exists && ! updateRequired -> artifact not found in remote repo
         check = newArtifactCheck().setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
@@ -508,6 +604,7 @@ public class DefaultUpdateCheckManagerTest
         check.setPolicy( RepositoryPolicy.UPDATE_POLICY_DAILY );
         check.setException( new ArtifactTransferException( artifact, repository, "some error" ) );
         manager.touchArtifact( session, check );
+        resetSessionData( session );
 
         // ! file.exists && ! updateRequired && previousError -> depends on transfer error caching
         check = newArtifactCheck();
@@ -556,20 +653,64 @@ public class DefaultUpdateCheckManagerTest
     }
 
     @Test
-    public void testTouchMetadata()
+    public void testCheckArtifactWhenLocallyMissingEvenIfUpdatePolicyIsNever()
         throws Exception
     {
-        UpdateCheck<Metadata, MetadataTransferException> check = newMetadataCheck();
+        UpdateCheck<Artifact, ArtifactTransferException> check = newArtifactCheck();
+        check.setPolicy( RepositoryPolicy.UPDATE_POLICY_NEVER );
+        session.setNotFoundCachingEnabled( true );
 
-        check.setPolicy( RepositoryPolicy.UPDATE_POLICY_INTERVAL + ":60" );
-        manager.checkMetadata( session, check );
-        assertTrue( "check is marked as not required, but should be", check.isRequired() );
-        manager.touchMetadata( session, check );
+        check.getFile().delete();
+        assertEquals( check.getFile().getAbsolutePath(), false, check.getFile().exists() );
 
-        check = newMetadataCheck();
-        check.setPolicy( RepositoryPolicy.UPDATE_POLICY_INTERVAL + ":60" );
-        manager.checkMetadata( session, check );
-        assertFalse( "check is marked as required directly after touchMetadata()", check.isRequired() );
+        manager.checkArtifact( session, check );
+        assertEquals( true, check.isRequired() );
+    }
+
+    @Test
+    public void testCheckArtifactWhenLocallyPresentButInvalidEvenIfUpdatePolicyIsNever()
+        throws Exception
+    {
+        UpdateCheck<Artifact, ArtifactTransferException> check = newArtifactCheck();
+        check.setPolicy( RepositoryPolicy.UPDATE_POLICY_NEVER );
+        session.setNotFoundCachingEnabled( true );
+
+        manager.touchArtifact( session, check );
+        resetSessionData( session );
+
+        check.setFileValid( false );
+
+        manager.checkArtifact( session, check );
+        assertEquals( true, check.isRequired() );
+    }
+
+    @Test
+    public void testCheckArtifactWhenLocallyDeletedEvenIfTimestampUpToDate()
+        throws Exception
+    {
+        UpdateCheck<Artifact, ArtifactTransferException> check = newArtifactCheck();
+        session.setNotFoundCachingEnabled( true );
+
+        manager.touchArtifact( session, check );
+        resetSessionData( session );
+
+        check.getFile().delete();
+        assertEquals( check.getFile().getAbsolutePath(), false, check.getFile().exists() );
+
+        manager.checkArtifact( session, check );
+        assertEquals( true, check.isRequired() );
+    }
+
+    @Test
+    public void testCheckArtifactNotWhenUpdatePolicyIsNeverAndTimestampIsUnavailable()
+        throws Exception
+    {
+        UpdateCheck<Artifact, ArtifactTransferException> check = newArtifactCheck();
+        check.setPolicy( RepositoryPolicy.UPDATE_POLICY_NEVER );
+        session.setNotFoundCachingEnabled( true );
+
+        manager.checkArtifact( session, check );
+        assertEquals( false, check.isRequired() );
     }
 
     @Test

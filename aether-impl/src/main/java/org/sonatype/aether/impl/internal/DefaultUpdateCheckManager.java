@@ -130,7 +130,7 @@ public class DefaultUpdateCheckManager
             throw new IllegalArgumentException( String.format( "The artifact '%s' has no file attached", artifact ) );
         }
 
-        boolean fileExists = artifactFile.exists();
+        boolean fileExists = check.isFileValid() && artifactFile.exists();
 
         File touchFile = getTouchFile( artifact, artifactFile );
         Properties props = read( touchFile );
@@ -265,7 +265,7 @@ public class DefaultUpdateCheckManager
             throw new IllegalArgumentException( String.format( "The metadata '%s' has no file attached", metadata ) );
         }
 
-        boolean fileExists = metadataFile.exists();
+        boolean fileExists = check.isFileValid() && metadataFile.exists();
 
         File touchFile = getTouchFile( metadata, metadataFile );
         Properties props = read( touchFile );
@@ -327,7 +327,8 @@ public class DefaultUpdateCheckManager
         {
             if ( logger.isDebugEnabled() )
             {
-                logger.debug( "Skipped remote update check for " + check.getItem() + ", locally cached metadata up-to-date." );
+                logger.debug( "Skipped remote update check for " + check.getItem()
+                    + ", locally cached metadata up-to-date." );
             }
 
             check.setRequired( false );

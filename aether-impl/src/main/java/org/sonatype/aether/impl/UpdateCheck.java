@@ -28,6 +28,8 @@ public class UpdateCheck<T, E extends RepositoryException>
 
     private File file;
 
+    private boolean fileValid = true;
+
     private String policy;
 
     private RemoteRepository repository;
@@ -107,6 +109,32 @@ public class UpdateCheck<T, E extends RepositoryException>
     public UpdateCheck<T, E> setFile( File file )
     {
         this.file = file;
+        return this;
+    }
+
+    /**
+     * Indicates whether the local file given by {@link #getFile()}, if existent, should be considered valid or not. An
+     * invalid file is equivalent to a physically missing file.
+     * 
+     * @return {@code true} if the file should be considered valid if existent, {@code false} if the file should be
+     *         treated as if it was missing.
+     */
+    public boolean isFileValid()
+    {
+        return fileValid;
+    }
+
+    /**
+     * Controls whether the local file given by {@link #getFile()}, if existent, should be considered valid or not. An
+     * invalid file is equivalent to a physically missing file.
+     * 
+     * @param fileValid {@code true} if the file should be considered valid if existent, {@code false} if the file
+     *            should be treated as if it was missing.
+     * @return This object for chaining.
+     */
+    public UpdateCheck<T, E> setFileValid( boolean fileValid )
+    {
+        this.fileValid = fileValid;
         return this;
     }
 

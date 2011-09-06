@@ -33,9 +33,11 @@ public class TestLocalRepositoryManager
 
     private LocalRepository localRepository;
 
-    private Set<Artifact> artifactRegistration = new HashSet<Artifact>();
+    private Set<Artifact> unavailableArtifacts = new HashSet<Artifact>();
 
-    private Set<Metadata> metadataRegistration = new HashSet<Metadata>();
+    private Set<Artifact> artifactRegistrations = new HashSet<Artifact>();
+
+    private Set<Metadata> metadataRegistrations = new HashSet<Metadata>();
 
     public TestLocalRepositoryManager()
         throws IOException
@@ -87,14 +89,14 @@ public class TestLocalRepositoryManager
         LocalArtifactResult result = new LocalArtifactResult( request );
         File file = new File( localRepository.getBasedir(), getPathForLocalArtifact( artifact ) );
         result.setFile( file.isFile() ? file : null );
-        result.setAvailable( file.isFile() );
+        result.setAvailable( file.isFile() && !unavailableArtifacts.contains( artifact ) );
 
         return result;
     }
 
     public void add( RepositorySystemSession session, LocalArtifactRegistration request )
     {
-        artifactRegistration.add( request.getArtifact() );
+        artifactRegistrations.add( request.getArtifact() );
     }
 
     public LocalMetadataResult find( RepositorySystemSession session, LocalMetadataRequest request )
@@ -110,17 +112,29 @@ public class TestLocalRepositoryManager
 
     public void add( RepositorySystemSession session, LocalMetadataRegistration request )
     {
-        metadataRegistration.add( request.getMetadata() );
+        metadataRegistrations.add( request.getMetadata() );
     }
 
     public Set<Artifact> getArtifactRegistration()
     {
-        return artifactRegistration;
+        return artifactRegistrations;
     }
 
     public Set<Metadata> getMetadataRegistration()
     {
-        return metadataRegistration;
+        return metadataRegistrations;
+    }
+
+    public void setArtifactAvailability( Artifact artifact, boolean available )
+    {
+        if ( available )
+        {
+            unavailableArtifacts.remove( artifact );
+        }
+        else
+        {
+            unavailableArtifacts.add( artifact );
+        }
     }
 
 }

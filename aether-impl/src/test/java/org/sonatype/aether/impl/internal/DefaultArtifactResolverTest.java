@@ -35,6 +35,7 @@ import org.sonatype.aether.repository.LocalMetadataResult;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.LocalRepositoryManager;
 import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.repository.WorkspaceReader;
 import org.sonatype.aether.repository.WorkspaceRepository;
 import org.sonatype.aether.resolution.ArtifactRequest;
@@ -50,6 +51,7 @@ import org.sonatype.aether.test.impl.RecordingRepositoryListener;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener.EventWrapper;
 import org.sonatype.aether.test.impl.RecordingRepositoryListener.Type;
 import org.sonatype.aether.test.impl.TestFileProcessor;
+import org.sonatype.aether.test.impl.TestLocalRepositoryManager;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
 import org.sonatype.aether.test.util.TestFileUtils;
 import org.sonatype.aether.test.util.impl.StubArtifact;
@@ -66,6 +68,8 @@ public class DefaultArtifactResolverTest
 
     private TestRepositorySystemSession session;
 
+    private TestLocalRepositoryManager lrm;
+
     private StubRemoteRepositoryManager remoteRepositoryManager;
 
     private Artifact artifact;
@@ -80,6 +84,7 @@ public class DefaultArtifactResolverTest
         remoteRepositoryManager = new StubRemoteRepositoryManager();
         VersionResolver versionResolver = new StubVersionResolver();
         session = new TestRepositorySystemSession();
+        lrm = (TestLocalRepositoryManager) session.getLocalRepositoryManager();
         resolver =
             new DefaultArtifactResolver( NullLogger.INSTANCE, TestFileProcessor.INSTANCE,
                                          new StubRepositoryEventDispatcher(), versionResolver, updateCheckManager,
@@ -228,6 +233,76 @@ public class DefaultArtifactResolverTest
             assertNull( resolved );
         }
 
+    }
+
+    @Test
+    public void testArtifactNotFoundCache()
+        throws Exception
+    {
+        RecordingRepositoryConnector connector = new RecordingRepositoryConnector()
+        {
+            @Override
+            public void get( Collection<? extends ArtifactDownload> artifactDownloads,
+                             Collection<? extends MetadataDownload> metadataDownloads )
+            {
+                super.get( artifactDownloads, metadataDownloads );
+                for ( ArtifactDownload download : artifactDownloads )
+                {
+                    download.getFile().delete();
+                    ArtifactTransferException exception =
+                        new ArtifactNotFoundException( download.getArtifact(), null, "not found" );
+                    download.setException( exception );
+                }
+            }
+        };
+
+        remoteRepositoryManager.setConnector( connector );
+        resolver.setUpdateCheckManager( new DefaultUpdateCheckManager() );
+
+        session.setNotFoundCachingEnabled( true );
+        session.setUpdatePolicy( RepositoryPolicy.UPDATE_POLICY_NEVER );
+
+        RemoteRepository remoteRepo = new RemoteRepository( "id", "default", "file:///" );
+
+        Artifact artifact1 = artifact;
+        Artifact artifact2 = artifact.setVersion( "ver2" );
+
+        ArtifactRequest request1 = new ArtifactRequest( artifact1, Arrays.asList( remoteRepo ), "" );
+        ArtifactRequest request2 = new ArtifactRequest( artifact2, Arrays.asList( remoteRepo ), "" );
+
+        connector.setExpectGet( new Artifact[] { artifact1, artifact2 } );
+        try
+        {
+            resolver.resolveArtifacts( session, Arrays.asList( request1, request2 ) );
+            fail( "expected exception" );
+        }
+        catch ( ArtifactResolutionException e )
+        {
+            connector.assertSeenExpected();
+        }
+
+        TestFileUtils.write( "artifact",
+                             new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalArtifact( artifact2 ) ) );
+        lrm.setArtifactAvailability( artifact2, false );
+
+        DefaultUpdateCheckManagerTest.resetSessionData( session );
+        connector.resetActual();
+        connector.setExpectGet( new Artifact[0] );
+        try
+        {
+            resolver.resolveArtifacts( session, Arrays.asList( request1, request2 ) );
+            fail( "expected exception" );
+        }
+        catch ( ArtifactResolutionException e )
+        {
+            connector.assertSeenExpected();
+            for ( ArtifactResult result : e.getResults() )
+            {
+                Throwable t = result.getExceptions().get( 0 );
+                assertEquals( t.toString(), true, t instanceof ArtifactNotFoundException );
+                assertEquals( t.toString(), true, t.getMessage().contains( "cached" ) );
+            }
+        }
     }
 
     @Test

@@ -202,4 +202,12 @@ class RecordingRepositoryConnector
         this.expectPutMD = expectPutMD;
     }
 
+    public void resetActual()
+    {
+        this.actualGet = new ArrayList<Artifact>();
+        this.actualGetMD = new ArrayList<Metadata>();
+        this.actualPut = new ArrayList<Artifact>();
+        this.actualPutMD = new ArrayList<Metadata>();
+    }
+
 }

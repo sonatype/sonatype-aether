@@ -16,6 +16,7 @@ import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.sonatype.aether.util.StringUtils;
 
 class StubRemoteRepositoryManager
     implements RemoteRepositoryManager
@@ -45,11 +46,21 @@ class StubRemoteRepositoryManager
         return dominantRepositories;
     }
 
-    public RepositoryPolicy getPolicy( RepositorySystemSession session, RemoteRepository repository,
-                                       boolean releases, boolean snapshots )
+    public RepositoryPolicy getPolicy( RepositorySystemSession session, RemoteRepository repository, boolean releases,
+                                       boolean snapshots )
     {
-        return new RepositoryPolicy( true, RepositoryPolicy.UPDATE_POLICY_ALWAYS,
-                                     RepositoryPolicy.CHECKSUM_POLICY_FAIL );
+        RepositoryPolicy policy = repository.getPolicy( snapshots );
+
+        if ( !StringUtils.isEmpty( session.getChecksumPolicy() ) )
+        {
+            policy = policy.setChecksumPolicy( session.getChecksumPolicy() );
+        }
+        if ( !StringUtils.isEmpty( session.getUpdatePolicy() ) )
+        {
+            policy = policy.setUpdatePolicy( session.getUpdatePolicy() );
+        }
+
+        return policy;
     }
 
     public RepositoryConnector getRepositoryConnector( RepositorySystemSession session, RemoteRepository repository )

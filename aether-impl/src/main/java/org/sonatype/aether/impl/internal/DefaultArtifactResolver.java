@@ -420,11 +420,12 @@ public class DefaultArtifactResolver
                         new UpdateCheck<Artifact, ArtifactTransferException>();
                     check.setItem( artifact );
                     check.setFile( download.getFile() );
+                    check.setFileValid( !download.isExistenceCheck() );
                     check.setRepository( group.repository );
                     check.setPolicy( policy.getUpdatePolicy() );
                     item.updateCheck = check;
                     updateCheckManager.checkArtifact( session, check );
-                    if ( !check.isRequired() && check.getException() != null )
+                    if ( !check.isRequired() )
                     {
                         item.result.addException( check.getException() );
                         continue;

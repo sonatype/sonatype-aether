@@ -30,6 +30,7 @@ import org.sonatype.aether.impl.UpdateCheckManager;
 import org.sonatype.aether.metadata.MergeableMetadata;
 import org.sonatype.aether.metadata.Metadata;
 import org.sonatype.aether.metadata.Metadata.Nature;
+import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.ArtifactDownload;
 import org.sonatype.aether.spi.connector.ArtifactUpload;
 import org.sonatype.aether.spi.connector.MetadataDownload;
@@ -88,6 +89,7 @@ public class DefaultDeployerTest
         deployer.setSyncContextFactory( new StubSyncContextFactory() );
 
         request = new DeployRequest();
+        request.setRepository( new RemoteRepository( "id", "default", "file:///" ) );
         connector = new RecordingRepositoryConnector();
         manager.setConnector( connector );
 
