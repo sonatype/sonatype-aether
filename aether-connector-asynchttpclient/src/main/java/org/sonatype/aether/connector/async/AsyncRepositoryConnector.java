@@ -334,6 +334,26 @@ class AsyncRepositoryConnector
         return configBuilder.build();
     }
 
+    private void await( CountDownLatch latch )
+    {
+        boolean interrupted = false;
+        while ( latch.getCount() > 0 )
+        {
+            try
+            {
+                latch.await();
+            }
+            catch ( InterruptedException e )
+            {
+                interrupted = true;
+            }
+        }
+        if ( interrupted )
+        {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     /**
      * Use the async http client library to download artifacts and metadata.
      *
@@ -375,23 +395,12 @@ class AsyncRepositoryConnector
             task.run();
         }
 
-        try
-        {
-            latch.await();
+        await( latch );
 
-            for ( GetTask<?> task : tasks )
-            {
-                task.flush();
-            }
-        }
-        catch ( InterruptedException e )
+        for ( GetTask<?> task : tasks )
         {
-            for ( GetTask<?> task : tasks )
-            {
-                task.flush( e );
-            }
+            task.flush();
         }
-
     }
 
     /**
@@ -433,21 +442,11 @@ class AsyncRepositoryConnector
             task.run();
         }
 
-        try
-        {
-            latch.await();
+        await( latch );
 
-            for ( PutTask<?> task : tasks )
-            {
-                task.flush();
-            }
-        }
-        catch ( InterruptedException e )
+        for ( PutTask<?> task : tasks )
         {
-            for ( PutTask<?> task : tasks )
-            {
-                task.flush( e );
-            }
+            task.flush();
         }
     }
 
@@ -1005,13 +1004,7 @@ class AsyncRepositoryConnector
 
         public void flush()
         {
-            flush( null );
-        }
-
-        public void flush( Exception exception )
-        {
-            Exception e = this.exception;
-            wrapper.wrap( download, ( e != null ) ? e : exception, repository );
+            wrapper.wrap( download, exception, repository );
             download.setState( Transfer.State.DONE );
         }
 
@@ -1169,13 +1162,6 @@ class AsyncRepositoryConnector
         public void flush()
         {
             wrapper.wrap( upload, exception, repository );
-            upload.setState( Transfer.State.DONE );
-        }
-
-        public void flush( Exception exception )
-        {
-            Exception e = this.exception;
-            wrapper.wrap( upload, ( e != null ) ? e : exception, repository );
             upload.setState( Transfer.State.DONE );
         }
 
