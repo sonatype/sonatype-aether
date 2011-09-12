@@ -82,6 +82,20 @@ public final class ConfigurationProperties
      */
     public static final String HTTP_HEADERS = PREFIX_CONNECTOR + "http.headers";
 
+    /**
+     * The encoding/charset to use when exchanging credentials with HTTP servers. Besides this general key, clients may
+     * also specify the encoding for a specific remote repository by appending the suffix {@code .<repoId>} to this key
+     * when storing the charset name.
+     * 
+     * @see #DEFAULT_HTTP_CREDENTIAL_ENCODING
+     */
+    public static final String HTTP_CREDENTIAL_ENCODING = PREFIX_CONNECTOR + "http.credentialEncoding";
+
+    /**
+     * The default encoding/charset to use if {@link #HTTP_CREDENTIAL_ENCODING} isn't set.
+     */
+    public static final String DEFAULT_HTTP_CREDENTIAL_ENCODING = "ISO-8859-1";
+
     private ConfigurationProperties()
     {
         // hide constructor

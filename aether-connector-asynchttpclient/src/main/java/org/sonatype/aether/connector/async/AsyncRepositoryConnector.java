@@ -263,7 +263,7 @@ class AsyncRepositoryConnector
         }
     }
 
-    private Realm getRealm( RemoteRepository repository )
+    private Realm getRealm( RemoteRepository repository, String credentialEncoding )
     {
         Realm realm = null;
 
@@ -271,13 +271,13 @@ class AsyncRepositoryConnector
         if ( a != null && a.getUsername() != null )
         {
             realm = new Realm.RealmBuilder().setPrincipal( a.getUsername() ).setPassword(
-                a.getPassword() ).setUsePreemptiveAuth( false ).build();
+                a.getPassword() ).setUsePreemptiveAuth( false ).setEnconding( credentialEncoding ).build();
         }
 
         return realm;
     }
 
-    private ProxyServer getProxy( RemoteRepository repository )
+    private ProxyServer getProxy( RemoteRepository repository, String credentialEncoding )
     {
         ProxyServer proxyServer = null;
 
@@ -296,6 +296,7 @@ class AsyncRepositoryConnector
                 proxyServer =
                     new ProxyServer( useSSL ? Protocol.HTTPS : Protocol.HTTP, p.getHost(), p.getPort(), a.getUsername(),
                                      a.getPassword() );
+                proxyServer.setEncoding( credentialEncoding );
             }
         }
 
@@ -322,6 +323,10 @@ class AsyncRepositoryConnector
         int connectTimeout =
             ConfigUtils.getInteger( session, ConfigurationProperties.DEFAULT_CONNECT_TIMEOUT,
                              ConfigurationProperties.CONNECT_TIMEOUT );
+        String credentialEncoding =
+            ConfigUtils.getString( session, ConfigurationProperties.DEFAULT_HTTP_CREDENTIAL_ENCODING,
+                                   ConfigurationProperties.HTTP_CREDENTIAL_ENCODING + "." + repository.getId(),
+                                   ConfigurationProperties.HTTP_CREDENTIAL_ENCODING );
 
         configBuilder.setConnectionTimeoutInMs( connectTimeout );
         configBuilder.setCompressionEnabled( useCompression );
@@ -330,8 +335,8 @@ class AsyncRepositoryConnector
         configBuilder.setRequestTimeoutInMs( ConfigUtils.getInteger( session, ConfigurationProperties.DEFAULT_REQUEST_TIMEOUT,
                                                               ConfigurationProperties.REQUEST_TIMEOUT ) );
 
-        configBuilder.setProxyServer( getProxy( repository ) );
-        configBuilder.setRealm( getRealm( repository ) );
+        configBuilder.setProxyServer( getProxy( repository, credentialEncoding ) );
+        configBuilder.setRealm( getRealm( repository, credentialEncoding ) );
 
         return configBuilder.build();
     }
