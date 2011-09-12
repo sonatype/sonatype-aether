@@ -66,6 +66,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.lang.reflect.InvocationTargetException;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
@@ -325,6 +326,7 @@ class AsyncRepositoryConnector
         configBuilder.setConnectionTimeoutInMs( connectTimeout );
         configBuilder.setCompressionEnabled( useCompression );
         configBuilder.setFollowRedirects( true );
+        configBuilder.setMaxRequestRetry( 0 );
         configBuilder.setRequestTimeoutInMs( ConfigUtils.getInteger( session, ConfigurationProperties.DEFAULT_REQUEST_TIMEOUT,
                                                               ConfigurationProperties.REQUEST_TIMEOUT ) );
 
@@ -593,8 +595,6 @@ class AsyncRepositoryConnector
                 final AsyncHttpClient activeHttpClient = client;
                 completionHandler = new CompletionHandler( transferResource, httpClient, logger, RequestType.GET )
                 {
-                    private final AtomicBoolean seekEndOnFile = new AtomicBoolean( false );
-
                     private final AtomicBoolean handleTmpFile = new AtomicBoolean( true );
 
                     private final AtomicBoolean localException = new AtomicBoolean ( false );
@@ -606,13 +606,16 @@ class AsyncRepositoryConnector
                     public STATE onHeadersReceived( final HttpResponseHeaders headers )
                         throws Exception
                     {
-
                         FluentCaseInsensitiveStringsMap h = headers.getHeaders();
                         String rangeByteValue = h.getFirstValue( "Content-Range" );
                         // Make sure the server acceptance of the range requests headers
                         if ( rangeByteValue != null && rangeByteValue.compareToIgnoreCase( "none" ) != 0 )
                         {
-                            seekEndOnFile.set( true );
+                            resumableFile.seek( resumableFile.length() );
+                        }
+                        else
+                        {
+                            resumableFile.seek( 0 );
                         }
                         return super.onHeadersReceived( headers );
                     }
@@ -620,32 +623,36 @@ class AsyncRepositoryConnector
                     @Override
                     public void onThrowable( Throwable t )
                     {
+                        boolean resume = false;
                         try
                         {
                             logger.debug("onThrowable", t);
+
                             /**
                              * If an IOException occurs, let's try to resume the request based on how much bytes has
                              * been so far downloaded. Fail after IOException.
                              */
-                            if ( !disableResumeSupport && !localException.get() && maxRequestTry.get() < maxIOExceptionRetry
-                                    && IOException.class.isAssignableFrom( t.getClass() ) )
+                            try
                             {
-                                logger.debug("Trying to recover from an IOException " + activeRequest);
-                                maxRequestTry.incrementAndGet();
-                                Request newRequest = new RequestBuilder( activeRequest ).setRangeOffset(
-                                    resumableFile.length() ).build();
-                                activeHttpClient.executeRequest( newRequest, this );
-                                deleteFile.set( false );
-                                return;
+                                if ( !disableResumeSupport && !localException.get()
+                                    && maxRequestTry.get() < maxIOExceptionRetry && isResumeWorthy( t ) )
+                                {
+                                    logger.debug( "Trying to recover from an IOException " + activeRequest );
+                                    maxRequestTry.incrementAndGet();
+                                    Request newRequest =
+                                        new RequestBuilder( activeRequest ).setRangeOffset( resumableFile.length() ).build();
+                                    activeHttpClient.executeRequest( newRequest, this );
+                                    resume = true;
+                                    return;
+                                }
                             }
-                            localException.set(false);
-
-                            if ( closeOnComplete.get() )
+                            catch ( Throwable rt )
                             {
-                                activeHttpClient.close();
+                                logger.warn( "Could not resume download", rt );
                             }
 
-                            super.onThrowable( t );
+                            localException.set( false );
+
                             if ( Exception.class.isAssignableFrom( t.getClass() ) )
                             {
                                 exception = Exception.class.cast( t );
@@ -654,14 +661,26 @@ class AsyncRepositoryConnector
                             {
                                 exception = new Exception( t );
                             }
+
+                            if ( closeOnComplete.get() )
+                            {
+                                activeHttpClient.close();
+                            }
+
+                            super.onThrowable( t );
+
                             fireTransferFailed();
                         }
                         catch ( Throwable ex )
                         {
-                            logger.debug( "Unexpected exception", ex );
+                            logger.warn( "Unexpected exception", ex );
                         }
                         finally
                         {
+                            if ( resume )
+                            {
+                                return;
+                            }
                             if ( resumableFile != null )
                             {
                                 try
@@ -693,15 +712,6 @@ class AsyncRepositoryConnector
                             byte[] bytes = content.getBodyPartBytes();
                             try
                             {
-                                // If the content-range header was present, save the bytes at the end of the file
-                                // as we are resuming an existing download.
-                                if ( seekEndOnFile.get() )
-                                {
-                                    resumableFile.seek( fileLockCompanion.getFile().length() );
-
-                                    // No need to seek again.
-                                    seekEndOnFile.set( false );
-                                }
                                 resumableFile.write( bytes );
                             }
                             catch ( IOException ex )
@@ -917,6 +927,19 @@ class AsyncRepositoryConnector
                     latch.countDown();
                 }
             }
+        }
+
+        private boolean isResumeWorthy( Throwable t )
+        {
+            if ( t instanceof IOException )
+            {
+                if ( t instanceof ConnectException )
+                {
+                    return false;
+                }
+                return true;
+            }
+            return false;
         }
 
         private void deleteFile( FileLockCompanion fileLockCompanion )
