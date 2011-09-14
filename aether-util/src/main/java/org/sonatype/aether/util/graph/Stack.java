@@ -10,6 +10,7 @@ package org.sonatype.aether.util.graph;
 
 import java.util.AbstractList;
 import java.util.NoSuchElementException;
+import java.util.RandomAccess;
 
 /**
  * A non-synchronized stack with a non-modifiable list view which starts at the top of the stack. While
@@ -17,6 +18,7 @@ import java.util.NoSuchElementException;
  */
 class Stack<E>
     extends AbstractList<E>
+    implements RandomAccess
 {
 
     private Object[] elements = new Object[64];
