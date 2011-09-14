@@ -83,7 +83,7 @@ class TrackingFileManager
         synchronized ( getLock( file ) )
         {
             File directory = file.getParentFile();
-            if ( !directory.exists() && !directory.mkdirs() )
+            if ( !directory.mkdirs() && !directory.exists() )
             {
                 logger.warn( "Failed to create parent directories for resolution tracking file " + file );
                 return props;
@@ -98,8 +98,6 @@ class TrackingFileManager
 
                 if ( file.canRead() )
                 {
-                    logger.debug( "Reading resolution tracking file " + file );
-
                     byte[] buffer = new byte[(int) raf.length()];
 
                     raf.readFully( buffer );
@@ -155,7 +153,7 @@ class TrackingFileManager
             }
             catch ( IOException e )
             {
-                logger.debug( "Error releasing lock for resolution tracking file " + file, e );
+                logger.warn( "Error releasing lock for resolution tracking file " + file, e );
             }
         }
     }
@@ -170,7 +168,7 @@ class TrackingFileManager
             }
             catch ( IOException e )
             {
-                logger.debug( "Error closing resolution tracking file " + file, e );
+                logger.warn( "Error closing resolution tracking file " + file, e );
             }
         }
     }
