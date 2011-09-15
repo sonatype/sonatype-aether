@@ -19,7 +19,8 @@ import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.artifact.ArtifactType;
 
 /**
- * A simple artifact.
+ * A simple artifact. <em>Note:</em> Instances of this class are immutable and the exposed mutators return new objects
+ * rather than changing the current instance.
  * 
  * @author Benjamin Bentmann
  */

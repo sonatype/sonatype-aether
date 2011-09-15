@@ -15,7 +15,8 @@ import java.util.Map;
 import org.sonatype.aether.artifact.Artifact;
 
 /**
- * An artifact whose identity is derived from another artifact.
+ * An artifact whose identity is derived from another artifact. <em>Note:</em> Instances of this class are immutable and
+ * the exposed mutators return new objects rather than changing the current instance.
  * 
  * @author Benjamin Bentmann
  */

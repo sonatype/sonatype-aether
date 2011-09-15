@@ -13,7 +13,8 @@ import java.io.File;
 import org.sonatype.aether.metadata.Metadata;
 
 /**
- * A basic metadata instance.
+ * A basic metadata instance. <em>Note:</em> Instances of this class are immutable and the exposed mutators return new
+ * objects rather than changing the current instance.
  * 
  * @author Benjamin Bentmann
  */
