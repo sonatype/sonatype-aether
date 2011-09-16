@@ -20,7 +20,7 @@ import org.sonatype.aether.util.artifact.DefaultArtifact;
 import demo.util.Booter;
 
 /**
- * Collects the transitive dependencies of an artifact.
+ * Determines the direct dependencies of an artifact as declared in its artifact descriptor (POM).
  */
 public class GetDirectDependencies
 {
