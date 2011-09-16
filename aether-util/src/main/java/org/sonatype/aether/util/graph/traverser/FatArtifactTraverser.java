@@ -15,7 +15,8 @@ import org.sonatype.aether.util.artifact.ArtifactProperties;
 
 /**
  * A dependency traverser that excludes the dependencies of fat artifacts from the traversal. Fat artifacts are
- * artifacts that have the property "includesDependencies" set to {@code true}.
+ * artifacts that have the property {@link org.sonatype.aether.util.artifact.ArtifactProperties#INCLUDES_DEPENDENCIES}
+ * set to {@code true}.
  * 
  * @author Benjamin Bentmann
  * @see org.sonatype.aether.artifact.Artifact#getProperties()

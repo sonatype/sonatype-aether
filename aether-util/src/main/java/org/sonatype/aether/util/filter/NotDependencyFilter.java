@@ -14,7 +14,7 @@ import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.graph.DependencyNode;
 
 /**
- * A dependency filter that negates another filters.
+ * A dependency filter that negates another filter.
  * 
  * @author Benjamin Bentmann
  */

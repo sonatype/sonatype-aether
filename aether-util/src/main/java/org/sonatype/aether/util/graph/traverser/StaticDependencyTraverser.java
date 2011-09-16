@@ -13,7 +13,7 @@ import org.sonatype.aether.collection.DependencyTraverser;
 import org.sonatype.aether.graph.Dependency;
 
 /**
- * A dependency traverser with always or never traverses children.
+ * A dependency traverser which always or never traverses children.
  * 
  * @author Benjamin Bentmann
  */
