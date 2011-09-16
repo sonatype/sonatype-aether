@@ -26,7 +26,7 @@
 
   <properties>
     <mavenVersion>3.0.3</mavenVersion>
-    <wagonVersion>1.0-beta-7</wagonVersion>
+    <wagonVersion>1.0</wagonVersion>
   </properties>
 
   <dependencies>
@@ -70,16 +70,8 @@
       <version>${wagonVersion}</version>
       <exclusions>
         <exclusion>
-          <groupId>nekohtml</groupId>
-          <artifactId>nekohtml</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>nekohtml</groupId>
-          <artifactId>xercesMinimal</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
+          <groupId>org.apache.maven.wagon</groupId>
+          <artifactId>wagon-http-shared</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
