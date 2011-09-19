@@ -299,11 +299,10 @@ public class ArtifactDescriptorResult
      */
     public ArtifactDescriptorResult addDependency( Dependency dependency )
     {
-        if ( dependency == null )
+        if ( dependency != null )
         {
-            throw new IllegalArgumentException( "no dependency specified" );
+            dependencies.add( dependency );
         }
-        dependencies.add( dependency );
         return this;
     }
 
@@ -344,11 +343,10 @@ public class ArtifactDescriptorResult
      */
     public ArtifactDescriptorResult addManagedDependency( Dependency dependency )
     {
-        if ( dependency == null )
+        if ( dependency != null )
         {
-            throw new IllegalArgumentException( "no dependency specified" );
+            managedDependencies.add( dependency );
         }
-        managedDependencies.add( dependency );
         return this;
     }
 
@@ -389,11 +387,10 @@ public class ArtifactDescriptorResult
      */
     public ArtifactDescriptorResult addRepository( RemoteRepository repository )
     {
-        if ( repository == null )
+        if ( repository != null )
         {
-            throw new IllegalArgumentException( "no repository specified" );
+            repositories.add( repository );
         }
-        repositories.add( repository );
         return this;
     }
 
