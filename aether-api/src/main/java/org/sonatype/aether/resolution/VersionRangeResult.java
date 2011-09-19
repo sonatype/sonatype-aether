@@ -113,7 +113,7 @@ public class VersionRangeResult
     }
 
     /**
-     * Sets the versions matching the requested range.
+     * Sets the versions (in ascending order) matching the requested range.
      * 
      * @param versions The matching versions, may be empty or {@code null} if none.
      * @return This result for chaining, never {@code null}.
