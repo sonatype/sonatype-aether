@@ -59,7 +59,7 @@ public class ArtifactDescriptorResult
     {
         if ( request == null )
         {
-            throw new IllegalArgumentException( "version request has not been specified" );
+            throw new IllegalArgumentException( "artifact descriptor request has not been specified" );
         }
         this.request = request;
         this.artifact = request.getArtifact();
@@ -157,7 +157,7 @@ public class ArtifactDescriptorResult
     }
 
     /**
-     * Records the specified relocation hop while location the artifact descriptor.
+     * Records the specified relocation hop while locating the artifact descriptor.
      * 
      * @param artifact The artifact that got relocated, may be {@code null}.
      * @return This result for chaining, never {@code null}.

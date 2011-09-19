@@ -68,7 +68,7 @@ public class ArtifactDescriptorRequest
     }
 
     /**
-     * Sets the artifact whose descriptor shall be read.
+     * Sets the artifact whose descriptor shall be read. Eventually, a valid request must have an artifact set.
      * 
      * @param artifact The artifact, may be {@code null}.
      * @return This request for chaining, never {@code null}.
