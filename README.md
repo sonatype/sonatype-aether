@@ -1,6 +1,6 @@
 Homepage
 ========
-<http://aether.sonatype.org/>
+<http://www.eclipse.org/aether/>
 
 Wiki
 ====
@@ -13,11 +13,11 @@ Issue Tracker
 Mailing Lists
 =============
 - Development of Aether:  
-  <aether-dev@sonatype.org> to post mails  
-  <aether-dev-subscribe@sonatype.org> to subscribe to the list
+  <aether-dev@eclipse.org> to post mails  
+  <https://dev.eclipse.org/mailman/listinfo/aether-dev> to subscribe to the list or unsubscribe from it
 - Usage of Aether:  
-  <aether-user@sonatype.org> to post mails  
-  <aether-user-subscribe@sonatype.org> to subscribe to the list
+  <aether-users@eclipse.org> to post mails  
+  <https://dev.eclipse.org/mailman/listinfo/aether-users> to subscribe to the list or unsubscribe from it
 
 Contribution
 ============
