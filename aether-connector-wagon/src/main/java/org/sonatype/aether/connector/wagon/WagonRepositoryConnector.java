@@ -882,7 +882,8 @@ class WagonRepositoryConnector
 
                 if ( wagon instanceof StreamingWagon )
                 {
-                    ( (StreamingWagon) wagon ).putFromStream( new ByteArrayInputStream( sum.getBytes( "UTF-8" ) ), dst );
+                    byte[] data = sum.getBytes( "UTF-8" );
+                    ( (StreamingWagon) wagon ).putFromStream( new ByteArrayInputStream( data ), dst, data.length, -1 );
                 }
                 else
                 {
@@ -900,7 +901,7 @@ class WagonRepositoryConnector
             }
             catch ( Exception e )
             {
-                logger.debug( "Failed to upload " + algo + " checksum for " + file + ": " + e.getMessage(), e );
+                logger.warn( "Failed to upload " + algo + " checksum for " + file + ": " + e.getMessage(), e );
             }
         }
 
