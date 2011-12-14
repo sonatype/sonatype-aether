@@ -175,7 +175,7 @@ public class DefaultInstallerTest
         assertFalse( file.getAbsolutePath() + " exists", file.exists() );
 
         request.addArtifact( artifact.setFile( file ) );
-        installer.install(session, request);
+        installer.install( session, request );
     }
 
     @Test( expected = InstallationException.class )
