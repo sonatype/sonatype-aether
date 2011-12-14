@@ -167,6 +167,18 @@ public class DefaultInstallerTest
     }
 
     @Test( expected = InstallationException.class )
+    public void testArtifactDoesNotExist()
+        throws InstallationException
+    {
+        String path = "DOES_NOT_EXIST";
+        File file = new File( session.getLocalRepository().getBasedir(), path );
+        assertFalse( file.getAbsolutePath() + " exists", file.exists() );
+
+        request.addArtifact( artifact.setFile( file ) );
+        installer.install(session, request);
+    }
+
+    @Test( expected = InstallationException.class )
     public void testMetadataExistsAsDir()
         throws InstallationException
     {

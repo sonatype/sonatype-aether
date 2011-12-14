@@ -249,6 +249,10 @@ public class DefaultInstaller
         LocalRepositoryManager lrm = session.getLocalRepositoryManager();
 
         File srcFile = artifact.getFile();
+        if ( srcFile != null && !srcFile.exists() )
+        {
+            throw new InstallationException( "File does not exist: " + srcFile.getAbsolutePath() );
+        }
 
         File dstFile = new File( lrm.getRepository().getBasedir(), lrm.getPathForLocalArtifact( artifact ) );
 
