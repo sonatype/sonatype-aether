@@ -315,6 +315,34 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
             <version>2.8.1</version>
+            <configuration>
+              <groups>
+                <group>
+                  <title>API</title>
+                  <packages>org.sonatype.aether*</packages>
+                </group>
+                <group>
+                  <title>SPI</title>
+                  <packages>org.sonatype.aether.spi*</packages>
+                </group>
+                <group>
+                  <title>Utilities</title>
+                  <packages>org.sonatype.aether.util*</packages>
+                </group>
+                <group>
+                  <title>Repository Connectors</title>
+                  <packages>org.sonatype.aether.connector*</packages>
+                </group>
+                <group>
+                  <title>Implementation</title>
+                  <packages>org.sonatype.aether.impl*</packages>
+                </group>
+                <group>
+                  <title>Internals</title>
+                  <packages>org.sonatype.aether.internal*</packages>
+                </group>
+              </groups>
+            </configuration>
             <reportSets>
               <reportSet>
                 <id>non-aggregate</id>
