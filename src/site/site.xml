@@ -16,6 +16,14 @@
       <item name="Sonatype Aether" href="http://sonatype.github.com/sonatype-aether/intro.html" />
     </breadcrumbs>
 
+    <menu name="Overview">
+      <item name="Introduction" href="index.html"/>
+      <item name="JavaDocs" href="apidocs/index.html"/>
+      <item name="Source Xref" href="xref/index.html"/>
+      <!--item name="FAQ" href="faq.html"/-->
+    </menu>
+
+    <menu ref="modules"/>
     <menu ref="reports" inherit="bottom" />
   </body>
 </project>
