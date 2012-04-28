@@ -26,7 +26,7 @@
   <description>
     The parent and aggregator for the repository system.
   </description>
-  <url>http://aether.sonatype.org/</url>
+  <url>http://sonatype.github.com/sonatype-aether/</url>
   <inceptionYear>2010</inceptionYear>
 
   <mailingLists>

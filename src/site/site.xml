@@ -12,6 +12,10 @@
   <version position="right" />
 
   <body>
+    <breadcrumbs>
+      <item name="Sonatype Aether" href="http://sonatype.github.com/sonatype-aether/intro.html" />
+    </breadcrumbs>
+
     <menu ref="reports" inherit="bottom" />
   </body>
 </project>

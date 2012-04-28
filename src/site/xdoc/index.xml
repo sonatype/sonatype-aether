@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<document xmlns="http://maven.apache.org/XDOC/2.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
+  <properties>
+    <title>Introduction</title>
+    <author email="hboutemy_AT_apache_DOT_org">Hervé Boutemy</author>
+  </properties>
+
+  <head>
+    <meta http-equiv="refresh" content="0; URL=http://aether.sonatype.org/"/>
+  </head>
+
+  <body>
+
+    <section name="Sonatype Aether">
+      <p><a href="http://aether.sonatype.org/">Sonatype Aether</a></p>
+    </section>
+
+  </body>
+
+</document>
