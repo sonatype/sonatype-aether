@@ -1,6 +1,9 @@
 org.sonatype.aether
 org.sonatype.aether.artifact
 org.sonatype.aether.collection
+org.sonatype.aether.connector.async
+org.sonatype.aether.connector.file
+org.sonatype.aether.connector.wagon
 org.sonatype.aether.deployment
 org.sonatype.aether.graph
 org.sonatype.aether.impl
@@ -14,6 +17,11 @@ org.sonatype.aether.spi.io
 org.sonatype.aether.spi.localrepo
 org.sonatype.aether.spi.locator
 org.sonatype.aether.spi.log
+org.sonatype.aether.test.impl
+org.sonatype.aether.test.util
+org.sonatype.aether.test.util.connector
+org.sonatype.aether.test.util.connector.suite
+org.sonatype.aether.test.util.impl
 org.sonatype.aether.transfer
 org.sonatype.aether.util
 org.sonatype.aether.util.artifact
