@@ -13,7 +13,7 @@
 
   <body>
     <breadcrumbs>
-      <item name="Sonatype Aether" href="http://sonatype.github.com/sonatype-aether/intro.html" />
+      <item name="Sonatype Aether" href="http://sonatype.github.com/sonatype-aether/" />
     </breadcrumbs>
 
     <menu name="Overview">

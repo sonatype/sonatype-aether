@@ -62,6 +62,13 @@
     <url>https://issues.sonatype.org/browse/AETHER</url>
   </issueManagement>
 
+  <distributionManagement>
+    <site>
+      <id>gh-pages</id>
+      <url>http://sonatype.github.com/sonatype-aether/</url>
+    </site>
+  </distributionManagement>
+
   <ciManagement>
     <system>Hudson</system>
     <url>https://builds.sonatype.org/job/aether/</url>
@@ -193,7 +200,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.0</version>
+          <version>3.1</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
