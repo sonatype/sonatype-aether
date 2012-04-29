@@ -1,0 +1,13 @@
+ ------
+ About Aether :: API
+ ------
+ Hervé Boutemy
+ ------
+ 2012-04-28
+ ------
+
+About Aether :: API
+
+ The application programming interface for the repository system.
+
+ The main entry point is <<<{{{./apidocs/org/sonatype/aether/RepositorySystem.html}org.sonatype.aether.RepositorySystem}}>>>.
