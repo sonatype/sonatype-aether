@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<pmd version="4.2.5" timestamp="2012-04-29T12:33:29.900">
+<pmd version="4.2.5" timestamp="2012-04-29T19:37:12.655">
 <file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/collection/CollectRequest.java">
 <violation beginline="16" endline="16" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.collection" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
 Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'

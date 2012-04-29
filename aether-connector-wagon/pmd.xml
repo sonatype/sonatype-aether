@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<pmd version="4.2.5" timestamp="2012-04-29T12:35:01.749">
+<pmd version="4.2.5" timestamp="2012-04-29T19:38:45.680">
 <file name="/home/herve/projets/maven/sonatype-aether/aether-connector-wagon/src/main/java/org/sonatype/aether/connector/wagon/PlexusWagonProvider.java">
 <violation beginline="44" endline="47" begincolumn="9" endcolumn="9" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.connector.wagon" class="PlexusWagonProvider" method="release" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
 Avoid empty catch blocks

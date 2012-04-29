@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<pmd version="4.2.5" timestamp="2012-04-29T12:33:38.180">
+<pmd version="4.2.5" timestamp="2012-04-29T19:37:20.980">
 <file name="/home/herve/projets/maven/sonatype-aether/aether-spi/src/main/java/org/sonatype/aether/spi/connector/ArtifactDownload.java">
 <violation beginline="77" endline="80" begincolumn="12" endcolumn="5" rule="UselessOverridingMethod" ruleset="Basic Rules" package="org.sonatype.aether.spi.connector" class="ArtifactDownload" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#UselessOverridingMethod" priority="3">
 Overriding method merely calls super

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<pmd version="4.2.5" timestamp="2012-04-29T12:34:37.438">
+<pmd version="4.2.5" timestamp="2012-04-29T19:38:21.016">
 <file name="/home/herve/projets/maven/sonatype-aether/aether-impl/src/main/java/org/sonatype/aether/impl/internal/DefaultFileProcessor.java">
 <violation beginline="42" endline="45" begincolumn="13" endcolumn="13" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.impl.internal" class="DefaultFileProcessor" method="close" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
 Avoid empty catch blocks

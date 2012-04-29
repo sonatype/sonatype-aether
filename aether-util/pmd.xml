@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<pmd version="4.2.5" timestamp="2012-04-29T12:34:16.676">
+<pmd version="4.2.5" timestamp="2012-04-29T19:37:59.725">
 <file name="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/ChecksumUtils.java">
 <violation beginline="74" endline="77" begincolumn="17" endcolumn="17" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.util" class="ChecksumUtils" method="read" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
 Avoid empty catch blocks
