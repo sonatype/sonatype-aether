@@ -1,0 +1,5 @@
+org.sonatype.aether.test.impl
+org.sonatype.aether.test.util
+org.sonatype.aether.test.util.connector
+org.sonatype.aether.test.util.connector.suite
+org.sonatype.aether.test.util.impl

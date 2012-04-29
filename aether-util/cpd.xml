@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd-cpd>
+<duplication lines="23" tokens="119">
+<file line="256" path="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/graph/manager/ClassicDependencyManager.java"/>
+<file line="250" path="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/graph/transformer/ConflictMarker.java"/>
+<codefragment>
+<![CDATA[
+        }
+
+        @Override
+        public boolean equals( Object obj )
+        {
+            if ( obj == this )
+            {
+                return true;
+            }
+            else if ( !( obj instanceof Key ) )
+            {
+                return false;
+            }
+            Key that = (Key) obj;
+            return artifact.getArtifactId().equals( that.artifact.getArtifactId() )
+                && artifact.getGroupId().equals( that.artifact.getGroupId() )
+                && artifact.getExtension().equals( that.artifact.getExtension() )
+                && artifact.getClassifier().equals( that.artifact.getClassifier() );
+        }
+
+        @Override
+        public int hashCode()
+        {
+]]>
+</codefragment>
+</duplication>
+<duplication lines="20" tokens="113">
+<file line="35" path="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/graph/transformer/JavaEffectiveScopeCalculator.java"/>
+<file line="39" path="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/graph/transformer/NearestVersionConflictResolver.java"/>
+<codefragment>
+<![CDATA[
+    implements DependencyGraphTransformer
+{
+
+    public DependencyNode transformGraph( DependencyNode node, DependencyGraphTransformationContext context )
+        throws RepositoryException
+    {
+        List<?> sortedConflictIds = (List<?>) context.get( TransformationContextKeys.SORTED_CONFLICT_IDS );
+        if ( sortedConflictIds == null )
+        {
+            ConflictIdSorter sorter = new ConflictIdSorter();
+            sorter.transformGraph( node, context );
+
+            sortedConflictIds = (List<?>) context.get( TransformationContextKeys.SORTED_CONFLICT_IDS );
+        }
+
+        Map<?, ?> conflictIds = (Map<?, ?>) context.get( TransformationContextKeys.CONFLICT_IDS );
+        if ( conflictIds == null )
+        {
+            throw new RepositoryException( "conflict groups have not been identified" );
+        }
+]]>
+</codefragment>
+</duplication>
+<duplication lines="21" tokens="100">
+<file line="304" path="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/artifact/DefaultArtifact.java"/>
+<file line="173" path="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/artifact/SubArtifact.java"/>
+<codefragment>
+<![CDATA[
+        return new SubArtifact( mainArtifact, classifier, extension, file, properties );
+    }
+
+    public String getProperty( String key, String defaultValue )
+    {
+        String value = properties.get( key );
+        return ( value != null ) ? value : defaultValue;
+    }
+
+    public Map<String, String> getProperties()
+    {
+        return Collections.unmodifiableMap( properties );
+    }
+
+    public Artifact setProperties( Map<String, String> properties )
+    {
+        if ( this.properties.equals( properties ) || ( properties == null && this.properties.isEmpty() ) )
+        {
+            return this;
+        }
+        return new SubArtifact( mainArtifact, classifier, extension, properties, file );
+]]>
+</codefragment>
+</duplication>
+</pmd-cpd>

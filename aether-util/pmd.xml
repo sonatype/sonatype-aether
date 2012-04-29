@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd version="4.2.5" timestamp="2012-04-29T12:34:16.676">
+<file name="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/ChecksumUtils.java">
+<violation beginline="74" endline="77" begincolumn="17" endcolumn="17" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.util" class="ChecksumUtils" method="read" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+<violation beginline="86" endline="89" begincolumn="13" endcolumn="13" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.util" class="ChecksumUtils" method="read" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+<violation beginline="160" endline="163" begincolumn="13" endcolumn="13" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.util" class="ChecksumUtils" method="calc" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/ConfigUtils.java">
+<violation beginline="135" endline="138" begincolumn="13" endcolumn="13" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.util" class="ConfigUtils" method="getInteger" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+<violation beginline="183" endline="186" begincolumn="13" endcolumn="13" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.util" class="ConfigUtils" method="getLong" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/artifact/DefaultArtifact.java">
+<violation beginline="271" endline="274" begincolumn="9" endcolumn="9" rule="BrokenNullCheck" ruleset="Basic Rules" package="org.sonatype.aether.util.artifact" class="DefaultArtifact" method="setVersion" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#BrokenNullCheck" priority="2">
+Method call on object which may be null
+</violation>
+<violation beginline="320" endline="323" begincolumn="9" endcolumn="9" rule="BrokenNullCheck" ruleset="Basic Rules" package="org.sonatype.aether.util.artifact" class="DefaultArtifact" method="setProperties" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#BrokenNullCheck" priority="2">
+Method call on object which may be null
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/artifact/SubArtifact.java">
+<violation beginline="189" endline="192" begincolumn="9" endcolumn="9" rule="BrokenNullCheck" ruleset="Basic Rules" package="org.sonatype.aether.util.artifact" class="SubArtifact" method="setProperties" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#BrokenNullCheck" priority="2">
+Method call on object which may be null
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/graph/AbstractDepthFirstNodeListGenerator.java">
+<violation beginline="73" endline="76" begincolumn="17" endcolumn="17" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.sonatype.aether.util.graph" class="AbstractDepthFirstNodeListGenerator" method="getDependencies" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
+These nested if statements could be combined
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/graph/transformer/NearestVersionConflictResolver.java">
+<violation beginline="104" endline="110" begincolumn="17" endcolumn="17" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.sonatype.aether.util.graph.transformer" class="NearestVersionConflictResolver" method="selectVersion" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
+These nested if statements could be combined
+</violation>
+<violation beginline="106" endline="109" begincolumn="21" endcolumn="21" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.sonatype.aether.util.graph.transformer" class="NearestVersionConflictResolver" method="selectVersion" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
+These nested if statements could be combined
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/repository/DefaultMirrorSelector.java">
+<violation beginline="182" endline="182" begincolumn="59" endcolumn="69" rule="AvoidUsingHardCodedIP" ruleset="Basic Rules" package="org.sonatype.aether.util.repository" class="DefaultMirrorSelector" method="isExternalRepo" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#AvoidUsingHardCodedIP" priority="3">
+Do not hard code IPv4 or IPv6 addresses, even 127.0.0.1 !
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-util/src/main/java/org/sonatype/aether/util/version/GenericVersionRange.java">
+<violation beginline="103" endline="107" begincolumn="17" endcolumn="17" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.sonatype.aether.util.version" class="GenericVersionRange" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
+These nested if statements could be combined
+</violation>
+</file>
+</pmd>

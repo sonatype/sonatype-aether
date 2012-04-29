@@ -1,0 +1,5 @@
+org.sonatype.aether.spi.connector
+org.sonatype.aether.spi.io
+org.sonatype.aether.spi.localrepo
+org.sonatype.aether.spi.locator
+org.sonatype.aether.spi.log

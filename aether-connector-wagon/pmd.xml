@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd version="4.2.5" timestamp="2012-04-29T12:35:01.749">
+<file name="/home/herve/projets/maven/sonatype-aether/aether-connector-wagon/src/main/java/org/sonatype/aether/connector/wagon/PlexusWagonProvider.java">
+<violation beginline="44" endline="47" begincolumn="9" endcolumn="9" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.connector.wagon" class="PlexusWagonProvider" method="release" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-connector-wagon/src/main/java/org/sonatype/aether/connector/wagon/WagonRepositoryConnector.java">
+<violation beginline="300" endline="303" begincolumn="13" endcolumn="13" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.connector.wagon" class="WagonRepositoryConnector" method="connectWagon" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+<violation beginline="357" endline="360" begincolumn="9" endcolumn="9" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.connector.wagon" class="WagonRepositoryConnector" method="disconnectWagon" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-connector-wagon/src/main/java/org/sonatype/aether/connector/wagon/WagonTransferListenerAdapter.java">
+<violation beginline="54" endline="60" begincolumn="9" endcolumn="9" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.connector.wagon" class="WagonTransferListenerAdapter" method="transferStarted" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+</file>
+</pmd>

@@ -1,0 +1,4 @@
+org.sonatype.aether
+org.sonatype.aether.graph
+org.sonatype.aether.repository
+org.sonatype.aether.transfer

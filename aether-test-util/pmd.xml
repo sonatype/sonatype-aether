@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd version="4.2.5" timestamp="2012-04-29T12:33:58.280">
+<file name="/home/herve/projets/maven/sonatype-aether/aether-test-util/src/main/java/org/sonatype/aether/test/impl/TestFileProcessor.java">
+<violation beginline="37" endline="40" begincolumn="13" endcolumn="13" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.test.impl" class="TestFileProcessor" method="close" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+<violation beginline="133" endline="136" begincolumn="21" endcolumn="21" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.test.impl" class="TestFileProcessor" method="copy" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-test-util/src/main/java/org/sonatype/aether/test/util/connector/suite/ConnectorTestSuite.java">
+<violation beginline="24" endline="24" begincolumn="1" endcolumn="55" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.test.util.connector.suite" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.repository.RemoteRepository'
+</violation>
+<violation beginline="31" endline="31" begincolumn="1" endcolumn="68" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.test.util.connector.suite" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.spi.connector.RepositoryConnectorFactory'
+</violation>
+<violation beginline="34" endline="34" begincolumn="1" endcolumn="65" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.test.util.connector.suite" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.test.impl.TestRepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-test-util/src/main/java/org/sonatype/aether/test/util/impl/TestVersionRange.java">
+<violation beginline="103" endline="107" begincolumn="17" endcolumn="17" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.sonatype.aether.test.util.impl" class="TestVersionRange" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
+These nested if statements could be combined
+</violation>
+</file>
+</pmd>

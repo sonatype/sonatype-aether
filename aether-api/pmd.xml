@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd version="4.2.5" timestamp="2012-04-29T12:33:29.900">
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/collection/CollectRequest.java">
+<violation beginline="16" endline="16" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.collection" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/collection/CollectResult.java">
+<violation beginline="15" endline="15" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.collection" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/collection/DependencyManagement.java">
+<violation beginline="14" endline="14" begincolumn="1" endcolumn="44" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.collection" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.graph.Dependency'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/deployment/DeployRequest.java">
+<violation beginline="15" endline="15" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.deployment" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/deployment/DeployResult.java">
+<violation beginline="15" endline="15" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.deployment" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/graph/Dependency.java">
+<violation beginline="130" endline="133" begincolumn="9" endcolumn="9" rule="BrokenNullCheck" ruleset="Basic Rules" package="org.sonatype.aether.graph" class="Dependency" method="setScope" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#BrokenNullCheck" priority="2">
+Method call on object which may be null
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/installation/InstallRequest.java">
+<violation beginline="15" endline="15" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.installation" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/installation/InstallResult.java">
+<violation beginline="15" endline="15" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.installation" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/repository/LocalArtifactRegistration.java">
+<violation beginline="14" endline="14" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.repository" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/repository/LocalArtifactRequest.java">
+<violation beginline="14" endline="14" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.repository" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/repository/LocalArtifactResult.java">
+<violation beginline="13" endline="13" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.repository" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/repository/LocalMetadataRegistration.java">
+<violation beginline="14" endline="14" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.repository" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/repository/LocalMetadataRequest.java">
+<violation beginline="11" endline="11" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.repository" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/repository/LocalMetadataResult.java">
+<violation beginline="13" endline="13" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.repository" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/repository/Proxy.java">
+<violation beginline="72" endline="75" begincolumn="9" endcolumn="9" rule="BrokenNullCheck" ruleset="Basic Rules" package="org.sonatype.aether.repository" class="Proxy" method="setType" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#BrokenNullCheck" priority="2">
+Method call on object which may be null
+</violation>
+<violation beginline="97" endline="100" begincolumn="9" endcolumn="9" rule="BrokenNullCheck" ruleset="Basic Rules" package="org.sonatype.aether.repository" class="Proxy" method="setHost" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#BrokenNullCheck" priority="2">
+Method call on object which may be null
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/resolution/ArtifactDescriptorRequest.java">
+<violation beginline="16" endline="16" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.resolution" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/resolution/ArtifactDescriptorResult.java">
+<violation beginline="18" endline="18" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.resolution" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/resolution/ArtifactRequest.java">
+<violation beginline="16" endline="16" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.resolution" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/resolution/ArtifactResult.java">
+<violation beginline="15" endline="15" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.resolution" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/resolution/DependencyRequest.java">
+<violation beginline="12" endline="12" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.resolution" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/resolution/DependencyResult.java">
+<violation beginline="15" endline="15" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.resolution" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/resolution/MetadataRequest.java">
+<violation beginline="12" endline="12" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.resolution" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/resolution/MetadataResult.java">
+<violation beginline="12" endline="12" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.resolution" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/resolution/VersionRangeRequest.java">
+<violation beginline="16" endline="16" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.resolution" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/resolution/VersionRangeResult.java">
+<violation beginline="17" endline="17" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.resolution" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/resolution/VersionRequest.java">
+<violation beginline="16" endline="16" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.resolution" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-api/src/main/java/org/sonatype/aether/resolution/VersionResult.java">
+<violation beginline="15" endline="15" begincolumn="1" endcolumn="51" rule="UnusedImports" ruleset="Import Statement Rules" package="org.sonatype.aether.resolution" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'org.sonatype.aether.RepositorySystemSession'
+</violation>
+</file>
+</pmd>

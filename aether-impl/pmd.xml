@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd version="4.2.5" timestamp="2012-04-29T12:34:37.438">
+<file name="/home/herve/projets/maven/sonatype-aether/aether-impl/src/main/java/org/sonatype/aether/impl/internal/DefaultFileProcessor.java">
+<violation beginline="42" endline="45" begincolumn="13" endcolumn="13" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.impl.internal" class="DefaultFileProcessor" method="close" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+<violation beginline="147" endline="150" begincolumn="21" endcolumn="21" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.impl.internal" class="DefaultFileProcessor" method="copy" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-impl/src/main/java/org/sonatype/aether/impl/internal/DefaultLocalRepositoryProvider.java">
+<violation beginline="118" endline="121" begincolumn="13" endcolumn="13" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.impl.internal" class="DefaultLocalRepositoryProvider" method="newLocalRepositoryManager" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-impl/src/main/java/org/sonatype/aether/impl/internal/DefaultRemoteRepositoryManager.java">
+<violation beginline="378" endline="381" begincolumn="13" endcolumn="13" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.impl.internal" class="DefaultRemoteRepositoryManager" method="getRepositoryConnector" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-impl/src/main/java/org/sonatype/aether/impl/internal/DefaultUpdateCheckManager.java">
+<violation beginline="395" endline="398" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="org.sonatype.aether.impl.internal" class="DefaultUpdateCheckManager" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'artifact'.
+</violation>
+<violation beginline="400" endline="403" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="org.sonatype.aether.impl.internal" class="DefaultUpdateCheckManager" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'metadata'.
+</violation>
+<violation beginline="405" endline="426" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="org.sonatype.aether.impl.internal" class="DefaultUpdateCheckManager" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'artifact'.
+</violation>
+<violation beginline="405" endline="426" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="org.sonatype.aether.impl.internal" class="DefaultUpdateCheckManager" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'artifactFile'.
+</violation>
+<violation beginline="428" endline="431" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="org.sonatype.aether.impl.internal" class="DefaultUpdateCheckManager" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'artifact'.
+</violation>
+<violation beginline="428" endline="431" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="org.sonatype.aether.impl.internal" class="DefaultUpdateCheckManager" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'artifactFile'.
+</violation>
+<violation beginline="433" endline="436" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="org.sonatype.aether.impl.internal" class="DefaultUpdateCheckManager" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'metadata'.
+</violation>
+<violation beginline="433" endline="436" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="org.sonatype.aether.impl.internal" class="DefaultUpdateCheckManager" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'repository'.
+</violation>
+<violation beginline="438" endline="441" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="org.sonatype.aether.impl.internal" class="DefaultUpdateCheckManager" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'metadata'.
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-impl/src/main/java/org/sonatype/aether/impl/internal/SimpleDigest.java">
+<violation beginline="59" endline="62" begincolumn="13" endcolumn="13" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.impl.internal" class="SimpleDigest" method="update" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+</file>
+<suppressedviolation filename="/home/herve/projets/maven/sonatype-aether/aether-impl/src/main/java/org/sonatype/aether/impl/internal/DefaultDependencyCollector.java" suppressiontype="annotation" msg="Avoid unused private fields such as 'logger'." usermsg=""/>
+<suppressedviolation filename="/home/herve/projets/maven/sonatype-aether/aether-impl/src/main/java/org/sonatype/aether/impl/internal/DefaultDeployer.java" suppressiontype="annotation" msg="Avoid unused private fields such as 'logger'." usermsg=""/>
+<suppressedviolation filename="/home/herve/projets/maven/sonatype-aether/aether-impl/src/main/java/org/sonatype/aether/impl/internal/DefaultMetadataResolver.java" suppressiontype="annotation" msg="Avoid unused private fields such as 'logger'." usermsg=""/>
+<suppressedviolation filename="/home/herve/projets/maven/sonatype-aether/aether-impl/src/main/java/org/sonatype/aether/impl/internal/DefaultRepositorySystem.java" suppressiontype="annotation" msg="Avoid unused private fields such as 'logger'." usermsg=""/>
+</pmd>

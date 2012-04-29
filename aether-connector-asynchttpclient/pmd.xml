@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd version="4.2.5" timestamp="2012-04-29T12:35:30.675">
+<file name="/home/herve/projets/maven/sonatype-aether/aether-connector-asynchttpclient/src/main/java/org/sonatype/aether/connector/async/AsyncRepositoryConnector.java">
+<violation beginline="687" endline="687" begincolumn="33" endcolumn="39" rule="ReturnFromFinallyBlock" ruleset="Basic Rules" package="org.sonatype.aether.connector.async" class="AsyncRepositoryConnector$GetTask" method="onThrowable" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#ReturnFromFinallyBlock" priority="3">
+Avoid returning from a finally block
+</violation>
+<violation beginline="695" endline="697" begincolumn="33" endcolumn="33" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.connector.async" class="AsyncRepositoryConnector$GetTask" method="onThrowable" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+<violation beginline="744" endline="746" begincolumn="29" endcolumn="29" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.connector.async" class="AsyncRepositoryConnector$GetTask" method="onCompleted" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+<violation beginline="903" endline="905" begincolumn="21" endcolumn="21" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.connector.async" class="AsyncRepositoryConnector$GetTask" method="run" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+<violation beginline="1015" endline="1018" begincolumn="21" endcolumn="21" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.connector.async" class="AsyncRepositoryConnector$GetTask" method="verifyChecksum" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+<violation beginline="1463" endline="1466" begincolumn="17" endcolumn="17" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.connector.async" class="AsyncRepositoryConnector" method="lockFile" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+<violation beginline="1501" endline="1504" begincolumn="9" endcolumn="9" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.connector.async" class="AsyncRepositoryConnector" method="releaseLock" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+</file>
+<file name="/home/herve/projets/maven/sonatype-aether/aether-connector-asynchttpclient/src/main/java/org/sonatype/aether/connector/async/CompletionHandler.java">
+<violation beginline="144" endline="162" begincolumn="13" endcolumn="13" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.sonatype.aether.connector.async" class="CompletionHandler" method="onHeadersReceived" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
+These nested if statements could be combined
+</violation>
+<violation beginline="150" endline="153" begincolumn="17" endcolumn="17" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.sonatype.aether.connector.async" class="CompletionHandler" method="onHeadersReceived" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+Avoid empty catch blocks
+</violation>
+</file>
+</pmd>
